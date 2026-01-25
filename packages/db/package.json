@@ -19,6 +19,7 @@
   "exports": {
     ".": "./index.ts",
     "./edge": "./edge.ts",
+    "./edge-raw": "./edge-raw.ts",
     "./client": "./client.ts"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { UserProps } from "@/lib/types";
-import { prismaEdge } from "@repo/db/edge";
+import { edgeDb } from "@repo/db/edge-raw";
 import { NextRequest } from "next/server";
 
 export async function hasPendingInvites({
@@ -17,14 +17,7 @@ export async function hasPendingInvites({
     return true;
   }
 
-  const pendingInvites = await prismaEdge.workspaceInvite.count({
-    where: {
-      email: user.email,
-      expires: {
-        gte: new Date(),
-      },
-    },
-  });
+  const pendingInvites = await edgeDb.countPendingInvites(user.email);
 
   return pendingInvites > 0;
 }
