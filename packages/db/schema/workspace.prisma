@@ -1,0 +1,66 @@
+model Workspace {
+  id               String  @id @default(cuid())
+  name             String
+  slug             String  @unique
+  logo             String?
+  inviteCode       String? @unique
+
+  ssoEmailDomain   String?   @unique
+  ssoEnforcedAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  usageLastChecked DateTime  @default(now())
+
+  users                 WorkspaceUsers[]
+  invites               WorkspaceInvite[]
+  sentEmails            SentEmail[]
+
+  @@index(usageLastChecked(sort: Asc))
+}
+
+enum WorkspaceRole {
+  owner
+  member
+  viewer
+  billing
+}
+
+model WorkspaceInvite {
+  email     String
+  expires   DateTime
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  role      WorkspaceRole @default(member)
+  createdAt DateTime      @default(now())
+
+  @@unique([email, workspaceId])
+  @@index([workspaceId])
+}
+
+model WorkspaceUsers {
+  id                     String                  @id @default(cuid())
+  role                   WorkspaceRole           @default(member)
+  userId                 String
+  workspaceId            String
+  workspacePreferences   Json?
+  defaultFolderId        String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+// TODO: could potentially combine this with NotificationEmail in the future?
+model SentEmail {
+  id        String   @id @default(cuid())
+  type      String
+  createdAt DateTime @default(now())
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String?
+
+  @@index([workspaceId])
+}

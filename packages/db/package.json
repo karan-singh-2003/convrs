@@ -1,0 +1,36 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "license": "MIT",
+  "module": "./index.ts",
+  "type": "module",
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prebuild": "pnpm run generate",
+    "predev": "pnpm run generate",
+    "format": "npx prisma format --schema=./schema"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./edge": "./edge.ts",
+    "./client": "./client.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "@types/pg": "^8.16.0",
+    "prisma": "^7.3.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/adapter-neon": "^7.3.0",
+    "@prisma/client": "^7.2.0",
+    "dotenv": "^16.6.1"
+  }
+}

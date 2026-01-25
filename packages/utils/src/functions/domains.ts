@@ -1,0 +1,1 @@
+export const validSlugRegex = new RegExp("^[a-zA-Z0-9\\-]+$");

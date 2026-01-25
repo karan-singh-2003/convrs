@@ -1,0 +1,1 @@
+export const OG_AVATAR_URL = "https://api.acme.co/og/avatar/";

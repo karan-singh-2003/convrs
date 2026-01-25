@@ -1,0 +1,11 @@
+import { PropsWithChildren } from "react";
+import SignedInHint from "./signed-in-hint";
+
+export default function Layout({ children }: PropsWithChildren) {
+  return (
+    <>
+      {children}
+      <SignedInHint></SignedInHint>
+    </>
+  );
+}
