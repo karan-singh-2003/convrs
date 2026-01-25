@@ -1,7 +1,22 @@
 import { NextRequest } from "next/server";
 import { parse } from "@/lib/middlewarre/utils/parse";
-import { APP_HOSTNAMES, API_HOSTNAMES } from "@repo/utils";
 import { AppMiddleware } from "./lib/middlewarre/app";
+
+// Edge-compatible constants (inlined to avoid importing tailwind-merge)
+const APP_HOSTNAMES = new Set([
+  `app.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+  `preview.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+  "localhost:8888",
+  "localhost",
+]);
+
+const API_HOSTNAMES = new Set([
+  `api.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+  `api-staging.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+  "api.localhost:8888",
+  "api.localhost",
+]);
+
 export const config = {
   matcher: [
     /*
