@@ -52,6 +52,8 @@ const nextConfig = {
     },
   },
 
+  turbopack: {},
+
   webpack: (config, { webpack, isServer }) => {
     if (isServer) {
       config.plugins.push(

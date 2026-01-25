@@ -11,6 +11,8 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import ConfirmEmailChangePageClient from "./page-client";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ token: string }>;
   searchParams: Promise<{ cancel?: string }>;
