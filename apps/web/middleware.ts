@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { parse } from "@/lib/middlewarre/utils/parse";
 import { AppMiddleware } from "./lib/middlewarre/app";
 
-// Edge-compatible constants (inlined to avoid importing tailwind-merge)
+// Inlined to avoid importing @repo/utils (which has tailwind-merge, not edge-compatible)
 const APP_HOSTNAMES = new Set([
   `app.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
   `preview.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
@@ -16,7 +16,6 @@ const API_HOSTNAMES = new Set([
   "api.localhost:8888",
   "api.localhost",
 ]);
-
 export const config = {
   matcher: [
     /*
