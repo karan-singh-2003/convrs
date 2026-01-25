@@ -1,6 +1,6 @@
 import { onboardingStepCache } from "@/lib/api/workspaces/onboarding-step-cache";
 import { withSession } from "@/lib/auth/session";
-import { prisma } from "@repo/db/index";
+import { prisma } from "@repo/db";
 
 export const POST = withSession(async ({ session, params }) => {
   const { idOrSlug: slug } = params;

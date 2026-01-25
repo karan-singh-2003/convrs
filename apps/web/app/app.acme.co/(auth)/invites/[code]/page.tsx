@@ -4,12 +4,12 @@ import { getSession } from "@/lib/auth/utils";
 import { redirect } from "next/dist/client/components/navigation";
 import { onboardingStepCache } from "@/lib/api/workspaces/onboarding-step-cache";
 import EmptyState from "@/ui/shared/empty-state";
-import { LinkBroken, Users6 } from "@repo/ui/index"
+import { LinkBroken, Users6 } from "@repo/ui";
 
 export default async function InvitePage(props: {
-  params: {
+  params: Promise<{
     code: string;
-  };
+  }>;
 }) {
   const params = await props.params;
   return (
@@ -47,8 +47,7 @@ async function VerifyInvite({ code }: { code: string }) {
         select: {
           users: {
             where: {
-              user: {
-              },
+              user: {},
             },
           },
         },
@@ -71,15 +70,15 @@ async function VerifyInvite({ code }: { code: string }) {
     redirect(`/${workspace.slug}`);
   }
 
-//   if (workspace._count.users >= workspace.userLimit) {
-//     return (
-//       <EmptyState
-//         icon={Users6}
-//         title="User Limit Reached"
-//         description="The workspace you are trying to join is currently full. Please contact the workspace owner for more information."
-//       />
-//     );
-//   }
+  //   if (workspace._count.users >= workspace.userLimit) {
+  //     return (
+  //       <EmptyState
+  //         icon={Users6}
+  //         title="User Limit Reached"
+  //         description="The workspace you are trying to join is currently full. Please contact the workspace owner for more information."
+  //       />
+  //     );
+  //   }
 
   await prisma.workspaceUsers.create({
     data: {

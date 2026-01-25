@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Github, Google } from "@repo/ui/index";
+import { Button, Github, Google } from "@repo/ui";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

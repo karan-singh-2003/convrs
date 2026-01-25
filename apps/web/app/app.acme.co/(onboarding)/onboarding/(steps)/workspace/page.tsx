@@ -1,10 +1,14 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Form } from "./form";
+
+export const dynamic = "force-dynamic";
 
 const page = () => {
   return (
     <div className=" flex items-center justify-center h-screen mx-auto">
-      <Form />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Form />
+      </Suspense>
     </div>
   );
 };

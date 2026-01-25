@@ -1,5 +1,8 @@
 import React from "react";
 import NextButton from "../next-button";
+
+export const dynamic = "force-dynamic";
+
 const page = () => {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center">

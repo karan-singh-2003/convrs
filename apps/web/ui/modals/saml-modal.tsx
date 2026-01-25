@@ -1,7 +1,7 @@
 import useSAML from "@/lib/swr/use-saml";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { SAMLProviderProps } from "@/lib/types";
-import { Button,  Modal, useMediaQuery } from "@repo/ui";
+import { Button, Modal, useMediaQuery } from "@repo/ui";
 import { SAML_PROVIDERS } from "@repo/utils";
 import { Check, Lock, UploadCloud } from "lucide-react";
 import {
@@ -29,7 +29,7 @@ function SAMLModal({
 
   const currentProvider = useMemo(
     () => SAML_PROVIDERS.find((p) => p.saml === selectedProvider),
-    [selectedProvider],
+    [selectedProvider]
   );
 
   const [file, setFile] = useState<File | null>(null);
@@ -91,13 +91,13 @@ function SAMLModal({
               id="provider"
               name="provider"
               required
-              value={selectedProvider}
+              value={selectedProvider || ""}
               onChange={(e) =>
                 setSelectedProvider(e.target.value as SAMLProviderProps["saml"])
               }
               className="mt-1 block w-full appearance-none rounded-md border border-neutral-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
             >
-              <option disabled selected>
+              <option value="" disabled>
                 Select a provider
               </option>
               {SAML_PROVIDERS.map((provider) => (
@@ -232,6 +232,6 @@ export function useSAMLModal() {
       setShowSAMLModal,
       SAMLModal: SAMLModalCallback,
     }),
-    [setShowSAMLModal, SAMLModalCallback],
+    [setShowSAMLModal, SAMLModalCallback]
   );
 }

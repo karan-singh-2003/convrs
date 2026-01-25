@@ -1,5 +1,8 @@
 import React from "react";
 import LoginForm from "@/ui/auth/login/login-form";
+
+export const dynamic = "force-dynamic";
+
 const LogIn = () => {
   return (
     <div className="max-w-sm mx-auto py-8">

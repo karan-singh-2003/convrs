@@ -6,7 +6,6 @@ import { WorkspaceInvite, Workspace, User } from "@prisma/client";
 import { AcceptInviteButton } from "./accept-invite-button";
 import { cn, OG_AVATAR_URL } from "@repo/utils";
 import { InviteConfetti } from "./invite-confetti";
-import { Avatar } from "@repo/ui/index";
 
 const MAX_TEAM_DISPLAY = 4;
 
@@ -136,15 +135,6 @@ function Hero({
           alt={user?.name || "Your avatar"}
           className="-ml-4 size-20 rotate-[15deg] rounded-full drop-shadow-md"
         />
-        {/* <div className="absolute -bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white p-0.5">
-          {isExpired ? (
-            <div className="rounded-full bg-neutral-200 p-1">
-              <CircleHalfDottedClock className="size-5 text-neutral-500" />
-            </div>
-          ) : (
-            <CircleCheckFill className="size-8 text-green-500" />
-          )}
-        </div> */}
       </div>
 
       <div

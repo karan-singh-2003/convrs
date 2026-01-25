@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Label, useMediaQuery, Button } from "@repo/ui/index";
+import { Input, Label, useMediaQuery, Button } from "@repo/ui";
 import * as z from "zod";
 import { requestPasswordResetSchema } from "@/lib/zod/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,7 +58,6 @@ export const ForgotPasswordForm = () => {
             placeholder="panic@thedis.com"
             error={errors.email ? errors.email.message : ""}
           />
-      
         </div>
         <Button
           type="submit"

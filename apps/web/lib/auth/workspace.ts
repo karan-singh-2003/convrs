@@ -34,11 +34,11 @@ export const withWorkspace = (
   }: { requiredPermission: PermissionAction; skipPermissionChecks?: boolean }
 ) => {
   return async (
-    req,
-    { params: initialParams }: { params: Record<string, string> }
+    req: Request,
+    context: { params: Promise<Record<string, string>> }
   ) => {
-    const params = (await initialParams) || {};
-    const searchParams = getSearchParams(req.url);
+    const params = await context.params;
+    const searchParams = getSearchParams(req.url) || {};
 
     try {
       let workspace: WorkspaceProps | null;

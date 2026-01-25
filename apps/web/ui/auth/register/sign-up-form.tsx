@@ -3,7 +3,7 @@
 import { AuthMethodsSeparator } from "../auth-methods-separator";
 import { SignUpEmail } from "./sign-up-email";
 import { SignUpOAuth } from "./sign-up-oauth";
-import { AnimatedSizeContainer } from "@repo/ui/animated-size-container";
+import { AnimatedSizeContainer } from "@repo/ui";
 
 export const SignUpForm = ({
   methods = ["email", "google", "github"],

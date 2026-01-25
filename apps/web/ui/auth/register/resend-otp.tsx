@@ -1,7 +1,7 @@
 "use client";
 
 import { sendOTPAction } from "@/lib/actions/send-otp";
-import { LoadingSpinner } from "@repo/ui/index";
+import { LoadingSpinner } from "@repo/ui";
 import { cn } from "@repo/utils";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";

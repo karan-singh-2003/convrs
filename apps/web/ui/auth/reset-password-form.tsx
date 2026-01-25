@@ -3,7 +3,7 @@ import { resetPasswordSchema } from "@/lib/zod/schemas/auth";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useParams, useRouter } from "next/navigation";
-import { Input, Button, Label } from "@repo/ui/index";
+import { Input, Button, Label } from "@repo/ui";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 import { PasswordResetRequestAction } from "@/lib/actions/request-password-update";

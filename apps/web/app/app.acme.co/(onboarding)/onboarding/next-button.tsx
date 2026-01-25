@@ -1,10 +1,13 @@
 "use client";
 import { OnboardingStep } from "@/lib/types";
-import { Button, ButtonProps } from "@repo/ui/button";
+import { Button, ButtonProps } from "@repo/ui";
 import React from "react";
 import { useOnboardingProgress } from "./use-onboarding-progress";
 
-const NextButton = ({ step , ...rest}: { step: OnboardingStep }&ButtonProps) => {
+const NextButton = ({
+  step,
+  ...rest
+}: { step: OnboardingStep } & ButtonProps) => {
   const { continueTo, isLoading, isSuccessful } = useOnboardingProgress();
   return (
     <Button

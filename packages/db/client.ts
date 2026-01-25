@@ -1,8 +1,10 @@
-export {
-  WorkspaceRole,
+// Export runtime values (enums, namespaces)
+export { Prisma, WorkspaceRole } from "@prisma/client";
+
+// Export types only
+export type {
   Workspace,
-  Prisma,
   User,
   WorkspaceInvite,
-  VerificationToken
+  VerificationToken,
 } from "@prisma/client";

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 import * as React from "react";
-import { Button } from "@repo/ui/button";
+import { Button } from "@repo/ui";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -37,6 +37,11 @@ export function AcceptInviteButton() {
   };
 
   return (
-    <Button text="Accept Invite" loading={isAccepting} onClick={acceptInvite} className="text-white" />
+    <Button
+      text="Accept Invite"
+      loading={isAccepting}
+      onClick={acceptInvite}
+      className="text-white"
+    />
   );
 }
