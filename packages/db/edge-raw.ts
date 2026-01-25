@@ -22,7 +22,7 @@ export const edgeDb = {
           )
         ) FILTER (WHERE wu."userId" IS NOT NULL) as "workspaceUsers"
       FROM "User" u
-      LEFT JOIN "WorkspaceUser" wu ON wu."userId" = u.id
+      LEFT JOIN "WorkspaceUsers" wu ON wu."userId" = u.id
       LEFT JOIN "Workspace" w ON w.id = wu."workspaceId"
       WHERE u.id = ${id}
       GROUP BY u.id
