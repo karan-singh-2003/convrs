@@ -2,6 +2,8 @@ import { jackson } from "@/lib/jackson";
 import { prisma } from "@repo/db";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   try {
     console.log("🔍 Getting Jackson instance...");

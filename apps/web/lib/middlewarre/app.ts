@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { onboardingStepCacheEdge, ONBOARDING_WINDOW_SECONDS } from "./utils/onboarding-cache-edge";
+import { onboardingStepCache } from "../api/workspaces/onboarding-step-cache";
 import { getDefaultWorkspace } from "./utils/get-default-workspace";
 import { getUserViaToken } from "./utils/get-user-via-token";
 import { hasPendingInvites } from "./utils/has-pending-invites";
 import { parse } from "./utils/parse";
+import { ONBOARDING_WINDOW_SECONDS } from "../api/workspaces/onboarding-step-cache";
 import { WorkspacesMiddleware } from "./workspace";
 
 export async function AppMiddleware(req: NextRequest) {
@@ -34,10 +35,6 @@ export async function AppMiddleware(req: NextRequest) {
       console.log("REDIRECTING /NEW PATH");
       console.error("REDIRECTING /NEW PATH");
 
-      /* Prevent users with workspace from accessing /onboarding/workspace */
-    } else if (path === "/onboarding/workspace" && (await getDefaultWorkspace(user))) {
-      return NextResponse.redirect(new URL("/", req.url));
-
       /* Onboarding redirects
 
         - User was created less than a day ago
@@ -52,9 +49,9 @@ export async function AppMiddleware(req: NextRequest) {
       !["/onboarding", "/account"].some((p) => path.startsWith(p)) &&
       !(await getDefaultWorkspace(user)) &&
       !(await hasPendingInvites({ req, user })) &&
-      (await onboardingStepCacheEdge.get({ userId: user.id })) !== "completed"
+      (await onboardingStepCache.get({ userId: user.id })) !== "completed"
     ) {
-      let step = await onboardingStepCacheEdge.get({ userId: user.id });
+      let step = await onboardingStepCache.get({ userId: user.id });
       if (!step) {
         return NextResponse.redirect(new URL("/onboarding", req.url));
       } else if (step === "completed") {

@@ -1,18 +1,20 @@
-import { PropsWithChildren } from "react";
-import SignedInHint from "./signed-in-hint";
-import { getSession } from "@/lib/auth/utils";
 import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/utils";
 import { prisma } from "@repo/db";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export default async function Layout({ children }: PropsWithChildren) {
+export default async function WorkspacesPage() {
   const session = await getSession();
 
   if (!session?.user?.id) {
     redirect("/login");
   }
+
+  const headersList = await headers();
+  const searchParams = headersList.get("x-search-params") || "";
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -29,17 +31,12 @@ export default async function Layout({ children }: PropsWithChildren) {
     redirect("/login");
   }
 
-  // If user already has a workspace, redirect to it
   const defaultWorkspace =
     user.defaultWorkspace || user.workspaceUsers[0]?.workspace?.slug;
+
   if (defaultWorkspace) {
-    redirect(`/${defaultWorkspace}`);
+    redirect(`/${defaultWorkspace}${searchParams}`);
   }
 
-  return (
-    <>
-      {children}
-      <SignedInHint></SignedInHint>
-    </>
-  );
+  redirect("/onboarding/workspace");
 }
