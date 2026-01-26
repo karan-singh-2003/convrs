@@ -15,10 +15,23 @@ export default function Middleware(req: NextRequest) {
     req.cookies.get("__Secure-next-auth.session-token") ||
     req.cookies.get("next-auth.session-token");
 
-  // If no session and trying to access protected routes, redirect to /login
-  const publicPaths = ["/login", "/register", "/forgot-password", "/auth"];
+  // Public paths that should never be rewritten
+  const publicPaths = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/auth",
+    "/api/",
+    "/_next/",
+    "/_proxy/",
+    "/favicon.ico",
+    "/sitemap.xml",
+    "/robots.txt",
+    "/manifest.webmanifest",
+  ];
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
+  // If no session and not on a public path, redirect to /login
   if (!session && !isPublicPath) {
     const loginUrl = new URL("/login", req.url);
     if (pathname !== "/") {
@@ -27,13 +40,18 @@ export default function Middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Rewrite all requests to /app.acme.co/* internally
-  const rewriteUrl = new URL(`/app.acme.co${pathname}${search}`, req.url);
-  const response = NextResponse.rewrite(rewriteUrl);
+  // Only rewrite /app/* and /app.acme.co/* to /app.acme.co/*
+  if (pathname.startsWith("/app") || pathname.startsWith("/app.acme.co")) {
+    const rewriteUrl = new URL(
+      `/app.acme.co${pathname.replace(/^\/app(\.acme\.co)?/, "")}${search}`,
+      req.url
+    );
+    const response = NextResponse.rewrite(rewriteUrl);
+    response.headers.set("x-pathname", pathname);
+    response.headers.set("x-search-params", search);
+    return response;
+  }
 
-  // Pass the original pathname and search params to the layouts via headers
-  response.headers.set("x-pathname", pathname);
-  response.headers.set("x-search-params", search);
-
-  return response;
+  // For all other public paths, just continue
+  return NextResponse.next();
 }
