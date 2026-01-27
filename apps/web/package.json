@@ -19,7 +19,6 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@boxyhq/saml-jackson": "1.52.1",
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/client": "^7.2.0",
     "@repo/db": "workspace:*",
     "@repo/email": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
@@ -45,7 +44,8 @@
     "react-hook-form": "^7.71.1",
     "sonner": "^1.7.3",
     "swr": "^2.3.8",
-    "zod": "^4.3.5"
+    "zod": "^4.3.5",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^7.3.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",

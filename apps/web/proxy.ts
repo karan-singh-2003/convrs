@@ -25,4 +25,5 @@ export default async function Middleware(req:NextRequest) {
     if(API_HOSTNAMES.has(domain)){
         // handle api routes here
     }
+    
 }

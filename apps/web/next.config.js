@@ -41,6 +41,7 @@ const nextConfig = {
   },
 
   experimental: {
+    serverComponentsExternalPackages: ["@prisma/client"],
     optimizePackageImports: [
       "@repo/email",
       "@repo/ui",
