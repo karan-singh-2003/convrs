@@ -1,14 +1,16 @@
-import React from "react";
+import React, { Suspense } from "react";
 import NextButton from "../next-button";
 
 export const dynamic = "force-dynamic";
 
 const page = () => {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center">
-      Welcome to the onboarding welcome page
-      <NextButton step="workspace" text="Next" />
-    </div>
+    <Suspense fallback={<div>Loading</div>}>
+      <div className="relative flex min-h-screen flex-col items-center justify-center">
+        Welcome to the onboarding welcome page
+        <NextButton step="workspace" text="Next" />
+      </div>
+    </Suspense>
   );
 };
 

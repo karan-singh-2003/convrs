@@ -1,14 +1,12 @@
-import React from "react";
-import RegisterPageClient from "./page-client";
-
-export const dynamic = "force-dynamic";
+import React, { Suspense } from 'react'
+import RegisterPageClient from './page-client'
 
 const RegisterPage = () => {
   return (
-    <div>
+    <Suspense fallback={<div>Loading</div>}>
       <RegisterPageClient />
-    </div>
-  );
-};
+    </Suspense>
+  )
+}
 
 export default RegisterPage;

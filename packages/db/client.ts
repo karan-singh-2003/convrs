@@ -1,7 +1,4 @@
-// Export runtime values (enums, namespaces)
-export { Prisma, WorkspaceRole } from "@prisma/client";
-
-// Export types only
+export { WorkspaceRole,  Prisma } from "@prisma/client";
 export type {
   Workspace,
   User,
