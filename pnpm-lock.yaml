@@ -19,7 +19,7 @@ importers:
         version: 3.8.0
       prettier-plugin-organize-imports:
         specifier: ^3.2.4
-        version: 3.2.4(prettier@3.8.0)(typescript@5.9.3)
+        version: 3.2.4(prettier@3.8.0)(typescript@5.9.2)
       prettier-plugin-tailwindcss:
         specifier: ^0.6.0
         version: 0.6.0(prettier-plugin-organize-imports@3.2.4)(prettier@3.8.0)
@@ -38,9 +38,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1)
-      '@prisma/client':
-        specifier: ^7.2.0
-        version: 7.3.0(prisma@7.3.0)(typescript@5.9.2)
+      '@prisma/nextjs-monorepo-workaround-plugin':
+        specifier: ^7.3.0
+        version: 7.3.0
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -186,7 +186,7 @@ importers:
         version: 8.16.0
       prisma:
         specifier: ^7.3.0
-        version: 7.3.0(@types/react@19.2.9)(react-dom@19.2.3)(react@19.2.3)(typescript@5.9.2)
+        version: 7.3.0(@types/react@19.2.2)(react-dom@19.2.3)(react@19.2.3)(typescript@5.9.2)
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
@@ -2746,7 +2746,7 @@ packages:
         optional: true
     dependencies:
       '@prisma/client-runtime-utils': 7.3.0
-      prisma: 7.3.0(@types/react@19.2.9)(react-dom@19.2.3)(react@19.2.3)(typescript@5.9.2)
+      prisma: 7.3.0(@types/react@19.2.2)(react-dom@19.2.3)(react@19.2.3)(typescript@5.9.2)
       typescript: 5.9.2
     dev: false
 
@@ -2824,17 +2824,21 @@ packages:
     dependencies:
       '@prisma/debug': 7.3.0
 
+  /@prisma/nextjs-monorepo-workaround-plugin@7.3.0:
+    resolution: {integrity: sha512-6Qvce1fa78asGdzoseexupJswW45ZFYIcQ3NZ/PZn9TfBSHOsloT6udnZtIaqI6aa3HccxsTKXKK6I/ASM7hkw==}
+    dev: false
+
   /@prisma/query-plan-executor@7.2.0:
     resolution: {integrity: sha512-EOZmNzcV8uJ0mae3DhTsiHgoNCuu1J9mULQpGCh62zN3PxPTd+qI9tJvk5jOst8WHKQNwJWR3b39t0XvfBB0WQ==}
 
-  /@prisma/studio-core@0.13.1(@types/react@19.2.9)(react-dom@19.2.3)(react@19.2.3):
+  /@prisma/studio-core@0.13.1(@types/react@19.2.2)(react-dom@19.2.3)(react@19.2.3):
     resolution: {integrity: sha512-agdqaPEePRHcQ7CexEfkX1RvSH9uWDb6pXrZnhCRykhDFAV0/0P3d07WtfiY8hZWb7oRU4v+NkT4cGFHkQJIPg==}
     peerDependencies:
       '@types/react': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
     dependencies:
-      '@types/react': 19.2.9
+      '@types/react': 19.2.2
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
@@ -5109,11 +5113,6 @@ packages:
 
   /@types/react@19.2.2:
     resolution: {integrity: sha512-6mDvHUFSjyT2B2yeNx2nUgMxh9LtOWvkhIU3uePn2I2oyNymUAX1NIsdgviM4CH+JSrp2D2hsMvJOkxY+0wNRA==}
-    dependencies:
-      csstype: 3.2.3
-
-  /@types/react@19.2.9:
-    resolution: {integrity: sha512-Lpo8kgb/igvMIPeNV2rsYKTgaORYdO1XGVZ4Qz3akwOj0ySGYMPlQWa8BaLn0G63D1aSaAQ5ldR06wCpChQCjA==}
     dependencies:
       csstype: 3.2.3
 
@@ -10499,7 +10498,7 @@ packages:
     engines: {node: '>= 0.8.0'}
     dev: true
 
-  /prettier-plugin-organize-imports@3.2.4(prettier@3.8.0)(typescript@5.9.3):
+  /prettier-plugin-organize-imports@3.2.4(prettier@3.8.0)(typescript@5.9.2):
     resolution: {integrity: sha512-6m8WBhIp0dfwu0SkgfOxJqh+HpdyfqSSLfKKRZSFbDuEQXDDndb8fTpRWkUrX/uBenkex3MgnVk0J3b3Y5byog==}
     peerDependencies:
       '@volar/vue-language-plugin-pug': ^1.0.4
@@ -10513,7 +10512,7 @@ packages:
         optional: true
     dependencies:
       prettier: 3.8.0
-      typescript: 5.9.3
+      typescript: 5.9.2
     dev: true
 
   /prettier-plugin-tailwindcss@0.6.0(prettier-plugin-organize-imports@3.2.4)(prettier@3.8.0):
@@ -10569,7 +10568,7 @@ packages:
         optional: true
     dependencies:
       prettier: 3.8.0
-      prettier-plugin-organize-imports: 3.2.4(prettier@3.8.0)(typescript@5.9.3)
+      prettier-plugin-organize-imports: 3.2.4(prettier@3.8.0)(typescript@5.9.2)
     dev: true
 
   /prettier@3.8.0:
@@ -10581,7 +10580,7 @@ packages:
     resolution: {integrity: sha512-WuxUnVtlWL1OfZFQFuqvnvs6MiAGk9UNsBostyBOB0Is9wb5uRESevA6rnl/rkksXaGX3GzZhPup5d6Vp1nFew==}
     dev: false
 
-  /prisma@7.3.0(@types/react@19.2.9)(react-dom@19.2.3)(react@19.2.3)(typescript@5.9.2):
+  /prisma@7.3.0(@types/react@19.2.2)(react-dom@19.2.3)(react@19.2.3)(typescript@5.9.2):
     resolution: {integrity: sha512-ApYSOLHfMN8WftJA+vL6XwAPOh/aZ0BgUyyKPwUFgjARmG6EBI9LzDPf6SWULQMSAxydV9qn5gLj037nPNlg2w==}
     engines: {node: ^20.19 || ^22.12 || >=24.0}
     hasBin: true
@@ -10598,7 +10597,7 @@ packages:
       '@prisma/config': 7.3.0
       '@prisma/dev': 0.20.0(typescript@5.9.2)
       '@prisma/engines': 7.3.0
-      '@prisma/studio-core': 0.13.1(@types/react@19.2.9)(react-dom@19.2.3)(react@19.2.3)
+      '@prisma/studio-core': 0.13.1(@types/react@19.2.2)(react-dom@19.2.3)(react@19.2.3)
       mysql2: 3.15.3
       postgres: 3.4.7
       typescript: 5.9.2
@@ -12339,12 +12338,6 @@ packages:
     resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
     hasBin: true
-
-  /typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-    dev: true
 
   /uint8array-extras@1.5.0:
     resolution: {integrity: sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A==}
