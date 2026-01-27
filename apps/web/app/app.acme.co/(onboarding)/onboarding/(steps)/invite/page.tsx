@@ -1,12 +1,10 @@
-import React from "react";
+import { Suspense } from "react";
 import { Form } from "./form";
 
-const page = () => {
+export default function Page() {
   return (
-    <div>
+    <Suspense fallback={<div>Loading</div>}>
       <Form />
-    </div>
+    </Suspense>
   );
-};
-
-export default page;
+}

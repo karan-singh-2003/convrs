@@ -1,7 +1,7 @@
 "use client";
 
 import { OnboardingStep } from "@/lib/types";
-import { Button } from "@repo/ui/button";
+import { Button } from "@repo/ui";
 import { useOnboardingProgress } from "./use-onboarding-progress";
 import React from "react";
 

@@ -6,7 +6,6 @@ import { WorkspaceInvite, Workspace, User } from "@prisma/client";
 import { AcceptInviteButton } from "./accept-invite-button";
 import { cn, OG_AVATAR_URL } from "@repo/utils";
 import { InviteConfetti } from "./invite-confetti";
-import { Avatar } from "@repo/ui/index";
 
 const MAX_TEAM_DISPLAY = 4;
 

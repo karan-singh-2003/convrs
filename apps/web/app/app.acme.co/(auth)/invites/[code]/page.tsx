@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth/utils";
 import { redirect } from "next/dist/client/components/navigation";
 import { onboardingStepCache } from "@/lib/api/workspaces/onboarding-step-cache";
 import EmptyState from "@/ui/shared/empty-state";
-import { LinkBroken, Users6 } from "@repo/ui/index"
+import { LinkBroken, Users6 } from "@repo/ui"
 
 export default async function InvitePage(props: {
   params: {

@@ -1,12 +1,12 @@
-import React from "react";
+import { Suspense } from "react";
 import { Form } from "./form";
 
-const page = () => {
+export default function Page() {
   return (
-    <div className=" flex items-center justify-center h-screen mx-auto">
-      <Form />
-    </div>
+    <Suspense fallback={<div>Loading…</div>}>
+      <div className="flex items-center justify-center h-screen mx-auto">
+        <Form />
+      </div>
+    </Suspense>
   );
-};
-
-export default page;
+}

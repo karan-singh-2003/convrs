@@ -1,6 +1,6 @@
 'use client';
 import * as React from "react";
-import { Button } from "@repo/ui/button";
+import { Button } from "@repo/ui";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";

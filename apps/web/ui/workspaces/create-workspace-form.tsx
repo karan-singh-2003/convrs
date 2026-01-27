@@ -1,10 +1,10 @@
 "use client";
-import { Input, useMediaQuery, Button, FileUpload } from "@repo/ui/index";
+import { Input, useMediaQuery, Button, FileUpload } from "@repo/ui";
 import { useForm, Controller } from "react-hook-form";
-import { Label } from "@repo/ui/index";
+import { Label } from "@repo/ui";
 import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircleFill } from "@repo/ui/index";
+import { AlertCircleFill } from "@repo/ui";
 import { cn } from "@repo/utils";
 import { createWorkspaceSchema } from "@/lib/zod/schemas/workspaceSchema";
 import { toast } from "sonner";

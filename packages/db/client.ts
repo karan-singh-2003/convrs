@@ -1,8 +1,7 @@
-export {
-  WorkspaceRole,
+export { WorkspaceRole,  Prisma } from "@prisma/client";
+export type {
   Workspace,
-  Prisma,
   User,
   WorkspaceInvite,
-  VerificationToken
+  VerificationToken,
 } from "@prisma/client";

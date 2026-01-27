@@ -7,6 +7,7 @@ import {
 import { prisma } from "@repo/db";
 import { getSearchParams } from "@repo/utils";
 import { normalizeWorkspaceId } from "../api/workspaces/workspace-id";
+import { NextRequest } from "next/server";
 
 interface withWorkspaceHandler {
   ({
@@ -17,7 +18,7 @@ interface withWorkspaceHandler {
     workspace,
     permission,
   }: {
-    req: Request;
+    req: NextRequest;
     session: Session;
     params: Record<string, string>;
     searchParams: Record<string, string>;
@@ -34,10 +35,10 @@ export const withWorkspace = (
   }: { requiredPermission: PermissionAction; skipPermissionChecks?: boolean }
 ) => {
   return async (
-    req,
-    { params: initialParams }: { params: Record<string, string> }
-  ) => {
-    const params = (await initialParams) || {};
+    req: NextRequest,
+   context: { params: Promise<{ idOrSlug: string }> }
+  ) : Promise<Response> => {
+    const params = ( await context.params) || {};
     const searchParams = getSearchParams(req.url);
 
     try {

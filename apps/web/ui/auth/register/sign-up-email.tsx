@@ -1,11 +1,11 @@
 "use client";
 
-import { Input,Button } from "@repo/ui/index";
+import { Input,Button } from "@repo/ui";
 import * as z from "zod";
 import { signUpSchema } from "@/lib/zod/schemas/auth";
 import { FormProvider, useForm } from "react-hook-form";
 import { useCallback, useState } from "react";
-import { useMediaQuery } from "@repo/ui/hooks/use-media-query";
+import { useMediaQuery } from "@repo/ui";
 import { useAction } from "next-safe-action/hooks";
 import { sendOTPAction } from "@/lib/actions/send-otp";
 import { toast } from "sonner";

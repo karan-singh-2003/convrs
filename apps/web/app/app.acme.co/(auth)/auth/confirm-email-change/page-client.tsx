@@ -1,6 +1,6 @@
 "use client";
 
-import { EmptyState, LoadingSpinner } from "@repo/ui/index";
+import { EmptyState, LoadingSpinner } from "@repo/ui";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";

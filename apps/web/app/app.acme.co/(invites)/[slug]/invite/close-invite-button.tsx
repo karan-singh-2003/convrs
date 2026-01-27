@@ -1,6 +1,6 @@
 "use client";
 import X from "@/ui/shared/icons/x";
-import { Button } from "@repo/ui/index";
+import { Button } from "@repo/ui";
 import Link from "next/link";
 
 export function CloseInviteButton({

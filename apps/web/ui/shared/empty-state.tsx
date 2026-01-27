@@ -1,6 +1,6 @@
 "use client";
 
-import { buttonVariants, EmptyState as EmptyStateBlock } from "@repo/ui/index";
+import { buttonVariants, EmptyState as EmptyStateBlock } from "@repo/ui";
 import { cn } from "@repo/utils";
 import Link from "next/link";
 import { ComponentProps } from "react";

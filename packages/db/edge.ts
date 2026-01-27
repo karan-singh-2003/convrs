@@ -1,6 +1,3 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import {neon} from "@neondatabase/serverless"
 
-export const prismaEdge = new PrismaClient({
-  adapter: new PrismaNeon({ connectionString: process.env.DATABASE_URL }),
-});
+export const sql = neon(process.env.DATABASE_URL!);

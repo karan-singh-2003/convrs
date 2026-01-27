@@ -1,6 +1,10 @@
 import { UserProps } from "@/lib/types";
-import { prismaEdge } from "@repo/db/edge";
+import { sql } from "@repo/db/edge";
 import { NextRequest } from "next/server";
+
+type PendingInviteCountRow = {
+  count: number;
+};
 
 export async function hasPendingInvites({
   req,
@@ -9,7 +13,7 @@ export async function hasPendingInvites({
   req: NextRequest;
   user: UserProps;
 }) {
-  console.log("Checking for pending invites for user:", user.email);
+  // Fast path: invite token or invite route
   if (
     req.nextUrl.searchParams.get("invite") ||
     req.nextUrl.pathname.startsWith("/invites/")
@@ -17,14 +21,14 @@ export async function hasPendingInvites({
     return true;
   }
 
-  const pendingInvites = await prismaEdge.workspaceInvite.count({
-    where: {
-      email: user.email,
-      expires: {
-        gte: new Date(),
-      },
-    },
-  });
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM workspace_invites
+    WHERE email = ${user.email}
+      AND expires_at >= NOW()
+  `;
 
-  return pendingInvites > 0;
+  const row = rows[0] as PendingInviteCountRow | undefined;
+
+  return (row?.count ?? 0) > 0;
 }

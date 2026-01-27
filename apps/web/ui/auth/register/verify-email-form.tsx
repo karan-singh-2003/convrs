@@ -1,7 +1,7 @@
 "use client";
 
 import { createUserAccountAction } from "@/lib/actions/create-user-account";
-import { AnimatedSizeContainer, Button, useMediaQuery } from "@repo/ui/index";
+import { AnimatedSizeContainer, Button, useMediaQuery } from "@repo/ui";
 import { cn } from "@repo/utils";
 import { OTPInput } from "input-otp";
 import { signIn } from "next-auth/react";

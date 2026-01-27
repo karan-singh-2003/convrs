@@ -1,6 +1,6 @@
-import { WorkspaceRole } from "@repo/db/generated/prisma/client";
+import { WorkspaceRole } from "@repo/db/client";
 import { useFieldArray, useForm } from "react-hook-form";
-import { Input, useMediaQuery, Button } from "@repo/ui/index";
+import { Input, useMediaQuery, Button } from "@repo/ui";
 import { Plus, Trash } from "lucide-react";
 import { pluralize } from "@repo/utils";
 import useWorkspace from "@/lib/swr/use-workspace";

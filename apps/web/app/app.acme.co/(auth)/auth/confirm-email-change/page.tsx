@@ -5,7 +5,7 @@ import { sendEmail } from "@repo/email";
 import EmailUpdated from "@repo/email/templates/email-updated";
 import { prisma } from "@repo/db";
 import { User, VerificationToken } from "@repo/db/client";
-import { InputPassword, LoadingSpinner } from "@repo/ui/index";
+import { InputPassword, LoadingSpinner } from "@repo/ui";
 import { waitUntil } from "@vercel/functions";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button } from "@repo/ui/button";
+import { Button } from "@repo/ui";
 import { signOut, useSession } from "next-auth/react";
 const SignedInHint = () => {
   const { data: session } = useSession();
