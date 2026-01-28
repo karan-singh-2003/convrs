@@ -38,6 +38,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1)
+      '@prisma/client':
+        specifier: ^7.3.0
+        version: 7.3.0(prisma@7.3.0)(typescript@5.9.2)
       '@prisma/nextjs-monorepo-workaround-plugin':
         specifier: ^7.3.0
         version: 7.3.0

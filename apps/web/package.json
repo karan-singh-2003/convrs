@@ -16,6 +16,7 @@
     "prisma:format": "dotenv-flow -e .env -- pnpm --filter=@repo/db format"
   },
   "dependencies": {
+    "@prisma/client": "^7.3.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@boxyhq/saml-jackson": "1.52.1",
     "@hookform/resolvers": "^5.2.2",
