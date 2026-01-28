@@ -19,7 +19,6 @@ export default async function Middleware(req: NextRequest) {
 
   // for app
   if (APP_HOSTNAMES.has(domain)) {
-    console.log("APP MIDDLEWARE HANDLING PATH:", path);
     return AppMiddleware(req);
   }
 

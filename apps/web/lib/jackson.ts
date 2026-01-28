@@ -7,7 +7,7 @@ import type {
 import samlJackson from "@boxyhq/saml-jackson";
 import { APP_DOMAIN_WITH_NGROK } from "@repo/utils";
 
-export const samlAudience = "https://5381b7389b9a.ngrok-free.app";
+export const samlAudience = "https://saml.boilercode.dev";
 
 const opts: JacksonOption = {
   externalUrl:

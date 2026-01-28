@@ -11,7 +11,6 @@ export async function AppMiddleware(req: NextRequest) {
   const { path, fullPath, searchParamsString } = parse(req);
 
   const user = await getUserViaToken(req);
-  console.log("APP MIDDLEWARE USER:", user?.id);
 
   // if there's no user and the path isn't /login or /register, redirect to /login
   if (
