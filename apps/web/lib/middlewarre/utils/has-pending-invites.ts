@@ -22,11 +22,11 @@ export async function hasPendingInvites({
   }
 
   const rows = await sql`
-    SELECT COUNT(*)::int AS count
-    FROM workspace_invites
-    WHERE email = ${user.email}
-      AND expires_at >= NOW()
-  `;
+  SELECT COUNT(*)::int AS count
+  FROM "WorkspaceInvite"
+  WHERE email = ${user.email}
+    AND expires >= NOW()
+`;
 
   const row = rows[0] as PendingInviteCountRow | undefined;
 

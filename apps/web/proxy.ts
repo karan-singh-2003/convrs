@@ -15,9 +15,7 @@ export const config = {
   ],
 };
 export default async function Middleware(req: NextRequest) {
-  console.log("MIDDLEWARE CALLED ON PATH:", req.nextUrl.pathname);
   const { domain, path, key, fullKey } = parse(req);
-  console.log("DOMAIN:", domain);
 
   // for app
   if (APP_HOSTNAMES.has(domain)) {

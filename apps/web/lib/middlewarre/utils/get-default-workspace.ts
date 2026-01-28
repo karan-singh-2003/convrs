@@ -12,24 +12,20 @@ export async function getDefaultWorkspace(user: UserProps) {
   }
 
   const rows = await sql`
-    SELECT
-      u.default_workspace,
-      w.slug AS workspace_slug
-    FROM users u
-    LEFT JOIN workspace_users wu
-      ON wu.user_id = u.id
-    LEFT JOIN workspaces w
-      ON w.id = wu.workspace_id
-    WHERE u.id = ${user.id}
-    ORDER BY wu.created_at ASC
-    LIMIT 1
-  `;
+  SELECT
+    u."defaultWorkspace",
+    w.slug AS workspace_slug
+  FROM "User" u
+  LEFT JOIN "WorkspaceUsers" wu
+    ON wu."userId" = u.id
+  LEFT JOIN "Workspace" w
+    ON w.id = wu."workspaceId"
+  WHERE u.id = ${user.id}
+  ORDER BY wu."createdAt" ASC
+  LIMIT 1
+`;
 
   const row = rows[0] as DefaultWorkspaceRow | undefined;
 
-  return (
-    row?.default_workspace ||
-    row?.workspace_slug ||
-    undefined
-  );
+  return row?.default_workspace || row?.workspace_slug || undefined;
 }
