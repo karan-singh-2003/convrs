@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { parse } from "@/lib/middlewarre/utils/parse";
 import { APP_HOSTNAMES, API_HOSTNAMES } from "@repo/utils";
 import { AppMiddleware } from "./lib/middlewarre/app";
+import { ApiMiddleware } from "./lib/middlewarre/api";
 export const config = {
   matcher: [
     /*
@@ -23,6 +24,6 @@ export default async function Middleware(req: NextRequest) {
   }
 
   if (API_HOSTNAMES.has(domain)) {
-    return AppMiddleware(req);
+    return ApiMiddleware(req);
   }
 }
