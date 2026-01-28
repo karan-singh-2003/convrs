@@ -1,41 +1,7 @@
 import { PropsWithChildren } from "react";
 import SignedInHint from "./signed-in-hint";
-import { getSession } from "@/lib/auth/utils";
-import { redirect } from "next/navigation";
-import { prisma } from "@repo/db";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
 export default async function Layout({ children }: PropsWithChildren) {
-  const session = await getSession();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      workspaceUsers: {
-        include: {
-          workspace: true,
-        },
-      },
-    },
-  });
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // If user already has a workspace, redirect to it
-  const defaultWorkspace =
-    user.defaultWorkspace || user.workspaceUsers[0]?.workspace?.slug;
-  if (defaultWorkspace) {
-    redirect(`/${defaultWorkspace}`);
-  }
-
   return (
     <>
       {children}
