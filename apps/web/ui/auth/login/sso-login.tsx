@@ -37,7 +37,7 @@ export const SSOSignIn = () => {
           setLastUsedAuthMethod("saml");
           await signIn("saml", undefined, {
             tenant: data.workspaceId,
-            product: "Dub",
+            product: "Boilercode",
           });
         });
       }}
