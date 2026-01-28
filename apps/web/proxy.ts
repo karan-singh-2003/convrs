@@ -15,6 +15,7 @@ export const config = {
     "/((?!api/|_next/|_proxy/|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)",
   ],
 };
+
 export default async function Middleware(req: NextRequest) {
   const { domain, path, key, fullKey } = parse(req);
 
@@ -22,7 +23,7 @@ export default async function Middleware(req: NextRequest) {
   if (APP_HOSTNAMES.has(domain)) {
     return AppMiddleware(req);
   }
-
+  // for api
   if (API_HOSTNAMES.has(domain)) {
     return ApiMiddleware(req);
   }

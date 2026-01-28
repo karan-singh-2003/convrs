@@ -96,5 +96,5 @@ export async function AppMiddleware(req: NextRequest) {
   }
 
   // otherwise, rewrite the path to /app
-  return NextResponse.rewrite(new URL(`/app.acme.co${fullPath}`, req.url));
+  return NextResponse.rewrite(new URL(`/app.boilercode.dev${fullPath}`, req.url));
 }

@@ -32,7 +32,7 @@ export const GET = withWorkspace(
 
     const connections = await apiController.getConnections({
       tenant: workspace.id,
-      product: "Local Nextjs SAML Test",
+      product: "Boilercode",
     });
 
     const response = {
@@ -80,7 +80,7 @@ export const POST = withWorkspace(
       defaultRedirectUrl: `${process.env.NEXTAUTH_URL}/auth/saml`,
       redirectUrl: process.env.NEXTAUTH_URL as string,
       tenant: workspace.id,
-      product: "Local Nextjs SAML Test",
+      product: "Boilercode",
     });
 
     await prisma.workspace.update({
