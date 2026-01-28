@@ -12,8 +12,6 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prebuild": "pnpm run generate",
-    "predev": "pnpm run generate",
     "format": "npx prisma format --schema=./schema"
   },
   "exports": {
