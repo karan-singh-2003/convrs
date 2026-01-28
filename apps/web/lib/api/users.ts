@@ -1,5 +1,5 @@
 import { WorkspaceProps } from "../types";
-import { WorkspaceRole } from "@prisma/client";
+import { WorkspaceRole } from "@repo/db/client";
 import { getSession, Session } from "../auth/utils";
 import { randomBytes } from "crypto";
 import { prisma } from "@repo/db";
