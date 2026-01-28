@@ -2,7 +2,7 @@ import { getSession } from "@/lib/auth/utils";
 import { prisma } from "@repo/db";
 import { redirect } from "next/navigation";
 import { CloseInviteButton } from "./close-invite-button";
-import { WorkspaceInvite, Workspace, User } from "@prisma/client";
+import { WorkspaceInvite, Workspace, User } from "@repo/db/client";
 import { AcceptInviteButton } from "./accept-invite-button";
 import { cn, OG_AVATAR_URL } from "@repo/utils";
 import { InviteConfetti } from "./invite-confetti";
