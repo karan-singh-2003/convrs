@@ -3,8 +3,6 @@ import * as jose from "jose";
 import { NextResponse } from "next/server";
 import * as dummy from "openid-client";
 
-export const runtime = "nodejs";
-
 export async function POST(req: Request) {
   console.log("token route");
 
