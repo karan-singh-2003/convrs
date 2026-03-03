@@ -1,0 +1,1 @@
+export const TWO_FA_COOKIE_NAME = "auth_2fa_token";

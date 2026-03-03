@@ -1,0 +1,19 @@
+{
+  "event": "workspace.updated",
+  "id": "evt_2NQKY7XBfN8F6JwH9Y8xLm4q",
+  "createdAt": "2026-02-11T14:22:30.456Z",
+  "data": {
+    "id": "ws_2NQKY5KBfN8F6JwH9Y8xLm3p",
+    "name": "My Updated Company Name",
+    "slug": "my-updated-company-name",
+    "logo": "https://pub-1234567890.r2.dev/workspaces/2NQKY5KBfN8F6JwH9Y8xLm3p/logo_xyz7890.png",
+    "inviteCode": "a1b2c3d4e5f6g7h8i9j0k1l2",
+    "ssoEnforcedAt": "2026-02-10T08:00:00.000Z",
+    "createdAt": "2026-02-11T10:30:45.000Z",
+    "users": [
+      {
+        "role": "owner"
+      }
+    ]
+  }
+}

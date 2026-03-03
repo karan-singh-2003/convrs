@@ -1,0 +1,56 @@
+enum WebhookReceiver {
+  user
+}
+
+model Webhook {
+  id                  String          @id @default(cuid())
+  workspaceId           String
+  installationId      String? // indicates which integration installation added the webhook
+  receiver            WebhookReceiver
+  name                String
+  url                 String          
+  secret              String
+  triggers            Json
+  consecutiveFailures Int             @default(0)
+  lastFailedAt        DateTime?
+  disabledAt          DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  workspace              Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  links                LinkWebhook[]
+  events               WebhookEvent[]
+
+  @@index(workspaceId)
+  @@index(installationId)
+}
+
+model LinkWebhook {
+  id        String @id @default(cuid())
+  linkId    String
+  webhookId String
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([linkId, webhookId])
+  @@index(webhookId)
+}
+
+model WebhookEvent {
+  id           String   @id @default(cuid())
+  eventId      String   @unique // evt_xxx format
+  webhookId    String
+  messageId    String   // QStash message ID
+  event        String   // workspace.created, etc.
+  url          String
+  httpStatus   Int
+  requestBody  String   @db.Text
+  responseBody String   @db.Text
+  timestamp    DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index(webhookId)
+  @@index(timestamp)
+}

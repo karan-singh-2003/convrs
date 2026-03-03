@@ -27,7 +27,7 @@ export const SignUpOAuth = ({
     <>
       {methods.includes("google") && (
         <Button
-          variant="secondary"
+          variant="auth"
           text="Continue with Google"
           onClick={() => {
             setClickedGoogle(true);
@@ -36,12 +36,11 @@ export const SignUpOAuth = ({
             });
           }}
           loading={clickedGoogle}
-          icon={<Google className="h-[17px] w-[17px]" />}
         />
       )}
       {methods.includes("github") && (
         <Button
-          variant="secondary"
+          variant="auth"
           text="Continue with GitHub"
           onClick={() => {
             setClickedGithub(true);
@@ -50,7 +49,6 @@ export const SignUpOAuth = ({
             });
           }}
           loading={clickedGithub}
-          icon={<Github className="h-[17px] w-[17px]" />}
         />
       )}
     </>

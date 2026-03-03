@@ -14,9 +14,11 @@ type FormData = {
 export const InviteTeammatesForm = ({
   onSuccess,
   invites = [],
+  className,
 }: {
   onSuccess: () => void;
   invites?: Invites[];
+  className?: string;
 }) => {
   const { isMobile } = useMediaQuery();
   const { id, slug, loading } = useWorkspace();
@@ -59,7 +61,7 @@ export const InviteTeammatesForm = ({
         }
         onSuccess();
       })}
-      className="flex flex-col w-[400px] mx-auto justify-center items-center gap-y-5 h-screen"
+      className={`flex flex-col  mx-auto justify-center items-center gap-y-5 ${className}`}
     >
       <div className="flex flex-col gap-2 w-full">
         {fields.map((field, index) => (

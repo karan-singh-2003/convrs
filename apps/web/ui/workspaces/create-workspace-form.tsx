@@ -6,7 +6,7 @@ import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircleFill } from "@repo/ui";
 import { cn } from "@repo/utils";
-import { createWorkspaceSchema } from "@/lib/zod/schemas/workspaceSchema";
+import { createWorkspaceSchema } from "@/lib/zod/schemas/workspaces";
 import { toast } from "sonner";
 
 type formData = z.infer<typeof createWorkspaceSchema>;

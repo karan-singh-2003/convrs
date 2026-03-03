@@ -19,6 +19,7 @@ import { EmailSignIn } from "./email-sign-in";
 import { GitHubButton } from "./github-button";
 import { GoogleButton } from "./google-button";
 import { SSOSignIn } from "./sso-login";
+import { Passkey } from "./passkey";
 
 export const authMethods = [
   "google",
@@ -26,6 +27,7 @@ export const authMethods = [
   "email",
   "saml",
   "password",
+  "passkey",
 ] as const;
 
 export type AuthMethod = (typeof authMethods)[number];
@@ -37,6 +39,11 @@ export const errorCodes = {
     "Account has been locked due to too many login attempts. Please contact support to unlock your account.",
   "too-many-login-attempts": "Too many login attempts. Please try again later.",
   "email-not-verified": "Please verify your email address.",
+  "2FA token required.": "Two-factor authentication required.",
+  "two-factor-required": "Two-factor authentication required.",
+  "invalid-2fa-code": "Invalid 2FA code. Please try again.",
+  "no-2fa-token": "2FA session expired. Please login again.",
+  "too-many-2fa-attempts": "Too many 2FA attempts. Please try again later.",
   "framer-account-linking-not-allowed":
     "It looks like you already have an account with us. Please sign in with your Framer account email instead.",
   "require-saml-sso":
@@ -131,6 +138,10 @@ export default function LoginForm({
     {
       method: "saml",
       component: SSOSignIn,
+    },
+    {
+      method: "passkey",
+      component: Passkey,
     },
   ];
 

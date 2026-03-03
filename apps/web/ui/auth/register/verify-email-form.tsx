@@ -35,7 +35,7 @@ export const VerifyEmailForm = () => {
         router.push("/onboarding");
       } else {
         toast.error(
-          "Failed to sign in with credentials. Please try again or contact support.",
+          "Failed to sign in with credentials. Please try again or contact support."
         );
       }
     },
@@ -69,16 +69,15 @@ export const VerifyEmailForm = () => {
             }}
             autoFocus={!isMobile}
             render={({ slots }) => (
-              <div className="flex w-full items-center justify-between">
+              <div className="flex gap-x-0.5 my-4 w-full items-center justify-between">
                 {slots.map(({ char, isActive, hasFakeCaret }, idx) => (
                   <div
                     key={idx}
                     className={cn(
-                      "relative flex h-14 w-12 items-center justify-center text-xl",
-                      "rounded-none border border-neutral-200 bg-white ring-0 transition-all",
-                      isActive &&
-                        "z-10 border border-neutral-800 ring-2 ring-neutral-200",
-                      isInvalidCode && "border-red-500 ring-red-200",
+                      "relative flex h-16 w-[70px] items-center justify-center text-xl",
+                      "rounded-none border-b-2 border-[#575757] bg-[#222222] ring-0 transition-all",
+                      isActive && "border-[#D3D3D3]",
+                      isInvalidCode && "border-[#981414]"
                     )}
                   >
                     {char}

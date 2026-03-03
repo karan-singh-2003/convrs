@@ -2,7 +2,7 @@ import { withSession } from "@/lib/auth/session";
 import {
   createWorkspaceSchema,
   WorkspaceSchema,
-} from "@/lib/zod/schemas/workspaceSchema";
+} from "@/lib/zod/schemas/workspaces";
 import { prisma } from "@repo/db";
 import { checkIfUserExists } from "@/lib/actions/auth/check-if-user-exists";
 import { waitUntil } from "@vercel/functions";
@@ -11,7 +11,43 @@ import { nanoid, R2_URL } from "@repo/utils";
 import { NextResponse } from "next/server";
 import { prefixWorkspaceId } from "@/lib/api/workspaces/workspace-id";
 import { storage } from "@/lib/storage";
-import {Prisma} from "@repo/db/client"
+import { Prisma } from "@repo/db/client";
+import { id } from "zod/v4/locales";
+
+// GET /api/workspaces - get all workspaces for the authenticated user
+export const GET = withSession(async ({ session }) => {
+  const workspaces = await prisma.workspace.findMany({
+    where: {
+      users: {
+        some: {
+          userId: session.user.id,
+        },
+      },
+    },
+    include: {
+      users: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          role: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return NextResponse.json(
+    workspaces.map((workspace) =>
+      WorkspaceSchema.parse({
+        ...workspace,
+        id: prefixWorkspaceId(workspace.id),
+      })
+    )
+  );
+});
 
 // POST /api/workspaces - create a new workspace
 export const POST = withSession(async ({ req, session }) => {
@@ -33,12 +69,14 @@ export const POST = withSession(async ({ req, session }) => {
     const workspace = await prisma.$transaction(
       async (tx) => {
         uploadImageUrl = logo
-          ? `${R2_URL}/workspace/${workspaceId}/logo_${nanoid(7)}`
+          ? `${R2_URL}/workspaces/${workspaceId}/logo_${nanoid(7)}`
           : undefined;
         return tx.workspace.create({
           data: {
             name,
             slug,
+            plan: "free",
+            billingCycleStart: new Date().getDate(),
             logo: uploadImageUrl,
             users: {
               create: {

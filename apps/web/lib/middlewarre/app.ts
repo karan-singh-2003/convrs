@@ -19,6 +19,7 @@ export async function AppMiddleware(req: NextRequest) {
     path !== "/forgot-password" &&
     path !== "/register" &&
     path !== "/auth/saml" &&
+    path !== "/two-factor-challenge" &&
     !path.startsWith("/auth/reset-password/")
   ) {
     return NextResponse.redirect(
@@ -96,5 +97,7 @@ export async function AppMiddleware(req: NextRequest) {
   }
 
   // otherwise, rewrite the path to /app
-  return NextResponse.rewrite(new URL(`/app.boilercode.dev${fullPath}`, req.url));
+  return NextResponse.rewrite(
+    new URL(`/app.boilercode.dev${fullPath}`, req.url)
+  );
 }

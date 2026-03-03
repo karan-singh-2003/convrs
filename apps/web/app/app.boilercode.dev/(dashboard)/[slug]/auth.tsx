@@ -7,7 +7,7 @@ export default function WorkspaceAuth({children}: {children: React.ReactNode}) {
   const { loading, error } = useWorkspace();
   console.log("error");
   if (loading) {
-    return <div>Loading...</div>;
+    return <div></div>;
   }
 
   if (error) {

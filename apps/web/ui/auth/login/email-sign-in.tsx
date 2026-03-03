@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { checkAccountExistsAction } from "@/lib/actions/check-account-exists";
 import { Button, Input, useMediaQuery } from "@repo/ui";
 import { cn } from "@repo/utils";
@@ -93,12 +93,17 @@ export const EmailSignIn = ({ next }: { next?: string }) => {
             callbackUrl: finalNext || "/workspaces",
             ...(password && { password }),
           });
-
+          console.log("response", response);
           if (!response) {
             return;
           }
 
           if (!response.ok && response.error) {
+            if (response.error === "2FA token required.") {
+              router.push("/two-factor-challenge");
+              return;
+            }
+
             if (errorCodes[response.error as keyof typeof errorCodes]) {
               toast.error(
                 errorCodes[response.error as keyof typeof errorCodes]
@@ -142,12 +147,9 @@ export const EmailSignIn = ({ next }: { next?: string }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               size={1}
-              className={cn(
-                "w-full h-10 text-[15px]",
-                {
-                  "pr-10": isPending,
-                }
-              )}
+              className={cn("w-full h-10 text-[15px]", {
+                "pr-10": isPending,
+              })}
             />
           </label>
         )}

@@ -5,15 +5,28 @@ model Workspace {
   logo             String?
   inviteCode       String? @unique
 
+  plan             String?  @default("free")
+  stripeId         String?  @unique
+  billingCycleStart Int
+  paymentFailedAt  DateTime?
+  invoicePrefix      String?  @unique
+
+  userLimit        Int      @default(1)
+
   ssoEmailDomain   String?   @unique
   ssoEnforcedAt    DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   usageLastChecked DateTime  @default(now())
 
+  webhookEnabled    Boolean   @default(false)
+
   users                 WorkspaceUsers[]
   invites               WorkspaceInvite[]
   sentEmails            SentEmail[]
+  invoices             Invoice[]
+  restrictedTokens      RestrictedToken[]
+  webhooks             Webhook[]
 
   @@index(usageLastChecked(sort: Asc))
 }

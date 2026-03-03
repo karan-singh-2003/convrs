@@ -36,9 +36,9 @@ export const withWorkspace = (
 ) => {
   return async (
     req: NextRequest,
-   context: { params: Promise<{ idOrSlug: string }> }
-  ) : Promise<Response> => {
-    const params = ( await context.params) || {};
+    context: { params: Promise<Record<string, string>> }
+  ): Promise<Response> => {
+    const params = (await context.params) || {};
     const searchParams = getSearchParams(req.url);
 
     try {

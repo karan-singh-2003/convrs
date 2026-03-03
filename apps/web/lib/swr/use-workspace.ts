@@ -1,3 +1,4 @@
+'use client'
 import { useParams, useSearchParams } from "next/navigation";
 import useSWR, { SWRConfiguration } from "swr";
 import { fetcher } from "@repo/utils";
@@ -22,7 +23,7 @@ export default function useWorkspace({
 
   return {
     ...workspace,
-    role: (workspace?.users && workspace.users[0]?.role) || null,
+    role: (workspace?.users && workspace.users[0]?.role) || "member",
     isOwner: workspace?.users && workspace.users[0]?.role === "owner",
     error,
     mutate,

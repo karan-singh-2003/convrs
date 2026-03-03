@@ -1,5 +1,7 @@
 import { createSafeActionClient } from "next-safe-action";
 import { getSession } from "../auth";
+import { prisma } from "@repo/db";
+import { normalizeWorkspaceId } from "../api/workspaces/workspace-id";
 
 export const actionClient = createSafeActionClient({
   handleServerError: async (e) => {
@@ -25,3 +27,43 @@ export const authUserActionClient = actionClient.use(async ({ next }) => {
     },
   });
 });
+
+export const authActionClient = actionClient.use(
+  async ({ next, clientInput }) => {
+    const session = await getSession();
+    if (!session) {
+      throw new Error("Unauthorized: Login required.");
+    }
+
+    let workspaceId = (clientInput as { workspaceId?: string })?.workspaceId;
+
+    if (!workspaceId) {
+      throw new Error("Workspace ID is required.");
+    }
+
+    workspaceId = normalizeWorkspaceId(workspaceId);
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: {
+        users: {
+          where: { userId: session.user.id },
+          select: {
+            role: true,
+            workspacePreferences: true,
+          },
+        },
+      },
+    });
+
+    return next({
+      ctx: {
+        user: session.user,
+        workspace: {
+          ...workspace,
+          role: workspace?.users[0]?.role,
+        },
+      },
+    });
+  }
+);

@@ -8,18 +8,18 @@ export const buttonVariants = cva("transition-all", {
   variants: {
     variant: {
       primary:
-        "border-black bg-black dark:bg-white dark:border-white text-content-inverted hover:bg-inverted hover:ring-4 hover:ring-border-subtle",
+        "border-black bg-black dark:bg-white dark:border-white text-content-inverted hover:bg-inverted hover:ring-0 e",
       secondary: cn(
-        "border-border-subtle bg-white dark:bg-black text-content-emphasis hover:bg-bg-muted focus-visible:border-border-emphasis outline-none",
+        "border-border-subtle bg-white dark:bg-black text-content-emphasis hover:bg-bg-muted  outline-none",
         "data-[state=open]:border-border-emphasis data-[state=open]:ring-4 data-[state=open]:ring-border-subtle"
       ),
       outline: "border-transparent text-content-default hover:bg-bg-subtle",
       success:
         "border-blue-500 bg-blue-500 text-white hover:bg-blue-600 hover:ring-4 hover:ring-blue-100",
-      danger:
-        "border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100",
+      danger: " bg-[#BC2D2D] text-white hover:bg-[#DD3C3C] ",
       "danger-outline":
         "border-transparent bg-white text-red-500 hover:bg-red-600 hover:text-white",
+      auth: "rounded-none font-medium border border-[#2a2a2a] bg-[#1a1a1a] text-white w-full hover:bg-[#222222] hover:border-[#333333]",
     },
   },
   defaultVariants: {
@@ -106,7 +106,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         // if onClick is passed, it's a "button" type, otherwise it's being used in a form, hence "submit"
         type={props.onClick ? "button" : "submit"}
         className={cn(
-          "group flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-none border px-4 text-[15px]",
+          "group flex h-10 w-full items-center focus:outline-none focus-visible:ring-4 focus-visible:ring-border-subtle  justify-center gap-2 whitespace-nowrap rounded-none px-4 text-[15px]",
           props.disabled || loading
             ? "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 outline-none"
             : buttonVariants({ variant }),

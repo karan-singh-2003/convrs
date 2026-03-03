@@ -1,0 +1,146 @@
+import { getSession, hashToken } from "@/lib/auth";
+import { redis } from "@/lib/upstash";
+import EmptyState from "@/ui/shared/empty-state";
+import { sendEmail } from "@repo/email";
+import EmailUpdated from "@repo/email/templates/email-updated";
+import { prisma } from "@repo/db";
+import { User, VerificationToken } from "@repo/db/client";
+import { InputPassword, LoadingSpinner } from "@repo/ui";
+import { waitUntil } from "@vercel/functions";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import ConfirmEmailChangePageClient from "./page-client";
+
+export const dynamic = "force-dynamic";
+
+interface PageProps {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ cancel?: string }>;
+}
+
+export default async function ConfirmEmailChangePage(props: PageProps) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-6 text-center">
+      <Suspense
+        fallback={
+          <EmptyState
+            icon={LoadingSpinner}
+            title="Verifying Email Change"
+            description="Verifying your email change request. This might take a few seconds..."
+          />
+        }
+      >
+        <VerifyEmailChange {...props} />
+      </Suspense>
+    </div>
+  );
+}
+
+const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
+  const { token } = await params;
+  console.log(
+    "Verifying email change with hash token:",
+    await hashToken(token, { secret: true })
+  );
+  const tokenFound = await prisma.verificationToken.findUnique({
+    where: {
+      token: await hashToken(token, { secret: true }),
+    },
+  });
+
+  console.log("tokenFound", tokenFound);
+
+  if (!tokenFound || tokenFound.expires < new Date()) {
+    return (
+      <EmptyState
+        icon={InputPassword}
+        title="Invalid Token"
+        description="This token is invalid or expired. Please request a new one."
+      />
+    );
+  }
+
+  // Cancel the email change request (?cancel=true)
+  const { cancel } = await searchParams;
+
+  if (cancel && cancel === "true") {
+    await deleteRequest(tokenFound);
+
+    return (
+      <EmptyState
+        icon={InputPassword}
+        title="Email Change Request Canceled"
+        description="Your email change request has been canceled. No changes have been made to your account. You can close this page."
+      />
+    );
+  }
+
+  // Process the email change request
+  const session = await getSession();
+
+  if (!session) {
+    redirect(`/login?next=/auth/confirm-email-change/${token}`);
+  }
+
+  const { id: userId } = session.user;
+
+  const identifier = userId;
+
+  const data = await redis.get<{
+    email: string;
+    newEmail: string;
+  }>(`email-change-request:user:${identifier}`);
+
+  console.log("Email change data from Redis:", data);
+  if (!data) {
+    return (
+      <EmptyState
+        icon={InputPassword}
+        title="Invalid Token"
+        description="This token is invalid. Please request a new one."
+      />
+    );
+  }
+
+  let user: User | null = null;
+
+  // Update the user email
+
+  user = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      email: data.newEmail,
+    },
+  });
+
+  waitUntil(
+    Promise.allSettled([
+      deleteRequest(tokenFound),
+
+      sendEmail({
+        subject: "Your email address has been changed",
+        to: data.email,
+        react: EmailUpdated({
+          oldEmail: data.email,
+          newEmail: data.newEmail,
+        }),
+      }),
+    ])
+  );
+
+  return <ConfirmEmailChangePageClient />;
+};
+
+const deleteRequest = async (tokenFound: VerificationToken) => {
+  await Promise.allSettled([
+    prisma.verificationToken.delete({
+      where: {
+        token: tokenFound.token,
+      },
+    }),
+
+    redis.del(`email-change-request:user:${tokenFound.identifier}`),
+  ]);
+};

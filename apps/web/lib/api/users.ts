@@ -16,9 +16,9 @@ export async function inviteUser({
   session,
 }: {
   email: string;
-  role: WorkspaceRole;
+  role?: WorkspaceRole;
   workspace: WorkspaceProps;
-  session: Session;
+  session?: Session;
 }) {
   const token = randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + TWO_WEEKS_IN_SECONDS * 1000);
