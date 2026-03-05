@@ -17,7 +17,7 @@ export const Passkey = ({ next }: { next?: string }) => {
     <div>
       <div className="relative">
         <Button
-          text="Continue with a passkey"
+          text="Passkey"
           variant="secondary"
           onClick={async () => {
             setClickedMethod("passkey");
@@ -34,6 +34,7 @@ export const Passkey = ({ next }: { next?: string }) => {
               console.error("Passkey authentication failed:", error);
             }
           }}
+          className="font-display text-base text-neutral-600 hover:text-neutral-700 bg-neutral-50  "
           loading={clickedMethod === "passkey"}
           disabled={clickedMethod && clickedMethod !== "passkey"}
         />
@@ -41,5 +42,3 @@ export const Passkey = ({ next }: { next?: string }) => {
     </div>
   );
 };
-
-

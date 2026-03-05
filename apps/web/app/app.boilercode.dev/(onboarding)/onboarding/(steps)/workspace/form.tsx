@@ -8,7 +8,7 @@ export function Form() {
   return (
     <CreateWorkspaceForm
       onSuccess={({ slug }) => {
-        continueTo("invite", { slug });
+        continueTo("billing", { slug });
       }}
     />
   );

@@ -21,5 +21,9 @@ export * from "./checkbox-unchecked";
 export * from "./plus";
 export * from "./circle-check";
 export * from "./circle-half-dotted-clock";
+export * from "./x-logo";
+export * from "./youtube";
+export * from "./reddit";
+export * from "./product-hunt";
 
 export type Icon = LucideIcon | ComponentType<SVGProps<SVGSVGElement>>;

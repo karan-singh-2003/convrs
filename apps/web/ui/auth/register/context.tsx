@@ -10,11 +10,10 @@ import React, {
 interface RegisterContextType {
   email: string;
   password : string;
-  lockEmail?: boolean;
+
   step: "signup" | "verify";
   setStep: (step: "signup" | "verify") => void;
   setPassword: (password: string) => void;
-  setLockEmail: (lock: boolean) => void;
   setEmail: (email: string) => void;
 }
 
@@ -32,7 +31,7 @@ export const RegisterProvider: React.FC<
 
   return (
     <RegisterContext.Provider
-      value={{ email, password, lockEmail, step, setStep, setEmail, setPassword, setLockEmail }}
+      value={{ email, password,  step, setStep, setEmail, setPassword }}
     >
       {children}
     </RegisterContext.Provider>

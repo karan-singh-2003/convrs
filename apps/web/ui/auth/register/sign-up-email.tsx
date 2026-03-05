@@ -1,6 +1,6 @@
 "use client";
 
-import { Input,Button } from "@repo/ui";
+import { Input, Button, Label } from "@repo/ui";
 import * as z from "zod";
 import { signUpSchema } from "@/lib/zod/schemas/auth";
 import { FormProvider, useForm } from "react-hook-form";
@@ -17,8 +17,7 @@ type SignUpProps = z.infer<typeof signUpSchema>;
 export const SignUpEmail = () => {
   const { isMobile } = useMediaQuery();
 
-  const [showPass, setShowPass] = useState(false);
-  const { setStep, setEmail, lockEmail,setPassword } = useRegisterContext();
+  const { setStep, setEmail, setPassword } = useRegisterContext();
 
   const form = useForm<SignUpProps>({
     resolver: zodResolver(signUpSchema),
@@ -53,51 +52,50 @@ export const SignUpEmail = () => {
 
   const onSubmit = useCallback(
     async (e: React.FormEvent) => {
-      const { email, password } = getValues();
-      if (!password) {
-        e.preventDefault();
-        e.stopPropagation();
-        setShowPass(true);
-        return;
-      }
       handleSubmit(async (data) => await executeAsync(data))(e);
     },
     [handleSubmit, executeAsync]
   );
   console.log(errors);
   return (
-    <form onSubmit={onSubmit}>
-      <div>
+    <form onSubmit={onSubmit} className="flex flex-col gap-2">
+      <div className="flex flex-col gap-y-1.5">
+        <Label
+          htmlFor="email"
+          className="text-sm font-medium font-display text-muted-foreground"
+        >
+          Email
+        </Label>
         <Input
           placeholder="panic@thedis.com"
           autoComplete="email"
-          readOnly={!errors.email && lockEmail}
           autoFocus={!isMobile}
           {...register("email")}
           error={errors.email?.message}
+          className="font-display text-[15.5px] text-neutral-600 hover:text-neutral-700 bg-neutral-50  "
         ></Input>
       </div>
 
-      {showPass && (
-        <>
-          <div>
-            <Input
-              type="password"
-              placeholder="Create a password"
-              autoComplete="new-password"
-              readOnly={!showPass}
-              autoFocus={!isMobile}
-              {...register("password")}
-              error={errors.password?.message}
-            ></Input>
-          
-          </div>
-        </>
-      )}
+      <div>
+        <Label
+          htmlFor="password"
+          className="text-sm font-medium font-display text-muted-foreground"
+        >
+          Password
+        </Label>
+        <Input
+          type="password"
+          placeholder="Create a password"
+          autoComplete="new-password"
+          autoFocus={!isMobile}
+          {...register("password")}
+          error={errors.password?.message}
+        ></Input>
+      </div>
 
       <Button
         text={isPending ? "Signing Up..." : "Sign Up"}
-        className="w-full mt-4 text-white"
+        className="w-full mt-4 text-white font-display"
         disabled={isPending}
         loading={isPending}
       />

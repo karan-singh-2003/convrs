@@ -64,8 +64,8 @@ export function CreateWorkspaceForm({
       })}
       className="w-[400px] space-y-4"
     >
-      <div>
-        <Label>Workspace Name</Label>
+      <div className="flex flex-col gap-y-2.5">
+        <Label className="font-display text-neutral-600">Workspace Name</Label>
         <Input
           {...register("name", {
             onChange: (e) => setValue("slug", e.target.value),
@@ -78,103 +78,75 @@ export function CreateWorkspaceForm({
         />
       </div>
       <div>
-        <label htmlFor="slug" className="flex items-center space-x-2">
-          <p className="block text-sm font-medium text-neutral-700">
-            Workspace slug
-          </p>
-        </label>
-        <div className="relative mt-2 flex rounded-md shadow-sm">
-          <span className="inline-flex items-center rounded-none border border-r-0 border-neutral-300 bg-neutral-50 px-5 text-neutral-500 sm:text-sm">
+        <Label className="font-display text-neutral-600">Workspace Slug</Label>
+
+        <div className="mt-2 flex min-w-0">
+          <span className="inline-flex shrink-0 items-center rounded-l-sm border border-r-0 border-neutral-300 bg-neutral-50 px-3 font-medium font-display text-neutral-500 sm:text-sm">
             app.{process.env.NEXT_PUBLIC_APP_DOMAIN}
           </span>
-          <input
+          <Input
             id="slug"
             type="text"
             autoComplete="off"
-            className={`${
-              errors.slug
-                ? "border-red-300 pr-10 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:border-neutral-500 focus:ring-neutral-500"
-            } block w-full rounded-r-none focus:outline-none sm:text-sm`}
             placeholder="acme"
+            error={errors.slug?.message}
+            className="flex-1 font-display min-w-0 [&_input]:rounded-l-none"
             {...register("slug")}
             onBlur={() => {
               fetch(`/api/workspaces/check-workspace-slug?slug=${slug}`).then(
                 async (res) => {
-                  if (res.status === 200) {
-                    const exists = await res.json();
-                    if (exists === 1)
-                      setError("slug", {
-                        message: `The slug "${slug}" is already in use.`,
-                      });
-                    else clearErrors("slug");
+                  if (res.status !== 200) return;
+                  const exists = await res.json();
+                  if (exists === 1) {
+                    setError("slug", {
+                      message: `"${slug}" is already taken.`,
+                    });
+                  } else {
+                    clearErrors("slug");
                   }
                 }
               );
             }}
-            aria-invalid="true"
           />
-          {errors.slug && (
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-              <AlertCircleFill
-                className="h-5 w-5 text-red-500"
-                aria-hidden="true"
-              />
-            </div>
-          )}
         </div>
-        {errors.slug ? (
-          <p
-            className="mt-1.5 text-xs font-medium text-red-600"
-            id="slug-error"
-          >
-            {errors.slug.message}
-          </p>
-        ) : (
-          <p className="text-content-subtle mt-1.5 text-xs"></p>
-        )}
       </div>
       <div>
-        <label>
-          <p className="block text-sm font-medium text-neutral-700">
-            Workspace logo
-          </p>
-          <div className="mt-1.5 flex items-center gap-5">
-            <Controller
-              control={control}
-              name="logo"
-              render={({ field }) => (
-                <FileUpload
-                  accept="images"
-                  className={cn(
-                    "size-20 rounded-full border border-neutral-300",
-                    errors.logo && "border-0 ring-2 ring-red-500"
-                  )}
-                  iconClassName="size-5"
-                  previewClassName="size-10 rounded-full"
-                  variant="plain"
-                  imageSrc={field.value as string | null | undefined}
-                  readFile
-                  onChange={({ src }) => field.onChange(src)}
-                  content={null}
-                  maxFileSizeMB={2}
-                  targetResolution={{ width: 160, height: 160 }}
-                />
-              )}
-            />
-            <div>
-              <p className="mt-1.5 text-[12px] font-medium text-neutral-500">
-                Recommended size: 160x160px
-              </p>
-            </div>
+        <Label className="font-display text-neutral-600">Workspace logo</Label>
+        <div className="mt-1.5 flex items-center gap-5">
+          <Controller
+            control={control}
+            name="logo"
+            render={({ field }) => (
+              <FileUpload
+                accept="images"
+                className={cn(
+                  "size-20 rounded-full border border-neutral-300",
+                  errors.logo && "border-0 ring-2 ring-red-500"
+                )}
+                iconClassName="size-5"
+                previewClassName="size-10 rounded-full"
+                variant="plain"
+                imageSrc={field.value as string | null | undefined}
+                readFile
+                onChange={({ src }) => field.onChange(src)}
+                content={null}
+                maxFileSizeMB={2}
+                targetResolution={{ width: 160, height: 160 }}
+              />
+            )}
+          />
+          <div>
+            <p className="mt-1.5 text-[12px] font-display font-medium text-neutral-500">
+              Recommended size: 160x160px
+            </p>
           </div>
-        </label>
+        </div>
       </div>
 
       <Button
         loading={isSubmitting || isSubmitSuccessful}
         text="Create workspace"
-        className="text-white"
+        className="text-white font-display"
       />
     </form>
   );

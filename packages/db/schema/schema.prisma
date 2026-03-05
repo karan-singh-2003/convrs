@@ -63,6 +63,17 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+
+  // Device & location tracking
+  deviceName   String?
+  deviceType   String?  // "desktop", "mobile", "tablet"
+  browser      String?
+  os           String?
+  ipAddress    String?
+  location     String?
+  lastActive   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

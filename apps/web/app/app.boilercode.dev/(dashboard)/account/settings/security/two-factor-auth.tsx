@@ -53,50 +53,35 @@ export const TwoFactorAuth = () => {
     <>
       <EnableTwoFactorAuthModal />
       <DisableTwoFactorAuthModal />
-      <div className="rounded-none border border-neutral-200 bg-white">
-        <div className="flex flex-col gap-2 border-b border-neutral-200 p-5 sm:p-10">
-          <h2 className="text-xl font-medium">Two-factor Authentication</h2>
-          <p className="pb-2 text-sm font-default text-neutral-500">
-            Once two-factor is enabled you will have to provide two methods of
-            authentication in order to sign in into your account.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-between gap-4 px-5 py-4 sm:px-10">
-          <div className="flex w-full items-center justify-between rounded-none border border-neutral-200 bg-white p-5">
-            <div>
-              <div className="font-semibold text-neutral-900">
-                Authenticator App (TOTP)
-              </div>
-              <div className="text-sm font-default text-neutral-500">
-                Generate codes using an app like Google Authenticator or Okta
-                Verify.
-              </div>
-            </div>
-
-            <Button
-              text={
-                loading
-                  ? "Loading..."
-                  : user?.twoFactorConfirmedAt
-                    ? "Disable Two-factor"
-                    : "Enable Two-factor"
-              }
-              variant={user?.twoFactorConfirmedAt ? "danger" : "primary"}
-              type="button"
-              className="ml-4 w-fit text-white"
-              loading={isEnabling}
-              disabled={loading}
-              onClick={async () => {
-                if (user?.twoFactorConfirmedAt) {
-                  setShowDisableTwoFactorAuthModal(true);
-                } else {
-                  await enable2FA();
-                }
-              }}
-            />
-          </div>
-        </div>
+      <div className="flex flex-col gap-y-1">
+        <h1 className="font-display text-base font-medium text-[#5C5C5C]">
+          Two Factor Authentication
+        </h1>
+        <h1 className="font-display text-sm  text-[#898989]">
+          Two-factor authentication (2FA) makes your account more secure by
+          adding an extra verification step when you log{" "}
+        </h1>
+        <Button
+          text={
+            loading
+              ? "Loading..."
+              : user?.twoFactorConfirmedAt
+                ? "Disable Two-factor"
+                : "Enable Two-factor"
+          }
+          variant={user?.twoFactorConfirmedAt ? "danger" : "primary"}
+          type="button"
+          className=" w-fit mt-2 h-fit py-1 text-[14px] font-display text-[#868282] bg-[#f0efef]"
+          loading={isEnabling}
+          disabled={loading}
+          onClick={async () => {
+            if (user?.twoFactorConfirmedAt) {
+              setShowDisableTwoFactorAuthModal(true);
+            } else {
+              await enable2FA();
+            }
+          }}
+        />
       </div>
     </>
   );

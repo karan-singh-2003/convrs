@@ -6,6 +6,7 @@ import { customerSubscriptionUpdated } from "./customer-subscription-updated";
 import { NextResponse } from "next/server";
 
 const relevantEvents = new Set([
+  "checkout.session.completed",
   "customer.subscription.deleted",
   "customer.subscription.updated",
   "customer.subscription.created",

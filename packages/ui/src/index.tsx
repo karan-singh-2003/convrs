@@ -18,6 +18,7 @@ export * from "./toggle-group";
 export * from "./radio-button";
 export * from "./tab-select";
 export * from "./select";
+export * from "./option-select";
 export * from "./command";
 export * from "./sheet";
 export * from "./tooltip";

@@ -74,10 +74,10 @@ export const VerifyEmailForm = () => {
                   <div
                     key={idx}
                     className={cn(
-                      "relative flex h-16 w-[70px] items-center justify-center text-xl",
-                      "rounded-none border-b-2 border-[#575757] bg-[#222222] ring-0 transition-all",
-                      isActive && "border-[#D3D3D3]",
-                      isInvalidCode && "border-[#981414]"
+                      "relative flex h-[72px] w-[77px] items-center justify-center font-display text-[24px]",
+                      "rounded-none border-b-[3px] border-[#E0E0E0] bg-neutral-100 ring-0 transition-all",
+                      isActive && "border-[#9E9E9E]",
+                      isInvalidCode && "border-[#c51d1d]"
                     )}
                   >
                     {char}
@@ -96,14 +96,14 @@ export const VerifyEmailForm = () => {
           />
           <AnimatedSizeContainer height>
             {isInvalidCode && (
-              <p className="pt-3 text-center text-xs font-medium text-red-500">
+              <p className="pt-3 text-center text-sm font-display font-medium text-red-500">
                 Invalid code. Please try again.
               </p>
             )}
           </AnimatedSizeContainer>
 
           <Button
-            className="mt-8"
+            className="mt-8 font-display w-full max-w-sm mx-auto"
             text={isPending ? "Verifying..." : "Continue"}
             type="submit"
             loading={isPending || isRedirecting}

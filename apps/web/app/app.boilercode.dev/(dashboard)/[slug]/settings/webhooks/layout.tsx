@@ -5,9 +5,5 @@ export default function WebhooksSettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <PageContent headerProps={{ title: "Webhooks" }}>
-      <PageWidthWrapper>{children}</PageWidthWrapper>
-    </PageContent>
-  );
+  return <PageWidthWrapper>{children}</PageWidthWrapper>;
 }

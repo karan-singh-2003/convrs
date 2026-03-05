@@ -8,6 +8,7 @@ import { UserDropdown } from "./user-dropdown";
 import { Area } from "./sidebar-nav";
 import Link from "next/link";
 import { NavButton } from "../page-content/nav-button";
+import path from "path";
 type SideNavContext = {
   isOpen: boolean;
   setIsOpen: Dispatch<React.SetStateAction<boolean>>;
@@ -39,6 +40,7 @@ export function MainNav({
     setIsOpen(false);
   }, [pathname]);
 
+  const hideAvatar = pathname.includes("/settings");
   return (
     <div className="min-h-screen md:grid md:grid-cols-[min-content_minmax(0,1fr)]">
       {/* Side nav backdrop */}
@@ -76,7 +78,7 @@ export function MainNav({
                 <Breadcrumbs />
               </div>
               {/* user avatar */}
-              <UserDropdown />
+              {!hideAvatar && <UserDropdown />}
             </div>
             {children}
           </SideNavContent.Provider>
@@ -96,7 +98,7 @@ function Breadcrumbs() {
   const filteredSegments = segments.slice(1);
 
   return (
-    <nav className="flex items-center text-[13px] font-default text-neutral-500">
+    <nav className="flex items-center text-[13.5px] font-default font-medium text-neutral-500">
       {filteredSegments.map((segment, idx) => {
         const isLast = idx === filteredSegments.length - 1;
 
@@ -110,14 +112,14 @@ function Breadcrumbs() {
               <>
                 <Link
                   href={href}
-                  className="hover:text-neutral-600 text-[13px] font-normal text-neutral-500 font-default"
+                  className="hover:text-neutral-600 text-[13.5px]  font-medium text-neutral-500 font-default"
                 >
                   {label}
                 </Link>
                 <span className="mx-2  text-neutral-400">&gt;</span>
               </>
             ) : (
-              <span className="text-neutral-700 text-[13px] font-normal  font-default ">
+              <span className="text-neutral-500 text-[13.5px] font-medium font-default ">
                 {label}
               </span>
             )}

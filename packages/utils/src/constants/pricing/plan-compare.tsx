@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Plans } from "./pricing";
+import { PLANS } from "./pricing";
 
 export const PRICING_PLAN_COMPARE_FEATURES: {
   category: string;
@@ -7,7 +7,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
   features: {
     text:
       | string
-      | ((d: { id: string; plan: (typeof Plans)[number] }) => ReactNode);
+      | ((d: { id: string; plan: (typeof PLANS)[number] }) => ReactNode);
     href?: string;
     check?:
       | boolean
@@ -17,6 +17,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro?: boolean;
           business?: boolean;
           advanced?: boolean;
+          enterprise?: boolean;
         };
   }[];
 }[] = [
@@ -32,7 +33,8 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
                   free: "1",
                   pro: "3",
                   business: "10",
-                  advanced: "Unlimited",
+                  advanced: "25",
+                  enterprise: "Unlimited",
                 }[id]
               }
             </strong>{" "}
@@ -49,7 +51,8 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
                   free: "1",
                   pro: "3",
                   business: "10",
-                  advanced: "Unlimited",
+                  advanced: "25",
+                  enterprise: "Unlimited",
                 }[id]
               }
             </strong>{" "}
@@ -78,6 +81,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "Custom domain",
       },
@@ -123,6 +127,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "Advanced collaboration tools",
       },
@@ -155,6 +160,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "SAML/SSO authentication",
       },
@@ -164,6 +170,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "Advanced security policies",
       },
@@ -196,7 +203,8 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
                   free: "5",
                   pro: "25",
                   business: "100",
-                  advanced: "Unlimited",
+                  advanced: "500",
+                  enterprise: "Unlimited",
                 }[id]
               }
             </strong>{" "}
@@ -210,6 +218,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "Custom integrations",
       },
@@ -228,6 +237,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
                   pro: "Email support",
                   business: "Priority support",
                   advanced: "24/7 priority support",
+                  enterprise: "Dedicated 24/7 support",
                 }[id]
               }
             </strong>
@@ -248,6 +258,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "Dedicated account manager",
       },
@@ -257,6 +268,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
           pro: false,
           business: false,
           advanced: true,
+          enterprise: true,
         },
         text: "Custom onboarding",
       },

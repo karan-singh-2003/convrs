@@ -47,23 +47,24 @@ export const ForgotPasswordForm = () => {
             await executeAsync(data);
           })(e);
         }}
-        className="space-y-2"
+        className="space-y-2.5"
       >
-        <div>
-          <Label htmlFor="email">Email Address</Label>
+        <div className="flex flex-col gap-y-2.5">
+          <Label htmlFor="email" className="font-display text-neutral-600">Email Address</Label>
           <Input
             id="email"
             autoFocus={!isMobile}
             {...register("email")}
             placeholder="panic@thedis.com"
             error={errors.email ? errors.email.message : ""}
+            className="font-display "
           />
         </div>
         <Button
           type="submit"
           text="Reset Password"
           disabled={isPending}
-          className="text-white"
+          className="text-white font-display"
         ></Button>
       </form>
     </div>

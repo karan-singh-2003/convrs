@@ -1,75 +1,59 @@
-'use client'
+"use client";
 
 import { cn } from "@repo/utils";
 import { AlertCircle } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
-    const toggleIsPasswordVisible = useCallback(
-      () => setIsPasswordVisible(!isPasswordVisible),
-      [isPasswordVisible, setIsPasswordVisible]
-    );
+  ({ className, type, error, ...props }, ref) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const isPassword = type === "password";
 
     return (
-      <div>
-        <div className="relative flex">
+      <div className={cn("flex flex-col gap-y-1.5 w-full", className)}>
+        <div className="relative w-full">
           <input
-            type={isPasswordVisible ? "text" : type}
-            className={cn(
-              "w-full  rounded-none border border-neutral-300 text-neutral-900 placeholder-neutral-400 read-only:bg-neutral-100 read-only:text-neutral-500 focus:border-neutral-500 focus:outline-none focus:ring-0 ",
-              props.error &&
-                "border-red-500 focus:border-red-500 focus:ring-red-500",
-              className
-            )}
             ref={ref}
+            type={isPassword && showPassword ? "text" : type}
+            className={cn(
+              "h-10 w-full rounded-sm font-display border border-neutral-300 bg-white px-3 text-[15px] text-neutral-700 placeholder-neutral-400 transition-colors",
+              "read-only:bg-neutral-50 read-only:text-neutral-500",
+              "focus:border-neutral-500 focus:outline-none focus:ring-0",
+              error && "border-red-400 focus:border-red-500",
+              (error || isPassword) && "pr-9"
+            )}
+            aria-invalid={!!error}
             {...props}
           />
 
-          <div className="group">
-            {props.error && (
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-none items-center px-2.5">
-                <AlertCircle
-                  className={cn(
-                    "size-5 text-white",
-                    type === "password" &&
-                      "transition-opacity group-hover:opacity-0"
-                  )}
-                  fill="#ef4444"
-                />
-              </div>
-            )}
-            {type === "password" && (
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {isPassword ? (
               <button
-                className={cn(
-                  "absolute inset-y-0 right-0 flex items-center px-3",
-                  props.error &&
-                    "opacity-0 transition-opacity group-hover:opacity-100"
-                )}
                 type="button"
-                onClick={() => toggleIsPasswordVisible()}
-                aria-label={
-                  isPasswordVisible ? "Hide password" : "Show Password"
-                }
-              ></button>
-            )}
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                {showPassword ? (
+                  <span className="text-sm font-display">Hide</span>
+                ) : (
+                  <span className="text-sm font-display">Show</span>
+                )}
+              </button>
+            ) : error ? (
+              <AlertCircle className="size-4 text-red-500 pointer-events-none" aria-hidden />
+            ) : null}
           </div>
         </div>
 
-        {props.error && (
-          <span
-            className="mt-2 block text-sm text-red-500 font-medium"
-            role="alert"
-            aria-live="assertive"
-          >
-            {props.error}
-          </span>
+        {error && (
+          <p className="text-xs font-medium text-red-500" role="alert" aria-live="assertive">
+            {error}
+          </p>
         )}
       </div>
     );

@@ -1,6 +1,7 @@
 import { confirmTwoFactorAuthAction } from "@/lib/actions/auth/confirm-two-factor-auth";
 import { QRCode } from "@/ui/shared/qr-code";
 import { Button, CopyButton, Modal } from "@repo/ui";
+import { cn } from "@repo/utils";
 import { OTPInput } from "input-otp";
 import { useAction } from "next-safe-action/hooks";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -56,65 +57,76 @@ const EnableTwoFactorAuthModal = ({
 
   return (
     <Modal showModal={showModal} setShowModal={setShowModal}>
-      <div className="flex flex-col items-center gap-6 p-4 sm:p-8">
-        <h2 className="text-xl font-semibold">Enable Authenticator App</h2>
-        <p className="max-w-md text-center text-sm text-neutral-600">
-          Scan the QR code below with your preferred authenticator app. Then,
-          enter the 6 digit code that the app provides to continue. You can also
-          copy the secret below and paste it into your app.
-        </p>
+      <div className="flex flex-col items-center  ">
+        <h2 className="text-base font-semibold w-full px-4  py-2 font-display border-b border-neutral-200">
+          Enable Authenticator App
+        </h2>
+        <div className="p-4">
+          <p className="   font-display text-sm text-neutral-600">
+            Scan the QR code below with your preferred authenticator app. Then,
+            enter the 6 digit code that the app provides to continue. You can
+            also copy the secret below and paste it into your app.
+          </p>
 
-        <div className="mx-auto bg-white p-4">
-          <QRCode url={qrCodeUrl} scale={2} />
-        </div>
+          <div className="mx-auto bg-neutral-100 my-4 flex items-center justify-center py-1">
+            <QRCode url={qrCodeUrl} scale={2} />
+          </div>
 
-        <div className="flex items-center gap-2 rounded-none border border-neutral-200 bg-neutral-100 px-3 py-2">
-          <span className="select-all font-mono text-sm">{secret}</span>
-          <CopyButton value={secret} />
-        </div>
+          <div className="flex items-center w-full gap-2 rounded-none border border-neutral-200 bg-neutral-100 px-3 py-2">
+            <span className="select-all font-mono text-sm">{secret}</span>
+            <CopyButton value={secret} />
+          </div>
 
-        <form
-          onSubmit={confirmTwoFactorAuth}
-          className="flex w-full flex-col items-center gap-4"
-        >
-          <OTPInput
-            maxLength={6}
-            value={token}
-            onChange={setToken}
-            autoFocus
-            render={({ slots }) => (
-              <div className="flex w-full items-center justify-between gap-2">
-                {slots.map(({ char, isActive, hasFakeCaret }, idx) => (
-                  <div
-                    key={idx}
-                    className={`relative flex h-14 w-12 items-center justify-center rounded-none border bg-white text-xl transition-all ${isActive ? "z-10 border-neutral-800 ring-2 ring-neutral-200" : "border-neutral-200"} ${(touched && token.length < 6) || error ? "border-red-500 ring-red-200" : ""}`}
-                  >
-                    {char}
-                    {hasFakeCaret && (
-                      <div className="animate-caret-blink pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div className="h-5 w-px bg-black" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+          <form
+            onSubmit={confirmTwoFactorAuth}
+            className="flex w-full flex-col my-3 items-center gap-4"
+          >
+            <OTPInput
+              maxLength={6}
+              value={token}
+              onChange={setToken}
+              autoFocus
+              render={({ slots }) => (
+                <div className="flex w-full items-center justify-between gap-1  ">
+                  {slots.map(({ char, isActive, hasFakeCaret }, idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "relative flex h-16 w-16 items-center justify-center font-display text-[24px]",
+                        "rounded-none border-b-[3px] border-[#E0E0E0] bg-neutral-100 ring-0 transition-all",
+                        isActive && "border-[#9E9E9E]",
+                        ((touched && token.length < 6) || error) &&
+                          "border-[#c51d1d]"
+                      )}
+                    >
+                      {char}
+
+                      {hasFakeCaret && (
+                        <div className="animate-caret-blink pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div className="h-5 w-px bg-black" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            />
+
+            {error && (
+              <p className="pt-2 text-center text-sm font-medium text-red-500">
+                {error}
+              </p>
             )}
-          />
 
-          {error && (
-            <p className="pt-2 text-center text-sm font-medium text-red-500">
-              {error}
-            </p>
-          )}
-
-          <Button
-            className="mt-2 w-full"
-            text={isPending ? "Verifying..." : "Confirm"}
-            type="submit"
-            loading={isPending}
-            disabled={token.length < 6}
-          />
-        </form>
+            <Button
+              className="mt-2 w-full"
+              text={isPending ? "Verifying..." : "Confirm"}
+              type="submit"
+              loading={isPending}
+              disabled={token.length < 6}
+            />
+          </form>
+        </div>
       </div>
     </Modal>
   );

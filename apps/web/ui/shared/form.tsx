@@ -39,25 +39,23 @@ const Form = ({
         </div>
 
         {/* Input + Button */}
-        <div className="relative">
+        <div className="relative w-full">
           <Input
             {...restInputAtts}
             required
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="h-9 pr-24 font-display rounded-none text-[14px] text-black/60"
+            className="w-full"
           />
 
           {value && (
-            <div className="absolute inset-y-0 right-1 flex items-center">
-              <Button
-                type="submit"
-                variant="secondary"
-                className="h-7 px-3 text-xs font-display text-[13px] rounded-full bg-[#F6F6F6] text-black/60"
-                text={buttonText}
-                loading={saving}
-              />
-            </div>
+            <Button
+              type="submit"
+              variant="secondary"
+              loading={saving}
+              text={buttonText}
+              className="absolute w-fit right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-[13px] rounded-full bg-[#F6F6F6] text-black/60"
+            />
           )}
         </div>
       </div>

@@ -1,13 +1,16 @@
+"use client";
 import React from "react";
-import { WorkspaceBillingUpgradePageClient } from "./page-client";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 import IsometricBoxes from "../IsometricBoxes";
-import PriceCompareTable  from "./price-compare-table";
+import PriceCompareTable from "./price-compare-table";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
+import useBilling from "@/lib/swr/use-billing";
+
 const page = () => {
- const currency = "USD";
+  const { billing } = useBilling();
+  const currency = "USD";
   return (
-    <PageWidthWrapper size="lg">
+    <PageWidthWrapper size="xl">
       <SettingsChildrenLayout
         title="Plans"
         description="Designed for every stage of your journey. If you couldn’t find something, message us"
@@ -19,17 +22,26 @@ const page = () => {
               Current Plan
             </div>
             <h1 className="text-[#989898] font-display text-[13px]">
-              Renews Mar 23, 2026
+              {billing?.billingCycleEnd
+                ? new Date(billing.billingCycleEnd).toLocaleDateString(
+                    "en-US",
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }
+                  )
+                : "—"}
             </h1>
           </div>
           <div className="flex items-center gap-x-3  mt-3">
             <IsometricBoxes count={1} size={38} />
             <div className="flex flex-col gap-0.5">
               <p className="text-[14px] font-medium font-display text-neutral-500">
-                Free
+                {billing?.planName}
               </p>
               <p className="text-[14px] font-display text-neutral-500">
-                $0.00 per month billed monthly
+                ${billing?.price} per month billed monthly
               </p>
             </div>
           </div>

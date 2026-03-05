@@ -119,13 +119,13 @@ export function Modal({
           }}
           className={cn(
             "fixed inset-0 z-40 m-auto h-fit w-full max-w-md",
-            "border border-neutral-200 bg-white p-0 shadow-xl sm:rounded-none",
-            "scrollbar-hide animate-scale-in overflow-y-auto",
+            "border border-neutral-200 bg-white p-0 shadow-md sm:rounded-2xl",
+            "scrollbar-hide animate-scale-in overflow-y-auto text-[#5B5B5B]",
             className,
           )}
         >
           <VisuallyHidden.Root>
-            <Dialog.Title>Modal</Dialog.Title>
+            <Dialog.Title className="">Modal</Dialog.Title>
             <Dialog.Description>This is a modal</Dialog.Description>
           </VisuallyHidden.Root>
           {children}

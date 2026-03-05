@@ -14,6 +14,11 @@ import { TWO_FA_COOKIE_NAME } from "./constants";
 import { getTOTPInstance } from "./totp";
 import PasskeyProvider from "@teamhanko/passkeys-next-auth-provider";
 import hanko from "../hanko";
+import {
+  createTrackedSession,
+  getClientIp,
+  touchSession,
+} from "./session-tracking";
 
 const VERCEL_DEPLOYMENT = !!process.env.VERCEL_ENV;
 
@@ -408,13 +413,43 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    jwt: async ({ token, user, trigger }) => {
+    jwt: async ({ token, user, trigger, req }) => {
       if (!token.sub) {
         return token;
       }
 
       if (user) {
         token.user = user;
+      }
+
+      // Create a tracked session on first sign-in
+      if (user && token.sub && !token.sessionToken) {
+        try {
+          const ip = await getClientIp();
+          // Get user-agent from headers (may not be available in all contexts)
+          const { headers: headersFn } = await import("next/headers");
+          const headersList = await headersFn();
+          const userAgent = headersList.get("user-agent") || "Unknown";
+          const sessionToken = await createTrackedSession(
+            token.sub,
+            userAgent,
+            ip
+          );
+          token.sessionToken = sessionToken;
+        } catch (error) {
+          console.error("Failed to create tracked session:", error);
+        }
+      }
+
+      // Periodically touch session to update lastActive
+      if (token.sessionToken && trigger !== "signIn") {
+        // Only touch every 5 minutes to avoid excessive DB writes
+        const lastTouched = (token.lastTouched as number) || 0;
+        const now = Date.now();
+        if (now - lastTouched > 5 * 60 * 1000) {
+          await touchSession(token.sessionToken as string);
+          token.lastTouched = now;
+        }
       }
 
       if (trigger === "update") {

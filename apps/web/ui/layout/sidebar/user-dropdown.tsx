@@ -33,29 +33,31 @@ export function UserDropdown() {
   return (
     <Popover
       content={
-        <div className="flex w-full flex-col space-y-px rounded-none bg-white p-2 sm:min-w-64">
+        <div className="flex w-full flex-col space-y-px rounded-none bg-white  sm:min-w-64">
           {session?.user ? (
-            <div className="px-2 pb-4 sm:pb-2">
-              <p className="truncate text-base font-medium text-neutral-900 sm:text-sm">
+            <div className="p-2 px-3 pb-4 sm:pb-2 ">
+              <p className="truncate text-base font-display font-medium text-neutral-600 sm:text-sm">
                 {session.user.name || session.user.email?.split("@")[0]}
               </p>
-              <p className="truncate text-base text-neutral-500 sm:text-sm">
+              <p className="truncate text-base font-display text-neutral-500 sm:text-sm">
                 {session.user.email}
               </p>
             </div>
           ) : (
-            <div className="grid gap-2 px-2 py-3">
+            <div className="grid gap-2 px-2 py-3 ">
               <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-200" />
               <div className="h-3 w-20 animate-pulse rounded-full bg-neutral-200" />
             </div>
           )}
-          {menuOptions.map((menuOption, idx) => (
-            <UserOption
-              key={idx}
-              as={menuOption.href ? Link : "button"}
-              {...menuOption}
-            />
-          ))}
+          <div className="border-t py-1 border-border-default">
+            {menuOptions.map((menuOption, idx) => (
+              <UserOption
+                key={idx}
+                as={menuOption.href ? Link : "button"}
+                {...menuOption}
+              />
+            ))}
+          </div>
         </div>
       }
       align="start"
@@ -86,7 +88,7 @@ export function UserDropdown() {
                 className="size-6 border-none duration-75 sm:size-7"
               />
             )}
-            </div>
+          </div>
         ) : (
           <div className="size-7 animate-pulse rounded-full bg-neutral-100" />
         )}
@@ -111,11 +113,13 @@ function UserOption<T extends ElementType = "button">({
 
   return (
     <Component
-      className="flex items-center gap-x-4 rounded-none px-2.5 py-1.5 text-base transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80 sm:text-sm"
+      className="flex items-center gap-x-4  rounded-none px-2.5 py-1 w-full transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80 sm:text-sm"
       {...rest}
     >
       {/* <Icon className="size-5 text-neutral-500 sm:size-4" /> */}
-      <span className="block truncate text-neutral-600">{label}</span>
+      <span className="block truncate font-display  font-medium py-0.5 px-1 text-[14.5px] text-neutral-600/85 text-sm text-neutral-600">
+        {label}
+      </span>
       {children}
     </Component>
   );

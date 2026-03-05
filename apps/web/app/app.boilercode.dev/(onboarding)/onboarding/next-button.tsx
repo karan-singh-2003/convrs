@@ -15,6 +15,7 @@ const NextButton = ({
       text="Next"
       onClick={() => continueTo(step)}
       loading={isLoading || isSuccessful}
+      className="text-white font-display"
       {...rest}
     ></Button>
   );

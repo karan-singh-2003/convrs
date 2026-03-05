@@ -1,7 +1,6 @@
 import { cn } from "@repo/utils";
 import { VariantProps, cva } from "class-variance-authority";
 import { ReactNode, forwardRef } from "react";
-import { LoadingSpinner } from "./icons";
 import { Tooltip } from "./tooltip";
 
 export const buttonVariants = cva("transition-all", {
@@ -115,40 +114,49 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={props.disabled || loading}
         {...props}
       >
-        {loading ? <LoadingSpinner /> : icon ? icon : null}
-        {text && (
-          <div
-            className={cn(
-              "min-w-0 truncate font-medium",
-              shortcut && "flex-1 text-left",
-              textWrapperClassName
-            )}
-          >
-            {text}
+        {loading ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
+            <span className="text-sm font-display text-neutral-500">{text}</span>
           </div>
-        )}
-        {shortcut && (
-          <kbd
-            className={cn(
-              "hidden rounded px-2 py-0.5 text-xs font-light transition-all duration-75 md:inline-block",
-              {
-                "bg-neutral-700 text-neutral-400 group-hover:bg-neutral-600 group-hover:text-neutral-300":
-                  variant === "primary",
-                "bg-neutral-200 text-neutral-400 group-hover:bg-neutral-100 group-hover:text-neutral-500":
-                  variant === "secondary",
-                "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200":
-                  variant === "outline",
-                "bg-red-400 text-white": variant === "danger",
-                "bg-red-100 text-red-600 group-hover:bg-red-500 group-hover:text-white":
-                  variant === "danger-outline",
-              },
-              shortcutClassName
+        ) : (
+          <>
+            {icon}
+            {text && (
+              <div
+                className={cn(
+                  "min-w-0 truncate font-medium",
+                  shortcut && "flex-1 text-left",
+                  textWrapperClassName
+                )}
+              >
+                {text}
+              </div>
             )}
-          >
-            {shortcut}
-          </kbd>
+            {shortcut && (
+              <kbd
+                className={cn(
+                  "hidden rounded px-2 py-0.5 text-xs font-light transition-all duration-75 md:inline-block",
+                  {
+                    "bg-neutral-700 text-neutral-400 group-hover:bg-neutral-600 group-hover:text-neutral-300":
+                      variant === "primary",
+                    "bg-neutral-200 text-neutral-400 group-hover:bg-neutral-100 group-hover:text-neutral-500":
+                      variant === "secondary",
+                    "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200":
+                      variant === "outline",
+                    "bg-red-400 text-white": variant === "danger",
+                    "bg-red-100 text-red-600 group-hover:bg-red-500 group-hover:text-white":
+                      variant === "danger-outline",
+                  },
+                  shortcutClassName
+                )}
+              >
+                {shortcut}
+              </kbd>
+            )}
+            {right}
+          </>
         )}
-        {right}
       </button>
     );
   }

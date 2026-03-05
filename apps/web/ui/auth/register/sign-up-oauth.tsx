@@ -27,7 +27,6 @@ export const SignUpOAuth = ({
     <>
       {methods.includes("google") && (
         <Button
-          variant="auth"
           text="Continue with Google"
           onClick={() => {
             setClickedGoogle(true);
@@ -35,12 +34,12 @@ export const SignUpOAuth = ({
               ...(next && next.length > 0 ? { callbackUrl: next } : {}),
             });
           }}
+          className="font-display text-base text-neutral-600 hover:text-neutral-700 bg-neutral-50  "
           loading={clickedGoogle}
         />
       )}
       {methods.includes("github") && (
         <Button
-          variant="auth"
           text="Continue with GitHub"
           onClick={() => {
             setClickedGithub(true);
@@ -48,6 +47,7 @@ export const SignUpOAuth = ({
               ...(next && next.length > 0 ? { callbackUrl: next } : {}),
             });
           }}
+          className="font-display text-base text-neutral-600 hover:text-neutral-700 bg-neutral-50  "
           loading={clickedGithub}
         />
       )}

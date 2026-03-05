@@ -12,6 +12,24 @@ export const WorkspaceSchema = z
     id: z.string().describe("The unique ID of the workspace."),
     name: z.string().describe("The name of the workspace."),
     slug: z.string().describe("The slug of the workspace."),
+    plan: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("The current plan of the workspace."),
+    stripeId: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("The Stripe customer ID of the workspace."),
+    billingCycleStart: z
+      .number()
+      .describe("The day of month the billing cycle starts."),
+    paymentFailedAt: z
+      .date()
+      .nullable()
+      .optional()
+      .describe("The date when the last payment failed."),
     ssoEnforcedAt: z
       .date()
       .nullable()

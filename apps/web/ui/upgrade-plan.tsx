@@ -1,7 +1,7 @@
 "use client";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { Button } from "@repo/ui";
-import { APP_DOMAIN, cn, Plans } from "@repo/utils";
+import { APP_DOMAIN, cn, PLANS } from "@repo/utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { getStripe } from "@/lib/stripe/client";
@@ -31,7 +31,7 @@ export function UpgradePlanButton({
   const { slug } = useWorkspace();
   const currentPlan = "free";
 
-  const selectedPlan = Plans.find(
+  const selectedPlan = PLANS.find(
     (p) => p.name.toLowerCase() === plan.toLowerCase()
   );
 
@@ -75,6 +75,7 @@ export function UpgradePlanButton({
       className={cn(" text-[13.5px] font-default text-white", className)}
       disabled={disabled}
       text={text}
+      loading={clicked}
     ></Button>
   );
 }

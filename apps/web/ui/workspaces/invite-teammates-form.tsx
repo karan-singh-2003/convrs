@@ -1,11 +1,88 @@
 import { WorkspaceRole } from "@repo/db/client";
 import { useFieldArray, useForm } from "react-hook-form";
-import { Input, useMediaQuery, Button } from "@repo/ui";
-import { Plus, Trash } from "lucide-react";
+import { useMediaQuery, Button } from "@repo/ui";
+import { cn } from "@repo/utils";
+import { ChevronDown, X } from "lucide-react";
 import { pluralize } from "@repo/utils";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { Invites } from "@/lib/zod/schemas/invites";
 import { toast } from "sonner";
+import { useEffect, useRef, useState } from "react";
+
+const ROLES = [
+  {
+    value: "owner" as WorkspaceRole,
+    label: "Owner",
+    description:
+      "Can manage members, assign roles, and update workspace settings.",
+  },
+  {
+    value: "member" as WorkspaceRole,
+    label: "Member",
+    description:
+      "Can contribute to workspace content but cannot manage members.",
+  },
+] as const;
+
+function RoleDropdown({
+  role,
+  onChange,
+}: {
+  role: WorkspaceRole;
+  onChange: (role: WorkspaceRole) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative shrink-0 border-l border-neutral-200">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="font-display flex items-center gap-1 h-10 px-3 text-[13px] text-neutral-500 hover:bg-neutral-50 transition whitespace-nowrap"
+      >
+        {role}
+        <ChevronDown className="size-3" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 md:left-0 top-full mt-1.5 w-60 sm:w-[18rem] border border-neutral-200 bg-white shadow-lg rounded-none z-50">
+          {ROLES.map((r) => (
+            <button
+              key={r.value}
+              type="button"
+              onClick={() => {
+                onChange(r.value);
+                setOpen(false);
+              }}
+              className={cn(
+                "font-display w-full text-left px-4 py-2.5 hover:bg-neutral-50 transition first:rounded-t-md last:rounded-b-md",
+                role === r.value && "bg-neutral-50"
+              )}
+            >
+              <div className="text-[13px] font-medium text-neutral-600">
+                {r.label}
+              </div>
+              <div className="text-[13px] mt-1 font-default font-medium text-neutral-500 ">
+                {r.description}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 type FormData = {
   teammates: { email: string; role: WorkspaceRole }[];
@@ -27,7 +104,8 @@ export const InviteTeammatesForm = ({
     control,
     register,
     handleSubmit,
-    formState: { isSubmitting, isSubmitSuccessful },
+    setValue,
+    formState: { isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
       teammates: invites.length ? invites : [{ email: "", role: "member" }],
@@ -61,66 +139,51 @@ export const InviteTeammatesForm = ({
         }
         onSuccess();
       })}
-      className={`flex flex-col  mx-auto justify-center items-center gap-y-5 ${className}`}
+      className={cn("font-display flex flex-col gap-y-4 w-full", className)}
     >
-      <div className="flex flex-col gap-2 w-full">
+      <div className="space-y-2 w-full">
         {fields.map((field, index) => (
-          <div key={field.id} className="relative w-full">
-            <label>
-              {index === 0 && (
-                <span className="mb-2 block text-sm font-medium text-neutral-700">
-                  {pluralize("Email", fields.length)}
-                </span>
-              )}
-              <div className="relative flex  shadow-sm">
-                <input
-                  type="email"
-                  placeholder="panic@thedis.co"
-                  autoFocus={index === 0 && !isMobile}
-                  autoComplete="off"
-                  className="z-10 block w-full  border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-neutral-500 sm:text-sm"
-                  {...register(`teammates.${index}.email`, {
-                    required: index === 0,
-                  })}
-                />
-                <select
-                  {...register(`teammates.${index}.role`, {
-                    required: index === 0,
-                  })}
-                  defaultValue="member"
-                  className=" border border-l-0 border-neutral-300 bg-white pl-4 pr-8 text-neutral-600 focus:border-neutral-300 focus:outline-none focus:ring-0 sm:text-sm"
-                >
-                  {["owner", "member"].map((value) => {
-                    return (
-                      <option key={value} value={value}>
-                        {value}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            </label>
-            {index > 0 && (
-              <div className="absolute -right-1 top-1/2 -translate-y-1/2 translate-x-full">
-                <Button
-                  variant="outline"
-                  icon={<Trash className="size-4" />}
-                  className="h-8 px-1"
-                  onClick={() => remove(index)}
-                />
-              </div>
+          <div key={field.id} className="relative">
+            <div className="flex w-full border border-neutral-200 bg-white rounded-none">
+              <input
+                type="email"
+                placeholder="member@email.com"
+                autoFocus={index === 0 && !isMobile}
+                autoComplete="off"
+                className="font-display flex-1 min-w-0 w-full h-10 px-3 text-sm text-neutral-700 placeholder-neutral-400 bg-transparent border-0 outline-none focus:ring-0"
+                {...register(`teammates.${index}.email`, {
+                  required: index === 0,
+                })}
+              />
+              <RoleDropdown
+                role={field.role || "member"}
+                onChange={(role) => setValue(`teammates.${index}.role`, role)}
+              />
+            </div>
+
+            {fields.length > 1 && (
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                className="absolute -top-2 -right-2 size-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs shadow-sm"
+              >
+                <X className="size-3" />
+              </button>
             )}
           </div>
         ))}
-        <Button
-          className="h-9 w-full"
-          variant="secondary"
-          text="Add email"
+
+        <button
+          type="button"
+          className="font-display w-full h-9 text-[13px] text-neutral-500 font-medium bg-white hover:bg-neutral-50 transition border border-neutral-200 rounded-none"
           onClick={() => append({ email: "", role: "member" })}
-        />
+        >
+          Add more members
+        </button>
       </div>
+
       <Button
-        className="text-white"
+        className="font-display w-full h-9 mt-5 text-white text-sm"
         text={`Send ${pluralize("invite", fields.length)}`}
         disabled={loading || isSubmitting}
         loading={isSubmitting}

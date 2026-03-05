@@ -54,7 +54,7 @@ export async function AppMiddleware(req: NextRequest) {
     ) {
       let step = await onboardingStepCache.get({ userId: user.id });
       if (!step) {
-        return NextResponse.redirect(new URL("/onboarding", req.url));
+        return NextResponse.redirect(new URL("/onboarding/new", req.url));
       } else if (step === "completed") {
         return WorkspacesMiddleware(req, user);
       }
@@ -68,7 +68,7 @@ export async function AppMiddleware(req: NextRequest) {
           new URL(`/onboarding/${step}?workspace=${defaultWorkspace}`, req.url)
         );
       } else {
-        return NextResponse.redirect(new URL("/onboarding", req.url));
+        return NextResponse.redirect(new URL("/onboarding/new", req.url));
       }
 
       // if the path is / or /login or /register, redirect to the default workspace

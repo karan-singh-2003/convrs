@@ -19,6 +19,11 @@ export type PlanDetails = {
   features?: PlanFeatures[];
 };
 
+const FREE_PRICE_IDS = [
+  "price_1T7KZbL2qfTOZYhO1MaFLeBn" /* monthly */,
+  "price_1T7KZbL2qfTOZYhO1MaFLeBn" /* yearly */,
+];
+
 const PRO_PRICE_IDS = [
   "price_1SyWkFL2qfTOZYhOGhm9Gng2" /* monthly */,
   "price_1SyWkuL2qfTOZYhOePbSLGUt" /* yearly */,
@@ -30,46 +35,90 @@ const BUSINESS_PRICE_IDS = [
 ];
 
 const ADVANCED_PRICE_IDS = [
-  "price_1SyWnQL2qfTOZYhOLtZW3JrI", /* monthly */
-  "price_1SyWnuL2qfTOZYhOpnexxOsm", /* yearly */
+  "price_1SyWnQL2qfTOZYhOLtZW3JrI" /* monthly */,
+  "price_1SyWnuL2qfTOZYhOpnexxOsm" /* yearly */,
 ];
 
-export const Plans: PlanDetails[] = [
-  { name: "Free", price: { monthly: 0, yearly: 0 }, limits: { users: 1 } },
+export const PLANS: PlanDetails[] = [
+  {
+    name: "Free",
+    price: { monthly: 0, yearly: 0, ids: FREE_PRICE_IDS },
+    limits: { users: 1 },
+    featureTitle: "Includes:",
+    features: [
+      { id: "workspaces", name: "1 workspace" },
+      { id: "users", name: "1 team member" },
+      { id: "api", name: "API access with 100/min rate limit" },
+    ],
+  },
   {
     name: "Pro",
     price: { monthly: 30, yearly: 25, ids: PRO_PRICE_IDS },
     limits: { users: 3 },
-    featureTitle: "Everything in Free, plus:",
-    features: [{ id: "users", name: "Up to 3 users" }],
+    featureTitle: "Everything in free +",
+    features: [
+      { id: "workspaces", name: "2 workspaces" },
+      { id: "users", name: "3 team members" },
+      { id: "api", name: "API access with 600/min rate limit" },
+      { id: "sso", name: "SSO enabled" },
+      { id: "webhooks", name: "Enable webhook events" },
+    ],
   },
   {
     name: "Business",
     price: { monthly: 90, yearly: 75, ids: BUSINESS_PRICE_IDS },
     limits: { users: 10 },
-    featureTitle: "Everything in Pro, plus:",
-    features: [{ id: "users", name: "Up to 10 users" }],
+    featureTitle: "Everything in Pro +",
+    features: [
+      { id: "workspaces", name: "5 workspaces" },
+      { id: "users", name: "10 team members" },
+      { id: "api", name: "API access with 800/min rate limit" },
+      { id: "sso", name: "SSO enabled" },
+      { id: "webhooks", name: "Enable webhook events" },
+    ],
   },
   {
     name: "Advanced",
-    price: { monthly: 220, yearly: 175, ids: ADVANCED_PRICE_IDS },
+    price: { monthly: 200, yearly: 175, ids: ADVANCED_PRICE_IDS },
     limits: { users: 25 },
-    featureTitle: "Everything in Business, plus:",
-    features: [{ id: "users", name: "Up to 25 users" }],
+    featureTitle: "Everything in Business +",
+    features: [
+      { id: "workspaces", name: "10 workspaces" },
+      { id: "users", name: "50 team members" },
+      { id: "api", name: "API access with 600/min rate limit" },
+      { id: "sso", name: "SSO enabled" },
+      { id: "webhooks", name: "Enable webhook events" },
+    ],
+  },
+  {
+    name: "Enterprise",
+    price: { monthly: null, yearly: null },
+    limits: { users: 100 },
+    featureTitle: "Everything in Advanced +",
+    features: [
+      { id: "workspaces", name: "Unlimited workspaces" },
+      { id: "users", name: "Unlimited team members" },
+      { id: "api", name: "Unlimited API access" },
+      { id: "sso", name: "SSO enabled" },
+      { id: "webhooks", name: "Enable webhook events" },
+    ],
   },
 ];
 
-export const Free_Plan = Plans.find((plan) => plan.name === "Free")!;
-export const Pro_Plan = Plans.find((plan) => plan.name === "Pro")!;
-export const Business_Plan = Plans.find((plan) => plan.name === "Business")!;
-export const Advanced_Plan = Plans.find((plan) => plan.name === "Advanced")!;
+export const Free_Plan = PLANS.find((plan) => plan.name === "Free")!;
+export const Pro_Plan = PLANS.find((plan) => plan.name === "Pro")!;
+export const Business_Plan = PLANS.find((plan) => plan.name === "Business")!;
+export const Advanced_Plan = PLANS.find((plan) => plan.name === "Advanced")!;
+export const Enterprise_Plan = PLANS.find(
+  (plan) => plan.name === "Enterprise"
+)!;
 
 export const getPlanFromPriceId = ({
   priceId,
 }: {
   priceId: string;
 }): { plan: PlanDetails | null } => {
-  const planDetails = Plans.find((plan) => plan.price.ids?.includes(priceId));
+  const planDetails = PLANS.find((plan) => plan.price.ids?.includes(priceId));
   if (!planDetails) {
     return { plan: null };
   }
@@ -81,7 +130,7 @@ export const getPlanDetails = ({
 }: {
   plan: string;
 }): { plan: PlanDetails | null } => {
-  const planDetails = Plans.find(
+  const planDetails = PLANS.find(
     (p) => p.name.toLowerCase() === plan.toLowerCase()
   );
   if (!planDetails) {
@@ -93,10 +142,10 @@ export const getPlanDetails = ({
 export const getNextPlan = (plan?: string | null) => {
   if (!plan) return Pro_Plan;
   const currentPlan = plan.toLowerCase().split(" ")[0];
-  return Plans[
+  return PLANS[
     Math.min(
-      Plans.findIndex((p) => p.name.toLowerCase() === currentPlan) + 1,
-      Plans.length - 1
+      PLANS.findIndex((p) => p.name.toLowerCase() === currentPlan) + 1,
+      PLANS.length - 1
     )
   ];
 };
@@ -108,10 +157,10 @@ export const isDowngradePlan = ({
   currentPlan: string;
   newPlan: string;
 }) => {
-  const currentPlanIndex = Plans.findIndex(
+  const currentPlanIndex = PLANS.findIndex(
     (p) => p.name.toLowerCase() === currentPlan.toLowerCase()
   );
-  const newPlanIndex = Plans.findIndex(
+  const newPlanIndex = PLANS.findIndex(
     (p) => p.name.toLowerCase() === newPlan.toLowerCase()
   );
   return newPlanIndex < currentPlanIndex;
@@ -122,7 +171,7 @@ export const getSuggestedPlan = ({
 }: {
   suggestFree?: boolean;
 }): { plan: PlanDetails } => {
-  for (const plan of Plans) {
+  for (const plan of PLANS) {
     // Skip free plan unless explicitly requested
     if (!suggestFree && plan.price.monthly === 0) continue;
 

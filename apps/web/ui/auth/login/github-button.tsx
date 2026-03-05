@@ -14,7 +14,7 @@ export const GitHubButton = () => {
 
   return (
     <Button
-      text="Continue with GitHub"
+      text=" GitHub"
       variant="secondary"
       onClick={() => {
         setClickedMethod("github");
@@ -23,9 +23,10 @@ export const GitHubButton = () => {
           ...(next && next.length > 0 ? { callbackUrl: next } : {}),
         });
       }}
+      className="font-display text-base text-neutral-600 hover:text-neutral-700 bg-neutral-50  "
       loading={clickedMethod === "github"}
       disabled={clickedMethod && clickedMethod !== "github"}
-      icon={<Github className="h-[17px] w-[17px] text-black" />}
+      // icon={<Github className="size-4.5 text-black" />}
     />
   );
 };

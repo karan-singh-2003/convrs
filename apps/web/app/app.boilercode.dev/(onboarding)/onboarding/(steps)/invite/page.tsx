@@ -4,7 +4,17 @@ import { Form } from "./form";
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading</div>}>
-      <Form />
+      <div className="flex flex-col items-center top-20 relative  h-fit max-w-[25rem] mx-auto">
+        <h1 className="font-display text-neutral-600 font-semibold text-[18px]">
+          Invite Your Team
+        </h1>
+        <h3 className="text-muted-foreground font-medium font-display text-center text-[14.5px]">
+          Add team members to collaborate inside your workspace.
+        </h3>
+        <div className="my-4  w-full">
+          <Form />
+        </div>
+      </div>
     </Suspense>
   );
 }

@@ -148,10 +148,10 @@ function WorkspaceList({
         {/* Workspaces section */}
         <div className="flex flex-col gap-2.5 border-b border-neutral-200  px-1 ">
           <div>
-            <p className="px-2 py-1.5 text-[11.5px] font-display font-medium text-neutral-500">
+            <p className="px-2 py-1.5 text-[12px] font-default  text-neutral-600">
               Workspaces
             </p>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col ">
               {workspaces.map(({ id, name, slug, logo }) => {
                 const isActive = selected.slug === slug;
                 return (
@@ -194,8 +194,8 @@ function WorkspaceList({
                 }}
                 className="group flex w-full cursor-pointer items-center gap-x-2.5 rounded-none px-2 py-1 my-1 text-neutral-500 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
               >
-                <Plus className="ml-0.5 size-3.5 text-neutral-500" />
-                <span className="block truncate font-display text-[13px] ">
+                <Plus className="ml-0.5 size-4 text-neutral-500" />
+                <span className="block truncate font-display text-[12.5px]  font-medium py-0.5  text-neutral-600/85 leading-5 text-neutral-500 sm:text-[14px]">
                   Create workspace
                 </span>
               </button>
@@ -203,26 +203,36 @@ function WorkspaceList({
           </div>
         </div>
         <div className="p-1">
-          {/* Settings and Invite members options */}
-          <div className="flex flex-col ">
+          <div className="flex flex-col mb-0.5">
             <Link
               href={`/${selected.slug ? selected.slug : "account"}/settings`}
-              className="flex items-center justify-start font-display  gap-x-2 rounded-none  px-2 py-1 text-neutral-500 outline-none transition-all duration-75 hover:bg-neutral-100/50 focus-visible:ring-2 focus-visible:ring-black/50 active:bg-neutral-200/80"
+              className="
+        flex items-center gap-x-4
+        rounded-none font-medium font-display  px-2.5 py-1 w-full
+        transition-all duration-75
+        hover:bg-neutral-200/50
+        active:bg-neutral-200/80
+        sm:text-sm text-neutral-500
+      "
               onClick={() => setOpenPopover(false)}
             >
-              <span className="block truncate font-display text-[14px]">
-                Settings
-              </span>
+              Settings
             </Link>
+
             {selected.slug && (
               <Link
                 href={`/${selected.slug}/settings/people`}
-                className="flex items-center justify-start gap-x-2 rounded-none  px-2 py-1 text-neutral-500 outline-none transition-all duration-75 hover:bg-neutral-100/50 focus-visible:ring-2 focus-visible:ring-black/50 active:bg-neutral-200/80"
+                className="
+          flex items-center gap-x-4
+          rounded-none font-display  font-medium  text-neutral-600/85 px-2.5 py-1 w-full
+          transition-all duration-75
+          hover:bg-neutral-200/50
+          active:bg-neutral-200/80
+          sm:text-[14px]  text-neutral-500
+        "
                 onClick={() => setOpenPopover(false)}
               >
-                <span className="block truncate font-display text-[14px]">
-                  Invite members
-                </span>
+                Invite members
               </Link>
             )}
           </div>

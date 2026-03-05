@@ -14,7 +14,7 @@ export function GoogleButton({ next }: { next?: string }) {
 
   return (
     <Button
-      text="Continue with Google"
+      text=" Google"
       variant="secondary"
       onClick={() => {
         setClickedMethod("google");
@@ -25,9 +25,10 @@ export function GoogleButton({ next }: { next?: string }) {
             : {}),
         });
       }}
+      className="font-display text-base text-neutral-600 hover:text-neutral-700  bg-neutral-50  "
       loading={clickedMethod === "google"}
       disabled={clickedMethod && clickedMethod !== "google"}
-      icon={<Google className="h-[17px] w-[17px]" />}
+      // icon={<Google className="size-4.5" />}
     />
   );
 }

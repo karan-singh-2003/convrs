@@ -1,6 +1,6 @@
 "use client";
 
-import { Button,  useMediaQuery } from "@repo/ui"
+import { Button, useMediaQuery } from "@repo/ui";
 import { Lock } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useContext } from "react";
@@ -70,9 +70,9 @@ export const SSOSignIn = () => {
       )}
 
       <Button
-        text="Continue with SAML SSO"
+        text="SAML SSO"
         variant="secondary"
-        icon={<Lock className="size-4" />}
+        // icon={<Lock className="size-4" />}
         {...(!showSSOOption && {
           type: "button",
           onClick: (e) => {
@@ -80,6 +80,7 @@ export const SSOSignIn = () => {
             setShowSSOOption(true);
           },
         })}
+        className="font-display text-base text-neutral-600 hover:text-neutral-700 bg-neutral-50 "
         loading={clickedMethod === "saml"}
         disabled={clickedMethod && clickedMethod !== "saml"}
       />

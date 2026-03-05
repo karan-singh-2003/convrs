@@ -1,6 +1,6 @@
 "use client";
 import { checkAccountExistsAction } from "@/lib/actions/check-account-exists";
-import { Button, Input, useMediaQuery } from "@repo/ui";
+import { Button, Input, Label, useMediaQuery } from "@repo/ui";
 import { cn } from "@repo/utils";
 import { signIn } from "next-auth/react";
 import { useAction } from "next-safe-action/hooks";
@@ -36,162 +36,157 @@ export const EmailSignIn = ({ next }: { next?: string }) => {
   });
 
   return (
-    <>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
 
-          // Check if the user can enter a password, and if so display the field
-          if (!showPasswordField) {
-            const result = await executeAsync({ email });
-
-            if (!result?.data) {
-              return;
-            }
-
-            const { accountExists, hasPassword } = result.data as {
-              accountExists: boolean;
-              hasPassword: boolean;
-            };
-
-            if (accountExists && hasPassword) {
-              setShowPasswordField(true);
-              return;
-            }
-
-            if (!accountExists) {
-              setClickedMethod(undefined);
-              toast.error("No account found with that email address.");
-              return;
-            }
-          }
-
-          setClickedMethod("email");
-
+        if (!showPasswordField) {
           const result = await executeAsync({ email });
-
-          if (!result?.data) {
-            return;
-          }
+          if (!result?.data) return;
 
           const { accountExists, hasPassword } = result.data as {
             accountExists: boolean;
             hasPassword: boolean;
           };
 
+          if (accountExists && hasPassword) {
+            setShowPasswordField(true);
+            return;
+          }
+
           if (!accountExists) {
             setClickedMethod(undefined);
             toast.error("No account found with that email address.");
             return;
           }
+        }
 
-          const provider = password && hasPassword ? "credentials" : "email";
+        setClickedMethod("email");
 
-          const response = await signIn(provider, {
-            email,
-            redirect: false,
-            callbackUrl: finalNext || "/workspaces",
-            ...(password && { password }),
-          });
-          console.log("response", response);
-          if (!response) {
+        const result = await executeAsync({ email });
+        if (!result?.data) return;
+
+        const { accountExists, hasPassword } = result.data as {
+          accountExists: boolean;
+          hasPassword: boolean;
+        };
+
+        if (!accountExists) {
+          setClickedMethod(undefined);
+          toast.error("No account found with that email address.");
+          return;
+        }
+
+        const provider = password && hasPassword ? "credentials" : "email";
+
+        const response = await signIn(provider, {
+          email,
+          redirect: false,
+          callbackUrl: finalNext || "/workspaces",
+          ...(password && { password }),
+        });
+
+        if (!response) return;
+
+        if (!response.ok && response.error) {
+          if (response.error === "2FA token required.") {
+            router.push("/two-factor-challenge");
             return;
           }
 
-          if (!response.ok && response.error) {
-            if (response.error === "2FA token required.") {
-              router.push("/two-factor-challenge");
-              return;
-            }
+          toast.error(
+            errorCodes[response.error as keyof typeof errorCodes] ??
+              response.error
+          );
 
-            if (errorCodes[response.error as keyof typeof errorCodes]) {
-              toast.error(
-                errorCodes[response.error as keyof typeof errorCodes]
-              );
-            } else {
-              toast.error(response.error);
-            }
+          setClickedMethod(undefined);
+          return;
+        }
 
-            setClickedMethod(undefined);
-            return;
-          }
+        setLastUsedAuthMethod("email");
 
-          setLastUsedAuthMethod("email");
+        if (provider === "email") {
+          toast.success("Email sent — check your inbox!");
+          setEmail("");
+          setClickedMethod(undefined);
+          return;
+        }
 
-          if (provider === "email") {
-            toast.success("Email sent - check your inbox!");
-            setEmail("");
-            setClickedMethod(undefined);
-            return;
-          }
+        if (provider === "credentials") {
+          router.push(response?.url || finalNext || "/workspaces");
+        }
+      }}
+      className="flex flex-col gap-y-4"
+    >
+      {authMethod === "email" && (
+        <div className="flex flex-col gap-y-1.5">
+          <Label
+            htmlFor="email"
+            className="text-sm font-medium font-display text-muted-foreground"
+          >
+            Email
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            autoFocus={!isMobile && !showPasswordField}
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            size={1}
+            className={cn(
+              "h-10 w-full font-display text-[15.5px] text-neutral-600 transition-opacity",
+              isPending && "opacity-60 pointer-events-none"
+            )}
+          />
+        </div>
+      )}
 
-          if (provider === "credentials") {
-            router.push(response?.url || finalNext || "/workspaces");
-          }
-        }}
-        className="flex flex-col gap-y-6"
-      >
-        {authMethod === "email" && (
-          <label>
-            <span className="text-content-emphasis mb-2 block text-sm font-medium leading-none">
-              Email
-            </span>
-            <Input
-              id="email"
-              name="email"
-              autoFocus={!isMobile && !showPasswordField}
-              type="email"
-              placeholder="panic@thedis.co"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              size={1}
-              className={cn("w-full h-10 text-[15px]", {
-                "pr-10": isPending,
-              })}
-            />
-          </label>
-        )}
+      {showPasswordField && (
+        <div className="flex flex-col gap-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium font-display text-muted-foreground"
+            >
+              Password
+            </Label>
+            <Link
+              href={`/forgot-password?email=${encodeURIComponent(email)}`}
+              className="text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <Input
+            id="password"
+            type="password"
+            autoFocus={!isMobile}
+            value={password}
+            placeholder="Enter your password"
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-10 font-display w-full text-[15.5px] text-neutral-600 transition-opacity"
+          />
+        </div>
+      )}
 
-        {showPasswordField && (
-          <label>
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-content-emphasis block text-sm font-medium leading-none">
-                Password
-              </span>
-              <Link
-                href={`/forgot-password?email=${encodeURIComponent(email)}`}
-                className="text-content-subtle hover:text-content-emphasis text-xs leading-none underline underline-offset-2 transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <Input
-              type="password"
-              autoFocus={!isMobile}
-              value={password}
-              placeholder="Password (optional)"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-        )}
-
-        <Button
-          text={`Log in with ${password ? "password" : "email"}`}
-          {...(authMethod !== "email" && {
-            type: "button",
-            onClick: (e) => {
-              e.preventDefault();
-              setShowSSOOption(false);
-              setAuthMethod("email");
-            },
-          })}
-          className="text-white"
-          loading={clickedMethod === "email" || isPending}
-          disabled={clickedMethod && clickedMethod !== "email"}
-        />
-      </form>
-    </>
+      <Button
+        text={`Continue with ${password ? "password" : "email"}`}
+        {...(authMethod !== "email" && {
+          type: "button",
+          onClick: (e) => {
+            e.preventDefault();
+            setShowSSOOption(false);
+            setAuthMethod("email");
+          },
+        })}
+        className="mt-1 h-10 w-full font-display bg-foreground text-background text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+        loading={clickedMethod === "email" || isPending}
+        disabled={Boolean(clickedMethod && clickedMethod !== "email")}
+      />
+    </form>
   );
 };

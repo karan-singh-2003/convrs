@@ -1,11 +1,11 @@
 import { PropsWithChildren } from "react";
-import SignedInHint from "./signed-in-hint";
+import SignedInHint from "../../signed-in-hint";
 
 export default async function Layout({ children }: PropsWithChildren) {
   return (
     <>
-      {children}
       <SignedInHint></SignedInHint>
+      {children}
     </>
   );
 }

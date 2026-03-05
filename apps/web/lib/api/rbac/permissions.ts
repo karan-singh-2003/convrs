@@ -3,6 +3,7 @@ import { WorkspaceRole } from "@repo/db/client";
 export const PERMISSION_ACTIONS = [
   "workspace:read",
   "workspace:write",
+  "billing:read",
   "billing:write",
   "tokens.read",
   "tokens.write",
@@ -26,6 +27,11 @@ export const ROLE_PERMISSIONS: {
     action: "workspace:write",
     roles: ["owner"],
     description: "Allows modifying workspace data",
+  },
+  {
+    action: "billing:read",
+    roles: ["owner", "member", "billing"],
+    description: "Allows reading billing and subscription data",
   },
   {
     action: "billing:write",

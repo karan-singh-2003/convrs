@@ -130,7 +130,7 @@ function NavItem({ item }: { item: NavItemType }) {
     <Link
       href={href}
       className={cn(
-        "block rounded-none font-display font-medium py-0.5 px-2 text-[14.5px] text-[#686868]/90 transition-colors"
+        "block rounded-none font-display font-medium py-0.5 px-2 text-[14.5px] text-neutral-600/85 transition-colors"
       )}
     >
       {title}

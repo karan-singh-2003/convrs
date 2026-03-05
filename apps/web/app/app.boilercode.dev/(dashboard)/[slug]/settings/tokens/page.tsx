@@ -146,17 +146,7 @@ export default function TokensPage() {
       <SettingsChildrenLayout
         title="API Tokens"
         description="Manage API tokens for programmatic access to your workspace."
-        // actions={
-        //   <div className="flex items-center justify-between w-full">
-        //     <div className="flex items-center gap-x-2">
-        //       <Button
-        //         variant="secondary"
-        //         className="text-black/60  bg-[#f3f4f6] h-fit font-display rounded-full text-[12.5px] py-1"
-        //         onClick={() => setShowAddEditTokenModal(true)}
-        //       />
-        //     </div>
-        //   </div>
-        // }
+        actions={<></>}
         className="my-4"
       >
         <Table table={table} {...tableProps} />
