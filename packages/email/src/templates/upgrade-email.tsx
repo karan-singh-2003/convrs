@@ -6,18 +6,18 @@ import {
   Heading,
   Html,
   Img,
-  Link,
   Preview,
   Section,
   Tailwind,
   Text,
 } from "@react-email/components";
+import React from "react";
 import { Footer } from "../components/footer";
 
 export default function UpgradeEmail({
-  name = "Brendon Urie",
-  email = "panic@thedis.co",
-  plan = "Business",
+  name,
+  email,
+  plan,
 }: {
   name: string | null;
   email: string;
@@ -31,7 +31,6 @@ export default function UpgradeEmail({
       <Tailwind>
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-10 max-w-[600px] rounded border border-solid border-neutral-200 px-10 py-5">
-            
             <Heading className="mx-0 my-7 p-0 text-xl font-medium text-black">
               Thank you for upgrading to Dub {plan}!
             </Heading>
@@ -56,14 +55,9 @@ export default function UpgradeEmail({
             <Text className="text-sm leading-6 text-black">
               On the {plan} plan, you now have access to:
             </Text>
-            {planDetails.features?.map((feature) => (
+            {planDetails.plan?.features?.map((feature) => (
               <Text className="ml-1 text-sm leading-4 text-black">
-                ✦{" "}
-                {feature.tooltip?.href ? (
-                  <Link href={feature.tooltip.href}>{feature.text}</Link>
-                ) : (
-                  feature.text
-                )}
+                ✦ {feature.name}
               </Text>
             ))}
             <Text className="text-sm leading-6 text-black">

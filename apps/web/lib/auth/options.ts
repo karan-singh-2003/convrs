@@ -413,7 +413,7 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    jwt: async ({ token, user, trigger, req }) => {
+    jwt: async ({ token, user, trigger }) => {
       if (!token.sub) {
         return token;
       }

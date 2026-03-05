@@ -63,7 +63,7 @@ export async function AppMiddleware(req: NextRequest) {
 
       if (defaultWorkspace) {
         // Skip workspace step if user already has a workspace
-        step = step === "workspace" ? "plan" : step;
+        step = step === "workspace" ? "billing" : step;
         return NextResponse.redirect(
           new URL(`/onboarding/${step}?workspace=${defaultWorkspace}`, req.url)
         );
