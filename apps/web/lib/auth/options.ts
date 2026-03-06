@@ -450,7 +450,11 @@ export const authOptions: NextAuthOptions = {
             ssoEmailDomain: true,
           },
         });
-
+        console.log("SAML sign-in attempt for workspace", {
+          workspaceId: samlProfile.requested.tenant,
+          email: user.email,
+        });
+        console.log("Workspace details", { workspace });
         if (workspace) {
           const { ssoEmailDomain } = workspace;
           const emailDomain = user.email.split("@")[1];
