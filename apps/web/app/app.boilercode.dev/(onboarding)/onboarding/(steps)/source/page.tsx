@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { Suspense, useState, type ComponentType } from "react";
 import { cn } from "@repo/utils";
 import { Google, Github, XLogo, Youtube, Reddit, ProductHunt } from "@repo/ui";
 import { Button } from "@repo/ui";
@@ -21,7 +21,15 @@ const SOURCES: {
   { id: "other", label: "Other", icon: null },
 ];
 
-export default function DiscoverySourceUI() {
+export default function DiscoverySourcePage() {
+  return (
+    <Suspense>
+      <DiscoverySourceUI />
+    </Suspense>
+  );
+}
+
+function DiscoverySourceUI() {
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { finish, isLoading, isSuccessful } = useOnboardingProgress();
