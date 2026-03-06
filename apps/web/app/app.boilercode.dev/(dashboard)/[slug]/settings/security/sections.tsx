@@ -49,18 +49,6 @@ export default function Section({
           variant="secondary"
           className="rounded-none h-fit bg-[#e9e9e9b9] text-black/60 text-[13px] py-1 px-4 w-fit font-display"
           onClick={onButtonClick}
-          disabledTooltip={
-            plan !== "enterprise" ? (
-              <TooltipContent
-                title="SAML SSO is only available on Enterprise plans. Upgrade to get started."
-                cta="Contact sales"
-                href="https://dub.co/enterprise"
-                target="_blank"
-              />
-            ) : (
-              permissionsError || undefined
-            )
-          }
         ></Button>
 
         {showRequirement && (

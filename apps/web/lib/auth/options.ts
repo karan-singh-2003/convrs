@@ -427,13 +427,16 @@ export const authOptions: NextAuthOptions = {
           samlProfile = profile;
         }
 
-        // The tenant identifies the workspace that initiated the SAML login
-        if (!samlProfile?.requested?.tenant) {
-          return false;
+        // The tenant identifies the workspace that initiated the SAML login.
+        // If the profile doesn't carry a tenant, allow sign-in without
+        // workspace assignment (e.g. IdP-initiated flows without tenant info).
+        const tenantId = samlProfile?.requested?.tenant;
+        if (!tenantId) {
+          return true;
         }
 
         const workspace = await prisma.workspace.findUnique({
-          where: { id: samlProfile.requested.tenant },
+          where: { id: tenantId },
           select: { id: true, ssoEmailDomain: true },
         });
 
@@ -441,14 +444,11 @@ export const authOptions: NextAuthOptions = {
           const { ssoEmailDomain } = workspace;
           const emailDomain = user.email.split("@")[1];
 
-          // ssoEmailDomain should always be set for SAML-enabled workspaces
-          if (!ssoEmailDomain) {
-            return false;
-          }
-
+          // Only enforce domain check when ssoEmailDomain is explicitly configured
           if (
+            ssoEmailDomain &&
             emailDomain.toLocaleLowerCase() !==
-            ssoEmailDomain.toLocaleLowerCase()
+              ssoEmailDomain.toLocaleLowerCase()
           ) {
             return false;
           }
