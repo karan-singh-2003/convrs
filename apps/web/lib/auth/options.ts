@@ -444,40 +444,42 @@ export const authOptions: NextAuthOptions = {
           const { ssoEmailDomain } = workspace;
           const emailDomain = user.email.split("@")[1];
 
-          // Only enforce domain check when ssoEmailDomain is explicitly configured
-          if (
-            ssoEmailDomain &&
-            emailDomain.toLocaleLowerCase() !==
-              ssoEmailDomain.toLocaleLowerCase()
-          ) {
-            return false;
-          }
+          // Only auto-provision to the workspace when the email domain matches.
+          // If ssoEmailDomain is unset or the domain mismatches, still allow
+          // sign-in (the user authenticated successfully with the IdP) but
+          // skip the workspace membership upsert.
+          const domainMatches =
+            !ssoEmailDomain ||
+            emailDomain.toLocaleLowerCase() ===
+              ssoEmailDomain.toLocaleLowerCase();
 
-          await Promise.allSettled([
-            // Add user to workspace (idempotent)
-            prisma.workspaceUsers.upsert({
-              where: {
-                userId_workspaceId: {
+          if (domainMatches) {
+            await Promise.allSettled([
+              // Add user to workspace (idempotent)
+              prisma.workspaceUsers.upsert({
+                where: {
+                  userId_workspaceId: {
+                    userId: user.id as string,
+                    workspaceId: workspace.id,
+                  },
+                },
+                update: {},
+                create: {
+                  workspaceId: workspace.id,
                   userId: user.id as string,
-                  workspaceId: workspace.id,
                 },
-              },
-              update: {},
-              create: {
-                workspaceId: workspace.id,
-                userId: user.id as string,
-              },
-            }),
-            // Remove any pending invite for this user in this workspace
-            prisma.workspaceInvite.delete({
-              where: {
-                email_workspaceId: {
-                  email: user.email,
-                  workspaceId: workspace.id,
+              }),
+              // Remove any pending invite for this user in this workspace
+              prisma.workspaceInvite.delete({
+                where: {
+                  email_workspaceId: {
+                    email: user.email,
+                    workspaceId: workspace.id,
+                  },
                 },
-              },
-            }),
-          ]);
+              }),
+            ]);
+          }
         }
       }
 

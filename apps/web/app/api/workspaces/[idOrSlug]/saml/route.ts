@@ -77,7 +77,7 @@ export const POST = withWorkspace(
     const data = await apiController.createSAMLConnection({
       encodedRawMetadata: encodedRawMetadata!,
       metadataUrl: metadataUrl!,
-      defaultRedirectUrl: `${process.env.NEXTAUTH_URL}/auth/saml`,
+      defaultRedirectUrl: `${process.env.NEXTAUTH_URL}/api/auth/callback/saml`,
       redirectUrl: process.env.NEXTAUTH_URL as string,
       tenant: workspace.id,
       product: "Boilercode",
@@ -92,7 +92,6 @@ export const POST = withWorkspace(
       },
     });
 
-    
     return NextResponse.json(data);
   },
   {
