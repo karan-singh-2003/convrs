@@ -19,6 +19,7 @@ import {
   getClientIp,
   touchSession,
 } from "./session-tracking";
+import { isSamlEnforcedForEmailDomain } from "../workspaces/is-saml-enforced-for-email-domain";
 
 const VERCEL_DEPLOYMENT = !!process.env.VERCEL_ENV;
 
@@ -381,6 +382,17 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
 
+      if (
+        account?.provider !== "saml" &&
+        account?.provider !== "saml-idp" &&
+        account?.provider !== "credentials"
+      ) {
+        const ssoEnforced = await isSamlEnforcedForEmailDomain(user.email);
+        if (ssoEnforced) {
+          throw new Error(`require-saml-sso`);
+        }
+      }
+
       if (account?.provider === "google" || account?.provider === "github") {
         const userExists = await prisma.user.findUnique({
           where: { email: user.email },
@@ -413,11 +425,9 @@ export const authOptions: NextAuthOptions = {
         account?.provider === "saml" ||
         account?.provider === "saml-idp"
       ) {
-        let samlProfile: any;
+        let samlProfile;
 
-        if (account.provider === "saml-idp") {
-          // For IdP-initiated flow, the profile is attached to the user object
-          // by the saml-idp CredentialsProvider's authorize function
+        if (account?.provider === "saml-idp") {
           // @ts-ignore
           samlProfile = user.profile;
           if (!samlProfile) {
@@ -427,62 +437,64 @@ export const authOptions: NextAuthOptions = {
           samlProfile = profile;
         }
 
-        // The tenant identifies the workspace that initiated the SAML login.
-        // If the profile doesn't carry a tenant, allow sign-in without
-        // workspace assignment (e.g. IdP-initiated flows without tenant info).
-        const tenantId = samlProfile?.requested?.tenant;
-        if (!tenantId) {
-          return true;
+        if (!samlProfile?.requested?.tenant) {
+          return false;
         }
 
         const workspace = await prisma.workspace.findUnique({
-          where: { id: tenantId },
-          select: { id: true, ssoEmailDomain: true },
+          where: {
+            id: samlProfile.requested.tenant,
+          },
+          select: {
+            id: true,
+            ssoEmailDomain: true,
+          },
         });
 
         if (workspace) {
           const { ssoEmailDomain } = workspace;
           const emailDomain = user.email.split("@")[1];
 
-          // Only auto-provision to the workspace when the email domain matches.
-          // If ssoEmailDomain is unset or the domain mismatches, still allow
-          // sign-in (the user authenticated successfully with the IdP) but
-          // skip the workspace membership upsert.
-          const domainMatches =
-            !ssoEmailDomain ||
-            emailDomain.toLocaleLowerCase() ===
-              ssoEmailDomain.toLocaleLowerCase();
-
-          if (domainMatches) {
-            await Promise.allSettled([
-              // Add user to workspace (idempotent)
-              prisma.workspaceUsers.upsert({
-                where: {
-                  userId_workspaceId: {
-                    userId: user.id as string,
-                    workspaceId: workspace.id,
-                  },
-                },
-                update: {},
-                create: {
-                  workspaceId: workspace.id,
-                  userId: user.id as string,
-                },
-              }),
-              // Remove any pending invite for this user in this workspace
-              prisma.workspaceInvite.delete({
-                where: {
-                  email_workspaceId: {
-                    email: user.email,
-                    workspaceId: workspace.id,
-                  },
-                },
-              }),
-            ]);
+          // ssoEmailDomain should be required for all SAML enabled workspace
+          // this should not happen
+          if (!ssoEmailDomain) {
+            return false;
           }
+
+          if (
+            emailDomain.toLocaleLowerCase() !==
+            ssoEmailDomain.toLocaleLowerCase()
+          ) {
+            return false;
+          }
+
+          await Promise.allSettled([
+            // add user to workspace
+            prisma.workspaceUsers.upsert({
+              where: {
+                userId_workspaceId: {
+                  userId: user.id,
+                  workspaceId: workspace.id,
+                },
+              },
+              update: {},
+              create: {
+                workspaceId: workspace.id,
+                userId: user.id,
+              },
+            }),
+            // delete any pending invites for this user
+            prisma.workspaceInvite.delete({
+              where: {
+                email_workspaceId: {
+                  email: user.email,
+                  workspaceId: workspace.id,
+                },
+              },
+            }),
+          ]);
         }
       }
-
       return true;
     },
     jwt: async ({ token, user, trigger }) => {
