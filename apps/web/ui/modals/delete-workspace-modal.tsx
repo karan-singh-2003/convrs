@@ -29,9 +29,9 @@ function DeleteWorkspaceModal({
     <Modal
       showModal={showDeleteWorkspaceModal}
       setShowModal={setShowDeleteWorkspaceModal}
-      className="max-w-md rounded-none"
+      className="md:max-w-md rounded-none"
     >
-      <div className="space-y-1.5 border-b border-neutral-200 px-4 py-2 sm:px-6">
+      <div className="space-y-1.5 px-4 py-2 sm:px-6">
         <h3 className="text-base font-medium text-neutral-700">
           Delete Workspace
         </h3>
@@ -42,8 +42,8 @@ function DeleteWorkspaceModal({
           Warning: This will permanently delete your workspace, custom domains,
           and all associated links and their respective analytics.
         </p>
-        <form action="" className="flex flex-col space-y-4 bg-neutral-50 py-3">
-          <div className="relative flex items-center gap-3 rounded-full border border-neutral-300 bg-white px-4 py-2">
+        <form action="" className="flex flex-col space-y-4  py-3">
+          <div className="relative flex items-center gap-3 rounded-full   px-4 py-2">
             <BlurImage
               src={logo || ""}
               alt="Workspace logo"

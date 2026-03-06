@@ -5,9 +5,11 @@ import { cn } from "@repo/utils";
 import { ChevronDown, X } from "lucide-react";
 import { pluralize } from "@repo/utils";
 import useWorkspace from "@/lib/swr/use-workspace";
+import { mutatePrefix } from "@/lib/swr/mutate";
 import { Invites } from "@/lib/zod/schemas/invites";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
+import { clientAccessCheck } from "@/lib/client-access-check";
 
 const ROLES = [
   {
@@ -45,7 +47,10 @@ function RoleDropdown({
   }, []);
 
   return (
-    <div ref={ref} className="relative shrink-0 border-l border-neutral-200">
+    <div
+      ref={ref}
+      className="relative shrink-0 border-l z-60 border-neutral-200"
+    >
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -73,7 +78,7 @@ function RoleDropdown({
               <div className="text-[13px] font-medium text-neutral-600">
                 {r.label}
               </div>
-              <div className="text-[13px] mt-1 font-default font-medium text-neutral-500 ">
+              <div className="text-[13px] mt-1 font-default font-medium text-neutral-500">
                 {r.description}
               </div>
             </button>
@@ -98,14 +103,15 @@ export const InviteTeammatesForm = ({
   className?: string;
 }) => {
   const { isMobile } = useMediaQuery();
-  const { id, slug, loading } = useWorkspace();
-
+  const { id, slug, loading, userLimit } = useWorkspace();
+console.log("userLimit", userLimit);
   const {
     control,
     register,
     handleSubmit,
     setValue,
-    formState: { isSubmitting },
+    watch,
+    formState: { isSubmitting, isSubmitSuccessful },
   } = useForm<FormData>({
     defaultValues: {
       teammates: invites.length ? invites : [{ email: "", role: "member" }],
@@ -117,6 +123,8 @@ export const InviteTeammatesForm = ({
     control,
   });
 
+  const teammates = watch("teammates");
+
   return (
     <form
       onSubmit={handleSubmit(async (data) => {
@@ -124,7 +132,9 @@ export const InviteTeammatesForm = ({
           toast.error("Workspace not found");
           return;
         }
+
         const teammates = data.teammates.filter(({ email }) => email);
+
         const res = await fetch(`/api/workspaces/${id}/invites`, {
           method: "POST",
           headers: {
@@ -132,12 +142,28 @@ export const InviteTeammatesForm = ({
           },
           body: JSON.stringify({ teammates }),
         });
-        if (!res.ok) {
+
+        if (res.ok) {
+          await mutatePrefix(`/api/workspaces/${id}/invites`);
+          toast.success(`${pluralize("Invitation", teammates.length)} sent!`);
+          onSuccess();
+        } else {
           const { error } = await res.json();
-          toast.error(error || "Failed to send invites");
-          return;
+          if (
+            typeof error?.message === "string" &&
+            error.message.toLowerCase().includes("upgrade")
+          ) {
+            toast.error(
+              "You've reached the invite limit for your plan. Please upgrade to invite more teammates."
+            );
+          } else {
+            toast.error(
+              (typeof error === "string" ? error : error?.message) ||
+                "Failed to send invites"
+            );
+          }
+          throw error;
         }
-        onSuccess();
       })}
       className={cn("font-display flex flex-col gap-y-4 w-full", className)}
     >
@@ -155,8 +181,9 @@ export const InviteTeammatesForm = ({
                   required: index === 0,
                 })}
               />
+
               <RoleDropdown
-                role={field.role || "member"}
+                role={teammates?.[index]?.role || "member"}
                 onChange={(role) => setValue(`teammates.${index}.role`, role)}
               />
             </div>
@@ -175,18 +202,19 @@ export const InviteTeammatesForm = ({
 
         <button
           type="button"
-          className="font-display w-full h-9 text-[13px] text-neutral-500 font-medium bg-white hover:bg-neutral-50 transition border border-neutral-200 rounded-none"
+          className="font-display w-full h-9 text-[13px] text-neutral-500 font-medium bg-white hover:bg-neutral-50 transition rounded-none disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => append({ email: "", role: "member" })}
+          disabled={fields.length >= (userLimit ?? Infinity)}
         >
           Add more members
         </button>
       </div>
 
       <Button
-        className="font-display w-full h-9 mt-5 text-white text-sm"
+        className="font-display w-full h-9 mt-5 rounded-[3px] bg-black/90 text-white text-sm"
         text={`Send ${pluralize("invite", fields.length)}`}
-        disabled={loading || isSubmitting}
-        loading={isSubmitting}
+        disabled={loading || isSubmitting || isSubmitSuccessful}
+        loading={isSubmitting || isSubmitSuccessful}
       />
     </form>
   );

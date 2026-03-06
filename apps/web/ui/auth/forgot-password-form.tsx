@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { requestPasswordResetAction } from "@/lib/actions/request-password-reset";
 
 type ForgotPasswordProps = z.infer<typeof requestPasswordResetSchema>;
+
 export const ForgotPasswordForm = () => {
   const { isMobile } = useMediaQuery();
   const router = useRouter();
@@ -33,13 +34,13 @@ export const ForgotPasswordForm = () => {
       toast.success("Password reset email sent. Please check your inbox.");
       router.push("/login");
     },
-    onError(error) {
+    onError() {
       toast.error("Failed to send password reset email. Please try again.");
     },
   });
 
   return (
-    <div className="">
+    <div className="w-full max-w-md mx-auto px-4 sm:px-0">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -47,25 +48,34 @@ export const ForgotPasswordForm = () => {
             await executeAsync(data);
           })(e);
         }}
-        className="space-y-2.5"
+        className="flex flex-col gap-4"
       >
-        <div className="flex flex-col gap-y-2.5">
-          <Label htmlFor="email" className="font-display text-neutral-600">Email Address</Label>
+        {/* Email */}
+        <div className="flex flex-col gap-2">
+          <Label
+            htmlFor="email"
+            className="font-display text-sm sm:text-[14.5px] text-neutral-600"
+          >
+            Email Address
+          </Label>
+
           <Input
             id="email"
             autoFocus={!isMobile}
             {...register("email")}
             placeholder="panic@thedis.com"
             error={errors.email ? errors.email.message : ""}
-            className="font-display "
+            className="font-display text-sm sm:text-[14.5px]"
           />
         </div>
+
+        {/* Button */}
         <Button
           type="submit"
           text="Reset Password"
           disabled={isPending}
-          className="text-white font-display"
-        ></Button>
+          className="w-full text-white font-display py-2 sm:py-2.5"
+        />
       </form>
     </div>
   );

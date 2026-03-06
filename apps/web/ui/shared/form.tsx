@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { Input, Button } from "@repo/ui";
 
 const Form = ({
@@ -8,12 +8,14 @@ const Form = ({
   inputAtts,
   buttonText,
   handleSubmit,
+  disabledTooltip
 }: {
   title: string;
   description: string;
   buttonText: string;
   inputAtts: React.InputHTMLAttributes<HTMLInputElement>;
   handleSubmit: (data: any) => Promise<void>;
+  disabledTooltip?: string | ReactNode;
 }) => {
   const { defaultValue, ...restInputAtts } = inputAtts;
   const [value, setValue] = useState(defaultValue || "");
@@ -45,7 +47,7 @@ const Form = ({
             required
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="w-full"
+            className="w-full font-display text-neutral-600"
           />
 
           {value && (
@@ -54,7 +56,8 @@ const Form = ({
               variant="secondary"
               loading={saving}
               text={buttonText}
-              className="absolute w-fit right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-[13px] rounded-full bg-[#F6F6F6] text-black/60"
+              disabledTooltip={disabledTooltip}
+              className="absolute w-fit right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-[13px] rounded-full  text-black/60"
             />
           )}
         </div>

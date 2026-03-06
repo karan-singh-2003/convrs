@@ -62,7 +62,7 @@ export function CreateWorkspaceForm({
           });
         }
       })}
-      className="w-[400px] space-y-4"
+      className="w-full  space-y-4"
     >
       <div className="flex flex-col gap-y-2.5">
         <Label className="font-display text-neutral-600">Workspace Name</Label>
@@ -81,7 +81,7 @@ export function CreateWorkspaceForm({
         <Label className="font-display text-neutral-600">Workspace Slug</Label>
 
         <div className="mt-2 flex min-w-0">
-          <span className="inline-flex shrink-0 items-center rounded-l-sm border border-r-0 border-neutral-300 bg-neutral-50 px-3 font-medium font-display text-neutral-500 sm:text-sm">
+          <span className="inline-flex shrink-0 items-center rounded-l-sm border border-r-0 border-neutral-300 bg-neutral-50 px-2 sm:px-3 font-medium font-display text-neutral-500 text-[13px] sm:text-sm">
             app.{process.env.NEXT_PUBLIC_APP_DOMAIN}
           </span>
           <Input
@@ -136,7 +136,7 @@ export function CreateWorkspaceForm({
             )}
           />
           <div>
-            <p className="mt-1.5 text-[12px] font-display font-medium text-neutral-500">
+            <p className="mt-1.5 text-[12.5px] font-display font-medium text-neutral-500">
               Recommended size: 160x160px
             </p>
           </div>

@@ -15,15 +15,15 @@ function InviteWorkspaceUserModal({
     <Modal
       showModal={showInviteWorkspaceUserModal}
       setShowModal={setShowInviteWorkspaceUserModal}
-      className="max-w-md rounded-none max-h-[95dvh] "
+      className="px-4 py-2 md:px-2  max-h-[95dvh] "
     >
-      <div className="space-y-1.5 border-b border-neutral-200 px-4 py-2 sm:px-6">
-        <h3 className="text-base font-display font-medium ">
+      <div className="space-y-1.5 md:px-3 md:py-2  ">
+        <h3 className="text-[16.5px] font-display font-semibold ">
           Invite Teammates
         </h3>
       </div>
-      <div className="px-4 py-2 sm:px-6">
-        <p className="text-[14px] font-medium  font-display text-neutral-500 ">
+      <div className="md:py-2 md:px-3">
+        <p className="text-[14.5px] font-medium  font-display text-neutral-500 ">
           Invite teammates with different roles and permissions. Invitations
           will be valid for 14 days.
         </p>

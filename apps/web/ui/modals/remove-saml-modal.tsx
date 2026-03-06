@@ -57,7 +57,7 @@ function RemoveSAMLModal({
       setShowModal={setShowRemoveSAMLModal}
       className="max-w-md"
     >
-      <div className="space-y-2 border-b border-neutral-200 px-4 py-2">
+      <div className="space-y-2 md:border-b md:border-neutral-200 px-4 py-2">
         <h3 className="text-base font-display font-medium">Remove SAML</h3>
       </div>
       <div className="px-4 py-2">

@@ -9,6 +9,7 @@ import { getStripe } from "@/lib/stripe/client";
 export function UpgradePlanButton({
   plan,
   period,
+  tier,
   text,
   variant = "primary",
   className,
@@ -17,6 +18,7 @@ export function UpgradePlanButton({
   plan: string;
   period: "monthly" | "yearly";
   text?: string;
+  tier?: number;
   variant?: "primary" | "secondary";
   className?: string;
   disabled?: boolean;
@@ -48,6 +50,7 @@ export function UpgradePlanButton({
           body: JSON.stringify({
             plan,
             period,
+            tier,
             baseUrl: `${APP_DOMAIN}${pathname}${queryString.length > 0 ? `?${queryString}` : ""}`,
             onboarding: searchParams.get("workspace") ? "true" : "false",
           }),

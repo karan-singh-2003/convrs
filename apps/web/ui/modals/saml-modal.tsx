@@ -39,12 +39,12 @@ function SAMLModal({
 
   return (
     <Modal showModal={showSAMLModal} setShowModal={setShowSAMLModal}>
-      <div className="flex flex-col space-y-3 border-b border-neutral-200 px-4 py-2 ">
+      <div className="flex flex-col space-y-3  px-4 py-2 ">
         <h3 className="text-base font-medium text-neutral-700">Manage SAML</h3>
       </div>
 
       <div className="px-4 py-2">
-        <p className="text-sm font-medium text-neutral-500 font-display">
+        <p className="text-sm font-medium text-neutral-500 font-default">
           Select a provider to configure SAML for your{" "}
           {process.env.NEXT_PUBLIC_APP_NAME} workspace.
         </p>

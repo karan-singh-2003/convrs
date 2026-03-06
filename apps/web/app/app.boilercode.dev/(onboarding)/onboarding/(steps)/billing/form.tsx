@@ -59,42 +59,40 @@ export function BillingForm() {
           ]}
           selected={billingCycle}
           selectAction={(val) => setBillingCycle(val as "monthly" | "yearly")}
-          optionClassName="text-sm px-4 py-1"
+          optionClassName="text-sm px-4 py-1 text-neutral-600 font-display"
         />
         {billingCycle === "yearly" && (
-          <span className="text-sm font-medium font-display ">
+          <span className="text-sm font-medium font-display text-neutral-600 ">
             Save 20% with yearly billing
           </span>
         )}
       </div>
 
       {/* Plan cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3  w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full gap-3 sm:gap-0">
         {PAID_PLANS.map((plan, index) => {
           const isMostPopular = plan.name === "Business";
           const price =
             billingCycle === "monthly" ? plan.price.monthly : plan.price.yearly;
 
-          const isFirst = index === 0;
-          const isLast = index === PAID_PLANS.length - 1;
+          const roundedClass =
+            index === 0
+              ? "rounded-xl md:rounded-l-xl md:rounded-r-none"
+              : index === PAID_PLANS.length - 1
+                ? "rounded-xl md:rounded-r-xl md:rounded-l-none"
+                : "rounded-xl md:rounded-none";
+
           return (
             <div
               key={plan.name}
-              className={cn(
-                "bg-neutral-50 border border-neutral-200/60 flex flex-col p-6",
-                // Remove double borders between cards
-                !isFirst && "border-l-0",
-
-                // Rounded logic
-                isFirst && "rounded-l-2xl",
-                isLast && "rounded-r-2xl"
-              )}
+              className={`bg-neutral-50 border border-neutral-200/60 flex flex-col p-4 sm:p-6 ${roundedClass}`}
             >
-              {/* Plan name + Most Popular badge inline */}
-              <div className="flex items-center justify-between mb-0.5">
+              {/* Plan name + badge */}
+              <div className="flex items-center justify-between">
                 <h3 className="font-display text-[14.5px] font-semibold text-neutral-600">
                   {plan.name}
                 </h3>
+
                 {isMostPopular && (
                   <span className="text-[13px] font-display font-medium text-[#3A8ED3]">
                     Most Popular
@@ -102,7 +100,8 @@ export function BillingForm() {
                 )}
               </div>
 
-              <div className="flex items-baseline gap-1.5">
+              {/* Price */}
+              <div className="flex items-baseline gap-1">
                 <span className="font-display text-[24px] font-bold text-neutral-600">
                   $
                   <NumberFlow
@@ -111,7 +110,7 @@ export function BillingForm() {
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0,
                     }}
-                    className=" leading-none font-semibold text-neutral-600 font-display"
+                    className="leading-none font-semibold text-neutral-600 font-display"
                   />
                 </span>
 
@@ -119,23 +118,27 @@ export function BillingForm() {
                   per {billingCycle === "monthly" ? "month" : "year"}
                 </span>
               </div>
-              {/* CTA button */}
+
+              {/* CTA */}
               <UpgradePlanButton
                 plan={plan.name.toLowerCase()}
                 period={billingCycle}
                 text="Get Started"
                 className="my-4 text-sm rounded-sm bg-neutral-800 h-fit py-1.5"
               />
+
               {/* Features */}
               <div className="flex-1">
                 <p className="text-[13.5px] font-medium text-neutral-600 mb-3">
                   {plan.featureTitle}
                 </p>
+
                 <ul className="space-y-2.5">
                   {plan.features?.map((feature) => {
                     const isNegative =
                       feature.name.toLowerCase().startsWith("no ") ||
                       feature.name.toLowerCase().includes("not ");
+
                     return (
                       <li key={feature.id} className="flex items-center gap-2">
                         {isNegative ? (
@@ -143,6 +146,7 @@ export function BillingForm() {
                         ) : (
                           <Check className="size-4 shrink-0 text-neutral-500" />
                         )}
+
                         <span
                           className={cn(
                             "text-[13.5px] font-display",
@@ -168,6 +172,7 @@ export function BillingForm() {
           loading={selectingFree}
           variant="secondary"
           text="Continue with Free Plan"
+          className="text-neutral-600"
         />
       </div>
     </div>

@@ -409,6 +409,76 @@ export const authOptions: NextAuthOptions = {
             },
           });
         }
+      } else if (
+        account?.provider === "saml" ||
+        account?.provider === "saml-idp"
+      ) {
+        let samlProfile: any;
+
+        if (account.provider === "saml-idp") {
+          // For IdP-initiated flow, the profile is attached to the user object
+          // by the saml-idp CredentialsProvider's authorize function
+          // @ts-ignore
+          samlProfile = user.profile;
+          if (!samlProfile) {
+            return true;
+          }
+        } else {
+          samlProfile = profile;
+        }
+
+        // The tenant identifies the workspace that initiated the SAML login
+        if (!samlProfile?.requested?.tenant) {
+          return false;
+        }
+
+        const workspace = await prisma.workspace.findUnique({
+          where: { id: samlProfile.requested.tenant },
+          select: { id: true, ssoEmailDomain: true },
+        });
+
+        if (workspace) {
+          const { ssoEmailDomain } = workspace;
+          const emailDomain = user.email.split("@")[1];
+
+          // ssoEmailDomain should always be set for SAML-enabled workspaces
+          if (!ssoEmailDomain) {
+            return false;
+          }
+
+          if (
+            emailDomain.toLocaleLowerCase() !==
+            ssoEmailDomain.toLocaleLowerCase()
+          ) {
+            return false;
+          }
+
+          await Promise.allSettled([
+            // Add user to workspace (idempotent)
+            prisma.workspaceUsers.upsert({
+              where: {
+                userId_workspaceId: {
+                  userId: user.id as string,
+                  workspaceId: workspace.id,
+                },
+              },
+              update: {},
+              create: {
+                workspaceId: workspace.id,
+                userId: user.id as string,
+              },
+            }),
+            // Remove any pending invite for this user in this workspace
+            prisma.workspaceInvite.delete({
+              where: {
+                email_workspaceId: {
+                  email: user.email,
+                  workspaceId: workspace.id,
+                },
+              },
+            }),
+          ]);
+        }
       }
 
       return true;

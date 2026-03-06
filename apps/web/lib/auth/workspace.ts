@@ -68,7 +68,7 @@ export const withWorkspace = (
         }
       }
 
-      workspace = await prisma.workspace.findUnique({
+      workspace = (await prisma.workspace.findUnique({
         where: {
           id: workspaceId || undefined,
           slug: workspaceSlug || undefined,
@@ -83,7 +83,7 @@ export const withWorkspace = (
             },
           },
         },
-      });
+      })) as WorkspaceProps | null;
 
       // workspace does not exists
       if (!workspace) {

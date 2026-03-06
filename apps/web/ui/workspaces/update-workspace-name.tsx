@@ -1,9 +1,14 @@
 import useWorkspace from "@/lib/swr/use-workspace";
 import Form from "../shared/form";
 import { toast } from "sonner";
+import { clientAccessCheck } from "@/lib/client-access-check";
 
 export default function UpdateWorkspaceName() {
-  const { name, slug, id } = useWorkspace();
+  const { name, slug, id, role } = useWorkspace();
+  const permissionError = clientAccessCheck({
+    action: "workspace:write",
+    role,
+  }).error;
   return (
     <Form
       title="Workspace Name"
@@ -15,6 +20,7 @@ export default function UpdateWorkspaceName() {
         maxLength: 32,
       }}
       buttonText="Update Name"
+      disabledTooltip={permissionError || undefined}
       handleSubmit={async (data) => {
         fetch(`/api/workspaces/${id}`, {
           method: "PATCH",

@@ -6,6 +6,7 @@ model Workspace {
   inviteCode       String? @unique
 
   plan             String?  @default("free")
+  planTier         Int      @default(0)
   stripeId         String?  @unique
   billingCycleStart Int
   paymentFailedAt  DateTime?

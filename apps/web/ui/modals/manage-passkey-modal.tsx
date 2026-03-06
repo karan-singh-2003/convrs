@@ -115,7 +115,7 @@ function ManagePasskeyModal({
     >
       <div className="flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-2">
+        <div className="flex items-center justify-between  px-4 py-2">
           <h3 className="text-base font-medium text-neutral-700">
             Manage Passkey
           </h3>

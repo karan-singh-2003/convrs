@@ -114,7 +114,7 @@ function WorkspaceList({
       <div
         ref={scrollRef}
         onScroll={updateScrollProgress}
-        className="w-xs max-h-84 relative w-full overflow-auto rounded-none bg-white text-base sm:w-[300px] sm:text-sm"
+        className="w-xs md:max-h-84 relative w-full overflow-auto rounded-none bg-white text-base sm:w-[300px] sm:text-sm"
       >
         {/* Current workspace section */}
         <div className="flex flex-col gap-2.5 border-b border-neutral-200 px-3 pb-3 sm:p-2">
@@ -128,7 +128,7 @@ function WorkspaceList({
               draggable={false}
             />
             <div className="min-w-0 flex items-center gap-x-1 justify-between w-full">
-              <div className="truncate font-display text-base font-medium leading-5 text-neutral-500 sm:text-sm">
+              <div className="truncate font-display  font-medium leading-5 text-neutral-500 text-[14px] sm:text-sm">
                 {selected.name}
               </div>
               {selected.slug && (
@@ -175,7 +175,7 @@ function WorkspaceList({
                       className="size-5 shrink-0 overflow-hidden rounded-full"
                       draggable={false}
                     />
-                    <span className="block truncate font-display leading-5 text-neutral-600 sm:max-w-[140px] sm:text-[14px]">
+                    <span className="block truncate font-display leading-5 text-neutral-600 sm:max-w-[140px] text-[13px] sm:text-[12.5px]">
                       {name}
                     </span>
                     {selected.slug === slug ? (
@@ -203,12 +203,12 @@ function WorkspaceList({
           </div>
         </div>
         <div className="p-1">
-          <div className="flex flex-col mb-0.5">
+          <div className="flex flex-col mb-1">
             <Link
               href={`/${selected.slug ? selected.slug : "account"}/settings`}
               className="
         flex items-center gap-x-4
-        rounded-none font-medium font-display  px-2.5 py-1 w-full
+        rounded-none font-medium font-display text-[14px] px-2.5 py-1 w-full
         transition-all duration-75
         hover:bg-neutral-200/50
         active:bg-neutral-200/80
@@ -224,7 +224,7 @@ function WorkspaceList({
                 href={`/${selected.slug}/settings/people`}
                 className="
           flex items-center gap-x-4
-          rounded-none font-display  font-medium  text-neutral-600/85 px-2.5 py-1 w-full
+          rounded-none font-display  font-medium text-[14px] text-neutral-600/85 px-2.5 py-1 w-full
           transition-all duration-75
           hover:bg-neutral-200/50
           active:bg-neutral-200/80

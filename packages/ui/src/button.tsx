@@ -62,7 +62,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <Tooltip content={disabledTooltip}>
           <div
             className={cn(
-              "flex h-10 w-full cursor-not-allowed items-center justify-center gap-x-2 rounded-none border border-neutral-200 bg-neutral-100 px-4 text-sm text-neutral-400 transition-all focus:outline-none",
+              "flex h-10 w-full cursor-not-allowed items-center justify-center gap-x-2 rounded-none border border-neutral-200 bg-neutral-100 px-4 md:text-sm  text-neutral-400 transition-all focus:outline-none",
               {
                 "border-transparent bg-transparent":
                   variant?.endsWith("outline"),

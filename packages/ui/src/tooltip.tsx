@@ -147,7 +147,7 @@ export function TooltipContent({
             {...(target ? { target } : {})}
             className={cn(
               buttonVariants({ variant: "primary" }),
-              "flex h-8 w-full items-center justify-center whitespace-nowrap rounded-lg border px-4 text-sm"
+              "flex h-8 w-full items-center justify-center font-display whitespace-nowrap rounded-lg border px-4 text-sm"
             )}
           >
             {cta}
@@ -157,7 +157,7 @@ export function TooltipContent({
             onClick={onClick}
             text={cta}
             variant="primary"
-            className="h-8"
+            className="h-8 text-white"
           />
         ) : null)}
     </div>

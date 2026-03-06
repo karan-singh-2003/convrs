@@ -4,10 +4,15 @@ import Form from "../shared/form";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { clientAccessCheck } from "@/lib/client-access-check";
 export default function UpdateWorkspaceSlug() {
-  const { name, slug, id } = useWorkspace();
+  const { name, slug, id, role } = useWorkspace();
   const router = useRouter();
   const {update} = useSession();
+  const permissionError = clientAccessCheck({
+    action: "workspace:write",
+    role,
+  }).error;
   return (
     <Form
       title="Workspace Slug"
@@ -19,6 +24,7 @@ export default function UpdateWorkspaceSlug() {
         maxLength: 32,
       }}
       buttonText="Update Slug"
+      disabledTooltip={permissionError || undefined}
       handleSubmit={async (data) => {
         await fetch(`/api/workspaces/${id}`, {
           method: "PATCH",

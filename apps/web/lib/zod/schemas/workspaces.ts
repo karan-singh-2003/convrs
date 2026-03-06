@@ -17,6 +17,11 @@ export const WorkspaceSchema = z
       .nullable()
       .optional()
       .describe("The current plan of the workspace."),
+    planTier: z
+      .number()
+      .nullable()
+      .default(0)
+      .describe("The tier of the workspace's plan."),
     stripeId: z
       .string()
       .nullable()

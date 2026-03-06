@@ -73,14 +73,14 @@ export function MainNav({
           <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
             <div className="h-10 border-b flex justify-between items-center border-[#EBEBEB]/50">
               {/* breadcrumbs */}
-              <div className="px-4 flex items-center gap-x-4">
+              <div className="px-4 flex items-center md:gap-x-4 gap-x-2">
                 <NavButton />
                 <Breadcrumbs />
               </div>
               {/* user avatar */}
               {!hideAvatar && <UserDropdown />}
             </div>
-            {children}
+            <div className="px-4 md:px-0">{children}</div>
           </SideNavContent.Provider>
         </div>
       </div>
@@ -119,7 +119,7 @@ function Breadcrumbs() {
                 <span className="mx-2  text-neutral-400">&gt;</span>
               </>
             ) : (
-              <span className="text-neutral-500 text-[13.5px] font-medium font-default ">
+              <span className="text-neutral-500 md:text-[13.5px] text-sm font-medium font-default ">
                 {label}
               </span>
             )}

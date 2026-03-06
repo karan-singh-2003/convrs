@@ -59,7 +59,7 @@ export function SidebarNav<T extends Record<any, any>>({
                                 className="text-[13px] font-medium gap-x-2 flex items-center text-neutral-500 hover:text-neutral-600"
                               >
                                 <ArrowLeft size={14} />{" "}
-                                <span className="font-display text-[13.5px]">{title}</span>
+                                <span className="font-display text-[13px] md:text-[13.5px]">{title}</span>
                               </Link>
                             ) : (
                               <h2 className="text-sm font-medium font-display   text-neutral-700">
@@ -130,7 +130,7 @@ function NavItem({ item }: { item: NavItemType }) {
     <Link
       href={href}
       className={cn(
-        "block rounded-none font-display font-medium py-0.5 px-2 text-[14.5px] text-neutral-600/85 transition-colors"
+        "block rounded-none font-display font-medium py-0.5 px-2 text-[14px] md:text-[14.5px] text-neutral-600/85 transition-colors"
       )}
     >
       {title}

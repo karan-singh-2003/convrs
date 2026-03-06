@@ -17,7 +17,7 @@ export default function RegisterPageClient() {
 
 function SignUp() {
   return (
-    <div className="max-w-sm mx-auto py-8">
+    <div className="max-w-sm mx-auto py-8 px-4 md:px-0" >
       <div className="flex flex-col my-5 items-center justify-center">
         <h1 className="text-xl font-semibold my-4 font-display">
           <svg

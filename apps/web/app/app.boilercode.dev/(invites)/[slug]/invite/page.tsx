@@ -7,8 +7,6 @@ import { AcceptInviteButton } from "./accept-invite-button";
 import { cn, OG_AVATAR_URL } from "@repo/utils";
 import { InviteConfetti } from "./invite-confetti";
 
-const MAX_TEAM_DISPLAY = 4;
-
 export default async function InvitePage({
   params,
 }: {
@@ -21,28 +19,20 @@ export default async function InvitePage({
 
   const [user, invite] = await Promise.all([
     prisma.user.findUniqueOrThrow({
-      where: {
-        id: session.user.id,
-      },
+      where: { id: session.user.id },
       select: {
         id: true,
         email: true,
         name: true,
         image: true,
-        _count: {
-          select: {
-            workspaceUsers: true,
-          },
-        },
+        _count: { select: { workspaceUsers: true } },
       },
     }),
 
     prisma.workspaceInvite.findFirst({
       where: {
         email: session.user.email,
-        workspace: {
-          slug,
-        },
+        workspace: { slug },
       },
       include: {
         workspace: {
@@ -60,9 +50,7 @@ export default async function InvitePage({
                   },
                 },
               },
-              orderBy: {
-                createdAt: "asc",
-              },
+              orderBy: { createdAt: "asc" },
             },
           },
         },
@@ -70,34 +58,55 @@ export default async function InvitePage({
     }),
   ]);
 
-  if (!invite) {
-    redirect(`/${slug}`);
-  }
+  if (!invite) redirect(`/${slug}`);
+
   if (invite.expires < new Date()) {
     return (
-      <>
-        <div>
-          <CloseInviteButton
-            goToOnboarding={user._count.workspaceUsers === 0}
-          />
-          <div>
-            <Hero isExpired invite={invite} user={user}></Hero>
-          </div>
+      <div className="min-h-screen flex flex-col items-center px-4 py-8">
+        <PageLogo />
+
+        <div className="w-full max-w-md mt-8">
+          <Hero isExpired invite={invite} user={user} />
         </div>
-      </>
+      </div>
     );
   }
 
-  console.log("Rendering invite page for workspace:", invite.role);
   return (
-    <div>
-      <div className="flex items-center justify-end p-4">
+    <div className="min-h-screen flex flex-col items-center px-4 py-8">
+      <PageLogo />
+
+      <div className="w-full max-w-md flex justify-end mt-4">
         <CloseInviteButton goToOnboarding={user._count.workspaceUsers === 0} />
       </div>
-      <div className="flex w-full flex-col items-center justify-center px-4 py-10">
+
+      <div className="w-full max-w-md flex flex-col items-center mt-6">
         <Hero invite={invite} user={user} isExpired={false} />
       </div>
+
       <InviteConfetti />
+    </div>
+  );
+}
+
+function PageLogo() {
+  return (
+    <div className="flex justify-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 182 199"
+        fill="none"
+        className="size-8 sm:size-9"
+      >
+        <path
+          d="M0 50.837L90.3333 0L182 50.837V148.832L90.3333 199L0 148.832V50.837Z"
+          fill="#363636"
+        />
+        <path
+          d="M10 50.0038L90.1639 5L173 49.6679L90.832 94L10 50.0038Z"
+          fill="white"
+        />
+      </svg>
     </div>
   );
 }
@@ -117,10 +126,11 @@ function Hero({
 }) {
   return (
     <>
+      {/* Avatars */}
       <div
         className={cn(
-          "relative z-0 mt-8 flex items-center",
-          "animate-slide-up-fade motion-reduce:animate-fade-in [--offset:10px] [animation-delay:50ms] [animation-duration:0.5s] [animation-fill-mode:both]"
+          "relative mt-6 flex items-center justify-center",
+          "animate-slide-up-fade motion-reduce:animate-fade-in"
         )}
       >
         <img
@@ -128,53 +138,42 @@ function Hero({
             invite.workspace.logo || `${OG_AVATAR_URL}${invite.workspace.name}`
           }
           alt={invite.workspace.name}
-          className="z-10 size-20 rotate-[-15deg] rounded-full drop-shadow-md"
+          className="z-10 size-16 sm:size-20 rotate-[-12deg] rounded-full drop-shadow-md"
         />
+
         <img
           src={user?.image || `${OG_AVATAR_URL}${user?.id}`}
           alt={user?.name || "Your avatar"}
-          className="-ml-4 size-20 rotate-[15deg] rounded-full drop-shadow-md"
+          className="-ml-4 size-16 sm:size-20 rotate-[12deg] rounded-full drop-shadow-md"
         />
       </div>
 
+      {/* Text */}
       <div
         className={cn(
-          "flex w-full flex-col items-center text-center",
-          "animate-slide-up-fade motion-reduce:animate-fade-in [--offset:10px] [animation-delay:100ms] [animation-duration:0.5s] [animation-fill-mode:both]",
-          !isExpired ? "max-w-[400px]" : "max-w-[440px]"
+          "flex flex-col items-center text-center w-full mt-6",
+          "animate-slide-up-fade motion-reduce:animate-fade-in",
+          "max-w-md"
         )}
       >
-        <h2 className="text-content-default mt-4 text-pretty text-lg font-semibold">
+        <h2 className="text-neutral-700 text-lg sm:text-xl font-semibold font-display">
           {!isExpired ? (
             <>Welcome to the {invite.workspace.name} workspace</>
           ) : (
-            <>
-              Your invite to the {invite.workspace.name} workspace has expired
-            </>
+            <>Your invite to the {invite.workspace.name} workspace has expired</>
           )}
         </h2>
-        <p className="text-content-subtle text-pretty text-base font-medium">
+
+        <p className="text-neutral-500 text-sm sm:text-[15px] font-display mt-1">
           {!isExpired ? (
-            <>
-              You've been added as a {invite.role}{" "}
-              {/* <Tooltip
-                content={
-                  invite.role === "owner"
-                    ? "You have the highest workspace permissions. [Learn more](https://dub.co/help/article/workspace-roles#member-role)"
-                    : "You have limited workspace permissions. [Learn more](https://dub.co/help/article/workspace-roles#member-role)"
-                }
-              >
-                <span className="underline decoration-dotted underline-offset-2">
-                  {invite.role === "billing" ? "billing user" : invite.role}
-                </span>
-              </Tooltip> */}
-            </>
+            <>You've been added as a {invite.role}</>
           ) : (
             <>Please contact the owner to request another invite.</>
           )}
         </p>
 
-        <div className="mt-4 flex w-full justify-center">
+        {/* Button */}
+        <div className="mt-5 w-full flex justify-center">
           {!isExpired ? (
             <AcceptInviteButton />
           ) : (

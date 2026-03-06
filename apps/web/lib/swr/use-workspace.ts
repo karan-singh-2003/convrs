@@ -21,6 +21,7 @@ export default function useWorkspace({
     ...swrOpts,
   });
 
+
   return {
     ...workspace,
     role: (workspace?.users && workspace.users[0]?.role) || "member",

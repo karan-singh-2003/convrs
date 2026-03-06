@@ -10,8 +10,8 @@ export function NavButton() {
     <Button
       type="button"
       variant="outline"
-      icon={<LayoutSidebar className="size-4"/>}
-      className="h-auto w-fit md:hidden p-1"
+      icon={<LayoutSidebar className="size-4 text-neutral-600 "/>}
+      className="h-auto w-fit md:hidden md:p-1 p-0"
       onClick={() => setIsOpen((o) => !o)}
     />
   );

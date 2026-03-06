@@ -153,9 +153,13 @@ export const getNextPlan = (plan?: string | null) => {
 export const isDowngradePlan = ({
   currentPlan,
   newPlan,
+  currentTier,
+  newTier,
 }: {
   currentPlan: string;
   newPlan: string;
+  currentTier?: number;
+  newTier?: number;
 }) => {
   const currentPlanIndex = PLANS.findIndex(
     (p) => p.name.toLowerCase() === currentPlan.toLowerCase()
@@ -163,22 +167,9 @@ export const isDowngradePlan = ({
   const newPlanIndex = PLANS.findIndex(
     (p) => p.name.toLowerCase() === newPlan.toLowerCase()
   );
-  return newPlanIndex < currentPlanIndex;
+  return (
+    currentPlanIndex > newPlanIndex ||
+    (currentPlanIndex === newPlanIndex && (currentTier ?? 1) > (newTier ?? 1))
+  );
 };
 
-export const getSuggestedPlan = ({
-  suggestFree = false,
-}: {
-  suggestFree?: boolean;
-}): { plan: PlanDetails } => {
-  for (const plan of PLANS) {
-    // Skip free plan unless explicitly requested
-    if (!suggestFree && plan.price.monthly === 0) continue;
-
-    // Return the first matching plan
-    return { plan };
-  }
-
-  // Fallback to Pro plan (should never reach here)
-  return { plan: Pro_Plan };
-};

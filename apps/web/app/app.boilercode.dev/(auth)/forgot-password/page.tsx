@@ -22,10 +22,10 @@ export default function ForgotPasswordPage() {
             />
           </svg>
 
-          <h1 className="text-[20px] mt-2 font-display font-semibold">
+          <h1 className="text-base sm:text-[18px] mt-2 font-display font-semibold">
             Reset your password
           </h1>
-          <h3 className="text-muted-foreground font-medium font-display text-[16px]">
+          <h3 className="text-muted-foreground font-medium font-display text-sm sm:text-[14.5px]">
             Enter your email and we’ll send you a reset link.
           </h3>
         </div>

@@ -6,14 +6,16 @@ import { toast } from "sonner";
 import useWorkspace from "@/lib/swr/use-workspace";
 
 export default function UploadLogo() {
-  const { id, logo } = useWorkspace();
+  const { id, logo,isOwner } = useWorkspace();
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
   return (
     <form
       onSubmit={async (e) => {
         setUploading(true);
         e.preventDefault();
+
         fetch(`/api/workspaces/${id}`, {
           method: "PATCH",
           headers: {
@@ -32,14 +34,19 @@ export default function UploadLogo() {
           .finally(() => setUploading(false));
       }}
     >
-      <div className="flex flex-col gap-3">
-        <div className="space-y-0.5">
-          <h2 className="font-medium text-sm font-display text-neutral-600">Workspace Logo</h2>
-          <p className="font-display text-[14px] text-neutral-500">
+      <div className="flex flex-col gap-4">
+        {/* Heading */}
+        <div className="space-y-1">
+          <h2 className="font-medium text-sm font-display text-neutral-700">
+            Workspace Logo
+          </h2>
+          <p className="text-sm text-neutral-500 max-w-md">
             This is your workspace's logo on {process.env.NEXT_PUBLIC_APP_NAME}
           </p>
         </div>
-        <div className="mt-1 flex items-end gap-2">
+
+        {/* Upload Section */}
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
           <FileUpload
             accept="images"
             className="h-24 w-24 rounded-full border border-neutral-300"
@@ -52,15 +59,18 @@ export default function UploadLogo() {
             maxFileSizeMB={2}
             targetResolution={{ width: 240, height: 240 }}
           />
-          <div className="mb-3">
+
+          <div className="flex flex-col gap-2 max-w-sm">
             <Button
-              className="h-fit py-1 w-fit text-[13px] font-default text-white disabled:text-black/50"
-              text="save changes"
+              className="sm:w-fit w-full py-1 h-fit text-[13px] text-white disabled:text-black/50"
+              text="Save changes"
               loading={uploading}
-              disabled={!image || image === logo}
-            ></Button>
-            <p className="text-[13px] text-neutral-500">
-              Square Image Recommended. Accepted file types: .png, .jpg, .jpeg.
+              disabled={!isOwner || !image || image === logo}
+              disabledTooltip={!isOwner ? "You are not the owner of this workspace." : undefined}
+            />
+
+            <p className="text-[12.5px] font-display text-neutral-500">
+              Square image recommended. Accepted file types: .png, .jpg, .jpeg.
               Max file size: 2MB.
             </p>
           </div>

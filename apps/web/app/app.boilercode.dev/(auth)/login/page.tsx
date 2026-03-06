@@ -4,7 +4,7 @@ import { Suspense } from "react";
 const LogIn = () => {
   return (
     <Suspense fallback={<div>Loading</div>}>
-      <div className="max-w-sm mx-auto py-8">
+      <div className="max-w-sm mx-auto px-4 md:px-0 py-8">
         <div className="flex flex-col my-5 items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"

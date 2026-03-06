@@ -58,7 +58,7 @@ export function Modal({
         {...drawerRootProps}
       >
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-50 bg-neutral-100 bg-opacity-10 backdrop-blur" />
+          <Drawer.Overlay className="fixed inset-0 z-50 bg-[#18192533]" />
           <Drawer.Content
             onPointerDownOutside={(e) => {
               // Prevent dismissal when clicking inside a toast
@@ -71,8 +71,8 @@ export function Modal({
             }}
             className={cn(
               "fixed bottom-0 left-0 right-0 z-50 flex flex-col",
-              "rounded-none border-t border-neutral-200 bg-white",
-              className,
+              "rounded-none bg-white",
+              className
             )}
           >
             <div className="scrollbar-hide flex-1 overflow-y-auto rounded-none bg-inherit">
@@ -103,7 +103,7 @@ export function Modal({
         <Dialog.Overlay
           // for detecting when there's an active opened modal
           id="modal-backdrop"
-          className="animate-fade-in fixed inset-0 z-40 bg-neutral-100 bg-opacity-50 backdrop-blur-md"
+          className="animate-fade-in fixed inset-0 z-40 bg-[#18192533]"
         />
         <Dialog.Content
           onOpenAutoFocus={(e) => e.preventDefault()}
@@ -119,9 +119,9 @@ export function Modal({
           }}
           className={cn(
             "fixed inset-0 z-40 m-auto h-fit w-full max-w-md",
-            "border border-neutral-200 bg-white p-0 shadow-md sm:rounded-2xl",
-            "scrollbar-hide animate-scale-in overflow-y-auto text-[#5B5B5B]",
-            className,
+            "border border-neutral-200 bg-white p-0 shadow-md rounded-xl",
+            "scrollbar-hide animate-scale-in overflow-visible text-[#5B5B5B]",
+            className
           )}
         >
           <VisuallyHidden.Root>

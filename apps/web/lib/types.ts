@@ -9,6 +9,7 @@ import {
   webhookEventSchemaTB,
 } from "./zod/schemas/webhook";
 import { WEBHOOK_TRIGGERS } from "./webhook/constant";
+
 export interface UserProps {
   id: string;
   name: string;
@@ -26,12 +27,22 @@ export const ONBOARDING_STEPS = [
   "billing",
   "invite",
   "success",
+  "source",
   "completed",
 ] as const;
 
-export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
+export const plans = [
+  "free",
+  "pro",
+  "business",
+  "advanced",
+  "enterprise",
+] as const;
 
+export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
+export type PlanProps = (typeof plans)[number];
 export interface WorkspaceProps extends Workspace {
+  plan:PlanProps
   users: {
     role: WorkspaceRole;
   }[];

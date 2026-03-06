@@ -139,7 +139,7 @@ export function Table<T>({
           <div className="flex gap-2">
             <Button
               variant="secondary"
-              className="h-8 px-3 text-[12px] text-[#ececed]/80"
+              className="h-8 px-3 text-[12px] text-neutral-700/80"
               onClick={() => table.previousPage()}
               disabled={table.getState().pagination.pageIndex === 0}
             >
@@ -147,7 +147,7 @@ export function Table<T>({
             </Button>
             <Button
               variant="secondary"
-              className="h-8 px-3 text-[12px] text-[#ececed]/80"
+              className="h-8 px-3 text-[12px] text-neutral-700/80"
               onClick={() => table.nextPage()}
               disabled={
                 table.getState().pagination.pageIndex ===

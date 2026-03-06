@@ -51,12 +51,12 @@ function SCIMModal({
 
   return (
     <Modal showModal={showSCIMModal} setShowModal={setShowSCIMModal}>
-      <div className="flex flex-col space-y-3 border-b border-neutral-200 px-4 py-2">
+      <div className="flex flex-col space-y-3  px-4 md:py-3">
         <h3 className="text-base font-medium text-neutral-700">Manage SCIM</h3>
       </div>
 
       <div className="px-4 py-2">
-        <p className="text-sm font-medium text-neutral-500 font-display">
+        <p className="text-sm font-medium text-neutral-500 font-default">
           {configured
             ? "Update your SCIM directory configuration."
             : `Configure SCIM to sync users from your identity provider into your ${process.env.NEXT_PUBLIC_APP_NAME} workspace.`}
