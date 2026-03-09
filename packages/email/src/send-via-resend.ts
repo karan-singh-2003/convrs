@@ -4,7 +4,7 @@ import { VARIANT_TO_FROM_MAP } from "./resend/constants";
 import { ResendBulkEmailOptions, ResendEmailOptions } from "./resend/types";
 
 const resendEmailForOptions = (
-  opts: ResendEmailOptions,
+  opts: ResendEmailOptions
 ): CreateEmailOptions => {
   const {
     to,
@@ -24,7 +24,10 @@ const resendEmailForOptions = (
   // Build base options without rendered outputs (react/text)
   const baseOptions = {
     to,
-    from: from || VARIANT_TO_FROM_MAP[variant],
+    from:
+      from ||
+      VARIANT_TO_FROM_MAP[variant] ||
+      "BoilerCode <noreply@send.boilercode.dev>",
     subject: subject!,
     bcc,
 
@@ -42,8 +45,7 @@ const resendEmailForOptions = (
           headers: {
             ...(headers || {}),
             "List-Unsubscribe":
-              unsubscribeUrl ||
-              "https://app.boilercode.dev/account/settings",
+              unsubscribeUrl || "https://app.boilercode.dev/account/settings",
           },
         }
       : headers && { headers }),
@@ -65,7 +67,7 @@ const resendEmailForOptions = (
 export const sendEmailViaResend = async (opts: ResendEmailOptions) => {
   if (!resend) {
     console.info(
-      "RESEND_API_KEY is not set in the .env. Skipping sending email.",
+      "RESEND_API_KEY is not set in the .env. Skipping sending email."
     );
     return;
   }
@@ -76,11 +78,11 @@ export const sendEmailViaResend = async (opts: ResendEmailOptions) => {
 // Send batch emails
 export const sendBatchEmailViaResend = async (
   emails: ResendBulkEmailOptions,
-  options?: { idempotencyKey?: string },
+  options?: { idempotencyKey?: string }
 ) => {
   if (!resend) {
     console.info(
-      "RESEND_API_KEY is not set in the .env. Skipping sending email.",
+      "RESEND_API_KEY is not set in the .env. Skipping sending email."
     );
 
     return {
@@ -103,7 +105,7 @@ export const sendBatchEmailViaResend = async (
       acc.push(resendEmailForOptions(email));
       return acc;
     },
-    [] as ReturnType<typeof resendEmailForOptions>[],
+    [] as ReturnType<typeof resendEmailForOptions>[]
   );
 
   if (filteredBatch.length === 0) {
@@ -117,6 +119,6 @@ export const sendBatchEmailViaResend = async (
 
   return await resend.batch.send(
     filteredBatch,
-    idempotencyKey ? { idempotencyKey } : undefined,
+    idempotencyKey ? { idempotencyKey } : undefined
   );
 };
