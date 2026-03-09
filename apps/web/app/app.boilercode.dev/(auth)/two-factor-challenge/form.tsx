@@ -57,6 +57,7 @@ export const TwoFactorChallengeForm = () => {
             type="submit"
             text={loading ? "Verifying..." : "Verify code"}
             disabled={code.length < 6}
+            className="text-white"
             loading={loading}
           />
         </div>

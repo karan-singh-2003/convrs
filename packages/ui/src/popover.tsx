@@ -49,7 +49,7 @@ export function Popover({
         <Drawer.Portal>
           <Drawer.Overlay className="bg-bg-subtle fixed inset-0 z-50 bg-opacity-10 backdrop-blur" />
           <Drawer.Content
-            className="border-border-subtle bg-bg-default bg-white fixed bottom-0 left-0 right-0 z-50 mt-2 rounded-t-[10px] border-t"
+            className="border-border-subtle  bg-white fixed bottom-0 left-0 right-0 z-50 mt-2 rounded-t-[10px] border-t"
             onEscapeKeyDown={onEscapeKeyDown}
             onPointerDownOutside={(e) => {
               // Prevent dismissal when clicking inside a toast
@@ -64,7 +64,7 @@ export function Popover({
             <div className="sticky top-0 z-20 flex w-full items-center justify-center rounded-t-[10px] bg-inherit">
               <div className="bg-border-default my-3 h-1 w-12 rounded-full" />
             </div>
-            <div className="bg-bg-default flex w-full items-center justify-center overflow-hidden pb-4 align-middle shadow-xl">
+            <div className="bg-bg-default flex w-full  overflow-hidden pb-4 align-middle shadow-xl">
               {content}
             </div>
           </Drawer.Content>
@@ -85,7 +85,7 @@ export function Popover({
           align={align}
           side={side}
           className={cn(
-            "animate-slide-up-fade rounded-none bg-bg-default z-50 items-center border border-border-default drop-shadow-lg sm:block",
+            "animate-slide-up-fade rounded-none bg-white z-50 items-center border border-border-default drop-shadow-lg sm:block",
             popoverContentClassName,
           )}
           sticky={sticky}

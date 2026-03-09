@@ -221,7 +221,7 @@ function WorkspaceList({
 
             {selected.slug && (
               <Link
-                href={`/${selected.slug}/settings/people`}
+                href={`/${selected.slug}/settings/members`}
                 className="
           flex items-center gap-x-4
           rounded-none font-display  font-medium text-[14px] text-neutral-600/85 px-2.5 py-1 w-full

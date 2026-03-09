@@ -1,18 +1,7 @@
-import { getPlanDetails } from "@repo/utils";
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Tailwind,
-  Text,
-} from "@react-email/components";
 import React from "react";
-import { Footer } from "../components/footer";
+import { Heading, Section, Text, Img } from "@react-email/components";
+import  EmailLayout  from "../components/email-layout";
+import { getPlanDetails } from "@repo/utils";
 
 export default function UpgradeEmail({
   name,
@@ -24,53 +13,56 @@ export default function UpgradeEmail({
   plan: string;
 }) {
   const planDetails = getPlanDetails({ plan });
+
   return (
-    <Html>
-      <Head />
-      <Preview>Thank you for upgrading to Dub {plan}!</Preview>
-      <Tailwind>
-        <Body className="mx-auto my-auto bg-white font-sans">
-          <Container className="mx-auto my-10 max-w-[600px] rounded border border-solid border-neutral-200 px-10 py-5">
-            <Heading className="mx-0 my-7 p-0 text-xl font-medium text-black">
-              Thank you for upgrading to Dub {plan}!
-            </Heading>
-            <Section className="my-8">
-              <Img
-                src="https://assets.dub.co/misc/thank-you-thumbnail.jpg"
-                alt="Thank you"
-                className="max-w-[500px]"
-              />
-            </Section>
-            <Text className="text-sm leading-6 text-black">
-              Hey{name && ` ${name}`}!
-            </Text>
-            <Text className="text-sm leading-6 text-black">
-              My name is Steven, and I'm the founder of Dub.
-            </Text>
-            <Text className="text-sm leading-6 text-black">
-              I wanted to personally reach out to thank you for upgrading to{" "}
-              <strong>Dub {plan}</strong>! Your support means the world to us
-              and helps us continue to build and improve Dub.
-            </Text>
-            <Text className="text-sm leading-6 text-black">
-              On the {plan} plan, you now have access to:
-            </Text>
-            {planDetails.plan?.features?.map((feature) => (
-              <Text className="ml-1 text-sm leading-4 text-black">
-                ✦ {feature.name}
-              </Text>
-            ))}
-            <Text className="text-sm leading-6 text-black">
-              If you have any questions or feedback about Dub, please don't
-              hesitate to reach out – I'm always happy to help!
-            </Text>
-            <Text className="text-sm font-light leading-6 text-neutral-400">
-              Steven from Dub
-            </Text>
-            <Footer email={email} marketing />
-          </Container>
-        </Body>
-      </Tailwind>
-    </Html>
+    <EmailLayout preview={`Thank you for upgrading to Boilercode ${plan}!`} email={email}>
+
+      <Heading className="mx-0 my-7 text-lg font-medium text-black">
+        Thank you for upgrading to Boilercode {plan}!
+      </Heading>
+
+      <Section className="my-8">
+        <Img
+          src="https://boilercode.dev/thank-you.png"
+          alt="Thank you"
+          style={{ maxWidth: "500px" }}
+        />
+      </Section>
+
+      <Text className="text-sm leading-6 text-black">
+        Hey{name && ` ${name}`}!
+      </Text>
+
+      <Text className="text-sm leading-6 text-black">
+        I’m Karan, the creator of Boilercode.
+      </Text>
+
+      <Text className="text-sm leading-6 text-black">
+        Thank you for upgrading to <strong>Boilercode {plan}</strong>. Your
+        support helps us continue building high-quality SaaS starter templates.
+      </Text>
+
+      <Text className="text-sm leading-6 text-black">
+        On the {plan} plan, you now have access to:
+      </Text>
+
+      {planDetails.plan?.features?.map((feature) => (
+        <Text
+          key={feature.name}
+          className="ml-1 text-sm leading-5 text-black"
+        >
+          ✦ {feature.name}
+        </Text>
+      ))}
+
+      <Text className="text-sm leading-6 text-black">
+        If you have any questions or feedback, feel free to reply to this email.
+      </Text>
+
+      <Text className="text-sm leading-6 text-neutral-500">
+        — Karan, Boilercode
+      </Text>
+
+    </EmailLayout>
   );
 }

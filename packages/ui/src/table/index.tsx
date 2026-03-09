@@ -23,7 +23,7 @@ export function useTable<T>(
     initialState: {
       pagination: {
         pageIndex: 0,
-        pageSize: 1,
+        pageSize: 5,
       },
     },
     getRowId,
@@ -87,32 +87,40 @@ export function Table<T>({
 
             {/* BODY */}
             <tbody>
-              {rows.map((row) => (
-                <tr
-                  key={row.id}
-                  onClick={onRowClick ? (e) => onRowClick(row, e) : undefined}
-                  className={cn(
-                    "group transition-colors",
-                    hasMultipleRows && "border-b border-border/40",
-                    onRowClick && "cursor-pointer hover:bg-bg-surface/50"
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className={cn(
-                        "px-5 py-2.5 font-default text-[#ececed]/80 align-middle",
-                        hasMultipleRows && "border-b border-border/60"
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {rows.map((row, index) => {
+                const isLastRow = index === rows.length - 1;
+
+                return (
+                  <tr
+                    key={row.id}
+                    onClick={onRowClick ? (e) => onRowClick(row, e) : undefined}
+                    className={cn(
+                      "group transition-colors",
+                      hasMultipleRows &&
+                        !isLastRow &&
+                        "border-b border-border/40",
+                      onRowClick && "cursor-pointer hover:bg-bg-surface/50"
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className={cn(
+                          "px-5 py-2.5 font-default text-[#ececed]/80 align-middle",
+                          hasMultipleRows &&
+                            !isLastRow &&
+                            "border-b border-border/60"
+                        )}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -134,28 +142,26 @@ export function Table<T>({
       )}
 
       {table.getPageCount() > 1 && hasData && (
-        <div className="flex items-center justify-between px-5 py-1 text-sm">
+        <div className="flex items-center border-t border-neutral-100 justify-between px-5 py-1 text-sm">
           <div></div>
           <div className="flex gap-2">
             <Button
               variant="secondary"
-              className="h-8 px-3 text-[12px] text-neutral-700/80"
+              text="Previous"
+              className="h-8 px-3 font-display rounded-full text-[12px] text-neutral-700/80"
               onClick={() => table.previousPage()}
               disabled={table.getState().pagination.pageIndex === 0}
-            >
-              Previous
-            </Button>
+            ></Button>
             <Button
               variant="secondary"
-              className="h-8 px-3 text-[12px] text-neutral-700/80"
+              text="Next"
+              className="h-8 px-3 font-display rounded-full text-[12px] text-neutral-700/80"
               onClick={() => table.nextPage()}
               disabled={
                 table.getState().pagination.pageIndex ===
                 table.getPageCount() - 1
               }
-            >
-              Next
-            </Button>
+            ></Button>
           </div>
         </div>
       )}

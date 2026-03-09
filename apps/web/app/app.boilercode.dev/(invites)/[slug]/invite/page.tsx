@@ -160,7 +160,9 @@ function Hero({
           {!isExpired ? (
             <>Welcome to the {invite.workspace.name} workspace</>
           ) : (
-            <>Your invite to the {invite.workspace.name} workspace has expired</>
+            <>
+              Your invite to the {invite.workspace.name} workspace has expired
+            </>
           )}
         </h2>
 
@@ -176,12 +178,11 @@ function Hero({
         <div className="mt-5 w-full flex justify-center">
           {!isExpired ? (
             <AcceptInviteButton />
-          ) : (
-            <CloseInviteButton
-              goToOnboarding={user._count.workspaceUsers === 0}
-              variant="full"
-            />
-          )}
+          ) : // <CloseInviteButton
+          //   goToOnboarding={user._count.workspaceUsers === 0}
+          //   variant="full"
+          // />
+          null}
         </div>
       </div>
     </>

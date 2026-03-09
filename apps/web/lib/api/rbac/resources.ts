@@ -1,4 +1,4 @@
-export const RESOURCE_KEYS = ["workspaces", "webhooks"] as const;
+export const RESOURCE_KEYS = ["workspace", "webhooks"] as const;
 
 export type ResourceKey = (typeof RESOURCE_KEYS)[number];
 
@@ -8,7 +8,7 @@ export const RESOURCES: {
 }[] = [
   {
     name: "Workspaces",
-    key: "workspaces",
+    key: "workspace",
   },
 ];
 

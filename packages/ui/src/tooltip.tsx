@@ -105,12 +105,12 @@ export function Tooltip({
         <TooltipPrimitive.Content
           sideOffset={8}
           side={side}
-          className="animate-slide-up-fade pointer-events-auto z-[99] items-center overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm"
+          className="animate-slide-up-fade  font-normal pointer-events-auto z-[99] items-center overflow-hidden rounded-full font-display border border-[#E0E0E0] bg-white shadow-sm"
           collisionPadding={0}
           {...rest}
         >
           {typeof content === "string" ? (
-            <TooltipMarkdown className={contentClassName}>
+            <TooltipMarkdown className={cn("text-neutral-600", contentClassName)}>
               {content}
             </TooltipMarkdown>
           ) : typeof content === "function" ? (
@@ -201,7 +201,7 @@ export function ButtonTooltip({
         type="button"
         {...props}
         className={cn(
-          "flex h-6 w-6 items-center justify-center rounded-md text-neutral-500 transition-colors duration-75 hover:bg-neutral-100 active:bg-neutral-200 disabled:cursor-not-allowed disabled:hover:bg-transparent",
+          "flex h-6 w-6 items-center justify-center rounded-full text-neutral-500 transition-colors duration-75 hover:bg-neutral-100 active:bg-neutral-200 disabled:cursor-not-allowed disabled:hover:bg-transparent",
           props.className
         )}
       >

@@ -10,12 +10,11 @@ import { useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
-
+import { RESOURCE_SCOPES, Scope } from "@/lib/api/tokens/scopes";
+import { useTokenCreatedModal } from "@/ui/modals/token-created-modal";
 export default function TokensPage() {
   const { id: workspaceId, role } = useWorkspace();
-  const { setShowAddEditTokenModal, AddEditTokenModal } = useAddEditTokenModal(
-    {}
-  );
+
   const {
     data: tokens,
     isLoading,
@@ -33,17 +32,11 @@ export default function TokensPage() {
           const token = row.original;
           return (
             <div className="flex items-center gap-3">
-              <Avatar
-                user={token.user}
-                className="size-6 border-none duration-75 sm:size-8"
-              />
+             
               <div className="flex flex-col leading-tight">
-                <span className="text-sm font-medium text-neutral-900">
+                <span className="text-[13.5px] font-display font-medium text-neutral-600">
                   {token.name}
-                </span>
-                <span className="text-xs text-neutral-500">
-                  {token.user.name || "Unknown"}
-                </span>
+                </span>   
               </div>
             </div>
           );
@@ -55,7 +48,7 @@ export default function TokensPage() {
           <span className="text-xs font-medium text-neutral-500">Key</span>
         ),
         cell: ({ row }) => (
-          <code className="font-mono text-[12px] text-gray-600">
+          <code className="font-mono bg-neutral-200/60 px-2 py-1.5 rounded-sm text-[12px] text-gray-600">
             {row.original.partialKey}
           </code>
         ),
@@ -73,13 +66,13 @@ export default function TokensPage() {
                 scopes.map((scope) => (
                   <span
                     key={scope}
-                    className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                    className="text-[13px] font-display text-neutral-600 text-muted-foreground"
                   >
                     {scope}
                   </span>
                 ))
               ) : (
-                <span className="text-[13px] text-muted-foreground">
+                <span className="text-[13px] font-display text-neutral-600">
                   No scopes
                 </span>
               )}
@@ -97,7 +90,7 @@ export default function TokensPage() {
         cell: ({ row }) => {
           const lastUsed = row.original.lastUsed;
           return (
-            <span className="text-sm text-neutral-700">
+            <span className="text-sm font-display text-neutral-600">
               {lastUsed
                 ? formatDate(lastUsed, {
                     month: "short",
@@ -115,7 +108,7 @@ export default function TokensPage() {
           <span className="text-xs font-medium text-neutral-500">Created</span>
         ),
         cell: ({ row }) => (
-          <span className="text-sm text-neutral-700">
+          <span className="text-sm font-display text-neutral-600">
             {formatDate(row.original.createdAt, {
               month: "short",
               day: "numeric",
@@ -132,21 +125,54 @@ export default function TokensPage() {
     ],
     []
   );
+  const [selectedToken, setSelectedToken] = useState<TokenProps | undefined>();
+  const [createdToken, setCreatedToken] = useState<string | undefined>();
+
+  const onTokenCreated = (token: string) => {
+    setCreatedToken(token);
+    setShowTokenCreatedModal(true);
+  };
+  const { setShowAddEditTokenModal, AddEditTokenModal } = useAddEditTokenModal({
+    ...(selectedToken && {
+      token: {
+        id: selectedToken.id,
+        name: selectedToken.name,
+        scopes: mapScopesToResource(selectedToken.scopes || []),
+        isMachine: false,
+      },
+    }),
+    ...(!selectedToken && { onTokenCreated }),
+    setSelectedToken,
+  });
+  const { setShowTokenCreatedModal, TokenCreatedModal } = useTokenCreatedModal({
+    token: createdToken || "",
+  });
 
   const { table, ...tableProps } = useTable<TokenProps>({
     data: tokens || [],
     columns,
     loading: isLoading,
     error: undefined,
+    onRowClick: (row) => {
+      setSelectedToken(row.original);
+      setShowAddEditTokenModal(true);
+    },
   });
 
   return (
-    <PageWidthWrapper size="md">
+    <PageWidthWrapper size="lg">
       <AddEditTokenModal />
+      <TokenCreatedModal />
       <SettingsChildrenLayout
         title="API Tokens"
         description="Manage API tokens for programmatic access to your workspace."
-        actions={<></>}
+        actions={
+          <Button
+            text="Add Token"
+            className="text-black/60  bg-[#f3f4f6] h-fit font-display rounded-full text-[12.5px] py-1"
+            onClick={() => setShowAddEditTokenModal(true)}
+          />
+        }
         className="my-4"
       >
         <Table table={table} {...tableProps} />
@@ -185,3 +211,22 @@ function TokenRowMenu({ token }: { token: TokenProps }) {
     </Popover>
   );
 }
+
+const mapScopesToResource = (scopes: string[]): { [key: string]: Scope } => {
+  return scopes.reduce(
+    (acc, scope) => {
+      const resourceScope = RESOURCE_SCOPES.find((rs) =>
+        rs.scope.includes(scope as Scope)
+      );
+      if (resourceScope?.resource) {
+        acc[resourceScope.resource] = scope as Scope;
+      } else {
+        // Global preset scopes (apis.all, apis.read) have no resource key —
+        // store them under "api" to match the modal's preset convention.
+        acc["api"] = scope as Scope;
+      }
+      return acc;
+    },
+    {} as { [key: string]: Scope }
+  );
+};

@@ -75,10 +75,10 @@ function RoleDropdown({
                 role === r.value && "bg-neutral-50"
               )}
             >
-              <div className="text-[13px] font-medium text-neutral-600">
+              <div className="text-[13px] font-medium font-display text-neutral-600">
                 {r.label}
               </div>
-              <div className="text-[13px] mt-1 font-default font-medium text-neutral-500">
+              <div className="text-[13.5px] mt-1 font-default font-medium text-neutral-500">
                 {r.description}
               </div>
             </button>

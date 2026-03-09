@@ -1,46 +1,29 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Section,
-  Tailwind,
-  Text,
-} from "@react-email/components";
-import { Footer } from "../components/footer";
+import React from "react";
+import { Heading, Link, Text } from "@react-email/components";
+import  EmailLayout  from "../components/email-layout";
 
 export default function TwoFactorDisabled({
-  email = "panic@thedis.co",
+  email,
 }: {
   email: string;
 }) {
   return (
-    <Html>
-      <Head />
-      <Preview>Two Factor authentication disabled</Preview>
-      <Tailwind>
-        <Body className="mx-auto my-auto bg-white font-sans">
-          <Container className="mx-auto my-10 max-w-[600px] rounded border border-solid border-neutral-200 px-10 py-5">
-           
+    <EmailLayout preview="Two-factor authentication disabled" email={email}>
 
-            <Heading className="mx-0 my-7 p-0 text-xl font-medium text-black">
-              Two Factor authentication disabled
-            </Heading>
+      <Heading className="mx-0 my-7 text-lg font-medium text-black">
+        Two-factor authentication disabled
+      </Heading>
 
-            <Text className="text-sm leading-6 text-black">
-              Two-factor authentication (2FA) was successfully disabled. If you
-              did not make this change, contact{" "}
-              <Link href="mailto:support@dub.co">Support</Link> immediately.
-            </Text>
+      <Text className="text-sm leading-6 text-black">
+        Two-factor authentication (2FA) has been successfully disabled for your
+        Boilercode account.
+      </Text>
 
-            <Footer email={email} />
-          </Container>
-        </Body>
-      </Tailwind>
-    </Html>
+      <Text className="text-sm leading-6 text-black">
+        If you did not make this change, please contact{" "}
+        <Link href="mailto:support@boilercode.dev">support</Link> immediately.
+      </Text>
+
+    </EmailLayout>
   );
 }

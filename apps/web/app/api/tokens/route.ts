@@ -3,12 +3,13 @@ import { createTokenSchema, tokenSchema } from "@/lib/zod/schemas/token";
 import { prisma } from "@repo/db";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { validateScopesForRole, scopesToName } from "@/lib/api/tokens/scopes";
+// import { validateScopesForRole, scopesToName } from "@/lib/api/tokens/scopes";
 import { nanoid } from "@repo/utils";
 import { Prisma } from "@prisma/client";
 import { waitUntil } from "@vercel/functions";
 import { sendEmail } from "@repo/email";
 import APIKeyCreated from "@repo/email/templates/api-key-created";
+import { scopesToName } from "@/lib/api/tokens/scopes";
 
 const getTokenQuerySchema = z.object({
   userId: z.string().optional(),
@@ -68,12 +69,12 @@ export const POST = withWorkspace(
     const role = workspace.users[0].role;
     console.log("role", role, "scopes", scopes);
 
-    if (!validateScopesForRole(role, scopes || [])) {
-      throw new Error("Invalid scopes for the user's role");
-    }
+    // if (!validateScopesForRole(role, scopes || [])) {
+    //   throw new Error("Invalid scopes for the user's role");
+    // }
 
     // create the token
-    const token = `boilercode_${nanoid(24)}`;
+    const token = `bc_${nanoid(24)}`;
     const hashedKey = await hashToken(token);
     const partialKey = `${token.slice(0, 10)}...${token.slice(-4)}`;
 
@@ -95,7 +96,9 @@ export const POST = withWorkspace(
             hashedKey,
             partialKey,
             scopes:
-              scopes && scopes?.length > 0 ? [new Set(scopes)].join(" ") : null,
+              scopes && scopes?.length > 0
+                ? [...new Set(scopes)].join(" ")
+                : null,
             workspaceId: workspace.id,
             userId: session.user.id,
           },

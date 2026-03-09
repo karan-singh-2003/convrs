@@ -8,24 +8,25 @@ type User = {
   email?: string | null | undefined;
   image?: string | null | undefined;
 };
-
 export function getUserAvatarUrl(user?: User | null) {
   if (user?.image) return user.image;
 
-  if (!user?.id) return "https://api.dub.co/og/avatar";
+  const seed = user?.id || user?.email || "default";
 
-  const ogAvatar = `https://api.dub.co/og/avatar/${user.id}`;
+  const fallbackAvatar = `https://api.dicebear.com/9.x/glass/svg?seed=${seed}`;
 
-  return user.email
-    ? `https://0.gravatar.com/avatar/${sha256(user.email)}?d=${ogAvatar}`
-    : ogAvatar;
+  return user?.email
+    ? `https://0.gravatar.com/avatar/${sha256(user.email)}?d=${encodeURIComponent(
+        fallbackAvatar
+      )}`
+    : fallbackAvatar;
 }
 
 export function Avatar({
-  user = {},
+  user,
   className,
 }: {
-  user?: User;
+  user?: User | null;
   className?: string;
 }) {
   if (!user) {
@@ -33,7 +34,7 @@ export function Avatar({
       <div
         className={cn(
           "h-10 w-10 animate-pulse rounded-full border border-neutral-300 bg-neutral-100",
-          className,
+          className
         )}
       />
     );
@@ -48,11 +49,12 @@ export function Avatar({
       src={url}
       className={cn(
         "h-10 w-10 rounded-full border border-neutral-300",
-        className,
+        className
       )}
       draggable={false}
       onError={() => {
-        setUrl(`https://api.dub.co/og/avatar/${user.id}`);
+        const seed = user?.id || user?.email || "default";
+        setUrl(`https://api.dicebear.com/9.x/glass/svg?seed=${seed}`);
       }}
     />
   );

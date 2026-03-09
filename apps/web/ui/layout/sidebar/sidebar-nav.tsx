@@ -7,6 +7,8 @@ import { PropsWithChildren, useMemo } from "react";
 import { Button } from "@repo/ui";
 import { WorkspaceDropdown } from "./workspace-dropdown";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export type NavItemType = {
   title: string;
@@ -33,6 +35,8 @@ export function SidebarNav<T extends Record<any, any>>({
   areas: Record<string, SidebarNavArea<T>>;
   data: T;
 }) {
+  const router = useRouter();
+  const {slug} = useWorkspace()
   return (
     <div className="h-full w-[248px]">
       <nav className="size-full">
@@ -96,6 +100,7 @@ export function SidebarNav<T extends Record<any, any>>({
                               variant="secondary"
                               text=" Upgrade"
                               className="bg-[#F4F4F4] text-[#676767] h-fit py-1 text-sm rounded-full border-none"
+                              onClick={()=>{router.push(`/${slug}/settings/billing/upgrade`)}}
                             ></Button>
                           </div>
                         )}

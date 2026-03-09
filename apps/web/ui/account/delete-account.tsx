@@ -17,7 +17,7 @@ export default function DeleteAccount() {
         <Button
           text="Delete Account"
           variant="danger"
-          className="w-fit text-xs font-default py-1 h-fit"
+          className="w-fit text-[13px] font-display py-1 h-fit"
           onClick={() => setShowDeleteWorkspaceModal(true)}
         />
       </div>

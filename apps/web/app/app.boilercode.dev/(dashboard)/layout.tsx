@@ -10,6 +10,7 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
+  
   return (
     <div className="min-h-screen w-full bg-white">
       <MainNav sidebar={AppSidebar}>{children}</MainNav>

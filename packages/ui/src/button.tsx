@@ -7,7 +7,7 @@ export const buttonVariants = cva("transition-all", {
   variants: {
     variant: {
       primary:
-        "border-black bg-black dark:bg-white dark:border-white text-content-inverted hover:bg-inverted hover:ring-0 e",
+        "border-black text-white bg-black dark:bg-white dark:border-white  hover:bg-inverted hover:ring-0 e",
       secondary: cn(
         "border-border-subtle bg-white dark:bg-black text-content-emphasis hover:bg-bg-muted  outline-none",
         "data-[state=open]:border-border-emphasis data-[state=open]:ring-4 data-[state=open]:ring-border-subtle"
@@ -15,7 +15,7 @@ export const buttonVariants = cva("transition-all", {
       outline: "border-transparent text-content-default hover:bg-bg-subtle",
       success:
         "border-blue-500 bg-blue-500 text-white hover:bg-blue-600 hover:ring-4 hover:ring-blue-100",
-      danger: " bg-[#BC2D2D] text-white hover:bg-[#DD3C3C] ",
+      danger: " bg-[#BC2D2D] font-normal  text-white hover:bg-[#DD3C3C] ",
       "danger-outline":
         "border-transparent bg-white text-red-500 hover:bg-red-600 hover:text-white",
       auth: "rounded-none font-medium border border-[#2a2a2a] bg-[#1a1a1a] text-white w-full hover:bg-[#222222] hover:border-[#333333]",
@@ -62,7 +62,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <Tooltip content={disabledTooltip}>
           <div
             className={cn(
-              "flex h-10 w-full cursor-not-allowed items-center justify-center gap-x-2 rounded-none border border-neutral-200 bg-neutral-100 px-4 md:text-sm  text-neutral-400 transition-all focus:outline-none",
+              "flex h-10 w-full cursor-not-allowed items-center justify-center gap-x-2 rounded-none  bg-neutral-100 px-4 md:text-sm  text-neutral-400 transition-all focus:outline-none",
               {
                 "border-transparent bg-transparent":
                   variant?.endsWith("outline"),
@@ -85,7 +85,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {shortcut && (
               <kbd
                 className={cn(
-                  "hidden rounded border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs font-light text-neutral-400 md:inline-block",
+                  "hidden rounded-full border font-display border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs font-normal text-neutral-400 md:inline-block",
                   {
                     "bg-neutral-100": variant?.endsWith("outline"),
                   },

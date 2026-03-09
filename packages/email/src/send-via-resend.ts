@@ -21,43 +21,47 @@ const resendEmailForOptions = (
     unsubscribeUrl,
   } = opts;
 
-
   // Build base options without rendered outputs (react/text)
-  // CreateEmailOptions requires at least one of react or text
   const baseOptions = {
     to,
     from: from || VARIANT_TO_FROM_MAP[variant],
     subject: subject!,
     bcc,
-    // if replyTo is set to "noreply@dub.co", don't set replyTo
-    // else set it to the value of replyTo or fallback to support@dub.co
-    ...(replyTo === "noreply" ? {} : { replyTo: replyTo || "support@dub.co" }),
+
+    // if replyTo is set to "noreply", don't set replyTo
+    // else fallback to support@boilercode.dev
+    ...(replyTo === "noreply"
+      ? {}
+      : { replyTo: replyTo || "support@boilercode.dev" }),
+
     scheduledAt,
     tags,
+
     ...(variant === "marketing"
       ? {
           headers: {
             ...(headers || {}),
             "List-Unsubscribe":
-              unsubscribeUrl || "https://app.dub.co/account/settings",
+              unsubscribeUrl ||
+              "https://app.boilercode.dev/account/settings",
           },
         }
       : headers && { headers }),
   };
 
-  // Add render options (react or text) - at least one must be present
+  // At least one of react or text must exist
   if (react) {
     return { ...baseOptions, react };
   }
+
   if (text) {
     return { ...baseOptions, text };
   }
-  // If none of react or text is provided, we need to ensure at least one is present
-  // This shouldn't happen in practice, but we'll default to an empty text
+
   return { ...baseOptions, text: "" };
 };
 
-// Send email using Resend (Recommended for production)
+// Send single email
 export const sendEmailViaResend = async (opts: ResendEmailOptions) => {
   if (!resend) {
     console.info(
@@ -69,6 +73,7 @@ export const sendEmailViaResend = async (opts: ResendEmailOptions) => {
   return await resend.emails.send(resendEmailForOptions(opts));
 };
 
+// Send batch emails
 export const sendBatchEmailViaResend = async (
   emails: ResendBulkEmailOptions,
   options?: { idempotencyKey?: string },
@@ -91,16 +96,11 @@ export const sendBatchEmailViaResend = async (
     };
   }
 
-  // Filter out emails without to address
-  // and format the emails for Resend
   const filteredBatch = emails.reduce(
     (acc, email) => {
-      if (!email?.to) {
-        return acc;
-      }
+      if (!email?.to) return acc;
 
       acc.push(resendEmailForOptions(email));
-
       return acc;
     },
     [] as ReturnType<typeof resendEmailForOptions>[],

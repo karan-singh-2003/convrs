@@ -112,38 +112,39 @@ function ManagePasskeyModal({
     <Modal
       showModal={showManagePasskeyModal}
       setShowModal={setShowManagePasskeyModal}
+      className="px-4 md:px-0 py-3 md:py-1.5 max-h-[90vh] md:max-h-[95dvh] overflow-y-auto"
     >
       <div className="flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between  px-4 py-2">
-          <h3 className="text-base font-medium text-neutral-700">
+        <div className="space-y-1 md:py-1 md:border-b border-[#F0F0F0]">
+          <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-black/65">
             Manage Passkey
           </h3>
         </div>
 
         {/* Body */}
-        <div className="px-4 py-5">
-          <p className="text-sm font-medium text-neutral-500 font-display">
+        <div className="md:px-5 md:py-4">
+          <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500">
             Use your device&apos;s built-in security features like Face ID to
             sign in instead of remembering passwords.
           </p>
 
           {/* Active Passkeys */}
           <div className="mt-5">
-            <h4 className="text-sm font-medium text-neutral-500">
-              Active Passkey
+            <h4 className="text-[13px] md:text-sm font-display font-medium text-neutral-700">
+              Active Passkeys
             </h4>
 
             <div className="mt-3 space-y-3">
               {isLoadingPasskeys ? (
-                 <div className="flex items-center justify-center rounded-none border border-neutral-200 bg-neutral-50 py-6">
-                  <p className="text-sm font-display text-neutral-500">
-                   Loading
+                <div className="flex items-center justify-center border border-neutral-200 bg-neutral-50 py-6">
+                  <p className="text-[13px] md:text-sm font-display text-neutral-500">
+                    Loading
                   </p>
                 </div>
               ) : passkeys.length === 0 ? (
-                <div className="flex items-center justify-center rounded-none border border-neutral-200 bg-neutral-50 py-6">
-                  <p className="text-sm font-display text-neutral-500">
+                <div className="flex items-center justify-center border border-neutral-200 bg-neutral-50 py-6">
+                  <p className="text-[13px] md:text-sm font-display text-neutral-500">
                     No passkeys registered yet.
                   </p>
                 </div>
@@ -151,21 +152,24 @@ function ManagePasskeyModal({
                 passkeys.map((passkey) => (
                   <div
                     key={passkey.id}
-                    className="flex items-center justify-between rounded-full  bg-neutral-50 px-3 py-2"
+                    className="flex items-center justify-between rounded-full bg-neutral-50 px-3 py-2"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border border-neutral-200">
-                        <Google className="h-8 w-8" />
+                      <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-white border border-neutral-200 shadow-sm">
+                        <Google className="h-6 w-6 md:h-7 md:w-7" />
                       </div>
+
                       <div>
-                        <p className="text-sm font-medium font-display text-neutral-900">
+                        <p className="text-[13px] md:text-sm font-display font-medium text-neutral-900">
                           {passkey.name || "Passkey"}
                         </p>
-                        <p className="text-sm font-display text-neutral-500">
+
+                        <p className="text-[12px] md:text-sm font-display text-neutral-500">
                           Setup {getRelativeTime(passkey.created_at)}
                         </p>
                       </div>
                     </div>
+
                     <button
                       type="button"
                       className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-red-500 disabled:opacity-50"
@@ -195,10 +199,10 @@ function ManagePasskeyModal({
         </div>
 
         {/* Footer */}
-        <div className="px-3 pb-5">
+        <div className="px-4 md:px-5 pb-4">
           <Button
             text="Add Passkey"
-            className="h-10 w-full rounded-none font-display bg-neutral-700 text-sm font-medium text-white hover:bg-neutral-700"
+            className="h-9 md:h-10 w-full font-display text-sm text-white bg-neutral-700 hover:bg-neutral-700"
             onClick={registerPasskey}
             loading={isRegistering}
             disabled={isRegistering}

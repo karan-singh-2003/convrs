@@ -1,7 +1,7 @@
 import * as OTPAuth from "otpauth";
 
 const options = {
-  issuer: "Dub",
+  issuer: "Boilercode",
   algorithm: "SHA1",
   digits: 6,
   period: 30,

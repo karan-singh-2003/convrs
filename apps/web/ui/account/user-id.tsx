@@ -12,7 +12,7 @@ export default function UserId() {
 
   return (
     <>
-      <div className="relative  space-y-2 ">
+      <div className="relative w-full  space-y-2 ">
         <div className="space-y-0.5">
           <h2 className="font-medium text-sm">Your User ID</h2>
           <p className="font-default text-[13.5px] text-neutral-500">
@@ -21,12 +21,12 @@ export default function UserId() {
           </p>
         </div>
         {session?.user?.id ? (
-          <div className="flex w-full max-w-md items-center justify-between rounded-none border border-neutral-300 bg-white px-2 py-1">
+          <div className="flex w-full max-w-full items-center justify-between rounded-none border border-neutral-300 bg-white px-2 py-1">
             <p className="text-sm text-neutral-500">{session.user.id}</p>
             <CopyButton value={session.user.id} className="rounded-none" />
           </div>
         ) : (
-          <div className="h-[2.35rem] w-full max-w-md animate-pulse rounded-md bg-neutral-200" />
+          <div className="h-[2.35rem] w-full max-w-md animate-pulse rounded-none bg-neutral-200" />
         )}
       </div>
     </>

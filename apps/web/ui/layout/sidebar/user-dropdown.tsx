@@ -33,23 +33,27 @@ export function UserDropdown() {
   return (
     <Popover
       content={
-        <div className="flex w-full flex-col space-y-px rounded-none bg-white  sm:min-w-64">
+        <div className="flex w-full flex-col divide-y rounded-md bg-white sm:min-w-64">
+          {/* User Info */}
           {session?.user ? (
-            <div className="p-2 px-3 pb-4 sm:pb-2 ">
-              <p className="truncate text-base font-display font-medium text-neutral-600 sm:text-sm">
+            <div className="px-3 py-3 sm:py-2">
+              <p className="truncate text-[13.5px] sm:text-sm font-display font-medium text-neutral-700">
                 {session.user.name || session.user.email?.split("@")[0]}
               </p>
-              <p className="truncate text-base font-display text-neutral-500 sm:text-sm">
+
+              <p className="truncate text-[13.5px] sm:text-sm font-display text-neutral-500">
                 {session.user.email}
               </p>
             </div>
           ) : (
-            <div className="grid gap-2 px-2 py-3 ">
-              <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-200" />
-              <div className="h-3 w-20 animate-pulse rounded-full bg-neutral-200" />
+            <div className="grid gap-2 px-3 py-3">
+              <div className="h-3 w-16 animate-pulse rounded-full bg-neutral-200" />
+              <div className="h-3 w-24 animate-pulse rounded-full bg-neutral-200" />
             </div>
           )}
-          <div className="border-t py-1 border-border-default">
+
+          {/* Menu Options */}
+          <div className="py-1">
             {menuOptions.map((menuOption, idx) => (
               <UserOption
                 key={idx}
@@ -73,24 +77,21 @@ export function UserDropdown() {
         )}
       >
         {session?.user ? (
-          <div className="flex items-center gap-2 px-3">
+          <div className="flex items-center gap-1 px-4">
             {session.user.image ? (
               <BlurImage
                 src={session.user.image}
                 alt="User avatar"
-                className="size-7 rounded-full bg-neutral-100 object-cover sm:size-8"
-                height={18}
-                width={18}
+                className="h-6 w-6 rounded-full object-cover"
+                width={24}
+                height={24}
               />
             ) : (
-              <Avatar
-                user={session.user}
-                className="size-6 border-none duration-75 sm:size-7"
-              />
+              <Avatar user={session.user} className="h-6 w-6 border-none" />
             )}
           </div>
         ) : (
-          <div className="size-7 animate-pulse rounded-full bg-neutral-100" />
+          <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-100" />
         )}
       </button>
     </Popover>
@@ -101,6 +102,7 @@ type UserOptionProps<T extends ElementType> = {
   as?: T;
   label: string;
 };
+
 function UserOption<T extends ElementType = "button">({
   as,
   label,
@@ -113,13 +115,22 @@ function UserOption<T extends ElementType = "button">({
 
   return (
     <Component
-      className="flex items-center gap-x-4  rounded-none px-2.5 py-1 w-full transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80 sm:text-sm"
+      className="
+        flex w-fit  items-center 
+        px-3 py-1
+        text-[14px] sm:text-sm
+        font-display font-medium
+        text-neutral-500
+        transition-colors
+        hover:text-neutral-600
+        
+      "
       {...rest}
     >
-      {/* <Icon className="size-5 text-neutral-500 sm:size-4" /> */}
-      <span className="block truncate font-display  font-medium py-0.5 px-1 text-[14.5px] text-neutral-600/85 text-sm text-neutral-600">
-        {label}
-      </span>
+      {Icon && <Icon className="size-5 sm:size-4 text-neutral-500" />}
+
+      <span className="flex-1 truncate">{label}</span>
+
       {children}
     </Component>
   );

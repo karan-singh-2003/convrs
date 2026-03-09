@@ -9,10 +9,11 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/utils": "workspace:*",
     "@react-email/components": "^1.0.2",
+    "@react-email/font": "0.0.10",
     "@react-email/markdown": "^0.0.17",
     "@react-email/render": "^2.0.0",
+    "@repo/utils": "workspace:*",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.462.0",
     "nodemailer": "^6.9.3",
@@ -21,8 +22,8 @@
   },
   "devDependencies": {
     "@react-email/preview-server": "5.2.5",
-    "@types/nodemailer": "~6.4.17",
     "@types/node": "^22.15.3",
+    "@types/nodemailer": "~6.4.17",
     "@types/react": "^19.1.15",
     "@types/react-dom": "^19.1.9",
     "typescript": "^5.9.2"

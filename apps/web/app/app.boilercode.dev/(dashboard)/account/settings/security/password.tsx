@@ -168,8 +168,8 @@ export default function Password() {
             {provider && !hasPassword ? (
               <>
                 Your account is managed by{" "}
-                <strong className="text-neutral-900">{providerLabel}</strong>.
-                You can set a password to use with your Dub account.
+                <strong className="text-neutral-500">{providerLabel}</strong>.
+                You can set a password to use with your Boilercode account.
               </>
             ) : hasPassword ? (
               "You have a password set. You can update it anytime."

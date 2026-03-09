@@ -38,21 +38,31 @@ function SAMLModal({
   const { isMobile } = useMediaQuery();
 
   return (
-    <Modal showModal={showSAMLModal} setShowModal={setShowSAMLModal}>
-      <div className="flex flex-col space-y-3  px-4 py-2 ">
-        <h3 className="text-base font-medium text-neutral-700">Manage SAML</h3>
+    <Modal
+      showModal={showSAMLModal}
+      setShowModal={setShowSAMLModal}
+      className="px-4 md:px-0 py-3 md:py-1.5 max-h-[90vh] md:max-h-[95dvh] md:overflow-y-auto"
+    >
+      {/* Header */}
+      <div className="space-y-1 md:py-1 md:border-b border-[#F0F0F0]">
+        <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-black/65">
+          Manage SAML Configuration
+        </h3>
       </div>
 
-      <div className="px-4 py-2">
-        <p className="text-sm font-medium text-neutral-500 font-default">
-          Select a provider to configure SAML for your{" "}
-          {process.env.NEXT_PUBLIC_APP_NAME} workspace.
+      <div className="md:py-4 md:px-5">
+        {/* Description */}
+        <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500">
+          Configure SAML authentication for your workspace. Upload your provider
+          metadata or provide the metadata URL to enable SAML login.
         </p>
-        <div className="flex flex-col space-y-6  py-3 text-left ">
+
+        <div className="flex flex-col space-y-6 py-3 text-left">
           <form
             onSubmit={async (e) => {
               e.preventDefault();
               setSubmitting(true);
+
               fetch(`/api/workspaces/${id}/saml`, {
                 method: "POST",
                 headers: {
@@ -76,15 +86,16 @@ function SAMLModal({
                 setSubmitting(false);
               });
             }}
-            className="flex flex-col space-y-4"
+            className="flex flex-col space-y-5"
           >
+            {/* Provider Select */}
             <div>
               <div className="flex items-center my-2 space-x-1">
-                <h2 className="text-sm font-medium font-display text-neutral-700">
+                <h2 className="text-[13px] md:text-sm font-medium font-display text-neutral-700">
                   SAML Provider
                 </h2>
-                {/* <InfoTooltip content="Your SAML provider is the service you use to manage your users." /> */}
               </div>
+
               <OptionSelect
                 options={SAML_PROVIDERS.map((provider) => ({
                   value: provider.saml,
@@ -100,37 +111,37 @@ function SAMLModal({
               />
             </div>
 
+            {/* Google Upload */}
             {currentProvider &&
               (selectedProvider === "google" ? (
-                <div className=" ">
+                <div>
                   <div className="flex items-center space-x-1">
-                    <h2 className="text-sm font-medium text-neutral-900">
+                    <h2 className="text-[13px] md:text-sm font-medium font-display text-neutral-700">
                       {currentProvider.samlModalCopy}
                     </h2>
-                    {/* <InfoTooltip
-                    content={`Your ${currentProvider.samlModalCopy} is the URL to your SAML provider's metadata. [Learn more.](https://dub.co/help/article/${selectedProvider}-saml)`}
-                  /> */}
                   </div>
+
                   <label
                     htmlFor="metadataRaw"
-                    className="group relative mt-1 flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-none border border-neutral-300 bg-white shadow-sm transition-all hover:bg-neutral-50"
+                    className="group relative mt-2 flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-none border border-neutral-300 bg-white shadow-sm transition-all hover:bg-neutral-50"
                   >
                     {file ? (
                       <>
-                        <Check className="h-5 w-5 text-green-600 transition-all duration-75 group-hover:scale-110 group-active:scale-95" />
-                        <p className="mt-2 text-sm text-neutral-500">
+                        <Check className="h-5 w-5 text-green-600 transition-all group-hover:scale-110" />
+                        <p className="mt-2 text-[13px] font-display text-neutral-500">
                           {file.name}
                         </p>
                       </>
                     ) : (
                       <>
-                        <UploadCloud className="h-5 w-5 text-neutral-500 transition-all duration-75 group-hover:scale-110 group-active:scale-95" />
-                        <p className="mt-2 text-sm text-neutral-500">
+                        <UploadCloud className="h-5 w-5 text-neutral-500 transition-all group-hover:scale-110" />
+                        <p className="mt-2 text-[13px] font-display text-neutral-500">
                           Choose an .xml file to upload
                         </p>
                       </>
                     )}
                   </label>
+
                   <input
                     id="metadataRaw"
                     name="metadataRaw"
@@ -141,6 +152,7 @@ function SAMLModal({
                     onChange={(e) => {
                       const f = e.target?.files && e.target?.files[0];
                       setFile(f);
+
                       if (f) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
@@ -153,15 +165,14 @@ function SAMLModal({
                   />
                 </div>
               ) : (
-                <div className="border-t border-neutral-200 pt-4">
+                /* Metadata URL */
+                <div className=" ">
                   <div className="flex items-center space-x-1">
-                    <h2 className="text-sm font-medium text-neutral-900">
+                    <h2 className="text-[13px] md:text-sm font-medium font-display text-neutral-700">
                       {currentProvider.samlModalCopy}
                     </h2>
-                    {/* <InfoTooltip
-                    content={`Your ${currentProvider.samlModalCopy} is the URL to your SAML provider's metadata. [Learn more.](https://dub.co/help/article/${selectedProvider}-saml#step-4-copy-the-metadata-url)`}
-                  /> */}
                   </div>
+
                   <input
                     id="metadataUrl"
                     name="metadataUrl"
@@ -170,13 +181,15 @@ function SAMLModal({
                     placeholder="https://"
                     autoComplete="off"
                     required
-                    className="mt-1 block w-full appearance-none rounded-md border border-neutral-300 px-3 py-2 placeholder-neutral-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
+                    className="mt-2 block w-full font-display border-neutral-300 px-3 py-2 text-[13px] md:text-sm placeholder-neutral-400 shadow-sm focus:border-black focus:outline-none focus:ring-0"
                   />
                 </div>
               ))}
+
+            {/* Submit */}
             <Button
               text="Save changes"
-              className="text-white font-display"
+              className="text-white font-display h-9 md:h-10 text-sm"
               disabled={!selectedProvider}
               loading={submitting}
             />

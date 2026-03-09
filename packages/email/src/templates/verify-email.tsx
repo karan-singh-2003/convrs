@@ -1,49 +1,44 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Tailwind,
-  Text,
-} from "@react-email/components";
-import { Footer } from "../components/footer";
+import React from "react";
+import { Heading, Section, Text } from "@react-email/components";
+import EmailLayout from "../components/email-layout";
 
 export default function VerifyEmail({
   email,
-  code 
+  code,
 }: {
   email: string;
   code: string;
 }) {
   return (
-    <Html>
-      <Head />
-      <Preview>Your Acme Verification Code</Preview>
-      <Tailwind>
-        <Body className="mx-auto my-auto bg-white font-sans">
-          <Container className="mx-auto my-10 max-w-[600px] rounded border border-solid border-neutral-200 px-10 py-5">
-            <Heading className="mx-0 my-7 p-0 text-xl font-medium text-black">
-              Please confirm your email address
-            </Heading>
-            <Text className="mx-auto text-sm leading-6">
-              Enter this code on the Acme verify page to complete your sign up:
-            </Text>
-            <Section className="my-8 rounded-lg border border-solid border-neutral-200">
-              <div className="mx-auto w-fit px-6 py-3 text-center font-mono text-2xl font-semibold tracking-[0.25em]">
-                {code}
-              </div>
-            </Section>
-            <Text className="text-sm leading-6 text-black">
-              This code expires in 10 minutes.
-            </Text>
-            <Footer email={email} />
-          </Container>
-        </Body>
-      </Tailwind>
-    </Html>
+    <EmailLayout preview="Your Boilercode verification code" email={email}>
+      <Heading className="mx-0 my-7 text-lg font-medium text-black">
+        Please confirm your email address
+      </Heading>
+
+      <Text className="text-sm leading-6 text-black">
+        Enter this code on the Boilercode verification page to complete your
+        sign up:
+      </Text>
+
+      <Section className="my-8 border border-neutral-200">
+        <div
+          style={{
+            textAlign: "center",
+            padding: "14px 24px",
+            fontFamily:
+              "Google Sans, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif",
+            fontSize: "28px",
+            fontWeight: 600,
+            letterSpacing: "0.25em",
+          }}
+        >
+          {code}
+        </div>
+      </Section>
+
+      <Text className="text-sm leading-6 text-black">
+        This code expires in 10 minutes.
+      </Text>
+    </EmailLayout>
   );
 }

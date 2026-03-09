@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, useMediaQuery } from "@repo/ui";
-import { Lock } from "lucide-react";
+import { Button, useMediaQuery, Label, Input } from "@repo/ui";
+import { cn } from "@repo/utils";
 import { signIn } from "next-auth/react";
 import { useContext } from "react";
 import { toast } from "sonner";
@@ -44,19 +44,19 @@ export const SSOSignIn = () => {
       className="flex flex-col space-y-3"
     >
       {showSSOOption && (
-        <div>
+        <div className="flex flex-col gap-y-1.5">
           {authMethod !== "saml" && (
-            <div className="mb-4 mt-1 border-t border-neutral-300" />
+            <div className="mb-3 mt-1 border-t border-neutral-300" />
           )}
-          <div className="flex items-center space-x-2">
-            <h2 className="text-sm font-medium text-neutral-900">
-              Workspace Slug
-            </h2>
-            {/* <InfoTooltip
-              content={`This is your workspace's unique identifier on ${process.env.NEXT_PUBLIC_APP_NAME}. E.g. app.dub.co/acme is "acme".`}
-            /> */}
-          </div>
-          <input
+
+          <Label
+            htmlFor="slug"
+            className="text-sm font-medium font-display text-muted-foreground"
+          >
+            Workspace Slug
+          </Label>
+
+          <Input
             id="slug"
             name="slug"
             autoFocus={!isMobile}
@@ -64,7 +64,9 @@ export const SSOSignIn = () => {
             placeholder="my-team"
             autoComplete="off"
             required
-            className="mt-1 block w-full appearance-none  border border-neutral-300 px-3 py-2 placeholder-neutral-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
+            className={cn(
+              "h-10 w-full font-display text-[15.5px] text-neutral-600 transition-opacity"
+            )}
           />
         </div>
       )}

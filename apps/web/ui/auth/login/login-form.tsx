@@ -2,7 +2,7 @@
 
 import { AnimatedSizeContainer } from "@repo/ui";
 import { useLocalStorage } from "@repo/ui";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Dispatch,
   SetStateAction,
@@ -84,6 +84,8 @@ export default function LoginForm({ next }: { next?: string }) {
   );
   const [authMethod, setAuthMethod] = useState<AuthMethod | undefined>("email");
 
+  const router = useRouter();
+
   const [, setLastUsedAuthMethod] = useLocalStorage<AuthMethod | undefined>(
     "last-used-auth-method",
     undefined
@@ -91,13 +93,19 @@ export default function LoginForm({ next }: { next?: string }) {
 
   useEffect(() => {
     const error = searchParams?.get("error");
-    if (error) {
-      toast.error(
-        errorCodes[error as keyof typeof errorCodes] ||
-          "An unexpected error occurred. Please try again later."
-      );
+    if (!error) return;
+
+    // OAuth 2FA: redirect straight to the challenge page instead of showing a toast
+    if (error === "two-factor-required") {
+      router.replace("/two-factor-challenge");
+      return;
     }
-  }, [searchParams]);
+
+    toast.error(
+      errorCodes[error as keyof typeof errorCodes] ||
+        "An unexpected error occurred. Please try again later."
+    );
+  }, [searchParams, router]);
 
   // Reset the state when leaving the page
   useEffect(() => () => setClickedMethod(undefined), []);
@@ -129,7 +137,7 @@ export default function LoginForm({ next }: { next?: string }) {
             <Passkey next={next} />
 
             {/* SSO */}
-            <SSOSignIn />
+            {/* <SSOSignIn /> */}
 
             <AuthMethodsSeparator />
 

@@ -19,7 +19,12 @@ import {
   getClientIp,
   touchSession,
 } from "./session-tracking";
+import { redisWithTimeout } from "../upstash";
 import { isSamlEnforcedForEmailDomain } from "../workspaces/is-saml-enforced-for-email-domain";
+import { isStored } from "../storage";
+import { storage } from "../storage";
+import { nanoid } from "@repo/utils";
+import sendMagicLinkEmail  from "@repo/email/templates/send-magic-link";
 
 const VERCEL_DEPLOYMENT = !!process.env.VERCEL_ENV;
 
@@ -59,17 +64,17 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     EmailProvider({
-      sendVerificationRequest({ identifier, url }) {
-        if (process.env.NODE_ENV === "development") {
-          console.log(`Login link for ${identifier}: ${url}`);
-          return;
-        } else {
-          sendEmail({
-            to: identifier,
-            subject: `Your ${process.env.NEXT_PUBLIC_APP_NAME} Login Link`,
-            text: `Click here to login: ${url}`,
-          });
-        }
+      async sendVerificationRequest({ identifier, url }) {
+        const subject = `Your ${process.env.NEXT_PUBLIC_APP_NAME} Login Link`;
+
+        await sendEmail({
+          to: identifier,
+          subject,
+          react: sendMagicLinkEmail({
+            email: identifier,
+            url,
+          }),
+        });
       },
     }),
     GoogleProvider({
@@ -176,7 +181,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: userInfo.email },
         });
 
-        // user is authorized but doesn't have a Dub account, create one for them
+        // user is authorized but doesn't have a Boilercode account, create one for them
         if (!existingUser) {
           existingUser = await prisma.user.create({
             data: {
@@ -396,7 +401,12 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google" || account?.provider === "github") {
         const userExists = await prisma.user.findUnique({
           where: { email: user.email },
-          select: { id: true, name: true, image: true },
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            twoFactorConfirmedAt: true,
+          },
         });
 
         if (!userExists || !profile) {
@@ -411,15 +421,32 @@ export const authOptions: NextAuthOptions = {
             profile[account.provider === "google" ? "picture" : "avatar_url"];
 
           let newAvatar: string | null = null;
+          if ((!userExists.image || isStored(userExists.image)) && profilePic) {
+            const { url } = await storage.upload({
+              key: `avatars/${userExists.id}_${nanoid(7)}`,
+              body: profilePic,
+            });
+            newAvatar = url;
+          }
 
           await prisma.user.update({
             where: { email: user.email },
             data: {
               // @ts-ignore - profile.login exists on GitHub profile
               ...(!userExists.name && { name: profile.name || profile.login }),
-              ...(profilePic && !userExists.image && { image: profilePic }),
+              ...(newAvatar && { image: newAvatar }),
             },
           });
+        }
+
+        // If the user has 2FA enabled, abort the OAuth sign-in and require
+        // them to verify their TOTP code before a session is created.
+        if (userExists.twoFactorConfirmedAt) {
+          await setTwoFactorAuthCookie({
+            id: userExists.id,
+            email: user.email!,
+          });
+          throw new Error("two-factor-required");
         }
       } else if (
         account?.provider === "saml" ||
@@ -506,6 +533,23 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
+      // Immediately invalidate revoked sessions — check Redis blocklist.
+      // This ensures API routes also return 401 for revoked JWTs.
+      if (token.sessionToken) {
+        try {
+          const revoked = await redisWithTimeout.get(
+            `revoked-session:${token.sessionToken}`
+          );
+          if (revoked) {
+            // Strip the subject so getServerSession returns a session with no
+            // valid user id, causing withSession to reject the request as 401.
+            return { ...token, sub: undefined } as typeof token;
+          }
+        } catch {
+          // Redis timeout — fail open
+        }
+      }
+
       if (user) {
         token.user = user;
       }
@@ -559,6 +603,8 @@ export const authOptions: NextAuthOptions = {
         // @ts-ignore
         ...(token || session).user,
       };
+      // Expose the tracked session token so API routes can identify the current session
+      (session as any).sessionToken = token.sessionToken;
       return session;
     },
   },

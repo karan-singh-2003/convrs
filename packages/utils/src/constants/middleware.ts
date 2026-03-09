@@ -1,6 +1,6 @@
 export const DEFAULT_REDIRECTS = {
   home: `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
-  dub: `https://${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
+  boilercode: `https://${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
   signin: `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}/login`,
   login: `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}/login`,
   register: `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}/register`,

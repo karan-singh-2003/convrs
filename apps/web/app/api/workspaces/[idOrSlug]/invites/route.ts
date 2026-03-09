@@ -4,9 +4,11 @@ import { prisma } from "@repo/db";
 import { inviteUser } from "@/lib/api/users";
 import {
   getWorkspaceUsersQuerySchema,
+  roleSchema,
   workspaceUserSchema,
 } from "@/lib/zod/schemas/workspaces";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 // GET /api/workspaces/[idOrSlug]/invites – get invites for a specific workspace
 export const GET = withWorkspace(
@@ -113,6 +115,26 @@ export const POST = withWorkspace(
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
+  },
+  { requiredPermission: "workspace:write" }
+);
+
+const updateInviteRoleSchema = z.object({
+  email: z.string().email(),
+  role: roleSchema,
+});
+
+// PATCH /api/workspaces/[idOrSlug]/invites – update a pending invite's role
+export const PATCH = withWorkspace(
+  async ({ req, workspace }) => {
+    const { email, role } = updateInviteRoleSchema.parse(await req.json());
+
+    await prisma.workspaceInvite.update({
+      where: { email_workspaceId: { email, workspaceId: workspace.id } },
+      data: { role },
+    });
+
+    return NextResponse.json({ message: "Invite role updated" });
   },
   { requiredPermission: "workspace:write" }
 );

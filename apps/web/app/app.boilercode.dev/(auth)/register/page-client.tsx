@@ -17,7 +17,7 @@ export default function RegisterPageClient() {
 
 function SignUp() {
   return (
-    <div className="max-w-sm mx-auto py-8 px-4 md:px-0" >
+    <div className="max-w-sm mx-auto py-8 px-4 md:px-0">
       <div className="flex flex-col my-5 items-center justify-center">
         <h1 className="text-xl font-semibold my-4 font-display">
           <svg
@@ -58,7 +58,23 @@ function Verify() {
     <>
       <div className="max-w-md mx-auto py-8">
         <div className="flex flex-col my-5 items-center justify-center">
-          <h1 className="text-xl font-semibold my-4 font-display">dub</h1>
+          <h1 className="text-xl font-semibold my-4 font-display">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 182 199"
+              fill="none"
+              className="size-8"
+            >
+              <path
+                d="M0 50.837L90.3333 0L182 50.837V148.832L90.3333 199L0 148.832V50.837Z"
+                fill="#363636"
+              />
+              <path
+                d="M10 50.0038L90.1639 5L173 49.6679L90.832 94L10 50.0038Z"
+                fill="white"
+              />
+            </svg>
+          </h1>
           <h1 className="text-[21px] font-display font-semibold">
             We emailed you a code
           </h1>

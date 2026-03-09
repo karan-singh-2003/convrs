@@ -1,4 +1,9 @@
 import { withSession } from "@/lib/auth";
+import {
+  REVOKED_SESSION_KEY_PREFIX,
+  REVOKED_SESSION_TTL_SECONDS,
+} from "@/lib/auth/session-tracking";
+import { redis } from "@/lib/upstash";
 import { prisma } from "@repo/db";
 import { NextResponse } from "next/server";
 
@@ -32,20 +37,14 @@ export const GET = withSession(async ({ req, session, searchParams }) => {
     }),
   ]);
 
-  // Determine which session is the current one by matching the session token
-  // from the cookie
-  const cookieHeader = req.headers.get("cookie") || "";
-  const sessionTokenMatch = cookieHeader.match(
-    /(?:__Secure-)?next-auth\.session-token=([^;]+)/
-  );
-  const currentSessionToken = sessionTokenMatch
-    ? decodeURIComponent(sessionTokenMatch[1])
-    : null;
+  // Identify the current session using the tracked session token stored in the JWT,
+  // which is forwarded through the NextAuth session callback.
+  const currentSessionToken = (session as any).sessionToken ?? null;
 
   const sessionsWithCurrent = sessions.map((s) => ({
     ...s,
     sessionToken: undefined, // Don't expose the token
-    isCurrent: s.sessionToken === currentSessionToken,
+    isCurrent: !!currentSessionToken && s.sessionToken === currentSessionToken,
   }));
 
   return NextResponse.json({
@@ -79,6 +78,14 @@ export const DELETE = withSession(async ({ req, session }) => {
     if (!targetSession) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
+
+    // Add to Redis blocklist BEFORE deleting so the JWT is immediately invalid
+    // even though it remains in the user's browser cookie.
+    await redis.set(
+      `${REVOKED_SESSION_KEY_PREFIX}${targetSession.sessionToken}`,
+      "1",
+      { ex: REVOKED_SESSION_TTL_SECONDS }
+    );
 
     await prisma.session.delete({
       where: { id: sessionId },

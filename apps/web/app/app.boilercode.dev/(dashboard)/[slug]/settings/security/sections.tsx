@@ -36,7 +36,7 @@ export default function Section({
             <h3 className="text-sm font-medium font-display text-neutral-900">
               {title}
             </h3>
-            <PremiumFeature />
+            {/* <PremiumFeature /> */}
           </div>
 
           <p className="text-[14px] font-display text-neutral-500">

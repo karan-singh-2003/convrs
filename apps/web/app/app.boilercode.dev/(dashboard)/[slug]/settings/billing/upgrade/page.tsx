@@ -35,7 +35,7 @@ const page = () => {
             </h1>
           </div>
           <div className="flex items-center gap-x-3  mt-3">
-            <IsometricBoxes count={1} size={38} />
+            <IsometricBoxes count={getCount(billing?.planName || "")} size={38} />
             <div className="flex flex-col gap-0.5">
               <p className="text-[14px] font-medium font-display text-neutral-500">
                 {billing?.planName}
@@ -53,3 +53,19 @@ const page = () => {
 };
 
 export default page;
+
+
+function getCount(planName: string) {
+  switch (planName.toLowerCase()) {
+    case "pro":
+      return 2;
+    case "business":
+      return 3;
+    case "advanced":
+      return 4;
+    case "enterprise":
+      return 4;
+    default:
+      return 1;
+  }
+}

@@ -2,6 +2,11 @@ import { prisma } from "@repo/db";
 import { headers } from "next/headers";
 import { nanoid } from "@repo/utils";
 
+/** Key prefix used to blocklist revoked session tokens in Redis. */
+export const REVOKED_SESSION_KEY_PREFIX = "revoked-session:";
+/** TTL matches the maximum tracked-session lifetime (30 days). */
+export const REVOKED_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+
 interface DeviceInfo {
   deviceName: string;
   deviceType: string;

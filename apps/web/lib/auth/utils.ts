@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth";
 import { authOptions } from "./options";
 
 export interface Session {
@@ -9,8 +9,9 @@ export interface Session {
     image?: string;
     defaultWorkspace?: string;
   };
+  sessionToken?: string;
 }
 
 export const getSession = async () => {
-    return getServerSession(authOptions) as Promise<Session>;
-}
+  return getServerSession(authOptions) as Promise<Session>;
+};

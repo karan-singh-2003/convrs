@@ -12,12 +12,12 @@ export default function Page() {
         <h3 className="text-muted-foreground font-medium font-display text-center text-sm sm:text-[14.5px]">
           Add team members to collaborate inside your workspace.
         </h3>
-        <div className="my-4  w-full">
+        <div className="my-4 w-full">
           <Form />
         </div>
-      </div>
-      <div className="mt-2 flex justify-center">
-        <SkipButton step="source" />
+        <div className="mt-1 flex justify-center">
+          <SkipButton step="source" />
+        </div>
       </div>
     </Suspense>
   );

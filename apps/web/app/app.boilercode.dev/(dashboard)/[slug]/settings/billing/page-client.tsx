@@ -69,7 +69,7 @@ const BillingClient = () => {
             </p>
           </div>
           <div className="flex items-center gap-x-3 px-3 py-2.5 border-t border-neutral-200/70   ">
-            <IsometricBoxes count={1} size={39} />
+            <IsometricBoxes count={getCount(planName)} size={39} />
             <div className="flex flex-col">
               <p className="text-[14px] font-medium font-display text-neutral-500">
                 {loading ? "Loading..." : planName}
@@ -89,7 +89,6 @@ const BillingClient = () => {
           </div>
         </div>
       </SettingsChildrenLayout>
- 
 
       {/* Recent Invoices */}
       <SettingsChildrenLayout
@@ -105,3 +104,18 @@ const BillingClient = () => {
 };
 
 export default BillingClient;
+
+function getCount(planName: string) {
+  switch (planName.toLowerCase()) {
+    case "pro":
+      return 2;
+    case "business":
+      return 3;
+    case "advanced":
+      return 4;
+    case "enterprise":
+      return 4;
+    default:
+      return 1;
+  }
+}

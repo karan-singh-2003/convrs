@@ -15,8 +15,8 @@ export function QRCode({ url, scale = 2 }: QRCodeProps) {
     if (!ref.current) return;
 
     const qrCode = new QRCodeStyling({
-      width: 200 * (scale / 2),
-      height: 200 * (scale / 2),
+      width: 160 * (scale / 2),
+      height: 160 * (scale / 2),
       data: url,
       margin: 10,
       qrOptions: {

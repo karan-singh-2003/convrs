@@ -64,49 +64,58 @@ function RemoveSCIMModal({
     <Modal
       showModal={showRemoveSCIMModal}
       setShowModal={setShowRemoveSCIMModal}
-      className="max-w-md"
+      className="px-4 md:px-0 py-3 md:py-1.5 min-h-[33dvh] md:max-h-fit md:overflow-y-auto"
     >
-      <div className="space-y-2 border-b border-neutral-200 px-4 py-2 ">
-        <h3 className="text-base font-display font-medium">
-          Remove SCIM Directory
+      <div className="space-y-1 md:py-1 py-1 md:border-b border-[#F0F0F0]">
+        <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-black/65">
+          Remove SCIM
         </h3>
       </div>
-      <div className="px-4 py-2">
-        <p className="text-sm font-display text-neutral-500">
+
+      <div className="md:py-4 md:px-5">
+        <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500 w-full">
           This will remove the currently configured SCIM directory from your
-          workspace.{" "}
-          <strong className="font-semibold text-neutral-700">
-            This action can't be undone
-          </strong>{" "}
-          proceed with caution.
+          workspace.
         </p>
+
+        <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500 mt-1">
+          <span className="font-medium">This action can't be undone</span>
+          <span> — proceed with caution.</span>
+        </p>
+
         <form
           onSubmit={async (e) => {
             e.preventDefault();
             await removeSCIM();
           }}
-          className="flex flex-col my-4  space-y-4"
+          className="flex flex-col mt-4 space-y-4"
         >
-          <div className="relative flex items-center gap-3 rounded-full border border-neutral-300 bg-white py-2 px-3">
+          {/* Provider Card */}
+          <div className="relative flex items-center gap-3 bg-neutral-100/50 py-2.5 px-3 md:py-3">
             <img
-              src={currentProvider.logo}
-              alt={currentProvider.name + " logo"}
-              className="h-5 w-5"
+              src={currentProvider!.logo}
+              alt={currentProvider!.name + " logo"}
+              className="h-5 w-5 md:h-6 md:w-6"
             />
-            <h3 className="line-clamp-1 font-display text-sm font-medium text-neutral-600">
-              {currentProvider.name} SCIM
+            <h3 className="line-clamp-1 font-display text-[13px] md:text-[14.5px] font-medium text-neutral-500">
+              {currentProvider!.name} SCIM
             </h3>
           </div>
 
-          <div className="my-2">
+          {/* Verification Input */}
+          <div className="my-3 md:my-5">
             <label
               htmlFor="verification"
-              className="block font-display text-sm text-neutral-700"
+              className="block font-display text-[13px] md:text-[14.5px] text-neutral-600"
             >
               To verify, type{" "}
-              <span className="font-semibold">{confirmationText}</span> below
+              <span className="text-neutral-500 font-medium">
+                {confirmationText}
+              </span>{" "}
+              below
             </label>
-            <div className="relative mt-1 rounded-none shadow-sm">
+
+            <div className="relative mt-1">
               <input
                 type="text"
                 name="verification"
@@ -117,16 +126,18 @@ function RemoveSCIMModal({
                 autoComplete="off"
                 value={verification}
                 onChange={(e) => setVerification(e.target.value)}
-                className="block w-full rounded-none border-neutral-300 text-neutral-900 placeholder-neutral-300 focus:border-neutral-500 focus:outline-none focus:ring-0 sm:text-sm"
+                className="block w-full font-display border-neutral-200 text-neutral-600 placeholder-neutral-300 focus:border-neutral-500 focus:outline-none focus:ring-0 text-[13px] md:text-[14.5px] py-2 md:py-2.5"
               />
             </div>
           </div>
 
+          {/* Button */}
           <Button
             text="Remove SCIM Directory"
             variant="danger"
             loading={removing}
             disabled={!isVerified}
+            className="h-9 md:h-10 text-sm"
           />
         </form>
       </div>

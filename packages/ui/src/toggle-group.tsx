@@ -53,7 +53,7 @@ export function ToggleGroup({
               {...(option.href ? { href: option.href } : { type: "button" })}
               data-selected={isSelected}
               className={cn(
-                "text-content-emphasis rounded-full relative hover:bg-white z-10 flex items-center  py-1 text-xl font-semibold capitalize",
+                "text-neutral-600 rounded-full relative hover:bg-white z-10 flex items-center  py-1 text-xl font-medium capitalize",
                 !isSelected &&
                   "hover:text-content-subtle z-[11] transition-colors",
                 optionClassName

@@ -183,7 +183,7 @@ export const EmailSignIn = ({ next }: { next?: string }) => {
             setAuthMethod("email");
           },
         })}
-        className="mt-1 h-10 w-full font-display bg-foreground text-background text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+        className="mt-1 h-10 w-full font-display bg-black text-white text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
         loading={clickedMethod === "email" || isPending}
         disabled={Boolean(clickedMethod && clickedMethod !== "email")}
       />
