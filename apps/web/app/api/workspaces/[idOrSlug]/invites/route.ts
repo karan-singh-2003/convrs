@@ -98,6 +98,7 @@ export const POST = withWorkspace(
         })
       )
     );
+    console.log(res);
 
     if (res.some((result) => result.status === "rejected")) {
       return new Response(
