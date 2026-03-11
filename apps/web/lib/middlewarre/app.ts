@@ -33,8 +33,6 @@ export async function AppMiddleware(req: NextRequest) {
   } else if (user) {
     // /new is a special path that creates a new link (or workspace if the user doesn't have one yet)
     if (path === "/new") {
- 
-
       /* Onboarding redirects
 
         - User was created less than a day ago
@@ -52,6 +50,7 @@ export async function AppMiddleware(req: NextRequest) {
       (await onboardingStepCache.get({ userId: user.id })) !== "completed"
     ) {
       let step = await onboardingStepCache.get({ userId: user.id });
+
       if (!step) {
         return NextResponse.redirect(new URL("/onboarding/new", req.url));
       } else if (step === "completed") {
