@@ -1,34 +1,14 @@
 import { cn } from "@repo/utils";
 
-export function LoadingSpinner({ className }: { className?: string }) {
+export function LoadingSpinner({
+  className,
+}: {
+  className?: string;
+  text?: string;
+}) {
   return (
-    <div className={cn("h-5 w-5", className)}>
-      <div
-        style={{
-          position: "relative",
-          top: "50%",
-          left: "50%",
-        }}
-        className={cn("loading-spinner", "h-5 w-5", className)}
-      >
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            style={{
-              animationDelay: `${-1.2 + 0.1 * i}s`,
-              background: "gray",
-              position: "absolute",
-              borderRadius: "1rem",
-              width: "30%",
-              height: "8%",
-              left: "-10%",
-              top: "-4%",
-              transform: `rotate(${30 * i}deg) translate(120%)`,
-            }}
-            className="animate-spinner"
-          />
-        ))}
-      </div>
+    <div className={cn("flex items-center justify-center gap-2", className)}>
+      <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import { withWorkspace } from "@/lib/auth";
-import { getWorkspaceUsersQuerySchema, roleSchema, workspaceUserSchema } from "@/lib/zod/schemas/workspaces";
+import {
+  getWorkspaceUsersQuerySchema,
+  roleSchema,
+  workspaceUserSchema,
+} from "@/lib/zod/schemas/workspaces";
 import { prisma } from "@repo/db";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -30,16 +34,16 @@ export const GET = withWorkspace(
       workspaceUserSchema.parse({
         ...rest,
         ...user,
-        name: user.name || user.email ,
+        name: user.name || user.email,
         createdAt: rest.createdAt, // preserve the createdAt field from WorkspaceUsers
-      }),
+      })
     );
 
     return NextResponse.json(parsedUsers);
   },
   {
     requiredPermission: "workspace:read",
-  },
+  }
 );
 
 const updateUserRoleSchema = z.object({

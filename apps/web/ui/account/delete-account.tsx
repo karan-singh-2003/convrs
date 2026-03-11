@@ -1,11 +1,11 @@
 import { Button } from "@repo/ui";
-import { useDeleteWorkspaceModal } from "../modals/delete-workspace-modal";
+import { useDeleteAccountModal } from "../modals/delete-account-modal";
 export default function DeleteAccount() {
-  const { setShowDeleteWorkspaceModal, DeleteWorkspaceModal } =
-    useDeleteWorkspaceModal();
+  const { setShowDeleteAccountModal, DeleteAccountModal } =
+    useDeleteAccountModal();
   return (
     <div>
-      <DeleteWorkspaceModal />
+      <DeleteAccountModal />
       <div className="space-y-0.5">
         <h2 className="font-medium text-sm">Delete Account</h2>
         <p className="font-default text-[13.5px] text-neutral-500">
@@ -18,7 +18,7 @@ export default function DeleteAccount() {
           text="Delete Account"
           variant="danger"
           className="w-fit text-[13px] font-display py-1 h-fit"
-          onClick={() => setShowDeleteWorkspaceModal(true)}
+          onClick={() => setShowDeleteAccountModal(true)}
         />
       </div>
     </div>

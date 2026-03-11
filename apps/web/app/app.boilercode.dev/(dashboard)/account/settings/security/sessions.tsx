@@ -87,20 +87,21 @@ export default function Sessions() {
         ),
         cell: ({ row }) => {
           const session = row.original;
-
           return (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <DeviceIcon deviceType={session.deviceType} />
 
-              <span className="text-sm text-neutral-700">
-                {session.deviceName || "Unknown Device"}
-              </span>
-
-              {session.isCurrent && (
-                <span className="rounded-full bg-amber-100 px-2 py-[1px] text-[10.5px] font-medium text-amber-700">
-                  This Device
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="text-sm text-neutral-700 truncate">
+                  {session.deviceName || "Unknown Device"}
                 </span>
-              )}
+
+                {session.isCurrent && (
+                  <span className="rounded-full bg-amber-100 px-2 py-[1px] text-[10.5px] font-medium text-amber-700 whitespace-nowrap">
+                    This Device
+                  </span>
+                )}
+              </div>
             </div>
           );
         },

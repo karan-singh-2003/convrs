@@ -7,3 +7,4 @@ export * from "./nanoid";
 export * from "./fetch-with-timeout"
 export * from "./fetcher"
 export * from "./format-date";
+export * from "./construct-metadata";

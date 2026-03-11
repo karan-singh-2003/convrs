@@ -2,7 +2,7 @@ import { LoadingSpinner } from "@repo/ui";
 
 export default function LayoutLoader() {
   return (
-    <div>
+    <div className="flex items-center justify-center min-h-screen">
       <LoadingSpinner />
     </div>
   );

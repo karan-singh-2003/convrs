@@ -9,13 +9,10 @@ const DashboardPage = () => {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
-
   return (
-    
-      <PageWidthWrapper>
-       <div></div>
-      </PageWidthWrapper>
-   
+    <PageWidthWrapper>
+      <div></div>
+    </PageWidthWrapper>
   );
 };
 

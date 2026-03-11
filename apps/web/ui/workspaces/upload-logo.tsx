@@ -14,8 +14,8 @@ export default function UploadLogo() {
     <TooltipProvider>
       <form
         onSubmit={async (e) => {
-          setUploading(true);
           e.preventDefault();
+          setUploading(true);
 
           fetch(`/api/workspaces/${id}`, {
             method: "PATCH",
@@ -35,12 +35,13 @@ export default function UploadLogo() {
             .finally(() => setUploading(false));
         }}
       >
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           {/* Heading */}
           <div className="space-y-1">
             <h2 className="font-medium text-sm font-display text-neutral-700">
               Workspace Logo
             </h2>
+
             <p className="text-sm font-display text-neutral-500 max-w-md">
               This is your workspace's logo on{" "}
               {process.env.NEXT_PUBLIC_APP_NAME}
@@ -48,10 +49,12 @@ export default function UploadLogo() {
           </div>
 
           {/* Upload Section */}
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="flex  flex-col items-start sm:items-center sm:flex-row sm:gap-6 gap-4">
+            
+            {/* Logo Upload */}
             <FileUpload
               accept="images"
-              className="h-24 w-24 rounded-full border border-neutral-300"
+              className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border border-neutral-300"
               iconClassName="w-5 h-5"
               variant="plain"
               imageSrc={image || logo}
@@ -62,10 +65,11 @@ export default function UploadLogo() {
               targetResolution={{ width: 240, height: 240 }}
             />
 
-            <div className="flex flex-col gap-2 max-w-sm">
+            {/* Controls */}
+            <div className="flex flex-col gap-2 w-full sm:max-w-sm">
               <Button
                 variant="primary"
-                className="sm:w-fit w-full  py-1 h-fit text-[13px]  font-display"
+                className="w-full sm:w-fit py-1 h-fit text-[13px] font-display"
                 text="Save changes"
                 loading={uploading}
                 disabled={!isOwner || !image || image === logo}
@@ -76,7 +80,7 @@ export default function UploadLogo() {
                 }
               />
 
-              <p className="text-[12.5px] font-default text-neutral-500">
+              <p className="text-[12.5px] font-default text-neutral-500  sm:text-left">
                 Square image recommended. Accepted file types: .png, .jpg,
                 .jpeg. Max file size: 2MB.
               </p>

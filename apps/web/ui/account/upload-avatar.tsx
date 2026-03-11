@@ -21,6 +21,7 @@ export default function UploadAvatar() {
       onSubmit={(e) => {
         e.preventDefault();
         setUploading(true);
+
         fetch("/api/user", {
           method: "PATCH",
           headers: {
@@ -40,17 +41,21 @@ export default function UploadAvatar() {
           .finally(() => setUploading(false));
       }}
     >
-      <div className="flex flex-col gap-3">
-        <div className="space-y-0.5">
+      <div className="flex flex-col gap-4">
+        {/* Heading */}
+        <div className="space-y-1">
           <h2 className="font-medium text-sm">Avatar</h2>
-          <p className="font-default text-[13.5px] text-neutral-500">
+          <p className="text-[13.5px] text-neutral-500 max-w-md">
             This is your avatar on {process.env.NEXT_PUBLIC_APP_NAME}
           </p>
         </div>
-        <div className="mt-1 flex items-end gap-2">
+
+        {/* Upload section */}
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          
           <FileUpload
             accept="images"
-            className="h-24 w-24 rounded-full border border-neutral-300"
+            className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border border-neutral-300"
             iconClassName="w-5 h-5"
             variant="plain"
             imageSrc={image}
@@ -60,18 +65,21 @@ export default function UploadAvatar() {
             maxFileSizeMB={2}
             targetResolution={{ width: 240, height: 240 }}
           />
-          <div className="mb-3">
+
+          <div className="flex flex-col gap-2 sm:mb-3 max-w-sm">
             <Button
-              className="h-fit py-1 w-fit text-[13px] font-default text-white disabled:text-black/50"
-              text="save changes"
+              className="h-fit py-1 w-full sm:w-fit text-[13px] font-default text-white disabled:text-black/50"
+              text="Save changes"
               disabled={!image || image === session?.user?.image}
               loading={uploading}
-            ></Button>
+            />
+
             <p className="text-[13px] text-neutral-500">
-              Square Image Recommended. Accepted file types: .png, .jpg, .jpeg.
+              Square image recommended. Accepted file types: .png, .jpg, .jpeg.
               Max file size: 2MB.
             </p>
           </div>
+
         </div>
       </div>
     </form>
