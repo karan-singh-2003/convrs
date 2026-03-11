@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: {
-        email: identifier,
+        id: identifier,
       },
       select: {
         emailVerified: true,
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       // Update the user's password
       prisma.user.update({
         where: {
-          email: identifier,
+          id: identifier,
         },
         data: {
           passwordHash: await hashPassword(password),
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     // Send the email to inform the user that their password has been reset
     waitUntil(
       sendEmail({
-        subject: "Your Dub account password has been reset",
+        subject: "Your Boilercode account password has been reset",
         to: identifier,
         react: PasswordUpdated({
           email: identifier,

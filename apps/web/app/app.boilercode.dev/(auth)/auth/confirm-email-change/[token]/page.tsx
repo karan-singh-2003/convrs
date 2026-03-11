@@ -1,11 +1,10 @@
 import { getSession, hashToken } from "@/lib/auth";
 import { redis } from "@/lib/upstash";
-import EmptyState from "@/ui/shared/empty-state";
 import { sendEmail } from "@repo/email";
 import EmailUpdated from "@repo/email/templates/email-updated";
 import { prisma } from "@repo/db";
 import { User, VerificationToken } from "@repo/db/client";
-import { InputPassword, LoadingSpinner } from "@repo/ui";
+import { LoadingSpinner } from "@repo/ui";
 import { waitUntil } from "@vercel/functions";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -20,19 +19,9 @@ interface PageProps {
 
 export default async function ConfirmEmailChangePage(props: PageProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-6 text-center">
-      <Suspense
-        fallback={
-          <EmptyState
-            icon={LoadingSpinner}
-            title="Verifying Email Change"
-            description="Verifying your email change request. This might take a few seconds..."
-          />
-        }
-      >
-        <VerifyEmailChange {...props} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<LoadingState />}>
+      <VerifyEmailChange {...props} />
+    </Suspense>
   );
 }
 
@@ -45,34 +34,28 @@ const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
     },
   });
 
-
-
   if (!tokenFound || tokenFound.expires < new Date()) {
     return (
-      <EmptyState
-        icon={InputPassword}
-        title="Invalid Token"
-        description="This token is invalid or expired. Please request a new one."
+      <MessageState
+        title="Invalid or Expired Token"
+        description="This email change token is invalid or has expired. Please request a new email change."
       />
     );
   }
 
-  // Cancel the email change request (?cancel=true)
   const { cancel } = await searchParams;
 
-  if (cancel && cancel === "true") {
+  if (cancel === "true") {
     await deleteRequest(tokenFound);
 
     return (
-      <EmptyState
-        icon={InputPassword}
+      <MessageState
         title="Email Change Request Canceled"
-        description="Your email change request has been canceled. No changes have been made to your account. You can close this page."
+        description="Your email change request has been canceled. No changes have been made to your account."
       />
     );
   }
 
-  // Process the email change request
   const session = await getSession();
 
   if (!session) {
@@ -81,18 +64,14 @@ const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
 
   const { id: userId } = session.user;
 
-  const identifier = userId;
-
   const data = await redis.get<{
     email: string;
     newEmail: string;
-  }>(`email-change-request:user:${identifier}`);
-
+  }>(`email-change-request:user:${userId}`);
 
   if (!data) {
     return (
-      <EmptyState
-        icon={InputPassword}
+      <MessageState
         title="Invalid Token"
         description="This token is invalid. Please request a new one."
       />
@@ -100,8 +79,6 @@ const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
   }
 
   let user: User | null = null;
-
-  // Update the user email
 
   user = await prisma.user.update({
     where: {
@@ -115,7 +92,6 @@ const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
   waitUntil(
     Promise.allSettled([
       deleteRequest(tokenFound),
-
       sendEmail({
         subject: "Your email address has been changed",
         to: data.email,
@@ -128,6 +104,60 @@ const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
   );
 
   return <ConfirmEmailChangePageClient />;
+};
+
+const LoadingState = () => {
+  return (
+    <div className="max-w-sm mx-auto px-4 md:px-0 py-20 text-center">
+      <div className="flex flex-col items-center gap-4">
+        <LoadingSpinner className="size-6 animate-spin" />
+
+        <h1 className="text-[20px] font-display font-semibold">
+          Verifying Email Change
+        </h1>
+
+        <p className="text-muted-foreground text-[15px] font-display">
+          Verifying your email change request. This may take a few seconds.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const MessageState = ({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) => {
+  return (
+    <div className="max-w-sm mx-auto px-4 md:px-0 py-20 text-center">
+      <div className="flex flex-col items-center gap-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 182 199"
+          fill="none"
+          className="size-8"
+        >
+          <path
+            d="M0 50.837L90.3333 0L182 50.837V148.832L90.3333 199L0 148.832V50.837Z"
+            fill="#363636"
+          />
+          <path
+            d="M10 50.0038L90.1639 5L173 49.6679L90.832 94L10 50.0038Z"
+            fill="white"
+          />
+        </svg>
+
+        <h1 className="text-[20px] font-display font-semibold">{title}</h1>
+
+        <p className="text-muted-foreground text-[15px] font-display">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
 };
 
 const deleteRequest = async (tokenFound: VerificationToken) => {

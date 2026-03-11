@@ -26,10 +26,18 @@ export default function ConfirmEmailChangePageClient() {
   }, [status, update]);
 
   return (
-    <EmptyState
-      icon={LoadingSpinner}
-      title="Verifying Email Change"
-      description="Verifying your email change request. This might take a few seconds..."
-    />
+    <div className="max-w-sm mx-auto px-4 md:px-0 py-20 text-center">
+      <div className="flex flex-col items-center gap-4">
+        <LoadingSpinner className="size-6 animate-spin" />
+
+        <h1 className="text-[20px] font-display font-semibold">
+          Verifying Email Change
+        </h1>
+
+        <p className="text-muted-foreground text-[15px] font-display">
+          Verifying your email change request. This might take a few seconds...
+        </p>
+      </div>
+    </div>
   );
 }
