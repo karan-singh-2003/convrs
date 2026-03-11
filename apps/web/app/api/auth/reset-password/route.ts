@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const { identifier } = tokenFound;
 
-    const user = await prisma.user.findUniqueOrThrow({
+    const user = await prisma.user.findUnique({
       where: {
         email: identifier,
       },
@@ -39,6 +39,10 @@ export async function POST(req: NextRequest) {
         passwordHash: true,
       },
     });
+
+    if (!user) {
+      throw new Error("No account found for this reset link.");
+    }
 
     // Check if the new password is the same as the current password
     if (user.passwordHash) {
