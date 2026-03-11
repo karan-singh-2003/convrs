@@ -1,6 +1,6 @@
 "use client";
 import { Modal, Avatar, useMediaQuery, Button } from "@repo/ui";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@repo/utils";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,6 @@ function DeleteAccountModal({
   const [verification, setVerification] = useState("");
   const [isDeleting, setDeleting] = useState(false);
   const router = useRouter();
-  const { update } = useSession();
 
   async function deleteAccount() {
     return new Promise((resolve, reject) => {
@@ -32,19 +31,15 @@ function DeleteAccountModal({
           "Content-Type": "application/json",
         },
       }).then(async (res) => {
+        console.log("Delete account response status:", res.status);
         if (res.status === 200) {
-          update();
-          // delay to allow for the route change to complete
-          await new Promise((resolve) =>
-            setTimeout(() => {
-              router.push("/register");
-              resolve(null);
-            }, 200)
-          );
+          await signOut({ redirect: false });
+          router.push("/register");
           resolve(null);
         } else {
           setDeleting(false);
           const error = await res.text();
+          console.error("Delete account error:", error);
           reject(error);
         }
       });
@@ -77,7 +72,10 @@ function DeleteAccountModal({
             toast.promise(deleteAccount(), {
               loading: "Deleting account...",
               success: "Account deleted successfully!",
-              error: (err) => err,
+              error: (err) => {
+                console.error("Delete account error:", err);
+                return err;
+              },
             });
           }}
         >

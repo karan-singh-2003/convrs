@@ -93,7 +93,6 @@ export const PATCH = withSession(async ({ req, session }) => {
         session.user.image &&
         session.user.image.startsWith(`${R2_URL}/avatars/${session.user.id}`)
       ) {
-     
         await storage.delete({
           key: session.user.image.replace(`${R2_URL}/`, ""),
         });
