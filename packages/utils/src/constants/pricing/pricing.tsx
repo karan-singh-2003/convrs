@@ -26,17 +26,17 @@ const FREE_PRICE_IDS = [
 
 const PRO_PRICE_IDS = [
   "price_1SyWkFL2qfTOZYhOGhm9Gng2" /* monthly */,
-  "price_1SyWkuL2qfTOZYhOePbSLGUt" /* yearly */,
+  "price_1T9i8SL2qfTOZYhOcS2i6C3q" /* yearly */,
 ];
 
 const BUSINESS_PRICE_IDS = [
   "price_1SyWlbL2qfTOZYhO65SoPBvN" /* monthly */,
-  "price_1SyWm7L2qfTOZYhO2yPVffKh" /* yearly */,
+  "price_1T9i9tL2qfTOZYhOYhh9hNFU" /* yearly */,
 ];
 
 const ADVANCED_PRICE_IDS = [
   "price_1SyWnQL2qfTOZYhOLtZW3JrI" /* monthly */,
-  "price_1SyWnuL2qfTOZYhOpnexxOsm" /* yearly */,
+  "price_1T9iAyL2qfTOZYhOBkKJHLNf" /* yearly */,
 ];
 
 export const PLANS: PlanDetails[] = [
@@ -113,6 +113,10 @@ export const Enterprise_Plan = PLANS.find(
   (plan) => plan.name === "Enterprise"
 )!;
 
+export const SELF_SERVE_PAID_PLANS = PLANS.filter((p) =>
+  ["Pro", "Business", "Advanced"].includes(p.name)
+);
+
 export const getPlanFromPriceId = ({
   priceId,
 }: {
@@ -172,4 +176,3 @@ export const isDowngradePlan = ({
     (currentPlanIndex === newPlanIndex && (currentTier ?? 1) > (newTier ?? 1))
   );
 };
-

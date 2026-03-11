@@ -25,6 +25,7 @@ export const POST = withWorkspace(
 
     const prices = await stripe.prices.list({
       lookup_keys: [lookupKey],
+      active: true,
     });
 
     if (prices.data.length === 0) {
@@ -40,7 +41,6 @@ export const POST = withWorkspace(
           .then((res) => res.data[0])
       : null;
 
-    // if the user has an active subscription, create billing portal to upgrade
     if (workspace.stripeId && activeSubscription) {
       const { url } = await stripe.billingPortal.sessions.create({
         customer: workspace.stripeId,
@@ -52,13 +52,14 @@ export const POST = withWorkspace(
             items: [
               {
                 id: activeSubscription.items.data[0].id,
-                quantity: 1,
                 price: prices.data[0].id,
+                quantity: 1,
               },
             ],
           },
         },
       });
+
       return NextResponse.json({ url });
     } else {
       // For both new users and users with canceled subscriptions
@@ -83,7 +84,7 @@ export const POST = withWorkspace(
         line_items: [{ price: prices.data[0].id, quantity: 1 }],
 
         automatic_tax: {
-          enabled:false,
+          enabled: false,
         },
         tax_id_collection: {
           enabled: true,

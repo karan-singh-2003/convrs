@@ -1,42 +1,47 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { Button } from "@repo/ui";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 import IsometricBoxes from "./IsometricBoxes";
 import Invoices from "./Invoices";
 import { useRouter } from "next/navigation";
 import useWorkspace from "@/lib/swr/use-workspace";
-import useBilling from "@/lib/swr/use-billing";
-import BillingDetails from "./BillingDetails";
-import { Plus } from "lucide-react";
-import PaymentMethod from "./PaymentMethod";
+import useSWR from "swr";
+import { fetcher } from "@repo/utils";
+import { getFormattedBillingPeriod } from "@repo/utils";
 
-function formatBillingCycle(start: string, end: string) {
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  return `${fmt(start)} - ${fmt(end)}`;
-}
-
-function formatPrice(price: number | null, interval: string) {
-  if (price === null || price === 0) return "$0.00 per month";
-  return `$${price.toFixed(2)} per ${interval === "year" ? "month billed yearly" : "month billed monthly"}`;
-}
-
+type BillingData = {
+  billingCycle: "monthly" | "yearly";
+  billingPeriodStart: number;
+};
 const BillingClient = () => {
   const router = useRouter();
-  const { slug, plan: workspacePlan } = useWorkspace();
-  const { billing, loading } = useBilling();
+  const {
+    slug,
+    plan: workspacePlan,
+    loading,
+    billingCycleStart,
+  } = useWorkspace();
 
-  const planName = billing?.planName ?? workspacePlan ?? "Free";
-  const price =
-    billing?.subscription?.interval === "year"
-      ? billing?.yearlyPrice
-      : billing?.price;
-  const interval = billing?.subscription?.interval ?? "month";
+  const planName = workspacePlan ?? "Free";
+
+  const { data, isLoading } = useSWR<BillingData>(
+    `/api/workspaces/${slug}/billing`,
+    fetcher
+  );
+
+  const billingInterval = data?.billingCycle;
+  const billingStartDate = data?.billingPeriodStart;
+
+  const billingPeriod = useMemo(
+    () =>
+      getFormattedBillingPeriod(
+        billingStartDate ? billingStartDate * 1000 : undefined, // ← fix
+        billingInterval
+      ),
+    [billingStartDate, billingInterval]
+  );
+  const [billingStart, billingEnd] = billingPeriod ?? [];
 
   return (
     <div className="space-y-6">
@@ -61,22 +66,20 @@ const BillingClient = () => {
               Current Plan
             </h3>
             <p className="text-[13.5px] font-display text-neutral-500">
-              {billing?.billingCycleStart && billing?.billingCycleEnd
-                ? `Current billing cycle: ${formatBillingCycle(billing.billingCycleStart, billing.billingCycleEnd)}`
-                : loading
-                  ? "Loading billing cycle..."
-                  : "No active billing cycle"}
+              {billingStart && billingEnd
+                ? `Billing Cycle: ${billingStart} - ${billingEnd}`
+                : ""}
             </p>
           </div>
           <div className="flex items-center gap-x-3 px-3 py-2.5 border-t border-neutral-200/70   ">
             <IsometricBoxes count={getCount(planName)} size={39} />
             <div className="flex flex-col">
               <p className="text-[14px] font-medium font-display text-neutral-500">
-                {loading ? "Loading..." : planName}
+                {loading ? "" : planName}
               </p>
-              <p className="text-[14px] font-display text-neutral-500">
+              {/* <p className="text-[14px] font-display text-neutral-500">
                 {loading ? "..." : formatPrice(price ?? 0, interval)}
-              </p>
+              </p> */}
             </div>
             {planName.toLowerCase() !== "enterprise" && (
               <Button

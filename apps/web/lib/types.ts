@@ -9,6 +9,7 @@ import {
   webhookEventSchemaTB,
 } from "./zod/schemas/webhook";
 import { WEBHOOK_TRIGGERS } from "./webhook/constant";
+import { InvoiceSchema } from "./zod/schemas/invoices";
 
 export interface UserProps {
   id: string;
@@ -42,7 +43,7 @@ export const plans = [
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 export type PlanProps = (typeof plans)[number];
 export interface WorkspaceProps extends Workspace {
-  plan:PlanProps
+  plan: PlanProps;
   users: {
     role: WorkspaceRole;
   }[];
@@ -72,3 +73,5 @@ export type CreateNewWebhookProps = z.infer<typeof createWebhookSchema>;
 export type WebhookTrigger = (typeof WEBHOOK_TRIGGERS)[number];
 
 export type WebhookEventProps = z.infer<typeof webhookEventSchemaTB>;
+
+export type InvoiceProps = z.infer<typeof InvoiceSchema>;

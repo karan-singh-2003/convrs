@@ -42,7 +42,7 @@ export default function PriceCompareTable({ currency }: PricingSectionProps) {
   const {
     plan: currentPlan,
     stripeId,
-    planTier: currentPlanTier = 1 ,
+    planTier: currentPlanTier = 1,
     billingCycleStart,
   } = useWorkspace();
 
@@ -104,7 +104,7 @@ export default function PriceCompareTable({ currency }: PricingSectionProps) {
                     newTier: planTier,
                   })
                 );
-     
+
                 return (
                   <div
                     key={plan.name}
@@ -123,70 +123,74 @@ export default function PriceCompareTable({ currency }: PricingSectionProps) {
                         {plan.name === "Enterprise"
                           ? "Custom"
                           : `$${plan.price[billingCycle]}`}
-                        {!disableCurrentPlan && (
-                          <span className="ml-1 text-sm text-neutral-500">
-                            /{billingCycle === "monthly" ? "mo" : "yr"}
-                          </span>
-                        )}
+
+                        <span className="ml-1 text-sm text-neutral-500">
+                          /per month
+                          {billingCycle === "monthly" ? "" : " billed yearly"}
+                        </span>
                       </p>
                     </div>
 
-                    {/* CTA row — mobile gets prev/next arrow buttons */}
-                    <div className="flex gap-3">
+                    {/* CTA row */}
+                    <div className="flex items-center gap-2 w-full">
+                      {/* Prev arrow */}
                       <button
                         type="button"
-                        className="h-full font-display text-sm w-fit rounded-full bg-neutral-100 backdrop-blur-sm border border-neutral-300 px-2 transition-all duration-200 hover:bg-neutral-200 disabled:opacity-30 lg:hidden"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 transition hover:bg-neutral-200 disabled:opacity-30 lg:hidden"
                         disabled={mobilePlanIndex === 0}
                         onClick={() => setMobilePlanIndex((i) => i - 1)}
                       >
-                        <ChevronLeft className="size-5 text-neutral-700" />
+                        <ChevronLeft className="size-4 text-neutral-700" />
                       </button>
 
-                      {plan.name.toLowerCase() === "enterprise" &&
-                      !disableCurrentPlan ? (
-                        <a
-                          href="/contact"
-                          className={cn(
-                            "flex h-8 w-full items-center justify-center rounded-full text-[13.5px] font-medium font-display transition-all duration-200",
-                            "border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
-                          )}
-                        >
-                          Contact us
-                        </a>
-                      ) : (
-                        <UpgradePlanButton
-                          plan={plan.name.toLowerCase()}
-                          period={billingCycle}
-                          tier={planTier > 1 ? planTier : undefined}
-                          text={
-                            currentPlan?.toLowerCase() === "enterprise"
-                              ? "Contact us"
-                              : (currentPlan?.toLowerCase() === plan.name.toLowerCase() && planTier === currentPlanTier)
-                                ? "Current Plan"
+                      {/* CTA */}
+                      <div className="flex-1 min-w-0">
+                        {plan.name.toLowerCase() === "enterprise" &&
+                        !disableCurrentPlan ? (
+                          <a
+                            href="/contact"
+                            className="flex h-8 w-full items-center justify-center truncate rounded-full border border-neutral-200 bg-white px-3 text-[13.5px] font-medium font-display text-neutral-900 transition hover:bg-neutral-50"
+                          >
+                            Contact us
+                          </a>
+                        ) : (
+                          <UpgradePlanButton
+                            plan={plan.name.toLowerCase()}
+                            period={billingCycle}
+                            tier={planTier > 1 ? planTier : undefined}
+                            text={
+                              currentPlan === "enterprise"
+                                ? "Contact support"
+                                : disableCurrentPlan
+                                  ? "Current plan"
+                                  : isDowngrade
+                                    ? "Downgrade"
+                                    : "Upgrade"
+                            }
+                            variant={isDowngrade ? "secondary" : "primary"}
+                            disabled={
+                              disableCurrentPlan || currentPlan === "enterprise"
+                            }
+                            className={cn(
+                              "flex h-8 w-full items-center justify-center truncate rounded-full px-3 text-[13.5px] font-medium font-display transition",
+                              disableCurrentPlan
+                                ? "cursor-default border border-neutral-200 !bg-white text-neutral-400 shadow-none"
                                 : isDowngrade
-                                  ? "Downgrade"
-                                  : "Upgrade"
-                          }
-                          variant={isDowngrade ? "secondary" : "primary"}
-                          disabled={currentPlan?.toLowerCase() === plan.name.toLowerCase() && planTier === currentPlanTier}
-                          className={cn(
-                            "h-8 w-full rounded-full text-[13.5px] font-medium font-display transition-all duration-200",
-                            disableCurrentPlan
-                              ? "cursor-default border border-neutral-200 !bg-white text-neutral-400 shadow-none"
-                              : isDowngrade
-                                ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
-                                : "bg-[#404040] hover:bg-[#4040406e] text-white"
-                          )}
-                        />
-                      )}
+                                  ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
+                                  : "bg-neutral-900 text-white hover:bg-neutral-800"
+                            )}
+                          />
+                        )}
+                      </div>
 
+                      {/* Next arrow */}
                       <button
                         type="button"
-                        className="h-full w-fit rounded-full bg-neutral-100 backdrop-blur-sm border border-neutral-300 px-2 transition-all duration-200 hover:bg-neutral-200 disabled:opacity-30 lg:hidden"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 transition hover:bg-neutral-200 disabled:opacity-30 lg:hidden"
                         disabled={mobilePlanIndex >= plans.length - 1}
                         onClick={() => setMobilePlanIndex((i) => i + 1)}
                       >
-                        <ChevronRight className="size-5 text-neutral-700" />
+                        <ChevronRight className="size-4 text-neutral-700" />
                       </button>
                     </div>
                   </div>

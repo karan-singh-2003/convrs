@@ -1,10 +1,11 @@
 "use client";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { Button } from "@repo/ui";
-import { APP_DOMAIN, cn, PLANS } from "@repo/utils";
+import { APP_DOMAIN, cn, PLANS, SELF_SERVE_PAID_PLANS } from "@repo/utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { getStripe } from "@/lib/stripe/client";
+import { toast } from "sonner";
 
 export function UpgradePlanButton({
   plan,
@@ -30,15 +31,15 @@ export function UpgradePlanButton({
 
   const [clicked, setClicked] = useState(false);
 
-  const { slug } = useWorkspace();
-  const currentPlan = "free";
+  const { slug, plan: currentPlan } = useWorkspace();
 
-  const selectedPlan = PLANS.find(
-    (p) => p.name.toLowerCase() === plan.toLowerCase()
-  );
+  const selectedPlan =
+    SELF_SERVE_PAID_PLANS.find(
+      (p) => p.name.toLowerCase() === plan.toLowerCase()
+    ) ?? SELF_SERVE_PAID_PLANS[0];
 
-  const isCurrentPlan =
-    selectedPlan?.name.toLowerCase() === currentPlan.toLowerCase();
+  console.log("Current plan:", currentPlan);
+  const isCurrentPlan = currentPlan === selectedPlan?.name.toLowerCase();
 
   return (
     <Button
@@ -68,6 +69,7 @@ export function UpgradePlanButton({
           })
           .catch((err) => {
             console.error("Upgrade failed", err);
+            toast.error("Failed to upgrade plan. Please try again later.");
             setClicked(false);
           })
           .finally(() => {
@@ -77,7 +79,13 @@ export function UpgradePlanButton({
       variant={variant}
       className={cn(" text-[13.5px] font-default text-white", className)}
       disabled={disabled}
-      text={text}
+      text={
+        isCurrentPlan
+          ? "Your Current Plan"
+          : currentPlan === "free"
+            ? "Get Started "
+            : "Switch Plan"
+      }
       loading={clicked}
     ></Button>
   );

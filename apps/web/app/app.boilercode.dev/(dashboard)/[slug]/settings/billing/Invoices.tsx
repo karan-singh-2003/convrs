@@ -3,21 +3,23 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Download } from "lucide-react";
 import { useMemo } from "react";
 import { Table, useTable } from "@repo/ui";
-import useBilling, { BillingInvoice } from "@/lib/swr/use-billing";
+import useSWR from "swr";
+import { fetcher } from "@repo/utils";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 type InvoiceStatus = "paid" | "open" | "draft" | "uncollectible" | "void";
 
-type Invoice = {
+type StripeInvoice = {
   id: string;
-  reference: string;
-  amount: number;
-  date: string;
-  status: InvoiceStatus;
-  invoicePdf: string | null;
+  total: number;
+  createdAt: number;
+  status: InvoiceStatus | null;
+  pdfUrl: string | null;
+  description: string;
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IN", {
+function formatDate(timestamp: number) {
+  return new Date(timestamp * 1000).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -44,25 +46,21 @@ function getInvoiceStatusStyles(status: InvoiceStatus) {
   }
 }
 
-function mapStripeInvoices(stripeInvoices: BillingInvoice[]): Invoice[] {
-  return stripeInvoices.map((inv) => ({
-    id: inv.id,
-    reference: inv.number ?? inv.id,
-    amount: inv.amountPaid,
-    date: new Date(inv.created * 1000).toISOString(),
-    status: (inv.status ?? "draft") as InvoiceStatus,
-    invoicePdf: inv.invoicePdf,
-  }));
-}
-
 export default function Invoices() {
-  const { billing, loading, error } = useBilling();
-  const invoices = useMemo(
-    () => (billing?.invoices ? mapStripeInvoices(billing.invoices) : []),
-    [billing?.invoices]
+  const { slug } = useWorkspace();
+  const {
+    data: invoices,
+    isLoading,
+    error,
+  } = useSWR<StripeInvoice[]>(
+    `/api/workspaces/${slug}/billing/invoices`,
+    fetcher,
+    {
+      suspense: true,
+    }
   );
 
-  const columns = useMemo<ColumnDef<Invoice>[]>(
+  const columns = useMemo<ColumnDef<StripeInvoice>[]>(
     () => [
       {
         accessorKey: "reference",
@@ -73,7 +71,7 @@ export default function Invoices() {
         ),
         cell: ({ row }) => (
           <span className="text-[14px] w-fit font-medium font-display text-gray-500">
-            {row.original.reference}
+            {row.original.id}
           </span>
         ),
       },
@@ -86,7 +84,7 @@ export default function Invoices() {
         ),
         cell: ({ row }) => (
           <span className="text-[14px] w-fit font-medium font-display text-gray-500">
-            {formatCurrency(row.original.amount)}
+            {formatCurrency(row.original.total)}
           </span>
         ),
       },
@@ -99,7 +97,7 @@ export default function Invoices() {
         ),
         cell: ({ row }) => (
           <span className="text-[14px] w-fit font-medium font-display text-gray-500">
-            {formatDate(row.original.date)}
+            {formatDate(row.original.createdAt)}
           </span>
         ),
       },
@@ -110,15 +108,17 @@ export default function Invoices() {
           <div className="flex items-center justify-end mr-5 gap-x-1">
             <span
               className={`px-2.5 py-0.5 text-[14px]  font-display rounded-full ${getInvoiceStatusStyles(
-                row.original.status
+                row.original.status || "draft"
               )}`}
             >
-              {row.original.status.charAt(0).toUpperCase() +
-                row.original.status.slice(1)}
+              {row.original.status
+                ? row.original.status.charAt(0).toUpperCase() +
+                  row.original.status.slice(1)
+                : "Unknown"}
             </span>
-            {row.original.invoicePdf && (
+            {row.original.pdfUrl && (
               <a
-                href={row.original.invoicePdf}
+                href={row.original.pdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-1.5 rounded-md hover:bg-gray-100 transition text-gray-500 hover:text-gray-500"
@@ -133,10 +133,10 @@ export default function Invoices() {
     []
   );
 
-  const { table, ...tableProps } = useTable<Invoice>({
-    data: invoices,
+  const { table, ...tableProps } = useTable<StripeInvoice>({
+    data: invoices ?? [],
     columns,
-    loading,
+    loading: isLoading,
     error: error ? "Failed to load invoices" : undefined,
   });
 

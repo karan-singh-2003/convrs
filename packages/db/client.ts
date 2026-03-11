@@ -1,4 +1,9 @@
-export { WorkspaceRole, Prisma } from "@prisma/client";
+export {
+  WorkspaceRole,
+  Prisma,
+  InvoiceStatus,
+  PaymentMethod,
+} from "@prisma/client";
 export type {
   Workspace,
   User,
@@ -7,4 +12,5 @@ export type {
   Token,
   RestrictedToken,
   Webhook,
+  InvoiceType,
 } from "@prisma/client";
