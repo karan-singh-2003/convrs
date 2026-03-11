@@ -4,7 +4,7 @@ import { prisma } from "@repo/db";
 
 export const POST = withSession(async ({ session, params }) => {
   const { idOrSlug: slug } = params;
-  console.log("Accepting invite for workspace:", slug);
+
   const invite = await prisma.workspaceInvite.findFirst({
     where: {
       email: session.user.email,
@@ -13,7 +13,7 @@ export const POST = withSession(async ({ session, params }) => {
       },
     },
   });
-  console.log("Found invite:", invite);
+
 
   if (!invite) {
     return new Response(JSON.stringify({ message: "Invite not found" }), {

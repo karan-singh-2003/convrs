@@ -38,7 +38,7 @@ export const POST = async (req: Request) => {
   });
 
   if (!webhook) {
-    console.error("Webhook not found", { webhookId });
+  
     return new Response("Webhook not found");
   }
 
@@ -49,15 +49,7 @@ export const POST = async (req: Request) => {
 
   // Log webhook callback details in development
   if (process.env.NODE_ENV === "development") {
-    console.debug("Webhook callback received", {
-      webhookId,
-      eventId,
-      event,
-      status,
-      url,
-      request: JSON.parse(request),
-      response,
-    });
+    console.log("Received webhook callback:");
   }
 
   await Promise.allSettled([

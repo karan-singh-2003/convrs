@@ -105,8 +105,7 @@ function WorkspaceList({
 }) {
   const { users } = useWorkspaceUsers();
   const membersCount = users?.length || 0;
-  console.log("users", users);
-  console.log("membersCount", membersCount);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, updateScrollProgress } = useScrollProgress(scrollRef);
   return (

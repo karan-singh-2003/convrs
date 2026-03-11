@@ -10,6 +10,7 @@ import { waitUntil } from "@vercel/functions";
 import { sendEmail } from "@repo/email";
 import APIKeyCreated from "@repo/email/templates/api-key-created";
 import { scopesToName } from "@/lib/api/tokens/scopes";
+import { toast } from "sonner";
 
 const getTokenQuerySchema = z.object({
   userId: z.string().optional(),
@@ -67,7 +68,7 @@ export const POST = withWorkspace(
     );
 
     const role = workspace.users[0].role;
-    console.log("role", role, "scopes", scopes);
+ 
 
     // if (!validateScopesForRole(role, scopes || [])) {
     //   throw new Error("Invalid scopes for the user's role");
@@ -131,7 +132,9 @@ export const POST = withWorkspace(
             }),
           });
         } catch (error) {
-          console.error("Failed to send email notification:", error);
+          toast.error(
+            "Failed to send API token creation email. Please check your email settings."
+          );
         }
       })()
     );

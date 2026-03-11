@@ -38,17 +38,14 @@ export default async function ConfirmEmailChangePage(props: PageProps) {
 
 const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
   const { token } = await params;
-  console.log(
-    "Verifying email change with hash token:",
-    await hashToken(token, { secret: true })
-  );
+
   const tokenFound = await prisma.verificationToken.findUnique({
     where: {
       token: await hashToken(token, { secret: true }),
     },
   });
 
-  console.log("tokenFound", tokenFound);
+
 
   if (!tokenFound || tokenFound.expires < new Date()) {
     return (
@@ -91,7 +88,7 @@ const VerifyEmailChange = async ({ params, searchParams }: PageProps) => {
     newEmail: string;
   }>(`email-change-request:user:${identifier}`);
 
-  console.log("Email change data from Redis:", data);
+
   if (!data) {
     return (
       <EmptyState

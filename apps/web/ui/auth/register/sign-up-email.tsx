@@ -56,7 +56,7 @@ export const SignUpEmail = () => {
     },
     [handleSubmit, executeAsync]
   );
-  console.log(errors);
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-2">
       <div className="flex flex-col gap-y-1.5">

@@ -10,9 +10,7 @@ export async function customerSubscriptionUpdated(event: Stripe.Event) {
 
   const { plan } = getPlanFromPriceId({ priceId });
   if (!plan) {
-    console.log(
-      `Invalid price ID in customer.subscription.updated event: ${priceId}`
-    );
+   
     return;
   }
 
@@ -41,9 +39,7 @@ export async function customerSubscriptionUpdated(event: Stripe.Event) {
   });
 
   if (!workspace) {
-    console.log(
-      `workspace with stripeId ${stripeId} not found in the stripe webhook customer.subscription.updated event`
-    );
+  
     return NextResponse.json({ received: true });
   }
 

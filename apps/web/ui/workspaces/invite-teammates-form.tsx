@@ -104,7 +104,7 @@ export const InviteTeammatesForm = ({
 }) => {
   const { isMobile } = useMediaQuery();
   const { id, slug, loading, userLimit } = useWorkspace();
-console.log("userLimit", userLimit);
+
   const {
     control,
     register,

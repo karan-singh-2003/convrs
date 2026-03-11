@@ -43,7 +43,7 @@ export default function WorkspacePeopleClient() {
     }
   );
 
-  console.log("users", users);
+ 
 
   const isCurrentUserOwner = role === "owner";
   const columns = useMemo<ColumnDef<WorkspaceUserProps>[]>(
@@ -275,7 +275,7 @@ function RowMenuButton({
   if (!isCurrentUserOwner && !isCurrentUser) {
     return null;
   }
-  console.log("isCurrentUserOwner", isCurrentUserOwner);
+ 
 
   return (
     <>

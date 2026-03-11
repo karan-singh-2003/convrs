@@ -24,14 +24,14 @@ export async function startServerPasskeyRegistration({
     throw new Error("User not found in database");
   }
 
-  console.log("Initializing passkey registration for user:", user.id);
+
 
   const createOptions = await hanko.registration.initialize({
     userId: user.id,
     username: user.name || user.id,
   });
 
-  console.log("Passkey registration options created");
+
   return createOptions;
 }
 

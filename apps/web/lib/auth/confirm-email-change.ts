@@ -25,7 +25,7 @@ export const confirmEmailChange = async ({
 
   const token = randomBytes(32).toString("hex");
   const expiresAt = 15 * 60 * 1000; // 15 minutes
-  console.log("Generated email change hash token:", await hashToken(token));
+
   await prisma.verificationToken.create({
     data: {
       identifier,

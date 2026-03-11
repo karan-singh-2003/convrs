@@ -19,7 +19,7 @@ export const POST = async (req: Request) => {
   let event: Stripe.Event;
   try {
     if (!signature || !webhookSecret) {
-      console.log("Missing Stripe signature or webhook secret");
+    
       return new Response(
         "Webhook Error: Missing signature or webhook secret",
         { status: 400 }
@@ -27,12 +27,12 @@ export const POST = async (req: Request) => {
     }
     event = stripe.webhooks.constructEvent(buf, signature, webhookSecret);
   } catch (err) {
-    console.log("Error verifying Stripe webhook signature:", err);
+   
     return new Response("Webhook Error: Invalid signature", { status: 400 });
   }
 
   if (!relevantEvents.has(event.type)) {
-    console.log(`Received irrelevant Stripe event: ${event.type}`);
+   
     return new Response("Event received", { status: 200 });
   }
 
@@ -46,7 +46,7 @@ export const POST = async (req: Request) => {
         return await checkoutSessionCompleted(event);
     }
   } catch (err) {
-    console.log("Error processing Stripe webhook event:", err);
+  
     return new Response("Error processing event", { status: 500 });
   }
 

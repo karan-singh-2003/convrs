@@ -133,7 +133,7 @@ function AddEditTokenModal({
       label: p.name,
     }));
   }, []);
-  console.log("derive preset", derivePreset(token?.scopes || {}), token);
+
   useEffect(() => {
     if (token) {
       setData(token);

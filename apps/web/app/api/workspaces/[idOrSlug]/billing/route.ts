@@ -166,7 +166,7 @@ export const GET = withWorkspace(
           };
         }
       } catch (err) {
-        console.error("Error fetching Stripe billing data:", err);
+        console.error("Error fetching billing info from Stripe:", err);
       }
     }
 

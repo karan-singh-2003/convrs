@@ -15,9 +15,7 @@ export const useOnboardingProgress = () => {
   const { execute, isPending, executeAsync, hasSucceeded } = useAction(
     setOnboardingProgressAction,
     {
-      onSuccess: () => {
-        console.log("Onboarding progress updated successfully");
-      },
+      onSuccess: () => {},
       onError: (error) => {
         toast.error("Failed to update onboarding progress");
         console.error("Error updating onboarding progress:", error);

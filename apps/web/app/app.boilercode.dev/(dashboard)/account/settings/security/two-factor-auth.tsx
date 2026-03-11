@@ -30,7 +30,7 @@ export const TwoFactorAuth = () => {
   const [secret, setSecret] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
 
-  console.log("user", user);
+
 
   const { EnableTwoFactorAuthModal, setShowEnableTwoFactorAuthModal } =
     useEnableTwoFactorAuthModal({

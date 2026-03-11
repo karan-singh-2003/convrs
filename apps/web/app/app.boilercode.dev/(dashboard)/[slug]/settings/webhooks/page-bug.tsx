@@ -8,7 +8,7 @@ export default function WebhooksPage() {
   const router = useRouter();
   const { id: workspaceId, role } = useWorkspace();
   const { webhooks } = useWebhooks();
-  console.log("webhooks", webhooks);
+
   return (
     <div>
       <div className="my-3">

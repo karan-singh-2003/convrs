@@ -27,7 +27,7 @@ export const POST = withSession(async ({ req, session }) => {
 
     // If credential is provided, finish registration
     if (body.credential) {
-      console.log("Finishing passkey registration");
+  
       await finishServerPasskeyRegistration({
         credential: body.credential,
         session,
@@ -35,13 +35,12 @@ export const POST = withSession(async ({ req, session }) => {
       return NextResponse.json({ success: true });
     }
 
-    // Otherwise, start registration
-    console.log("Starting passkey registration for user:", session.user.email);
+
     const createOptions = await startServerPasskeyRegistration({ session });
-    console.log("Registration options created successfully");
+  
     return NextResponse.json(createOptions);
   } catch (error) {
-    console.error("Passkey registration error:", error);
+    
     return NextResponse.json(
       {
         error: "Failed to register passkey",

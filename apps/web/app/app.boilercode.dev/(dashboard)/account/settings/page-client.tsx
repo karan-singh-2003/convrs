@@ -10,7 +10,7 @@ import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 
 export function SettingsPageClient() {
   const { data: session, status, update } = useSession();
-  console.log("session", session);
+
   return (
     <SettingsChildrenLayout
       title="General"

@@ -40,10 +40,7 @@ export function SAML() {
         },
         body: JSON.stringify({ enforceSAML }),
       });
-      console.log(
-        "SAML SSO enforcement response in update workspace:",
-        response
-      );
+ 
 
       if (!response.ok) {
         const { error } = await response.json();
@@ -51,7 +48,7 @@ export function SAML() {
       }
 
       const data = await response.json();
-      console.log("Updated workspace data:", data);
+
       return {
         ssoEnforcedAt: data.ssoEnforcedAt,
       };

@@ -20,7 +20,7 @@ const resendEmailForOptions = (
     tags,
     unsubscribeUrl,
   } = opts;
-  console.log("EMAIL SENDER:", from || VARIANT_TO_FROM_MAP[variant]);
+
   // Build base options without rendered outputs (react/text)
   const baseOptions = {
     to,

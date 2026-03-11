@@ -19,7 +19,7 @@ export async function checkoutSessionCompleted(event: Stripe.Event) {
     checkoutSession.client_reference_id == null ||
     checkoutSession.customer == null
   ) {
-    console.log("Missing client_reference_id or customer in checkout session");
+
     return;
   }
 
@@ -32,9 +32,7 @@ export async function checkoutSessionCompleted(event: Stripe.Event) {
   const { plan } = getPlanFromPriceId({ priceId });
 
   if (!plan) {
-    console.log(
-      `Invalid price ID in checkout.session.completed event: ${priceId}`
-    );
+   
     return;
   }
 
@@ -103,9 +101,7 @@ async function completeOnboarding({
   })) as unknown as WorkspaceProps | null;
 
   if (!workspace) {
-    console.log(
-      `Workspace not found for onboarding completion: ${workspaceId}`
-    );
+  
     return;
   }
 

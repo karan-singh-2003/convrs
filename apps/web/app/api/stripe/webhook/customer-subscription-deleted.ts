@@ -33,9 +33,7 @@ export async function customerSubscriptionDeleted(event: Stripe.Event) {
   });
 
   if (!workspace) {
-    console.log(
-      `workspace with stripeId ${stripeId} not found in the stripe webhook customer.subscription.deleted event`
-    );
+   
     return NextResponse.json({ recieved: true });
   }
 

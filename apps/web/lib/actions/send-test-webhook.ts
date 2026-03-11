@@ -16,7 +16,7 @@ export const sendTestWebhook = authActionClient
   .action(async ({ ctx, parsedInput }) => {
     const { webhookId, triggers } = parsedInput;
     const {workspace} = ctx;
-    console.debug("Sending test webhook", { webhookId, triggers, workspaceId: workspace.id });
+
     const webhook = await prisma.webhook.findFirst({
       where: {
         id: webhookId,

@@ -10,7 +10,7 @@ import WebhookAddedEmail from "@repo/email/templates/webhook-added";
 // /api/webhooks/route.ts
 export const GET = withWorkspace(
   async ({ workspace }) => {
-    console.log("Fetching webhooks for workspace", workspace.id);
+
     const webhooks = await prisma.webhook.findMany({
       where: {
         workspaceId: workspace.id,

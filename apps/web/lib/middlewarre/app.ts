@@ -33,8 +33,7 @@ export async function AppMiddleware(req: NextRequest) {
   } else if (user) {
     // /new is a special path that creates a new link (or workspace if the user doesn't have one yet)
     if (path === "/new") {
-      console.log("REDIRECTING /NEW PATH");
-      console.error("REDIRECTING /NEW PATH");
+ 
 
       /* Onboarding redirects
 

@@ -29,7 +29,7 @@ export function UserDropdown() {
     },
   ];
 
-  console.log("session in user dropdown", session);
+ 
   return (
     <Popover
       content={
