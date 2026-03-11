@@ -13,6 +13,7 @@ import { storage } from "@/lib/storage";
 import { waitUntil } from "@vercel/functions";
 import * as z from "zod/v4";
 import { jackson } from "@/lib/jackson";
+import { deleteWorkspace } from "@/lib/api/workspaces/delete-workspace";
 
 const updateWorkspaceSchema = createWorkspaceSchema
   .extend({
@@ -34,7 +35,6 @@ export const GET = withWorkspace(
     requiredPermission: "workspace:read",
   }
 );
-
 
 // PATCH /api/workspaces/[idOrSlug] - update a specific workspace by id or slug
 export const PATCH = withWorkspace(
@@ -99,4 +99,16 @@ export const PATCH = withWorkspace(
     return NextResponse.json(res);
   },
   { requiredPermission: "workspace:write" }
+);
+
+// DELETE /api/workspaces/[idOrSlug] – delete a specific project
+export const DELETE = withWorkspace(
+  async ({ workspace }) => {
+    await deleteWorkspace(workspace);
+
+    return NextResponse.json(workspace);
+  },
+  {
+    requiredPermission: "workspace:write",
+  }
 );

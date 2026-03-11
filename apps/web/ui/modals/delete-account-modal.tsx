@@ -3,6 +3,8 @@ import { Modal, Avatar, useMediaQuery, Button } from "@repo/ui";
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@repo/utils";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 function DeleteAccountModal({
   showDeleteAccountModal,
@@ -17,6 +19,37 @@ function DeleteAccountModal({
   const confirmationText = "DELETE MY ACCOUNT";
 
   const [verification, setVerification] = useState("");
+  const [isDeleting, setDeleting] = useState(false);
+  const router = useRouter();
+  const { update } = useSession();
+
+  async function deleteAccount() {
+    return new Promise((resolve, reject) => {
+      setDeleting(true);
+      fetch(`/api/user`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then(async (res) => {
+        if (res.status === 200) {
+          update();
+          // delay to allow for the route change to complete
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              router.push("/register");
+              resolve(null);
+            }, 200)
+          );
+          resolve(null);
+        } else {
+          setDeleting(false);
+          const error = await res.text();
+          reject(error);
+        }
+      });
+    });
+  }
   return (
     <Modal
       showModal={showDeleteAccountModal}
@@ -37,7 +70,17 @@ function DeleteAccountModal({
           workspaces, and all your data.
         </p>
 
-        <form className="flex flex-col space-y-4 mt-4">
+        <form
+          className="flex flex-col space-y-4 mt-4"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            toast.promise(deleteAccount(), {
+              loading: "Deleting account...",
+              success: "Account deleted successfully!",
+              error: (err) => err,
+            });
+          }}
+        >
           {/* User card */}
           <div className="flex items-center gap-3 bg-neutral-100/50 px-3 py-2 md:px-4">
             <Avatar user={session?.user} className="size-8 md:size-9" />

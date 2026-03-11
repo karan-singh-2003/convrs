@@ -9,7 +9,10 @@ import { BlurImage, Modal, useMediaQuery } from "@repo/ui";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { useParams } from "next/navigation";
 import { Button } from "@repo/ui";
-import { cn } from "@repo/utils";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { mutate } from "swr";
 
 function DeleteWorkspaceModal({
   showDeleteWorkspaceModal,
@@ -24,7 +27,34 @@ function DeleteWorkspaceModal({
   const [workspaceSlugVerification, setWorkspaceSlugVerification] =
     useState("");
   const [verification, setVerification] = useState("");
+  const [isDeleting, setDeleting] = useState(false);
+  const router = useRouter();
+ 
+  const { update } = useSession();
   const confirmationText = `confirm delete workspace`;
+
+  async function deleteWorkspace() {
+    return new Promise((resolve, reject) => {
+      setDeleting(true);
+      fetch(`/api/workspaces/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then(async (res) => {
+        if (res.ok) {
+          await Promise.all([mutate("/api/workspaces"), update()]);
+          router.push("/");
+          resolve(null);
+        } else {
+          setDeleting(false);
+          const { error } = await res.json();
+          reject(error.message);
+        }
+      });
+    });
+  }
+
   return (
     <Modal
       showModal={showDeleteWorkspaceModal}
@@ -43,7 +73,17 @@ function DeleteWorkspaceModal({
           and all associated links and their respective analytics.
         </p>
 
-        <form className="flex flex-col space-y-4 mt-4">
+        <form
+          className="flex flex-col space-y-4 mt-4"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            toast.promise(deleteWorkspace(), {
+              loading: "Deleting workspace...",
+              success: "Workspace deleted successfully!",
+              error: (err) => err,
+            });
+          }}
+        >
           {/* Workspace Card */}
           <div className="bg-neutral-100/50 flex items-center gap-3 rounded-full px-3 py-2 md:px-4">
             <BlurImage
