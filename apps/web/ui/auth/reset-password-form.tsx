@@ -36,7 +36,7 @@ export const ResetPasswordForm = () => {
         body: JSON.stringify(data),
       });
 
-      if (response.ok) {
+      if (!response.ok) {
         const { error } = await response.json();
         throw new Error(error || "Failed to reset password. Please try again.");
       }
