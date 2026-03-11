@@ -22,7 +22,7 @@ export const stripeAppClient = ({ mode }: { mode?: StripeMode }) => {
   return new Stripe(appSecretKey!, {
     apiVersion: "2026-01-28.clover",
     appInfo: {
-      name: "Dub.co",
+      name: "Boilercode.dev",
       version: "0.1.0",
     },
   });

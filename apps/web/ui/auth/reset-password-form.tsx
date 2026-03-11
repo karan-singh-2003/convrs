@@ -26,26 +26,34 @@ export const ResetPasswordForm = () => {
     },
   });
 
-  const { executeAsync, isPending } = useAction(PasswordResetRequestAction, {
-    onSuccess() {
-      toast.success("Password reset email sent. Please check your inbox.");
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const { error } = await response.json();
+        throw new Error(error || "Failed to reset password. Please try again.");
+      }
+      toast.success(
+        "Password reset successful! Please login with your new password."
+      );
       router.push("/login");
-    },
-    onError(error) {
-      toast.error("Failed to send password reset email. Please try again.");
-    },
+    } catch (error: any) {
+      toast.error(
+        error.message || "Failed to reset password. Please try again."
+      );
+    }
   });
+
   return (
     <>
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit(async (data) => {
-            await executeAsync(data);
-          })(e);
-        }}
-      >
+      <form className="space-y-4" onSubmit={onSubmit}>
         <Input type="hidden" value={token} {...register("token")} />
 
         <div>

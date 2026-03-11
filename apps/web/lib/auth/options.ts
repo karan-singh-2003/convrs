@@ -111,7 +111,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: profile.email },
         });
 
-        // user is authorized but doesn't have a Dub account, create one for them
+        // user is authorized but doesn't have a Boilercode account, create one for them
         if (!existingUser) {
           existingUser = await prisma.user.create({
             data: {
