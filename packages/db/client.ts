@@ -12,5 +12,4 @@ export type {
   Token,
   RestrictedToken,
   Webhook,
-  InvoiceType,
 } from "@prisma/client";
