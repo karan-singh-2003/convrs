@@ -37,7 +37,7 @@ export function SidebarNav<T extends Record<any, any>>({
 }) {
   const router = useRouter();
   const {slug} = useWorkspace()
-  if(!slug) return null;
+
   return (
     <div className="h-full w-[248px]">
       <nav className="size-full">
