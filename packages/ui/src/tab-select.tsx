@@ -5,24 +5,27 @@ import Link from "next/link";
 import { Dispatch, SetStateAction, useId } from "react";
 // import { ArrowUpRight } from "./icons";
 
-const tabSelectButtonVariants = cva("p-4 transition-colors duration-75", {
-  variants: {
-    variant: {
-      default:
-        "text-content-subtle data-[selected=true]:text-content-emphasis data-[selected=false]:hover:text-content-default",
-      accent:
-        "text-content-subtle transition-[color,font-weight] data-[selected=true]:text-blue-600 data-[selected=false]:hover:text-content-default data-[selected=true]:font-medium",
+const tabSelectButtonVariants = cva(
+  "p-2.5 px-4 transition-colors duration-75",
+  {
+    variants: {
+      variant: {
+        default:
+          "text-neutral-500 data-[selected=true]:text-neutral-500 data-[selected=true]:font-medium data-[selected=false]:hover:text-content-default",
+        accent:
+          "text-content-subtle transition-[color,font-weight] data-[selected=true]:text-blue-600 data-[selected=false]:hover:text-content-default data-[selected=true]:font-medium",
+      },
     },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-});
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
 
 const tabSelectIndicatorVariants = cva("absolute bottom-0 w-full px-1.5", {
   variants: {
     variant: {
-      default: "text-bg-inverted",
+      default: "text-neutral-500",
       accent: "text-blue-600",
     },
   },
@@ -54,7 +57,7 @@ export function TabSelect<T extends string>({
           return (
             <As
               key={id}
-              className="relative"
+              className="relative font-display "
               href={href ?? "#"}
               target={target ?? undefined}
             >
@@ -63,7 +66,7 @@ export function TabSelect<T extends string>({
                 {...(onSelect && !href && { onClick: () => onSelect(id) })}
                 className={cn(
                   tabSelectButtonVariants({ variant }),
-                  target === "_blank" && "group flex items-center gap-1.5",
+                  target === "_blank" && "group flex items-center gap-1.5"
                 )}
                 data-selected={isSelected}
                 aria-selected={isSelected}

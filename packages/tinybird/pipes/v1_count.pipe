@@ -1,0 +1,37 @@
+DESCRIPTION >
+	Click events count
+
+
+TAGS "Analytics Endpoints"
+
+NODE click_events_count
+SQL >
+
+%
+SELECT COUNT(*) as count
+FROM analytics_events_raw
+WHERE
+    event_type = 'click'
+    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+    {% if defined(userId) %} AND user_id = {{ userId }} {% end %}
+    {% if defined(domain) %} AND domain = {{ domain }} {% end %}
+    {% if defined(referrer_domain) %} AND referrer_domain = {{ referrer_domain }} {% end %}
+    {% if defined(country) %} AND country = {{ country }} {% end %}
+    {% if defined(region) %} AND region = {{ region }} {% end %}
+    {% if defined(city) %} AND city = {{ city }} {% end %}
+    {% if defined(continent) %} AND continent = {{ continent }} {% end %}
+    {% if defined(device_type) %} AND device_type = {{ device_type }} {% end %}
+    {% if defined(browser) %} AND browser = {{ browser }} {% end %}
+    {% if defined(os) %} AND os = {{ os }} {% end %}
+    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT * FROM click_events_count
+

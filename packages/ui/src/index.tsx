@@ -22,7 +22,8 @@ export * from "./option-select";
 export * from "./command";
 export * from "./sheet";
 export * from "./tooltip";
-
+export * from "./charts"
+export * from "./filter"
 // hooks
 export * from "./hooks";
 

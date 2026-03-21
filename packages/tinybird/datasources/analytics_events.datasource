@@ -1,0 +1,45 @@
+DESCRIPTION >
+  Processed analytics events (populated from analytics_events_pipe)
+  Optimized for dashboard queries and grouping operations
+
+TOKEN "analytics_events_token" READ
+
+SCHEMA >
+    `timestamp` DateTime64(3),
+    `event_id` String,
+    `event_type` String,
+    `workspace_id` LowCardinality(String),
+    `user_id` String,
+    `user_hash` String,
+    `session_id` String,
+    `page_url` String,
+    `page_title` String,
+    `domain` LowCardinality(String),
+    `referrer` String,
+    `referrer_domain` LowCardinality(String),
+    `device_type` LowCardinality(String),
+    `device_vendor` LowCardinality(String),
+    `device_model` LowCardinality(String),
+    `browser` LowCardinality(String),
+    `browser_version` String,
+    `engine` LowCardinality(String),
+    `engine_version` String,
+    `os` LowCardinality(String),
+    `os_version` String,
+    `cpu_architecture` LowCardinality(String),
+    `ua` String,
+    `ip` String,
+    `country` LowCardinality(String),
+    `continent` LowCardinality(String),
+    `region` LowCardinality(String),
+    `city` LowCardinality(String),
+    `latitude` String,
+    `longitude` String,
+    `event_data` String,
+    `tags` String,
+    `custom_properties` String,
+    `is_bot` UInt8
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "workspace_id, timestamp, device_type, browser, country, os"

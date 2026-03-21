@@ -25,5 +25,13 @@ export * from "./x-logo";
 export * from "./youtube";
 export * from "./reddit";
 export * from "./product-hunt";
+export * from "./continents/index";
+
+export * from "./window";
+export * from "./latop";
+export * from "./apple-logo";
+export * from "./desktop";
+export * from "./mobile";
+export * from "./unknown"
 
 export type Icon = LucideIcon | ComponentType<SVGProps<SVGSVGElement>>;

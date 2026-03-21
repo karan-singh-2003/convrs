@@ -3,6 +3,7 @@ import { parse } from "@/lib/middlewarre/utils/parse";
 import { APP_HOSTNAMES, API_HOSTNAMES } from "@repo/utils";
 import { AppMiddleware } from "./lib/middlewarre/app";
 import { ApiMiddleware } from "./lib/middlewarre/api";
+
 export const config = {
   matcher: [
     /*
@@ -10,9 +11,10 @@ export const config = {
      * 1. /api/ routes
      * 2. /_next/ (Next.js internals)
      * 3. /_proxy/ (proxies for third-party services)
-     * 4. Metadata files: favicon.ico, sitemap.xml, robots.txt, manifest.webmanifest
+     * 4. /analytics.js (analytics tracker)
+     * 5. Metadata files: favicon.ico, sitemap.xml, robots.txt, manifest.webmanifest
      */
-    "/((?!api/|_next/|_proxy/|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)",
+    "/((?!api/|_next/|_proxy/|analytics.js|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)",
   ],
 };
 

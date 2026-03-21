@@ -49,6 +49,7 @@ export const withWorkspace = (
 
       const idOrSlug =
         params.idOrSlug ||
+        params.slug ||
         searchParams.workspaceId ||
         searchParams.workspaceSlug;
 
@@ -85,8 +86,10 @@ export const withWorkspace = (
         },
       })) as WorkspaceProps | null;
 
+   
+
       // workspace does not exists
-      if (!workspace) {
+      if (!workspace || !workspace.users || workspace.users.length === 0) {
         return new Response(JSON.stringify({ error: "Workspace not found" }), {
           status: 404,
           headers: { "Content-Type": "application/json" },

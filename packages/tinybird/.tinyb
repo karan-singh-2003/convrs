@@ -1,0 +1,14 @@
+{
+    "host": "https://api.us-east.aws.tinybird.co",
+    "id": "60ee7868-431c-4e4e-8167-ec42b83117a4",
+    "name": "Analytics",
+    "scope": "user",
+    "token": "p.eyJ1IjogIjYwZWU3ODY4LTQzMWMtNGU0ZS04MTY3LWVjNDJiODMxMTdhNCIsICJpZCI6ICJjZTJhMGI3ZS01OTVkLTRkMDUtODEzZi0xZDNkYzY5YWI5MWIiLCAiaG9zdCI6ICJ1cy1lYXN0LWF3cyJ9.8CQzSrQlPg4ZEuJTPTlC-JVShb5XVCEOZELwREMwEXo",
+    "tokens": {
+        "https://api.us-east.aws.tinybird.co": "p.eyJ1IjogIjYwZWU3ODY4LTQzMWMtNGU0ZS04MTY3LWVjNDJiODMxMTdhNCIsICJpZCI6ICJjZTJhMGI3ZS01OTVkLTRkMDUtODEzZi0xZDNkYzY5YWI5MWIiLCAiaG9zdCI6ICJ1cy1lYXN0LWF3cyJ9.8CQzSrQlPg4ZEuJTPTlC-JVShb5XVCEOZELwREMwEXo"
+    },
+    "user_email": "official.jaskaran13@gmail.com",
+    "user_id": "99c90c12-4563-477e-99bd-ea5417d6192c",
+    "user_token": "p.eyJ1IjogIjk5YzkwYzEyLTQ1NjMtNDc3ZS05OWJkLWVhNTQxN2Q2MTkyYyIsICJpZCI6ICI1MWU5ZmQ3OC0wYTcxLTQ3YTctODU2Zi00ODVlMmYwMzU3ZTIiLCAiaG9zdCI6ICJ1cy1lYXN0LWF3cyJ9.X8dUdSkWMhyGsK3cfnHJUUC07WuzyPA81uMH-xtxtWM",
+    "version": "4.2.1"
+}

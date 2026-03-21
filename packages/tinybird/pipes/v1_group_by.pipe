@@ -1,0 +1,75 @@
+DESCRIPTION >
+	Group by click events
+
+
+TAGS "Analytics Endpoints"
+
+NODE group_by_clicks
+SQL >
+
+%
+SELECT
+    multiIf(
+        {{ String(groupBy) }} = 'domain',
+        domain,
+        {{ String(groupBy) }} = 'referrer_domain',
+        referrer_domain,
+        {{ String(groupBy) }} = 'countries',
+        country,
+        {{ String(groupBy) }} = 'regions',
+        CONCAT(country, '-', region),
+        {{ String(groupBy) }} = 'cities',
+        city,
+        {{ String(groupBy) }} = 'continents',
+        continent,
+        {{ String(groupBy) }} = 'device_type',
+        device_type,
+        {{ String(groupBy) }} = 'device_vendor',
+        device_vendor,
+        {{ String(groupBy) }} = 'browser',
+        browser,
+        {{ String(groupBy) }} = 'os',
+        os,
+        domain
+    ) AS groupByField,
+    {% if String(groupBy) == 'cities' %} country, CONCAT(country, '-', region) as region,
+    {% elif String(groupBy) == 'regions' %} country,
+    {% end %}
+    COUNT(*) AS clicks
+FROM analytics_events_raw
+WHERE
+    event_type = 'click'
+    AND groupByField != '' AND groupByField != 'Unknown'
+    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+    {% if defined(userId) %} AND user_id = {{ userId }} {% end %}
+    {% if defined(domain) %} AND domain = {{ domain }} {% end %}
+    {% if defined(referrer_domain) %} AND referrer_domain = {{ referrer_domain }} {% end %}
+    {% if defined(continent) %} AND continent = {{ continent }} {% end %}
+    {% if defined(country) %} AND country = {{ country }} {% end %}
+    {% if defined(region) %} AND region = {{ region }} {% end %}
+    {% if defined(city) %} AND city = {{ city }} {% end %}
+    {% if defined(device_type) %} AND device_type = {{ device_type }} {% end %}
+    {% if defined(device_vendor) %} AND device_vendor = {{ device_vendor }} {% end %}
+    {% if defined(browser) %} AND browser = {{ browser }} {% end %}
+    {% if defined(os) %} AND os = {{ os }} {% end %}
+    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+GROUP BY
+    groupByField
+    {% if String(groupBy) == 'cities' %}, country, region
+    {% elif String(groupBy) == 'regions' %}, country
+    {% end %}
+ORDER BY clicks DESC
+LIMIT 5000
+
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT * FROM group_by_clicks
+
+
+

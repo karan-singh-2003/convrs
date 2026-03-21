@@ -1,0 +1,137 @@
+DESCRIPTION >
+	Timeseries click events data
+
+
+TAGS "Analytics Endpoints"
+
+NODE month_intervals
+SQL >
+
+%
+    WITH
+        toStartOfMonth(
+            toDateTime64({{ DateTime64(start, '2024-02-24 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfMonth(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS
+    end,
+    dateDiff('month', start, end) + 1 AS months_diff
+    SELECT
+        arrayJoin(
+            arrayMap(
+                x -> toDateTime64(start + toIntervalMonth(x), 3, {{ String(timezone, 'UTC') }}),
+                range(0, months_diff)
+            )
+        ) as interval
+
+
+
+NODE day_intervals
+SQL >
+
+%
+WITH
+    toStartOfDay(
+        toDateTime64({{ DateTime64(start, '2024-02-24 00:00:00.000') }}, 3),
+        {{ String(timezone, 'UTC') }}
+    ) AS start,
+    toStartOfDay(
+        toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+        {{ String(timezone, 'UTC') }}
+    ) AS
+end,
+dateDiff('day', start, end
+) + 1 AS days_diff
+SELECT
+    arrayJoin(
+        arrayMap(
+            x -> toDateTime64(start + toIntervalDay(x), 3, {{ String(timezone, 'UTC') }}),
+            range(0, days_diff)
+        )
+    ) as interval
+
+
+
+NODE hour_intervals
+SQL >
+
+%
+    WITH
+        toStartOfHour(
+            toDateTime64({{ DateTime64(start, '2024-05-22 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfHour(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS
+    end
+    SELECT
+        arrayJoin(
+            arrayMap(x -> toDateTime64(x, 3), range(toUInt32(start), toUInt32(end + 3600), 3600)
+        )
+    ) as interval
+
+
+
+NODE timeseries_clicks_data
+SQL >
+
+%
+SELECT
+    {% if granularity == "hour" %} toStartOfHour(timestamp, {{ String(timezone, 'UTC') }})
+    {% elif granularity == "month" %}
+        toDateTime64(
+            toStartOfMonth(timestamp, {{ String(timezone, 'UTC') }}),
+            3,
+            {{ String(timezone, 'UTC') }}
+        )
+    {% else %} toDateTime64(toStartOfDay(timestamp, {{ String(timezone, 'UTC') }}), 3)
+    {% end %} AS interval,
+    uniq(event_id) as clicks
+FROM analytics_events
+WHERE
+    event_type = 'click'
+    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+    {% if defined(userId) %} AND user_id = {{ userId }} {% end %}
+    {% if defined(domain) %} AND domain = {{ domain }} {% end %}
+    {% if defined(referrer_domain) %} AND referrer_domain = {{ referrer_domain }} {% end %}
+    {% if defined(country) %} AND country = {{ country }} {% end %}
+    {% if defined(region) %} AND region = {{ region }} {% end %}
+    {% if defined(city) %} AND city = {{ city }} {% end %}
+    {% if defined(continent) %} AND continent = {{ continent }} {% end %}
+    {% if defined(device_type) %} AND device_type = {{ device_type }} {% end %}
+    {% if defined(browser) %} AND browser = {{ browser }} {% end %}
+    {% if defined(os) %} AND os = {{ os }} {% end %}
+    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+GROUP BY interval
+ORDER BY interval
+
+
+
+NODE timeseries_clicks
+SQL >
+
+%
+    SELECT formatDateTime(interval, '%FT%T.000%z') as groupByField, clicks
+    FROM
+        {% if granularity == "minute" %} minute_intervals
+        {% elif granularity == "hour" %} hour_intervals
+        {% elif granularity == "month" %} month_intervals
+        {% else %} day_intervals
+        {% end %}
+    LEFT JOIN timeseries_clicks_data USING interval
+
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT * FROM timeseries_clicks
+

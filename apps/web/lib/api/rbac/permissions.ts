@@ -9,6 +9,7 @@ export const PERMISSION_ACTIONS = [
   "tokens.write",
   "webhooks.read",
   "webhooks.write",
+  "analytics.read",
 ] as const;
 
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
@@ -58,6 +59,12 @@ export const ROLE_PERMISSIONS: {
     roles: ["owner"],
     description: "Allows creating and managing webhooks",
   },
+  {
+    action: "analytics.read",
+    roles: ["owner", "member", "viewer"],
+    description: "Allows reading analytics data",
+  }
+
 ];
 
 export const getPermissionsForRole = (role: WorkspaceRole) => {

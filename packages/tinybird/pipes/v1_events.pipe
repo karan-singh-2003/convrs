@@ -1,0 +1,65 @@
+DESCRIPTION >
+	Click events stream
+
+
+TAGS "Analytics Endpoints"
+
+NODE click_events
+SQL >
+
+%
+SELECT
+    timestamp,
+    event_id,
+    workspace_id,
+    user_id,
+    user_hash,
+    session_id,
+    page_url,
+    page_title,
+    domain,
+    referrer,
+    referrer_domain,
+    device_type,
+    device_vendor,
+    device_model,
+    browser,
+    browser_version,
+    os,
+    os_version,
+    country,
+    continent,
+    region,
+    city,
+    latitude,
+    longitude,
+    is_bot
+FROM analytics_events
+WHERE
+    event_type = 'click'
+    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+    {% if defined(userId) %} AND user_id = {{ userId }} {% end %}
+    {% if defined(domain) %} AND domain = {{ domain }} {% end %}
+    {% if defined(referrer_domain) %} AND referrer_domain = {{ referrer_domain }} {% end %}
+    {% if defined(country) %} AND country = {{ country }} {% end %}
+    {% if defined(region) %} AND region = {{ region }} {% end %}
+    {% if defined(city) %} AND city = {{ city }} {% end %}
+    {% if defined(continent) %} AND continent = {{ continent }} {% end %}
+    {% if defined(device_type) %} AND device_type = {{ device_type }} {% end %}
+    {% if defined(browser) %} AND browser = {{ browser }} {% end %}
+    {% if defined(os) %} AND os = {{ os }} {% end %}
+    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+ORDER BY timestamp {% if order == 'asc' %} ASC {% else %} DESC {% end %}
+LIMIT {{ Int32(limit, 100) }}
+{% if defined(offset) %} OFFSET {{ Int32(offset, 0) }} {% end %}
+
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT * FROM click_events
+
