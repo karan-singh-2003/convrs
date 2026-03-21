@@ -1,40 +1,33 @@
-import { getStartEndDates } from "./utils/get-start-and-end-dates";
-import { tb } from "../tinybird";
-import { analyticsFilterTB } from "../zod/schemas/analytics";
+import { tb } from "@/lib/tinybird";
 import * as z from "zod/v4";
-import { formatUTCDateTimeClickhouse } from "./utils/format-utc-date-time-clickhouse";
+import { analyticsFilterTB } from "../zod/schemas/analytics";
 import { analyticsResponse } from "../zod/schemas/analytics-response";
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "./constants";
+import { buildAdvancedFilters, prepareFiltersForPipe } from "./filter-helpers";
+import { AnalyticsFilters } from "./types";
+import { formatUTCDateTimeClickhouse } from "./utils/format-utc-date-time-clickhouse";
+import { getStartEndDates } from "./utils/get-start-and-end-dates";
 
-// Map singular form groupBy values (from UI) to plural forms (for tinybird)
-const normalizeSingularToPlural = (groupBy: string): string => {
-  const mapping: Record<string, string> = {
-    device: "devices",
-    country: "countries",
-    city: "cities",
-    browser: "browsers",
-    continent: "continents",
-    region: "regions",
-    referrer: "referers",
-  };
-  return mapping[groupBy] || groupBy;
-};
-
-export const getAnalytics = async (params) => {
-  let {
+// Fetch data from Tinybird analytics pipes
+export const getAnalytics = async (params: AnalyticsFilters) => {
+  const {
+    event,
     groupBy,
     workspaceId,
     interval,
     start,
     end,
+    trigger,
+    region,
     country,
-    dataAvailableFrom,
     timezone = "UTC",
-    query,
+    dataAvailableFrom,
   } = params;
 
-  // Normalize singular groupBy values to plural forms for tinybird compatibility
-  const normalizedGroupBy = normalizeSingularToPlural(groupBy);
+  console.log(
+    "start and end data and timezone from params by api/analytics/route.ts",
+    { start, end, timezone }
+  );
 
   const { startDate, endDate, granularity } = getStartEndDates({
     interval,
@@ -43,49 +36,65 @@ export const getAnalytics = async (params) => {
     dataAvailableFrom,
     timezone,
   });
+  console.log("Sending to Tinybird:", {
+    start: formatUTCDateTimeClickhouse(startDate),
+    end: formatUTCDateTimeClickhouse(endDate),
+    workspaceId,
+    eventType: event,
+    groupBy,
+  });
+  const { triggerForPipe, countryForPipe, regionForPipe } =
+    prepareFiltersForPipe({
+      trigger,
+      region,
+      country,
+    });
 
+  // Create a Tinybird pipe
   const pipe = tb.buildPipe({
-    pipe: ["count", "timeseries"].includes(groupBy)
+    pipe: ["count", "timeseries"].includes(groupBy!)
       ? `v1_${groupBy}`
       : "v1_group_by",
     parameters: analyticsFilterTB,
     data: z.object({
-      groupByField: z
-        .string()
-        .optional()
-        .describe("The field to group by, e.g. country, device, etc."),
+      groupByField: z.string().optional(),
+      clicks: z.number().default(0),
+      leads: z.number().default(0),
+      sales: z.number().default(0),
+      saleAmount: z.number().default(0),
+      country: z.string().optional(),
+      region: z.string().optional(),
     }),
   });
 
-  const response = await pipe({
+  const advancedFilters = buildAdvancedFilters({
     ...params,
-    groupBy: normalizedGroupBy,
+    country: countryForPipe,
+    trigger: triggerForPipe,
+  });
+
+  const tinybirdParams: any = {
     workspaceId,
+    groupBy,
+    eventType: event,
     start: formatUTCDateTimeClickhouse(startDate),
     end: formatUTCDateTimeClickhouse(endDate),
     granularity,
     timezone,
-  });
+    region: typeof regionForPipe === "string" ? regionForPipe : undefined,
+    filters:
+      advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
+  };
 
-  console.log("Analytics response:", response);
+  const response = await pipe(tinybirdParams);
 
-  // Handle count and timeseries - these don't have groupByField
-  if (["count", "timeseries"].includes(groupBy)) {
-    if (groupBy === "count") {
-      const { groupByField, ...rest } = response.data[0];
-      return rest;
-    }
-    // For timeseries, return the data as-is (it already has the correct structure)
-    return response.data;
-  }
+  // Return parsed response
+  const schema = analyticsResponse[groupBy!];
 
-  // Handle group by queries - these have groupByField that needs to be renamed
-  const schema = analyticsResponse[normalizedGroupBy];
-
-  return response.data.map((item) =>
+  return response.data.map((item: any) =>
     schema.parse({
       ...item,
-      [SINGULAR_ANALYTICS_ENDPOINTS[normalizedGroupBy]]: item.groupByField,
+      [SINGULAR_ANALYTICS_ENDPOINTS[groupBy!]]: item.groupByField,
     })
   );
 };

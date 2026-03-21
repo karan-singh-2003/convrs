@@ -1,10 +1,12 @@
-import { AnalyticsContext, AnalyticsProvider } from "./analytics-providers";
+import { AnalyticsContext } from "./analytics-providers";
+import AnalyticsProvider from "./analytics-providers";
 import { AnalyticsToggle } from "./analytics-toggle";
 import { ChartSection } from "./chart-section";
-import DeviceSection from "./device-section";
-import LocationSection from "./location-section";
-import PagesSection from "./pages-section";
-import SourcesSection from "./sources-section";
+import {DeviceSection} from "./device-section";
+import {LocationSection} from "./location-section";
+import { PagesSection } from "./pages-section";
+import { SourcesSection } from "./sources-section";
+
 
 export default function Analytics() {
   return (
@@ -26,8 +28,8 @@ export default function Analytics() {
 function StatsGrid() {
   return (
     <div className="grid grid-cols-1  gap-5  md:grid-cols-2">
-      <PagesSection />
-      <SourcesSection />
+      {/* <PagesSection />
+      <SourcesSection /> */}
       <LocationSection />
       <DeviceSection />
     </div>

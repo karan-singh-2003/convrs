@@ -121,7 +121,7 @@ export async function recordClick({
     (async () => {
       const response = await Promise.allSettled([
         fetchWithRetry(
-          `${process.env.TINYBIRD_API_URL}/v0/events?name=analytics_events_raw&wait=true`,
+          `${process.env.TINYBIRD_API_URL}/v0/events?name=dub_click_events&wait=true`,
           {
             method: "POST",
             headers: {

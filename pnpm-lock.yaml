@@ -211,11 +211,11 @@ importers:
         specifier: ^7.71.1
         version: 7.71.1(react@18.3.1)
       react-virtualized-auto-sizer:
-        specifier: ^2.0.3
-        version: 2.0.3(react-dom@18.3.1)(react@18.3.1)
+        specifier: ^1.0.25
+        version: 1.0.25(react-dom@18.3.1)(react@18.3.1)
       react-window:
-        specifier: ^2.2.7
-        version: 2.2.7(react-dom@18.3.1)(react@18.3.1)
+        specifier: ^1.8.7
+        version: 1.8.7(react-dom@18.3.1)(react@18.3.1)
       shiki:
         specifier: ^3.22.0
         version: 3.22.0
@@ -10769,6 +10769,10 @@ packages:
       '@types/mdast': 4.0.4
     dev: false
 
+  /memoize-one@5.2.1:
+    resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
+    dev: false
+
   /memory-pager@1.5.0:
     resolution: {integrity: sha512-ZS4Bp4r/Zoeq6+NLJpP+0Zzm0pR8whtGPf1XExKLJBAczGMnSi3It14OiNCStjQjM6NU1okjQGSxgEZN8eBYKg==}
     dev: false
@@ -12761,22 +12765,25 @@ packages:
       react-dom: 19.2.0(react@19.2.0)
     dev: false
 
-  /react-virtualized-auto-sizer@2.0.3(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-nonmCSUIh5HtbzazGcQ1NhnMFps/ZBu/UKJyhCt0Fhi7ondLAUZNETtRCWM8RWYZDzVlMYOQGgBmIxUutIhqgw==}
+  /react-virtualized-auto-sizer@1.0.25(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-YHsksEGDfsHbHuaBVDYwJmcktblcHGafz4ZVuYPQYuSHMUGjpwmUCrAOcvMSGMwwk1eFWj1M/1GwYpNPuyhaBg==}
     peerDependencies:
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
+      react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0 || ^19.0.0
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     dev: false
 
-  /react-window@2.2.7(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-SH5nvfUQwGHYyriDUAOt7wfPsfG9Qxd6OdzQxl5oQ4dsSsUicqQvjV7dR+NqZ4coY0fUn3w1jnC5PwzIUWEg5w==}
+  /react-window@1.8.7(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-JHEZbPXBpKMmoNO1bNhoXOOLg/ujhL/BU4IqVU9r8eQPcy5KQnGHIHDRkJ0ns9IM5+Aq5LNwt3j8t3tIrePQzA==}
+    engines: {node: '>8.0.0'}
     peerDependencies:
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
     dependencies:
+      '@babel/runtime': 7.28.6
+      memoize-one: 5.2.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     dev: false

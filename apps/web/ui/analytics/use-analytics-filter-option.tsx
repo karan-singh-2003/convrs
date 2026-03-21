@@ -1,75 +1,83 @@
-"use client";
-
-import { useContext, useMemo } from "react";
-import useSWR from "swr";
-
+import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
+import { AnalyticsGroupByOptions } from "@/lib/analytics/types";
+import { editQueryString } from "@/lib/analytics/utils";
 import { fetcher } from "@repo/utils";
-import useWorkspace from "@/lib/swr/use-workspace";
-import type { GroupByType } from "./types";
+import { ContextType, useContext } from "react";
+import useSWR from "swr";
 import { AnalyticsContext } from "./analytics-providers";
 
-type AnalyticsFilterItem = {
-  value: string;
-  count: number;
-  [key: string]: string | number;
+type AnalyticsFilterResult = {
+  data:
+    | ({ count?: number; saleAmount?: number } & Record<string, any>)[]
+    | null;
+  loading: boolean;
 };
 
-type TinybirdResponse = {
-  groupByField: string;
-  count: number;
-  [key: string]: any;
-};
-
-type ApiResponse = {
-  data: TinybirdResponse[];
-  meta?: {
-    workspaceId: string;
-    userId: string;
-    event: string;
-    groupBy: string;
-    timestamp: string;
-  };
-};
-
+/**
+ * Fetches event counts grouped by the specified filter
+ *
+ * @param groupByOrParams Either a groupBy option or a query parameter object including groupBy
+ * @param options Additional options
+ */
 export function useAnalyticsFilterOption(
-  groupBy: GroupByType,
+  groupByOrParams:
+    | AnalyticsGroupByOptions
+    | ({ groupBy: AnalyticsGroupByOptions } & Record<string, any>),
   options?: {
     disabled?: boolean;
+    omitGroupByFilterKey?: boolean; // for Filter.Select and Filter.List, we need to show all options by default, so we need to omit the groupBy filter key
+    context?: Pick<
+      ContextType<typeof AnalyticsContext>,
+      "baseApiPath" | "queryString" | "selectedTab" | "requiresUpgrade"
+    >;
   }
-) {
-  const { queryString } = useContext(AnalyticsContext);
-  const { id: workspaceId } = useWorkspace();
+): AnalyticsFilterResult {
+  const { baseApiPath, queryString, selectedTab, requiresUpgrade } =
+    options?.context ?? useContext(AnalyticsContext);
 
-  const url = useMemo(() => {
-    if (options?.disabled || !queryString || !workspaceId) return null;
+  const groupBy =
+    typeof groupByOrParams === "string"
+      ? groupByOrParams
+      : groupByOrParams?.groupBy;
 
-    return `/api/analytics?${queryString}&groupBy=${groupBy}`;
-  }, [queryString, groupBy, options?.disabled, workspaceId]);
+  // Extract additional params (like root) from the params object
+  const additionalParams =
+    typeof groupByOrParams === "object" && groupByOrParams !== null
+      ? Object.fromEntries(
+          Object.entries(groupByOrParams).filter(([key]) => key !== "groupBy")
+        )
+      : {};
 
-  const { data: apiResponse, isLoading } = useSWR<ApiResponse>(url, fetcher, {
-    dedupingInterval: 60000,
-  });
-
-  // Extract data array from API response and transform to expected format
-  const data: AnalyticsFilterItem[] | null = useMemo(() => {
-    const rawData = apiResponse?.data;
-
-    if (!rawData || !Array.isArray(rawData)) {
-      return null;
+  const { data: response, isLoading } = useSWR<{ data: Record<string, any>[] }>(
+    !options?.disabled &&
+      `${baseApiPath}?${editQueryString(
+        queryString,
+        {
+          ...(groupBy && { groupBy }),
+          ...additionalParams,
+        },
+        // if theres no groupBy or we're not omitting the groupBy filter, skip
+        // else, we need to remove the filter for that groupBy param
+        (() => {
+          if (!groupBy || !options?.omitGroupByFilterKey) return undefined;
+          return SINGULAR_ANALYTICS_ENDPOINTS[groupBy]
+            ? SINGULAR_ANALYTICS_ENDPOINTS[groupBy]
+            : undefined;
+        })()
+      )}`,
+    fetcher,
+    {
+      shouldRetryOnError: !requiresUpgrade,
     }
-
-    const transformed = rawData
-      .map((item) => ({
-        value: item.groupByField || "",
-        count: item.count || 0,
-      }))
-      .filter((item) => item.value && item.count > 0); // Filter out empty entries
-
-    return transformed;
-  }, [apiResponse, groupBy]);
+  );
 
   return {
-    data,
-    loading: isLoading,
+    data:
+      response?.data?.map((d) => ({
+        ...d,
+        count: d[selectedTab] as number | undefined,
+        saleAmount: d.saleAmount as number | undefined,
+      })) ?? null,
+    loading: !response?.data || isLoading,
   };
 }

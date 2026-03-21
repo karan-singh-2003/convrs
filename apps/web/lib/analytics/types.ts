@@ -1,5 +1,9 @@
+import { ParsedFilter } from "@repo/utils";
 import * as z from "zod/v4";
-import { analyticsQuerySchema } from "../zod/schemas/analytics";
+import {
+  analyticsQuerySchema,
+  eventsQuerySchema,
+} from "../zod/schemas/analytics";
 import { analyticsResponse } from "../zod/schemas/analytics-response";
 
 import {
@@ -45,4 +49,42 @@ export type AnalyticsFilters = Partial<
   isDeprecatedClicksEndpoint?: boolean;
   start?: Date | null;
   end?: Date | null;
+  // Accept plain string (from partner-profile/cron routes) or ParsedFilter (from API schema)
+  partnerId?: string | ParsedFilter;
+  linkId?: string | ParsedFilter;
 };
+
+// Structural fields from eventsQuerySchema that should remain required
+type EventsStructuralFields = Pick<
+  z.infer<typeof eventsQuerySchema>,
+  "event" | "page" | "limit" | "sortBy"
+>;
+
+export type EventsFilters = Partial<
+  Omit<
+    z.infer<typeof eventsQuerySchema>,
+    "start" | "end" | "partnerId" | "linkId" | keyof EventsStructuralFields
+  >
+> &
+  EventsStructuralFields & {
+    workspaceId?: string;
+    dataAvailableFrom?: Date;
+    customerId?: string;
+    start?: Date | null;
+    end?: Date | null;
+    // Accept plain string (from partner-profile/cron routes) or ParsedFilter (from API schema)
+    partnerId?: string | ParsedFilter;
+    linkId?: string | ParsedFilter;
+  };
+
+const partnerAnalyticsSchema = analyticsQuerySchema
+  .pick({
+    event: true,
+    interval: true,
+    start: true,
+    end: true,
+    groupBy: true,
+  })
+  .partial();
+
+

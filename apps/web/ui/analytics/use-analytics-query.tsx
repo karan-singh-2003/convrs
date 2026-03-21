@@ -1,92 +1,119 @@
-"use client";
-
+import {
+  DUB_LINKS_ANALYTICS_INTERVAL,
+  EVENT_TYPES,
+  VALID_ANALYTICS_FILTERS,
+} from "@/lib/analytics/constants";
+import { EventType } from "@/lib/analytics/types";
+import useWorkspace from "@/lib/swr/use-workspace";
+import { endOfDay, startOfDay, subDays } from "date-fns";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { startOfDay, endOfDay, subDays } from "date-fns";
-import type { EventType } from "./types";
-import useWorkspace from "@/lib/swr/use-workspace";
 
-const DEFAULT_INTERVAL = "7d";
-
-export function useAnalyticsQuery() {
+export function useAnalyticsQuery({
+  defaultEvent = "clicks",
+  domain: domainParam,
+  defaultKey,
+  defaultFolderId,
+  defaultInterval = DUB_LINKS_ANALYTICS_INTERVAL,
+}: {
+  defaultEvent?: EventType;
+  domain?: string;
+  defaultKey?: string;
+  defaultFolderId?: string;
+  defaultInterval?: string;
+} = {}) {
   const searchParams = useSearchParams();
   const { id: workspaceId } = useWorkspace();
- 
-  // Metric
-  const selectedTab: EventType = useMemo(() => {
-    return (searchParams.get("event") as EventType) || "visitors";
-  }, [searchParams]);
 
-  // Date range
+  const domain = domainParam ?? searchParams?.get("domain");
+  // key can be a query param (stats pages in app) or passed as a staticKey (shared analytics dashboards)
+  const key = searchParams?.get("key") || defaultKey;
+
+  const folderId =
+    searchParams?.get("folderId") ?? defaultFolderId ?? undefined;
+  const tagId = searchParams?.get("tagId") ?? undefined;
+  const customerId = searchParams?.get("customerId") ?? undefined;
+
+  // Default to last 24 hours
   const { start, end } = useMemo(() => {
-    const hasRange = searchParams.get("start") && searchParams.get("end");
-
-    if (hasRange) {
-      return {
-        start: startOfDay(new Date(searchParams.get("start")!)),
-        end: endOfDay(new Date(searchParams.get("end")!)),
-      };
-    }
+    const hasRange = searchParams?.has("start") && searchParams?.has("end");
 
     return {
-      start: subDays(new Date(), 7),
-      end: new Date(),
+      start: hasRange
+        ? startOfDay(
+            new Date(searchParams?.get("start") || subDays(new Date(), 1)),
+          )
+        : undefined,
+
+      end: hasRange
+        ? endOfDay(new Date(searchParams?.get("end") || new Date()))
+        : undefined,
     };
-  }, [searchParams]);
+  }, [searchParams?.get("start"), searchParams?.get("end")]);
 
-  // Interval
-  const interval = searchParams.get("interval") || DEFAULT_INTERVAL;
+  // Only set interval if start and end are not provided
+  const interval =
+    start || end ? undefined : searchParams?.get("interval") ?? defaultInterval;
 
-  // Filters
-  const filters = useMemo(() => {
-    const result: Record<string, string> = {};
+  const root = searchParams.get("root");
 
-    searchParams.forEach((value, key) => {
-      if (!["event", "start", "end", "interval"].includes(key)) {
-        result[key] = value;
-      }
-    });
+  const selectedTab: EventType = useMemo(() => {
+    const event = searchParams.get("event");
 
-    return result;
-  }, [searchParams]);
+    return EVENT_TYPES.find((t) => t === event) ?? defaultEvent;
+  }, [searchParams.get("event"), defaultEvent]);
 
-  // Query string builder
   const queryString = useMemo(() => {
-    const params = new URLSearchParams();
-
-    params.set("event", selectedTab);
-    params.set("start", start.toISOString());
-    params.set("end", end.toISOString());
-    params.set("interval", interval);
-
-    //  Inject workspaceId explicitly
-    if (workspaceId) {
-      params.set("workspaceId", workspaceId);
-    }
-
-    // Optional: timezone (if your backend expects it)
-    params.set(
-      "timezone",
-      Intl.DateTimeFormat().resolvedOptions().timeZone
+    const availableFilterParams = VALID_ANALYTICS_FILTERS.reduce(
+      (acc, filter) => ({
+        ...acc,
+        ...(searchParams?.get(filter) && {
+          [filter]: searchParams.get(filter),
+        }),
+      }),
+      {},
     );
-
-    // Filters
-    Object.entries(filters).forEach(([key, value]) => {
-      if (!["workspaceId", "timezone"].includes(key)) {
-        params.set(key, value);
-      }
-    });
-
-    return params.toString();
-  }, [selectedTab, start, end, interval, filters, workspaceId]);
-
-  return {
-    queryString,
-    selectedTab,
+    return new URLSearchParams({
+      ...availableFilterParams,
+      event: selectedTab,
+      ...(workspaceId && { workspaceId }),
+      ...(domain && { domain }),
+      ...(key && { key }),
+      ...(start &&
+        end && { start: start.toISOString(), end: end.toISOString() }),
+      ...(interval && { interval }),
+      ...(folderId && { folderId }),
+      ...(tagId && { tagId }),
+      ...(customerId && { customerId }),
+      ...(root && { root: root.toString() }),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }).toString();
+  }, [
+    searchParams,
+    workspaceId,
+    domain,
+    key,
     start,
     end,
     interval,
-    filters,
-    workspaceId, // optional but useful
+    folderId,
+    tagId,
+    root,
+    selectedTab,
+    customerId,
+  ]);
+
+  return {
+    queryString,
+    domain,
+    key,
+    start,
+    end,
+    interval,
+    folderId,
+    tagId,
+    root,
+    selectedTab,
+    customerId,
   };
 }

@@ -19,27 +19,27 @@ const INTERVAL_DATA: Record<
   }
 > = {
   "24h": ({ timezone }) => ({
-    startDate: subHours(new TZDate(Date.now(), timezone), 24),
+    startDate: new TZDate(Date.now() - 24 * 60 * 60 * 1000, timezone),
     endDate: new TZDate(Date.now(), timezone),
     granularity: "hour",
   }),
   "7d": ({ timezone }) => ({
-    startDate: subDays(new TZDate(Date.now(), timezone), 7),
+    startDate: new TZDate(Date.now() - 7 * 24 * 60 * 60 * 1000, timezone),
     endDate: endOfToday({ in: timezone ? tz(timezone) : undefined }),
     granularity: "day",
   }),
   "30d": ({ timezone }) => ({
-    startDate: subDays(new TZDate(Date.now(), timezone), 30),
+    startDate: new TZDate(Date.now() - 30 * 24 * 60 * 60 * 1000, timezone),
     endDate: endOfToday({ in: timezone ? tz(timezone) : undefined }),
     granularity: "day",
   }),
   "90d": ({ timezone }) => ({
-    startDate: subDays(new TZDate(Date.now(), timezone), 90),
+    startDate: new TZDate(Date.now() - 90 * 24 * 60 * 60 * 1000, timezone),
     endDate: endOfToday({ in: timezone ? tz(timezone) : undefined }),
     granularity: "day",
   }),
   "1y": ({ timezone }) => ({
-    startDate: subMonths(new TZDate(Date.now(), timezone), 12),
+    startDate: new TZDate(Date.now() - 365 * 24 * 60 * 60 * 1000, timezone),
     endDate: endOfToday({ in: timezone ? tz(timezone) : undefined }),
     granularity: "month",
   }),
@@ -69,5 +69,5 @@ const INTERVAL_DATA: Record<
 
 export const getIntervalData = (
   interval: string,
-  { timezone }: { timezone?: string } = {},
+  { timezone }: { timezone?: string } = {}
 ) => INTERVAL_DATA[interval]({ timezone });

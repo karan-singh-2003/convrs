@@ -1,180 +1,177 @@
-"use client";
-
+import {
+  AnalyticsResponseOptions,
+  AnalyticsSaleUnit,
+  EventType,
+} from "@/lib/analytics/types";
+import { ToggleGroup } from "@repo/ui";
 import { cn } from "@repo/utils";
+import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { ChevronRight, Lock } from "lucide-react";
-import NumberFlow from "@number-flow/react";
-import { AnalyticsResponse } from "./analytics-providers";
+import Link from "next/link";
+import { useMemo } from "react";
 
 type Tab = {
-  id: string;
+  id: EventType;
   label: string;
   colorClassName: string;
-  unit?: "currency" | "percentage" | "seconds" | "number";
+  conversions: boolean;
 };
 
 export function AnalyticsTabs({
-  tab,
+  showConversions,
   totalEvents,
+  tab,
+  tabHref,
+  saleUnit,
+  setSaleUnit,
   requiresUpgrade,
+  showPaywall,
 }: {
-  tab: string;
-  totalEvents: AnalyticsResponse | null;
-  requiresUpgrade: boolean;
+  showConversions?: boolean;
+  totalEvents?: { [key in AnalyticsResponseOptions]: number };
+  tab: Tab["id"];
+  tabHref: (id: Tab["id"]) => string;
+  saleUnit: AnalyticsSaleUnit;
+  setSaleUnit: (saleUnit: AnalyticsSaleUnit) => void;
+  requiresUpgrade?: boolean;
+  showPaywall?: boolean;
 }) {
-  const tabs: Tab[] = [
-    {
-      id: "visitors",
-      label: "Visitors",
-      colorClassName: "text-blue-500/50",
-      unit: "number",
-    },
-    // {
-    //   id: "revenue",
-    //   label: "Revenue",
-    //   colorClassName: "text-violet-500/50",
-    //   unit: "currency",
-    // },
-    {
-      id: "online",
-      label: "Online",
-      colorClassName: "text-teal-500/50",
-      unit: "number",
-    },
-    {
-      id: "conversionrate",
-      label: "Conversion ",
-      colorClassName: "text-orange-500/50",
-      unit: "percentage",
-    },
-    {
-      id: "bouncerate",
-      label: "Bounce Rate",
-      colorClassName: "text-red-500/50",
-      unit: "percentage",
-    },
-    {
-      id: "sessions",
-      label: "Avg Session ",
-      colorClassName: "text-green-500/50",
-      unit: "seconds",
-    },
-  ];
-
-  const formatValue = (value: number, unit?: string) => {
-    if (unit === "currency") {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }).format(value);
-    }
-    if (unit === "percentage") {
-      return `${value.toFixed(1)}%`;
-    }
-    if (unit === "seconds") {
-      const minutes = Math.floor(value / 60);
-      const seconds = Math.floor(value % 60);
-      return `${minutes}m ${seconds}s`;
-    }
-    return value.toLocaleString();
-  };
-
-  const dataKeyMap: Record<string, string> = {
-    visitors: "visitors",
-    online: "online",
-    conversionrate: "conversionRate",
-    bouncerate: "bounceRate",
-    sessions: "avgSession",
-  };
-
+  const tabs = useMemo(
+    () =>
+      [
+        {
+          id: "clicks",
+          label: "Clicks",
+          colorClassName: "text-blue-500/50",
+          conversions: false,
+        },
+        ...(showConversions
+          ? [
+              {
+                id: "leads",
+                label: "Leads",
+                colorClassName: "text-violet-600/50",
+                conversions: true,
+              },
+              {
+                id: "sales",
+                label: "Sales",
+                colorClassName: "text-teal-400/50",
+                conversions: true,
+              },
+            ]
+          : []),
+      ] as Tab[],
+    [showConversions]
+  );
+  console.log("AnalyticsTabs rendered with props:", {
+    showConversions,
+    totalEvents,
+    tab,
+    saleUnit,
+    requiresUpgrade,
+    showPaywall,
+  });
   return (
-    <div className="grid w-full grid-cols-3 sm:grid-cols-5 divide-x  divide-neutral-200">
-      {tabs.map(({ id, label, colorClassName, unit }, idx) => {
-        const dataKey = dataKeyMap[id] ?? id;
-
-        const current =
-          totalEvents?.current?.[dataKey as keyof typeof totalEvents.current] ??
-          0;
-        const previous =
-          totalEvents?.previous?.[
-            dataKey as keyof typeof totalEvents.previous
-          ] ?? 0;
-
-        const delta =
-          current !== 0 && previous !== 0 && previous !== undefined
-            ? ((current - previous) / previous) * 100
-            : null;
-
-        return (
-          <div key={id} className="relative">
-            {/* Arrow separator */}
-            {idx > 0 && (
-              <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full p-1"></div>
-            )}
-
-            <div
-              className={cn(
-                "relative px-4 py-4 space-y-2 sm:px-6 sm:py-5",
-                "hover:bg-neutral-50 transition-colors"
+    <div className="grid w-full grid-cols-3 divide-x divide-neutral-200 overflow-y-hidden">
+      <NumberFlowGroup>
+        {tabs.map(({ id, label, colorClassName }, idx) => {
+          return (
+            <div key={id} className="relative z-0">
+              {idx > 0 && (
+                <div className="absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-neutral-200 bg-white p-1.5">
+                  <ChevronRight
+                    className="h-3 w-3 text-neutral-400"
+                    strokeWidth={2.5}
+                  />
+                </div>
               )}
-            >
-              {/* Label */}
-              <div className="flex items-center font-medium font-display gap-2 text-[13.5px] text-neutral-600/90">
+              <Link
+                className={cn(
+                  "border-box relative block h-full min-w-[110px] flex-none px-4 py-3 sm:min-w-[240px] sm:px-8 sm:py-6",
+                  "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
+                  "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
+                )}
+                href={tabHref(id)}
+                aria-current
+              >
+                {/* Active tab indicator */}
                 <div
                   className={cn(
-                    "h-2 w-2 rounded-full bg-current",
-                    colorClassName
+                    "absolute bottom-0 left-0 h-0.5 w-full bg-black transition-transform duration-100",
+                    tab !== id && "translate-y-[3px]" // Translate an extra pixel to avoid sub-pixel issues
                   )}
                 />
-                {label}
-              </div>
-              {/* Value */}
-              <div className="flex h-fit items-center">
-                {current !== undefined && current > 0 ? (
-                  <div className="flex flex-col items-start leading-0">
-                    <div className="text-[14px] font-display mb-1 text-neutral-600/90 font-semibold sm:text-[20px]">
-                      {formatValue(current, unit)}
-                    </div>
 
-                    {/* <div
+                <div className="flex items-center gap-2.5 text-sm text-neutral-600">
+                  <div
+                    className={cn(
+                      "h-2 w-2 rounded-sm bg-current shadow-[inset_0_0_0_1px_#00000019]",
+                      colorClassName
+                    )}
+                  />
+                  <span>{label}</span>
+                </div>
+                <div className="mt-1 flex h-12 items-center">
+                  {totalEvents?.[id] || totalEvents?.[id] === 0 ? (
+                    <NumberFlow
+                      value={
+                        id === "sales" && saleUnit === "saleAmount"
+                          ? totalEvents.saleAmount / 100
+                          : totalEvents[id]
+                      }
                       className={cn(
-                        "text-xs font-default font-medium px-2 py-1 rounded-full",
-                        delta !== null &&
-                          delta > 0 &&
-                          "bg-[#effbf2] text-[#33c758]",
-                        delta !== null &&
-                          delta < 0 &&
-                          "bg-[#fff3f0] text-[#ff2f00]",
-                        delta === null && "bg-[#fff8eb] text-[#ffa600]"
+                        "text-xl font-medium sm:text-3xl",
+                        showPaywall && "opacity-30"
                       )}
-                    >
-                      {delta !== null ? (
-                        <>
-                          {delta > 0 && "+"}
-                          {delta.toFixed(1)}%
-                        </>
-                      ) : (
-                        <span className="font-display font-medium text-sm">
-                          0
-                        </span>
-                      )}
-                    </div> */}
-                  </div>
-                ) : requiresUpgrade ? (
-                  <div className="rounded-full bg-neutral-100 p-2">
-                    <Lock className="h-4 w-4 text-neutral-500" />
-                  </div>
-                ) : (
-                  <div className="text-base font-display font-medium text-neutral-500">
-                    {formatValue(0, unit)}
-                  </div>
-                )}
-              </div>
+                      format={
+                        id === "sales" && saleUnit === "saleAmount"
+                          ? {
+                              style: "currency",
+                              currency: "USD",
+                              // @ts-ignore – trailingZeroDisplay is a valid option but TS is outdated
+                              trailingZeroDisplay: "stripIfInteger",
+                            }
+                          : {
+                              notation:
+                                totalEvents[id] > 999999
+                                  ? "compact"
+                                  : "standard",
+                            }
+                      }
+                    />
+                  ) : requiresUpgrade ? (
+                    <div className="block rounded-full bg-neutral-100 p-2.5">
+                      <Lock className="h-4 w-4 text-neutral-500" />
+                    </div>
+                  ) : (
+                    <div className="h-9 w-16 animate-pulse rounded-md bg-neutral-200" />
+                  )}
+                </div>
+              </Link>
+              {id === "sales" && (
+                <ToggleGroup
+                  className="absolute right-3 top-3 hidden w-fit shrink-0 items-center gap-1 border-neutral-100 bg-neutral-100 sm:flex"
+                  optionClassName="size-8 p-0 flex items-center justify-center"
+                  indicatorClassName="border border-neutral-200 bg-white"
+                  options={[
+                    {
+                      label: <div className="text-base">$</div>,
+                      value: "saleAmount",
+                    },
+                    {
+                      label: <div className="text-[11px]">123</div>,
+                      value: "sales",
+                    },
+                  ]}
+                  selected={saleUnit}
+                  selectAction={setSaleUnit}
+                />
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </NumberFlowGroup>
     </div>
   );
 }

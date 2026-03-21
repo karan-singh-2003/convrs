@@ -20,10 +20,12 @@ export const getStartEndDates = ({
   let granularity: "minute" | "hour" | "day" | "month" = "day";
 
   if (start || (interval === "all" && dataAvailableFrom)) {
-    startDate = startOfDay(
-      new TZDate(new Date(start ?? dataAvailableFrom ?? Date.now()), timezone),
-    );
-    endDate = endOfDay(new TZDate(new Date(end ?? Date.now()), timezone));
+    // Use plain Date for startOfDay/endOfDay, then wrap result in TZDate
+    const rawStart = new Date(start ?? dataAvailableFrom ?? Date.now());
+    const rawEnd = new Date(end ?? Date.now());
+
+    startDate = new TZDate(startOfDay(rawStart).getTime(), timezone);
+    endDate = new TZDate(endOfDay(rawEnd).getTime(), timezone);
 
     const daysDifference = differenceInDays(endDate, startDate, {
       in: timezone ? tz(timezone) : undefined,
@@ -35,7 +37,6 @@ export const getStartEndDates = ({
       granularity = "month";
     }
 
-    // Swap start and end if start is greater than end
     if (startDate > endDate) {
       [startDate, endDate] = [endDate, startDate];
     }
