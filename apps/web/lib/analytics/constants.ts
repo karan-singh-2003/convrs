@@ -64,17 +64,21 @@ export const INTERVAL_DISPLAYS = [
 export const VALID_ANALYTICS_ENDPOINTS = [
   "count",
   "timeseries",
+
   "continents",
   "regions",
   "countries",
   "cities",
+
   "devices",
   "browsers",
   "os",
   "trigger", // deprecated, but keeping for now for backwards compatibility
   "triggers",
+
   "referers",
   "referer_urls",
+
   "top_folders",
   "top_link_tags",
   "top_domains",
@@ -83,11 +87,17 @@ export const VALID_ANALYTICS_ENDPOINTS = [
   "top_base_urls",
   "top_partners",
   "top_groups",
+
   "utm_sources",
   "utm_mediums",
   "utm_campaigns",
   "utm_terms",
   "utm_contents",
+
+  "hostname",
+  "page",
+  "entrypage",
+  "exitlink",
 ] as const;
 
 export const SINGULAR_ANALYTICS_ENDPOINTS = {
@@ -116,6 +126,11 @@ export const SINGULAR_ANALYTICS_ENDPOINTS = {
   top_base_urls: "url",
   top_groups: "groupId",
   top_partners: "partnerId",
+  // page fields
+  hostname: "hostname",
+  page: "page",
+  entrypage: "entrypage",
+  exitlink: "exitlink",
 };
 
 export const VALID_ANALYTICS_FILTERS = [

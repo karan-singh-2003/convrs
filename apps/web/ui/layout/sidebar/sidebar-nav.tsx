@@ -8,7 +8,6 @@ import { Button } from "@repo/ui";
 import { WorkspaceDropdown } from "./workspace-dropdown";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import useWorkspace from "@/lib/swr/use-workspace";
 
 export type NavItemType = {
   title: string;
@@ -26,7 +25,7 @@ export type SidebarNavArea<T extends Record<any, any>> = (args: T) => {
   content: (NavItemType | NavSectionType)[];
 };
 
-export function SidebarNav<T extends Record<any, any>>({
+export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
   currentArea,
   areas,
   data,
@@ -36,14 +35,14 @@ export function SidebarNav<T extends Record<any, any>>({
   data: T;
 }) {
   const router = useRouter();
-  const {slug} = useWorkspace()
+  const slug = data?.slug;
 
   return (
     <div className="h-full w-[248px]">
       <nav className="size-full">
         <div className="size-full overflow-hidden rounded-none bg-[#fafafa] border-r border-[#EBEBEB] p-2">
           <div className="scrollbar-hide relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
-            <div className="relative flex grow flex-col  text-neutral-500">
+            <div className="relative flex grow flex-col text-neutral-500">
               <div className="relative w-full grow">
                 {areas &&
                   Object.entries(areas).map(([area, areaConfig]) => {
@@ -63,18 +62,20 @@ export function SidebarNav<T extends Record<any, any>>({
                                 href={backHref}
                                 className="text-[13px] font-medium gap-x-2 flex items-center text-neutral-500 hover:text-neutral-600"
                               >
-                                <ArrowLeft size={14} />{" "}
-                                <span className="font-display text-[13px] md:text-[13.5px]">{title}</span>
+                                <ArrowLeft size={14} />
+                                <span className="font-display text-[13px] md:text-[13.5px]">
+                                  {title}
+                                </span>
                               </Link>
                             ) : (
-                              <h2 className="text-sm font-medium font-display   text-neutral-700">
+                              <h2 className="text-sm font-medium font-display text-neutral-700">
                                 {title}
                               </h2>
                             )}
                           </div>
                         )}
-                        <div className="space-y-1 ">
-                          {content.map((item) => (
+                        <div className="space-y-1">
+                          {content.map((item) =>
                             "heading" in item ? (
                               <div key={item.heading} className="px-1 my-4">
                                 <h3 className="text-[12.5px] font-medium px-2 font-display text-neutral-500 tracking-wide mt-2 mb-2">
@@ -89,9 +90,9 @@ export function SidebarNav<T extends Record<any, any>>({
                             ) : (
                               <NavItem key={item.href} item={item} />
                             )
-                          ))}
+                          )}
                         </div>
-                        {title == "" && (
+                        {title === "" && (
                           <div className="mt-auto border-t border-[#EBEBEB] p-3 flex flex-col gap-4">
                             <h1 className="text-[12.5px] font-display font-medium">
                               Your workspace is on the free plan. Get in touch
@@ -99,10 +100,14 @@ export function SidebarNav<T extends Record<any, any>>({
                             </h1>
                             <Button
                               variant="secondary"
-                              text=" Upgrade"
+                              text="Upgrade"
                               className="bg-[#F4F4F4] text-[#676767] h-fit py-1 text-sm rounded-full border-none"
-                              onClick={()=>{router.push(`/${slug}/settings/billing/upgrade`)}}
-                            ></Button>
+                              onClick={() => {
+                                if (slug) {
+                                  router.push(`/${slug}/settings/billing/upgrade`);
+                                }
+                              }}
+                            />
                           </div>
                         )}
                       </Area>
@@ -125,7 +130,6 @@ function NavItem({ item }: { item: NavItemType }) {
     if (customIsActive) {
       return customIsActive(pathname, href);
     }
-
     const hrefWithoutQuery = href.split("?")[0];
     return exact
       ? pathname === hrefWithoutQuery
@@ -136,7 +140,8 @@ function NavItem({ item }: { item: NavItemType }) {
     <Link
       href={href}
       className={cn(
-        "block rounded-none font-display font-medium py-0.5 px-2 text-[14px] md:text-[14.5px] text-neutral-600/85 transition-colors"
+        "block rounded-none font-display font-medium py-0.5 px-2 text-[14px] md:text-[14.5px] transition-colors",
+        isActive ? "text-neutral-900" : "text-neutral-600/85"
       )}
     >
       {title}

@@ -3,6 +3,7 @@ import { CONTINENT_CODES } from "@repo/utils";
 import * as z from "zod/v4";
 
 import { centsSchemaWithDefault } from "./utils";
+import { hostname } from "os";
 
 const analyticsTriggersResponse = z.object({
   trigger: z
@@ -468,6 +469,46 @@ export const analyticsResponse = {
     sales: z.number().describe("The total number of sales").default(0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this partner for this program, in cents"
+    ),
+  }),
+
+  hostname: z.object({
+    hostname: z.string().describe("The hostname of the page"),
+    clicks: z.number().describe("The number of clicks from this hostname").default(0),  
+    leads: z.number().describe("The number of leads from this hostname").default(0),
+    sales: z.number().describe("The number of sales from this hostname").default(0),
+    saleAmount: centsSchemaWithDefault.describe(
+      "The total amount of sales from this hostname, in cents"
+    ),
+  }),
+
+  page: z.object({
+    page: z.string().describe("The full URL of the page"),
+    clicks: z.number().describe("The number of clicks from this page").default(0),
+    leads: z.number().describe("The number of leads from this page").default(0),
+    sales: z.number().describe("The number of sales from this page").default(0),
+    saleAmount: centsSchemaWithDefault.describe(
+      "The total amount of sales from this page, in cents"
+    ),
+  }),
+
+  entrypage: z.object({
+    entrypage: z.string().describe("The full URL of the entry page"),
+    clicks: z.number().describe("The number of clicks from this entry page").default(0),
+    leads: z.number().describe("The number of leads from this entry page").default(0),
+    sales: z.number().describe("The number of sales from this entry page").default(0),
+    saleAmount: centsSchemaWithDefault.describe(
+      "The total amount of sales from this entry page, in cents"
+    ),
+  }),
+
+  exitlink: z.object({
+    exitlink: z.string().describe("The full URL of the exit link"),
+    clicks: z.number().describe("The number of clicks from this exit link").default(0),
+    leads: z.number().describe("The number of leads from this exit link").default(0),
+    sales: z.number().describe("The number of sales from this exit link").default(0),
+    saleAmount: centsSchemaWithDefault.describe(
+      "The total amount of sales from this exit link, in cents"
     ),
   }),
 

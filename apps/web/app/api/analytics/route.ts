@@ -14,8 +14,6 @@ export const GET = withWorkspace(
       workspaceId: workspace.id,
     });
 
-    console.log("[Analytics API] Data retrieved:", data);
-
     return NextResponse.json({ data });
   },
 

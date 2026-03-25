@@ -286,23 +286,40 @@
   }
 
   // ─── NETWORK ───────────────────────────────────────────────────────────────
+  // ─── NETWORK ───────────────────────────────────────────────────────────────
+
+  // sendBeacon always uses credentials: 'include' and can't be changed.
+  // Skip it for cross-origin endpoints to avoid CORS preflight failures.
+  function isCrossOrigin(url) {
+    try {
+      return new URL(url).origin !== window.location.origin;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function send(payload) {
     var body = JSON.stringify(payload);
     log("info", "Sending " + payload.type, payload);
 
-    // sendBeacon — non-blocking, survives page unload
-    if (typeof navigator.sendBeacon === "function") {
+    // Only use sendBeacon for same-origin — cross-origin breaks CORS
+    if (
+      typeof navigator.sendBeacon === "function" &&
+      !isCrossOrigin(_endpoint)
+    ) {
       var blob = new Blob([body], { type: "application/json" });
       if (navigator.sendBeacon(_endpoint, blob)) return;
     }
 
-    // fetch with keepalive as fallback
+    // fetch fallback — explicitly omit credentials so no CORS credential
+    // check is triggered against your analytics server
     try {
       fetch(_endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: body,
         keepalive: true,
+        credentials: "omit", // ← this is the key fix
       }).catch(function () {});
     } catch (_) {}
   }

@@ -32,6 +32,11 @@ SQL >
         referer_url,
         ip,
         coalesce(identity_hash, '') as identity_hash,
+        -- page fields
+        hostname,
+        page,
+        entrypage,
+        exitlink,
         -- other fields from raw DS
         device_model,
         device_vendor,

@@ -64,7 +64,7 @@ export function DeviceSection() {
         { id: "devices", label: "Devices"  },
         { id: "browsers", label: "Browsers"},
         { id: "os", label: "OS" },
-        { id: "triggers", label: "Triggers" },
+    
       ]}
       selectedTabId={tab}
       onSelectTab={setTab}

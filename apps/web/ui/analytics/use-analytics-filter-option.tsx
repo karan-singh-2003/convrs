@@ -47,7 +47,18 @@ export function useAnalyticsFilterOption(
           Object.entries(groupByOrParams).filter(([key]) => key !== "groupBy")
         )
       : {};
-
+  console.log("[FilterOption] groupBy:", groupBy);
+  console.log("[FilterOption] queryString in:", queryString);
+  console.log(
+    "[FilterOption] SWR key:",
+    `${baseApiPath}?${editQueryString(
+      queryString,
+      { groupBy },
+      options?.omitGroupByFilterKey
+        ? SINGULAR_ANALYTICS_ENDPOINTS[groupBy]
+        : undefined
+    )}`
+  );
   const { data: response, isLoading } = useSWR<{ data: Record<string, any>[] }>(
     !options?.disabled &&
       `${baseApiPath}?${editQueryString(

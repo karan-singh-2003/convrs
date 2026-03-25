@@ -24,6 +24,10 @@ export * from "./sheet";
 export * from "./tooltip";
 export * from "./charts"
 export * from "./filter"
+export * from "./sliders"
+export * from "./utm_builder";
+export * from "./data-picker";
+
 // hooks
 export * from "./hooks";
 

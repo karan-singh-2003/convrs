@@ -24,10 +24,6 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     dataAvailableFrom,
   } = params;
 
-  console.log(
-    "start and end data and timezone from params by api/analytics/route.ts",
-    { start, end, timezone }
-  );
 
   const { startDate, endDate, granularity } = getStartEndDates({
     interval,
@@ -36,13 +32,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     dataAvailableFrom,
     timezone,
   });
-  console.log("Sending to Tinybird:", {
-    start: formatUTCDateTimeClickhouse(startDate),
-    end: formatUTCDateTimeClickhouse(endDate),
-    workspaceId,
-    eventType: event,
-    groupBy,
-  });
+
   const { triggerForPipe, countryForPipe, regionForPipe } =
     prepareFiltersForPipe({
       trigger,
@@ -73,6 +63,8 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     trigger: triggerForPipe,
   });
 
+  console.log(advancedFilters);
+
   const tinybirdParams: any = {
     workspaceId,
     groupBy,
@@ -87,6 +79,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
   };
 
   const response = await pipe(tinybirdParams);
+  console.log("Tinybird response:", response);
 
   // Return parsed response
   const schema = analyticsResponse[groupBy!];

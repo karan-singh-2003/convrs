@@ -13,7 +13,7 @@ export function PagesSection() {
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "sales" ? saleUnit : "count";
 
-  const [tab, setTab] = useState<"page">("page");
+  const [tab, setTab] = useState<"hostname"|"page"|"entrypage"|"exitlink">("hostname");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const { data } = useAnalyticsFilterOption({

@@ -7,28 +7,80 @@ import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 
+type TabId = "referers" | "utm";
+type Subtab =
+  | "referers"
+  | "referer_urls"
+  | "utm_sources"
+  | "utm_campaigns"
+  | "utm_mediums"
+  | "utm_terms"
+  | "utm_contents";
+
+const TAB_CONFIG: Record<
+  TabId,
+  {
+    subtabs: Subtab[];
+    defaultSubtab: Subtab;
+    getSubtabLabel: (subtab: Subtab) => string;
+  }
+> = {
+  referers: {
+    subtabs: ["referers", "referer_urls"],
+    defaultSubtab: "referers",
+    getSubtabLabel: (subtab) => (subtab === "referers" ? "Domain" : "URL"),
+  },
+  utm: {
+    subtabs: [
+      "utm_sources",
+      "utm_campaigns",
+      "utm_mediums",
+      "utm_terms",
+      "utm_contents",
+    ],
+    defaultSubtab: "utm_sources",
+    getSubtabLabel: (subtab) => {
+      const labels: Record<string, string> = {
+        utm_sources: "Source",
+        utm_campaigns: "Campaign",
+        utm_mediums: "Medium",
+        utm_terms: "Term",
+        utm_contents: "Content",
+      };
+      return labels[subtab] || subtab;
+    },
+  },
+};
+
 export function SourcesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "sales" ? saleUnit : "count";
 
-  const [tab, setTab] = useState<"source" | "referers" | "campaign">("source");
+  const [tab, setTab] = useState<TabId>("utm");
+  const [subtab, setSubtab] = useState<Subtab>(TAB_CONFIG["utm"].defaultSubtab);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
+  // Reset subtab when tab changes to ensure it's valid for the new tab
+  const handleTabChange = (newTab: TabId) => {
+    setTab(newTab);
+    setSubtab(TAB_CONFIG[newTab].defaultSubtab);
+  };
+
   const { data } = useAnalyticsFilterOption({
-    groupBy: tab,
+    groupBy: subtab,
   });
   const { data: allData } = useAnalyticsFilterOption(
-    { groupBy: tab },
+    { groupBy: subtab },
     { omitGroupByFilterKey: true }
   );
 
-  const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
+  const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[subtab];
 
   useEffect(() => {
     setSelectedItems([]);
-  }, [tab]);
+  }, [tab, subtab]);
 
   const onToggleFilter = useCallback((val: string) => {
     setSelectedItems((prev) =>
@@ -59,19 +111,27 @@ export function SourcesSection() {
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
 
+  const subTabProps = useMemo(() => {
+    const config = TAB_CONFIG[tab];
+    return {
+      subTabs: config.subtabs.map((s) => ({
+        id: s,
+        label: config.getSubtabLabel(s),
+      })),
+      selectedSubTabId: subtab,
+      onSelectSubTab: setSubtab,
+    };
+  }, [tab, subtab]);
+
   return (
     <AnalyticsCard
       tabs={[
-        { id: "source", label: "Source" },
-        { id: "referers", label: "Referers" },
-        { id: "campaign", label: "Campaign" },
-        { id: "medium", label: "Medium" },
-        { id: "term", label: "Term" },
-        { id: "content", label: "Content" },
-        { id: "links", label: "Links" },
+        { id: "referers", label: "Referrers" },
+        { id: "utm", label: "UTM Parameters" },
       ]}
       selectedTabId={tab}
-      onSelectTab={setTab}
+      onSelectTab={handleTabChange}
+      {...subTabProps}
       expandLimit={8}
       dataLength={data?.length}
       isFilterActive={isFilterActive}
@@ -117,7 +177,9 @@ export function SourcesSection() {
               />
             ) : (
               <div className="flex h-[300px] items-center justify-center">
-                <p className="text-sm text-neutral-600">No data available</p>
+                <p className="text-sm font-display text-neutral-500">
+                  No data available
+                </p>
               </div>
             )
           ) : (

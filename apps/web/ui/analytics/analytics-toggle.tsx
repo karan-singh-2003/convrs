@@ -1,88 +1,299 @@
-import { Filter, Popover } from "@repo/ui";
-import { useState } from "react";
-import { X } from "lucide-react";
-export function AnalyticsToggle() {
-  const filters = [
-    {
-      id: "eventType",
-      label: "Event Type",
-      options: [
-        { value: "click", label: "Click" },
-        { value: "view", label: "View" },
-        { value: "purchase", label: "Purchase" },
-      ],
-    },
-    {
-      id: "userSegment",
-      label: "User Segment",
-      options: [
-        { value: "new", label: "New Users" },
-        { value: "returning", label: "Returning Users" },
-        { value: "vip", label: "VIP Users" },
-      ],
-    },
-  ];
-  const [isOpen, setIsOpen] = useState(false);
+import {
+  DUB_LINKS_ANALYTICS_INTERVAL,
+  INTERVAL_DISPLAYS,
+} from "@/lib/analytics/constants";
+// import { validDateRangeForPlan } from "@/lib/analytics/utils";
+import { getStartEndDates } from "@/lib/analytics/utils/get-start-and-end-dates";
+import useWorkspace from "@/lib/swr/use-workspace";
+import {
+  BlurImage,
+  Button,
+  // ChartLine,
+  DateRangePicker,
+  Filter,
+  // SquareLayoutGrid6,
+  TooltipContent,
+  useMediaQuery,
+  useRouterStuff,
+  useScroll,
+} from "@repo/ui";
+import { APP_DOMAIN, cn, getNextPlan } from "@repo/utils";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useContext } from "react";
+// import { AnalyticsOptions } from "./analytics-options";
+import { AnalyticsContext } from "./analytics-providers";
+// import { ShareButton } from "./share-button";
+import { useAnalyticsFilters } from "./use-analytics-filter";
 
-  const [period, setPeriod] = useState("Last 24 Hours");
+export function AnalyticsToggle({
+  page = "analytics",
+}: {
+  page?: "analytics" | "events";
+}) {
+  const { slug, programSlug } = useParams();
+  const { plan, createdAt } = useWorkspace();
 
-  const periods = [
-    { value: "last_24_hours", label: "Last 24 Hours" },
-    { value: "last_7_days", label: "Last 7 Days" },
-    { value: "last_30_days", label: "Last 30 Days" },
-    { value: "last_90_days", label: "Last 90 Days" },
-    { value: "last_365_days", label: "Last 1 year" },
-    { value: "week_to_date", label: "Week to Date" },
-    { value: "month_to_date", label: "Month to Date" },
-    { value: "year_to_date", label: "Year to Date" },
-    { value: "alltime", label: "All Time" },
-  ];
+  const { queryParams, getQueryString } = useRouterStuff();
+
+  const {
+    domain,
+    key,
+    url,
+    adminPage,
+    partnerPage,
+    dashboardProps,
+    start,
+    end,
+    interval,
+  } = useContext(AnalyticsContext);
+
+  const scrolled = useScroll(120);
+
+  const { isMobile } = useMediaQuery();
+
+  const {
+    filters,
+    activeFilters,
+    onSelect,
+    onRemove,
+    onRemoveFilter,
+    onRemoveAll,
+    onOpenFilter,
+    onToggleOperator,
+    streaming,
+    activeFiltersWithStreaming,
+  } = useAnalyticsFilters();
+
+  const filterSelect = (
+    <Filter.Select
+      className="w-full md:w-fit"
+      filters={filters}
+      activeFilters={activeFilters}
+      onSelect={onSelect}
+      onRemove={onRemove}
+      onOpenFilter={onOpenFilter}
+      isAdvancedFilter
+      askAI
+    />
+  );
+
+  const dateRangePicker = (
+    <DateRangePicker
+      className="w-full md:w-fit"
+      align={dashboardProps ? "end" : "center"}
+      value={
+        start && end
+          ? {
+              from: start,
+              to: end,
+            }
+          : undefined
+      }
+      presetId={
+        start && end ? undefined : (interval ?? DUB_LINKS_ANALYTICS_INTERVAL)
+      }
+      onChange={(range, preset) => {
+        if (preset) {
+          queryParams({
+            del: ["start", "end"],
+            set: {
+              interval: preset.id,
+            },
+            scroll: false,
+          });
+
+          return;
+        }
+
+        // Regular range
+        if (!range || !range.from || !range.to) return;
+
+        queryParams({
+          del: "interval",
+          set: {
+            start: range.from.toISOString(),
+            end: range.to.toISOString(),
+          },
+          scroll: false,
+        });
+      }}
+      presets={INTERVAL_DISPLAYS.map(({ display, value, shortcut }) => {
+        const requiresUpgrade = partnerPage;
+
+        const { startDate, endDate } = getStartEndDates({
+          interval: value,
+          dataAvailableFrom: createdAt,
+        });
+
+        return {
+          id: value,
+          label: display,
+          dateRange: {
+            from: startDate,
+            to: endDate,
+          },
+          requiresUpgrade,
+          tooltipContent: requiresUpgrade ? (
+            <UpgradeTooltip rangeLabel={display} plan={plan} />
+          ) : undefined,
+          shortcut,
+        };
+      })}
+    />
+  );
+
+  // TODO: [PageContent] Remove once all pages are migrated to the new PageContent
+  const isAppPage = !dashboardProps && !adminPage;
+
   return (
     <>
-      <div className="flex justify-between items-center gap-4">
-        <div>
-          <Popover
-            openPopover={isOpen}
-            setOpenPopover={setIsOpen}
-            content={
-              <div className="w-40  bg-white ">
-                {periods.map((p) => (
-                  <button
-                    key={p.value}
-                    className="block w-full text-left font-display px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
-                    onClick={() => {
-                      setPeriod(p.label);
-                      setIsOpen(false);
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
+      <div
+        className={cn("py-3 md:py-3", isAppPage && "pt-0 md:pt-0", {
+          "sticky top-14 z-10 bg-neutral-50": dashboardProps,
+          "sticky top-16 z-10 bg-neutral-50": adminPage,
+          "shadow-md": scrolled && dashboardProps,
+        })}
+      >
+        <div
+          className={cn(
+            "mx-auto flex w-full max-w-screen-xl flex-col gap-2 px-3 lg:px-10",
+            isAppPage && "lg:px-6",
+            {
+              "md:h-10": key,
             }
-            align="center"
+          )}
+        >
+          <div
+            className={cn(
+              "flex w-full flex-col items-center justify-between gap-2 md:flex-row",
+              {
+                "flex-col md:flex-row": !key,
+                "items-center": key,
+              }
+            )}
           >
-            <button
-              type="button"
-              className="flex items-center font-display font-medium rounded-full bg-neutral-50  px-4 py-1 gap-2 text-sm text-neutral-500 hover:text-neutral-600"
+            {dashboardProps &&
+              (dashboardProps.folderId ? (
+                <div className="flex items-center gap-2 text-lg font-semibold text-neutral-800">
+                  <p className="max-w-[192px] truncate sm:max-w-[400px]">
+                    {dashboardProps.folderName}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center text-lg font-semibold text-neutral-800">
+                  {/* <BlurImage
+                    alt={url || "Dub"}
+                    src={
+                      url
+                        ? `${GOOGLE_FAVICON_URL}${getApexDomain(url)}`
+                        : DUB_LOGO
+                    }
+                    className="mr-2 h-6 w-6 flex-shrink-0 overflow-hidden rounded-full"
+                    width={48}
+                    height={48}
+                  />
+                  <p className="max-w-[192px] truncate sm:max-w-[400px]">
+                    {linkConstructor({
+                      domain,
+                      key,
+                      pretty: true,
+                    })}
+                  </p> */}
+                </div>
+              ))}
+            <div
+              className={cn(
+                "flex w-full flex-col-reverse items-center gap-2 min-[550px]:flex-row",
+                dashboardProps && "md:w-auto"
+              )}
             >
-              <span>{period}</span>
-            </button>
-          </Popover>
+              {isMobile ? dateRangePicker : filterSelect}
+              <div
+                className={cn("flex w-full grow items-center gap-2 md:w-auto", {
+                  "grow-0": dashboardProps,
+                })}
+              >
+                {isMobile ? filterSelect : dateRangePicker}
+                {!dashboardProps && (
+                  <div className="flex grow justify-end gap-2">
+                    {page === "analytics" && (
+                      <>
+                        <Link
+                          href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}events${getQueryString()}`}
+                        >
+                          <Button
+                            variant="secondary"
+                            className="w-fit"
+                            text={isMobile ? undefined : "View Events"}
+                          />
+                        </Link>
+                      </>
+                    )}
+                    {page === "events" && (
+                      <>
+                        <Link
+                          href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}analytics${getQueryString()}`}
+                        >
+                          <Button
+                            variant="secondary"
+                            className="w-fit"
+                            text={isMobile ? undefined : "View Analytics"}
+                          />
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-        <Filter.Select filters={filters} />
       </div>
 
-      <div className="mt-4 flex items-center gap-2 px-4 py-1.5 w-fit rounded-full bg-neutral-50">
-        <p className="text-sm font-default text-neutral-600">
-          <span className="font-medium">Country</span> is{" "}
-          <span className="font-medium">United States</span>
-        </p>
-
-        <button className="rounded-full  hover:text-neutral-600 transition">
-          <X size={14} className="text-neutral-500" />
-        </button>
+      <div
+        className={cn(
+          "mx-auto w-full max-w-screen-xl px-3 lg:px-10",
+          isAppPage && "lg:px-6"
+        )}
+      >
+        <Filter.List
+          filters={filters}
+          activeFilters={activeFiltersWithStreaming}
+          onSelect={onSelect}
+          onRemove={onRemove}
+          onRemoveFilter={onRemoveFilter}
+          onRemoveAll={onRemoveAll}
+          onToggleOperator={onToggleOperator}
+          isAdvancedFilter
+        />
+        <div
+          className={cn(
+            "transition-[height] duration-[300ms]",
+            streaming || activeFilters.length ? "h-3" : "h-0"
+          )}
+        />
       </div>
     </>
+  );
+}
+
+function UpgradeTooltip({
+  rangeLabel,
+  plan,
+}: {
+  rangeLabel: string;
+  plan?: string;
+}) {
+  const { slug } = useWorkspace();
+
+  const isAllTime = rangeLabel === "All Time";
+
+  return (
+    <TooltipContent
+      title={`${rangeLabel} can only be viewed on a ${isAllTime ? "Business" : getNextPlan(plan).name} plan or higher. Upgrade now to view more stats.`}
+      cta={`Upgrade to ${isAllTime ? "Business" : getNextPlan(plan).name}`}
+      href={slug ? `/${slug}/upgrade` : APP_DOMAIN}
+    />
   );
 }

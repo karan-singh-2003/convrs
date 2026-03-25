@@ -95,7 +95,7 @@ export function ChartSection() {
           showPaywall={showPaywall}
         />
       </div>
-      {/* <div className="relative">
+      <div className="relative">
         <div
           className={cn(
             "relative overflow-hidden border-x border-b border-neutral-200 sm:rounded-b-xl",
@@ -138,10 +138,10 @@ export function ChartSection() {
               }
             />
           )}
-          <ChartViewSwitcher />
+          {/* <ChartViewSwitcher /> */}
         </div>
         {showPaywall && <ConversionTrackingPaywall />}
-      </div> */}
+      </div>
     </div>
   );
 }

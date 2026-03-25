@@ -78,11 +78,11 @@ export function AnalyticsCard<T extends string>({
           <h1 className="text-lg font-semibold">{selectedTab?.label}</h1>
           <div className="flex items-center gap-1 text-neutral-500">
             {event === "sales" ? (
-              <h1 className="hidden h-4 w-4 sm:block">dollar</h1>
+              <h1 className="hidden h-4 w-4 sm:block"></h1>
             ) : event === "leads" ? (
-              <h1 className="hidden h-4 w-4 sm:block">user-check</h1>
+              <h1 className="hidden h-4 w-4 sm:block"></h1>
             ) : (
-              <h1 className="hidden h-4 w-4 sm:block">cursor-rays</h1>
+              <h1 className="hidden h-4 w-4 sm:block"></h1>
             )}
             <p className="text-xs uppercase">{event}</p>
           </div>
@@ -154,11 +154,11 @@ export function AnalyticsCard<T extends string>({
 
           <div className="flex items-center gap-1 pr-2 text-neutral-500">
             {event === "sales" ? (
-              <h1 className="hidden h-4 w-4 sm:block">dollar</h1>
+              <h1 className="hidden h-4 w-4 sm:block"></h1>
             ) : event === "leads" ? (
-              <h1 className="hidden h-4 w-4 sm:block">user-check</h1>
+              <h1 className="hidden h-4 w-4 sm:block"></h1>
             ) : (
-              <h1 className="hidden h-4 w-4 sm:block">cursor-rays</h1>
+              <h1 className="hidden h-4 w-4 sm:block"></h1>
             )}
             <p className="text-xs uppercase">{event}</p>
           </div>
@@ -232,9 +232,9 @@ function SubTabs({
       }))}
       selected={selectedTab}
       selectAction={(period) => onSelectTab(period)}
-      className="flex w-full flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-6 py-2.5 sm:flex-nowrap"
-      optionClassName="text-xs px-2 font-normal hover:text-neutral-700"
-      indicatorClassName="border-0 bg-neutral-200 rounded-md"
+      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-6 py-2 sm:flex-nowrap"
+      optionClassName="text-[13px] px-2 font-normal hover:text-neutral-700"
+      indicatorClassName="border-0 bg-transparent rounded-md"
     />
   );
 }

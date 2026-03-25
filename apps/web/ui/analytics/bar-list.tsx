@@ -45,7 +45,7 @@ export function BarList({
   tab: string;
   unit: string;
   data: {
-    icon: ReactNode;
+    icon?: ReactNode;
     title: string;
     filterValue?: string;
     value: number;
@@ -54,7 +54,7 @@ export function BarList({
     href?: string;
   }[];
   allData?: {
-    icon: ReactNode;
+    icon?: ReactNode;
     title: string;
     filterValue?: string;
     value: number;
@@ -285,7 +285,7 @@ export function LineItem({
   onFilterClick,
   href,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   title: string;
   value: number;
   totalSum: number;
@@ -312,63 +312,68 @@ export function LineItem({
 
   const percentage = Math.round((value / totalSum) * 1000) / 10;
   const isModalView = !limit;
+  console.log("icon in line item for title", title, "is", icon);
 
   const lineItem = (
     <div className="z-10 flex items-center space-x-4 overflow-hidden px-3">
-      {onFilterClick ? (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!isActivelyFiltered) onFilterClick();
-          }}
-          onMouseEnter={() => {
-            setFilterButtonHovered(true);
-            setTooltipResetKey((k) => k + 1);
-          }}
-          onMouseLeave={() => setFilterButtonHovered(false)}
-          aria-label={`${isSelected ? "Remove" : "Add"} filter: ${title}`}
-          aria-pressed={isSelected}
-          className="relative size-6 shrink-0 cursor-pointer"
-        >
-          <div
-            className={cn(
-              "flex size-full items-center justify-center transition-all duration-200",
-              isSelected || isHovered ? "translate-x-3 opacity-0" : ""
-            )}
-          >
-            {icon}
-          </div>
-          <div
-            className={cn(
-              "absolute inset-0 flex items-center justify-center rounded-lg transition-all duration-200",
-              isSelected
-                ? cn(
-                    "translate-x-0 opacity-100",
-                    filterSelectedBackground,
-                    filterSelectedHoverBackground
-                  )
-                : isHovered
-                  ? cn(
-                      "translate-x-0 opacity-100",
-                      isActivelyFiltered
-                        ? cn(
-                            filterSelectedBackground,
-                            filterSelectedHoverBackground
-                          )
-                        : filterHoverClass
-                    )
-                  : "-translate-x-3 opacity-0"
-            )}
-          >
-            <h1>Filterbars icons</h1>
-          </div>
-        </button>
-      ) : (
-        <div className="flex size-6 shrink-0 items-center justify-center">
-          {icon}
-        </div>
-      )}
+      {onFilterClick
+        ? icon && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!isActivelyFiltered) onFilterClick();
+              }}
+              onMouseEnter={() => {
+                setFilterButtonHovered(true);
+                setTooltipResetKey((k) => k + 1);
+              }}
+              onMouseLeave={() => setFilterButtonHovered(false)}
+              aria-label={`${isSelected ? "Remove" : "Add"} filter: ${title}`}
+              aria-pressed={isSelected}
+              className="relative size-6 shrink-0 cursor-pointer"
+            >
+              {icon && (
+                <div
+                  className={cn(
+                    "flex size-full items-center justify-center transition-all duration-200",
+                    isSelected || isHovered ? "translate-x-3 opacity-0" : ""
+                  )}
+                >
+                  {icon}
+                </div>
+              )}
+              <div
+                className={cn(
+                  "absolute inset-0 flex items-center justify-center rounded-sm transition-all duration-200",
+                  isSelected
+                    ? cn(
+                        "translate-x-0 opacity-100",
+                        filterSelectedBackground,
+                        filterSelectedHoverBackground
+                      )
+                    : isHovered
+                      ? cn(
+                          "translate-x-0 opacity-100",
+                          isActivelyFiltered
+                            ? cn(
+                                filterSelectedBackground,
+                                filterSelectedHoverBackground
+                              )
+                            : filterHoverClass
+                        )
+                      : "-translate-x-3 opacity-0"
+                )}
+              >
+                <h1>Filterbars icons</h1>
+              </div>
+            </button>
+          )
+        : icon && (
+            <div className="flex size-6 shrink-0 items-center justify-center">
+              {icon}
+            </div>
+          )}
       {tab === "links" && linkData ? (
         <h1>getPrettyUrl(title)</h1>
       ) : tab === "urls" ? (
@@ -423,12 +428,12 @@ export function LineItem({
             position: "absolute",
             inset: 0,
           }}
-          className={cn("-z-10 h-full origin-left rounded-md", barBackground)}
+          className={cn("-z-10 h-full origin-left rounded-sm", barBackground)}
           transition={{ ease: "easeOut", duration: 0.3 }}
           initial={{ transform: "scaleX(0)" }}
           animate={{ transform: "scaleX(1)" }}
         />
-        <div className="relative z-10 flex h-8 w-full min-w-0 max-w-[calc(100%-2rem)] items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
+        <div className="relative z-10 flex h-8 w-full min-w-0 max-w-[calc(100%-2rem)] font-display items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
           {lineItem}
         </div>
         <div className="z-10 flex items-center">

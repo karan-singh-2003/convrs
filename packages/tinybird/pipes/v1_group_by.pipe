@@ -80,6 +80,14 @@ SELECT
         browser,
         {{ String(groupBy) }} = 'os',
         os,
+        {{ String(groupBy) }} = 'hostname',
+        hostname,
+        {{ String(groupBy) }} = 'page',
+        page,
+        {{ String(groupBy) }} = 'entrypage',
+        entrypage,
+        {{ String(groupBy) }} = 'exitlink',
+        exitlink,
         {{ String(groupBy) }} = 'triggers',
         trigger,
         link_id
@@ -122,6 +130,10 @@ WHERE
     {% if defined(trigger) %} AND trigger = {{ trigger }} {% end %}
     {% if defined(referer) %} AND referer = {{ referer }} {% end %}
     {% if defined(refererUrl) %} AND splitByString('?', referer_url)[1] = {{ refererUrl }} {% end %}
+    {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
+    {% if defined(page) %} AND page = {{ page }} {% end %}
+    {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
+    {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
     {% if defined(utm_source) %}
         AND url LIKE concat('%utm_source=', encodeURLFormComponent({{ String(utm_source) }}), '%')
     {% end %}
@@ -193,6 +205,14 @@ SELECT
         browser,
         {{ String(groupBy) }} = 'os',
         os,
+        {{ String(groupBy) }} = 'hostname',
+        hostname,
+        {{ String(groupBy) }} = 'page',
+        page,
+        {{ String(groupBy) }} = 'entrypage',
+        entrypage,
+        {{ String(groupBy) }} = 'exitlink',
+        exitlink,
         {{ String(groupBy) }} = 'triggers',
         trigger,
         link_id
@@ -225,6 +245,10 @@ WHERE
     {% if defined(os) %} AND os = {{ os }} {% end %}
     {% if defined(referer) %} AND referer = {{ referer }} {% end %}
     {% if defined(refererUrl) %} AND splitByString('?', referer_url)[1] = {{ refererUrl }} {% end %}
+    {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
+    {% if defined(page) %} AND page = {{ page }} {% end %}
+    {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
+    {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
     {% if defined(utm_source) %}
         AND url LIKE concat('%utm_source=', encodeURLFormComponent({{ String(utm_source) }}), '%')
     {% end %}
