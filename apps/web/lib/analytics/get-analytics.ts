@@ -77,7 +77,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     filters:
       advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
   };
-
+console.log("Tinybird params:", tinybirdParams);
   const response = await pipe(tinybirdParams);
   console.log("Tinybird response:", response);
 

@@ -64,14 +64,7 @@ export function AnalyticsTabs({
       ] as Tab[],
     [showConversions]
   );
-  console.log("AnalyticsTabs rendered with props:", {
-    showConversions,
-    totalEvents,
-    tab,
-    saleUnit,
-    requiresUpgrade,
-    showPaywall,
-  });
+console.log("Total events in Tabs:", totalEvents);
   return (
     <div className="grid w-full grid-cols-3 divide-x divide-neutral-200 overflow-y-hidden">
       <NumberFlowGroup>

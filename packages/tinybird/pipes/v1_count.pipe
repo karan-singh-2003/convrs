@@ -96,8 +96,42 @@ WHERE
     {% if defined(url) %} AND splitByString('?', url)[1] = {{ url }} {% end %}
     {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
     {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+    {% if defined(filters) %}
+  {% for item in JSON(filters, '[]') %}
+    {% if item.get('field', '') %}
+      {% set field = item.get('field', '') %}
+      {% set operator = item.get('operator', 'IN') %}
+      {% set values = item.get('values', []) %}
 
+      {% if field == 'country' %}
+        {% if operator == 'IN' %} 
+          AND country IN {{ Array(values, 'String') }}
+        {% elif operator == 'NOT IN' %} 
+          AND country NOT IN {{ Array(values, 'String') }}
+        {% end %}
+      {% elif field == 'city' %}
+        {% if operator == 'IN' %} 
+          AND city IN {{ Array(values, 'String') }}
+        {% elif operator == 'NOT IN' %} 
+          AND city NOT IN {{ Array(values, 'String') }}
+        {% end %}
+      {% elif field == 'device' %}
+        {% if operator == 'IN' %} 
+          AND device IN {{ Array(values, 'String') }}
+        {% elif operator == 'NOT IN' %} 
+          AND device NOT IN {{ Array(values, 'String') }}
+        {% end %}
+      {% elif field == 'browser' %}
+        {% if operator == 'IN' %} 
+          AND browser IN {{ Array(values, 'String') }}
+        {% elif operator == 'NOT IN' %} 
+          AND browser NOT IN {{ Array(values, 'String') }}
+        {% end %}
+      {% end %}
 
+    {% end %}
+  {% end %}
+{% end %}
 
 NODE count_leads
 SQL >
