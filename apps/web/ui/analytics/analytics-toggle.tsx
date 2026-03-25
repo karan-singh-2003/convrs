@@ -150,7 +150,7 @@ export function AnalyticsToggle({
     <>
       <div
         className={cn("py-3 md:py-3", isAppPage && "pt-0 md:pt-0", {
-          "sticky top-14 z-10 bg-neutral-50": dashboardProps,
+          "sticky top-14 z-10 justify-between bg-neutral-50": dashboardProps,
           "sticky top-16 z-10 bg-neutral-50": adminPage,
           "shadow-md": scrolled && dashboardProps,
         })}
@@ -176,7 +176,7 @@ export function AnalyticsToggle({
             {dashboardProps &&
               (dashboardProps.folderId ? (
                 <div className="flex items-center gap-2 text-lg font-semibold text-neutral-800">
-                  <p className="max-w-[192px] truncate sm:max-w-[400px]">
+                  <p className="max-w-[192px]  truncate sm:max-w-[400px]">
                     {dashboardProps.folderName}
                   </p>
                 </div>
@@ -216,34 +216,35 @@ export function AnalyticsToggle({
               >
                 {isMobile ? filterSelect : dateRangePicker}
                 {!dashboardProps && (
-                  <div className="flex grow justify-end gap-2">
-                    {page === "analytics" && (
-                      <>
-                        <Link
-                          href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}events${getQueryString()}`}
-                        >
-                          <Button
-                            variant="secondary"
-                            className="w-fit"
-                            text={isMobile ? undefined : "View Events"}
-                          />
-                        </Link>
-                      </>
-                    )}
-                    {page === "events" && (
-                      <>
-                        <Link
-                          href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}analytics${getQueryString()}`}
-                        >
-                          <Button
-                            variant="secondary"
-                            className="w-fit"
-                            text={isMobile ? undefined : "View Analytics"}
-                          />
-                        </Link>
-                      </>
-                    )}
-                  </div>
+                  // <div className="flex grow justify-end gap-2">
+                  //   {page === "analytics" && (
+                  //     <>
+                  //       <Link
+                  //         href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}events${getQueryString()}`}
+                  //       >
+                  //         <Button
+                  //           variant="secondary"
+                  //           className="w-fit"
+                  //           text={isMobile ? undefined : "View Events"}
+                  //         />
+                  //       </Link>
+                  //     </>
+                  //   )}
+                  //   {page === "events" && (
+                  //     <>
+                  //       <Link
+                  //         href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}analytics${getQueryString()}`}
+                  //       >
+                  //         <Button
+                  //           variant="secondary"
+                  //           className="w-fit"
+                  //           text={isMobile ? undefined : "View Analytics"}
+                  //         />
+                  //       </Link>
+                  //     </>
+                  //   )}
+                  // </div>
+                  null
                 )}
               </div>
             </div>

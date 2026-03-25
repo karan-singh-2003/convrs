@@ -312,7 +312,7 @@ export function LineItem({
 
   const percentage = Math.round((value / totalSum) * 1000) / 10;
   const isModalView = !limit;
-  console.log("icon in line item for title", title, "is", icon);
+
 
   const lineItem = (
     <div className="z-10 flex items-center space-x-4 overflow-hidden px-3">

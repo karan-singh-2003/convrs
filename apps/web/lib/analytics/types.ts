@@ -23,7 +23,8 @@ export type AnalyticsGroupByOptions =
 
 export type AnalyticsResponseOptions =
   | "clicks"
-  | "leads"
+  | "bounce_rate"
+  | "avg_session_duration"
   | "sales"
   | "saleAmount";
 

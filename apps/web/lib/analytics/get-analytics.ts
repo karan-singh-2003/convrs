@@ -24,7 +24,6 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     dataAvailableFrom,
   } = params;
 
-
   const { startDate, endDate, granularity } = getStartEndDates({
     interval,
     start,
@@ -48,10 +47,10 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     parameters: analyticsFilterTB,
     data: z.object({
       groupByField: z.string().optional(),
-      clicks: z.number().default(0),
-      leads: z.number().default(0),
-      sales: z.number().default(0),
-      saleAmount: z.number().default(0),
+      clicks: z.number().nullable().default(0),
+      bounce_rate: z.number().nullable().default(0),
+      avg_session_duration: z.number().nullable().default(0),
+      saleAmount: z.number().nullable().default(0),
       country: z.string().optional(),
       region: z.string().optional(),
     }),
@@ -77,7 +76,8 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     filters:
       advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
   };
-console.log("Tinybird params:", tinybirdParams);
+
+  console.log("Tinybird params:", tinybirdParams);
   const response = await pipe(tinybirdParams);
   console.log("Tinybird response:", response);
 

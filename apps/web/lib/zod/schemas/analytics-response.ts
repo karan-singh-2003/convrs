@@ -13,13 +13,13 @@ const analyticsTriggersResponse = z.object({
     .number()
     .describe("The number of clicks from this trigger method")
     .default(0),
-  leads: z
+  bounce_rate: z
     .number()
-    .describe("The number of leads from this trigger method")
+    .describe("The bounce rate from this trigger method")
     .default(0),
-  sales: z
+  avg_session_duration: z
     .number()
-    .describe("The number of sales from this trigger method")
+    .describe("The average session duration from this trigger method")
     .default(0),
   saleAmount: centsSchemaWithDefault.describe(
     "The total amount of sales from this trigger method, in cents"
@@ -28,14 +28,13 @@ const analyticsTriggersResponse = z.object({
 
 export const analyticsResponse = {
   count: z.object({
-    clicks: z.coerce.number().describe("The total number of clicks").default(0),
-    leads: z.coerce.number().describe("The total number of leads").default(0),
-    sales: z.coerce.number().describe("The total number of sales").default(0),
+    clicks: z.coerce.number().describe("The total number of clicks").default(0).transform(val => val ?? 0),
+    avg_session_duration: z.coerce.number().describe("The total average session duration").default(0).transform(val => val ?? 0),
+    bounce_rate: z.coerce.number().describe("The total bounce rate").default(0).transform(val => val ?? 0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales, in cents"
     ),
   }),
-
   timeseries: z.object({
     start: z.string().describe("The starting timestamp of the interval"),
     clicks: z
