@@ -1,3 +1,5 @@
+"use client";
+
 import { useAction } from "next-safe-action/hooks";
 import { useCallback } from "react";
 import type { OnboardingStep } from "@/lib/types";

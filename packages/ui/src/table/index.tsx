@@ -59,7 +59,7 @@ export function Table<T>({
     <div className={cn("relative rounded-none  ", className)}>
       {/* TABLE */}
       {hasData ? (
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto  rounded-xl ">
           <table
             className="w-full border-separate border-spacing-0 text-sm"
             style={{ minWidth: tableWidth }}

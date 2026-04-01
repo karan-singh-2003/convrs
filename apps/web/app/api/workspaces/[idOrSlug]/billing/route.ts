@@ -3,14 +3,14 @@ import { stripe } from "@/lib/stripe";
 
 export const GET = withWorkspace(
   async ({ workspace }) => {
-    const { stripeId } = workspace;
+    const { stripeCustomerId } = workspace;
 
     let billingCycle: "monthly" | "yearly" | null = null;
     let billingPeriodStart: number | null = null;
-    if (stripeId) {
+    if (stripeCustomerId) {
       const subscriptions = await stripe.subscriptions.list({
-        customer: stripeId,
-        status: "active",
+        customer: stripeCustomerId,
+        status: "all",
         limit: 1,
         expand: ["data.items.data.price"],
       });

@@ -14,7 +14,7 @@ export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey = selectedTab === "sales" ? saleUnit : "count";
+  const dataKey =  "count";
 
   const [tab, setTab] = useState<
     "countries" | "cities" | "regions" | "continents"
@@ -161,7 +161,7 @@ export function LocationSection() {
             />
           ) : (
             <div className="flex h-[300px] items-center justify-center">
-              <p className="text-sm text-neutral-600">No data available</p>
+                  <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
             </div>
           )
         ) : (

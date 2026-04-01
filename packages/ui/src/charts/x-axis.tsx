@@ -76,7 +76,7 @@ export function XAxis({
         stroke="#00000026"
         tickFormat={(date) => tickFormat(date as Date)}
         tickLabelProps={(date, idx, { length }) => ({
-          className: "transition-colors font-display text-[12.5px]",
+          className: "transition-colors text-neutral-600 font-poppins text-[12.5px]",
           textAnchor:
             idx === 0 ? "start" : idx === length - 1 ? "end" : "middle",
           fontSize: 12,
@@ -85,7 +85,7 @@ export function XAxis({
               ? tooltipData.date === date
               : highlightLast && idx === length - 1
           )
-            ? "#000"
+            ? "#525252"
             : "#00000066",
         })}
       />

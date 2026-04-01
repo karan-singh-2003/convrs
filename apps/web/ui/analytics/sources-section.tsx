@@ -56,7 +56,7 @@ export function SourcesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey = selectedTab === "sales" ? saleUnit : "count";
+  const dataKey = "count";
 
   const [tab, setTab] = useState<TabId>("utm");
   const [subtab, setSubtab] = useState<Subtab>(TAB_CONFIG["utm"].defaultSubtab);
@@ -177,9 +177,7 @@ export function SourcesSection() {
               />
             ) : (
               <div className="flex h-[300px] items-center justify-center">
-                <p className="text-sm font-display text-neutral-500">
-                  No data available
-                </p>
+                     <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
               </div>
             )
           ) : (

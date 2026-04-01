@@ -39,15 +39,9 @@ export const GET = withWorkspace(
 // PATCH /api/workspaces/[idOrSlug] - update a specific workspace by id or slug
 export const PATCH = withWorkspace(
   async ({ req, workspace }) => {
-    const { name, slug, logo, enforceSAML } =
+    const { name, slug,  enforceSAML } =
       await updateWorkspaceSchema.parseAsync(await req.json());
 
-    const logoUpload = logo
-      ? await storage.upload({
-          key: `workspaces/${workspace.id}/logo_${nanoid(7)}`,
-          body: logo,
-        })
-      : null;
 
     if (enforceSAML) {
       const apiController = (await jackson()).apiController;
@@ -72,7 +66,6 @@ export const PATCH = withWorkspace(
       data: {
         ...(name && { name }),
         ...(slug && { slug }),
-        ...(logoUpload && { logo: logoUpload.url }),
         ...(enforceSAML !== undefined && {
           ssoEnforcedAt: enforceSAML ? new Date() : null,
         }),
@@ -82,15 +75,7 @@ export const PATCH = withWorkspace(
       },
     });
 
-    waitUntil(
-      (async () => {
-        if (logoUpload && workspace.logo) {
-          await storage.delete({
-            key: workspace.logo.replace(`${R2_URL}/`, ""),
-          });
-        }
-      })()
-    );
+   
 
     const res = WorkspaceSchema.parse({
       ...updatedWorkspace,

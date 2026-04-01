@@ -30,6 +30,7 @@ const Form = ({
           await handleSubmit({ [inputAtts.name || "input"]: value });
           setSaving(false);
         }}
+        className="bg-white border border-neutral-200 rounded-xl p-4"
       >
         <div className="space-y-3">
           <div className="space-y-0.5">
@@ -42,13 +43,13 @@ const Form = ({
           </div>
 
           {/* Input + Button */}
-          <div className="relative w-full">
+          <div className="relative w-full ">
             <Input
               {...restInputAtts}
               required
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="w-full font-display text-neutral-600"
+              className="w-full font-display  text-neutral-600"
             />
 
             {value && (

@@ -11,7 +11,7 @@ export function PagesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey = selectedTab === "sales" ? saleUnit : "count";
+  const dataKey =  "count";
 
   const [tab, setTab] = useState<"hostname"|"page"|"entrypage"|"exitlink">("hostname");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -114,7 +114,7 @@ export function PagesSection() {
               />
             ) : (
               <div className="flex h-[300px] items-center justify-center">
-                <p className="text-sm text-neutral-600">No data available</p>
+                <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
               </div>
             )
           ) : (

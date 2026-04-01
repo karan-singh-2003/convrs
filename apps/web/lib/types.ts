@@ -25,11 +25,12 @@ export interface UserProps {
 
 export const ONBOARDING_STEPS = [
   "workspace",
-  "billing",
-  "invite",
-  "success",
-  "source",
+  "script",
   "completed",
+  "invite ",
+  "billing",
+  "source",
+  "members"
 ] as const;
 
 export const plans = [

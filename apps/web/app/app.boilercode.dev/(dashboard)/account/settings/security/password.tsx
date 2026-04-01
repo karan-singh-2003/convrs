@@ -161,7 +161,7 @@ export default function Password() {
 
       <div className="">
         <div className="space-y-0.5">
-          <h1 className="font-display text-base font-medium text-[#5C5C5C]">
+          <h1 className="font-display text-sm font-medium text-[#5C5C5C]">
             Password
           </h1>
           <p className="text-sm text-neutral-500 font-display">

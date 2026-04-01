@@ -24,7 +24,9 @@ export function MainNav({
   sidebar: Sidebar,
 }: {
   children: React.ReactNode;
-  sidebar: React.ComponentType;
+  sidebar: React.ComponentType<{
+    forcedArea?: "default" | "workspaceSettings" | "userSettings";
+  }>;
 }) {
   const pathname = usePathname();
   const { isMobile } = useMediaQuery();
@@ -40,49 +42,69 @@ export function MainNav({
     setIsOpen(false);
   }, [pathname]);
 
-  const hideAvatar = pathname.includes("/settings");
+  const isSettings = pathname.includes("/settings");
+  const isDashboard = pathname === "/" || pathname === "/dashboard";
+
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[min-content_minmax(0,1fr)]">
-      {/* Side nav backdrop */}
-      <div
-        className={cn(
-          "fixed left-0 top-0 z-50 h-dvh w-screen transition-[background-color,backdrop-filter] md:sticky md:z-auto md:w-full md:bg-transparent",
-          isOpen
-            ? "bg-black/20 backdrop-blur-sm"
-            : "bg-transparent max-md:pointer-events-none"
-        )}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            e.stopPropagation();
-            setIsOpen(false);
-          }
-        }}
-      >
-        {/* Side nav */}
-        <div
-          className={cn(
-            "relative h-full w-min max-w-full bg-white transition-transform md:translate-x-0",
-            !isOpen && "-translate-x-full"
-          )}
-        >
-          <Sidebar />
-        </div>
-      </div>
-      <div className="h-screen">
-        <div className="relative h-full overflow-y-auto bg-white ">
-          <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
-            <div className="h-10 border-b flex justify-between items-center border-[#EBEBEB]/50">
-              {/* breadcrumbs */}
-              <div className="px-4 flex items-center md:gap-x-4 gap-x-2">
-                <NavButton />
-                <Breadcrumbs />
+    <div className="min-h-full w-full  flex flex-col ">
+      {!isDashboard ? (
+        <div className="h-12  bg-white">
+          <div className=" flex h-full w-full mx-auto  max-w-screen-lg items-center justify-between gap-4  ">
+            <div className="flex items-center gap-4 min-w-0">
+              {/* <NavButton /> */}
+              <div className="w-full ">
+                <Sidebar forcedArea="default" />
               </div>
-              {/* user avatar */}
-              {!hideAvatar && <UserDropdown />}
             </div>
-            <div className="px-4 md:px-0">{children}</div>
-          </SideNavContent.Provider>
+            <UserDropdown />
+          </div>
         </div>
+      ) : (
+        <div className=" py-2 flex h-full w-full mx-auto lg:px-8 max-w-screen-md items-center justify-between gap-4 px-4 md:px-0">
+          <nav className="flex items-center w-full justify-between gap-x-2">
+            <div className="flex items-center gap-2.5 font-display text-sm font-medium text-neutral-600">
+              {" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 182 199"
+                fill="none"
+                className="size-6"
+              >
+                <path
+                  d="M0 50.837L90.3333 0L182 50.837V148.832L90.3333 199L0 148.832V50.837Z"
+                  fill="#363636"
+                />
+                <path
+                  d="M10 50.0038L90.1639 5L173 49.6679L90.832 94L10 50.0038Z"
+                  fill="white"
+                />
+              </svg>
+              <h1 className="font-normal font-default text-[14.5px]">Posthog</h1>
+            </div>
+            <UserDropdown />
+          </nav>
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 py-4">
+        {isSettings ? (
+          <div className=" w-full max-w-screen-lg mx-auto my-2 sm:flex-row lg:px-8 px-0 md:px-0 md:grid md:grid-cols-[248px_minmax(0,1fr)] md:gap-4">
+            <div className="md:my-5 ">
+              <Sidebar />
+            </div>
+            <div className="min-w-0 max-w-screen-lg rounded-2xl bg-neutral-50">
+              <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
+                <div className="px-6 md:px-0 py-8">{children}</div>
+              </SideNavContent.Provider>
+            </div>
+          </div>
+        ) : (
+          <div className=" px-6 md:px-0 bg-white">
+            <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
+              <div className="py-4">{children}</div>
+            </SideNavContent.Provider>
+          </div>
+        )}
       </div>
     </div>
   );

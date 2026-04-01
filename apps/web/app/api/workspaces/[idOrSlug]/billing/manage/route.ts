@@ -4,7 +4,7 @@ import { APP_DOMAIN } from "@repo/utils";
 
 export const POST = withWorkspace(
   async ({ workspace }) => {
-    if (!workspace.stripeId) {
+    if (!workspace.stripeCustomerId) {
       return new Response(
         JSON.stringify({ error: "No Stripe customer found" }),
         {
@@ -15,8 +15,9 @@ export const POST = withWorkspace(
     }
     try {
       const { url } = await stripe.billingPortal.sessions.create({
-        customer: workspace.stripeId,
+        customer: workspace.stripeCustomerId,
         return_url: `${APP_DOMAIN}/${workspace.slug}/settings/billing`,
+        configuration: "bpc_1TG1cCL2qfTOZYhOgsN5J9fe",
       });
       return new Response(JSON.stringify({ url }), {
         status: 200,

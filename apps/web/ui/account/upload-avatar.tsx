@@ -40,12 +40,13 @@ export default function UploadAvatar() {
           })
           .finally(() => setUploading(false));
       }}
+      className="bg-white p-4 border-neutral-200 rounded-2xl border"
     >
       <div className="flex flex-col gap-4">
         {/* Heading */}
-        <div className="space-y-1">
-          <h2 className="font-medium text-sm">Avatar</h2>
-          <p className="text-[13.5px] text-neutral-500 max-w-md">
+        <div className="space-y-0.5 font-display">
+          <h2 className="font-medium text-neutral-600 text-sm">Avatar</h2>
+          <p className="text-[14px] font-display text-neutral-500 max-w-md">
             This is your avatar on {process.env.NEXT_PUBLIC_APP_NAME}
           </p>
         </div>

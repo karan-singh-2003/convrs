@@ -129,32 +129,6 @@ export function useAnalyticsFilters({
     [requestedFilters, activeFilters]
   );
 
-  const { data: links } = useAnalyticsFilterOption("top_links", {
-    disabled: !isRequested("linkId"),
-    omitGroupByFilterKey: true,
-    context,
-  });
-  const { data: folders } = useAnalyticsFilterOption("top_folders", {
-    disabled: !isRequested("folderId"),
-    omitGroupByFilterKey: true,
-    context,
-  });
-  const { data: linkTags } = useAnalyticsFilterOption("top_link_tags", {
-    disabled: !isRequested("tagId"),
-    omitGroupByFilterKey: true,
-    context,
-  });
-  const { data: domains } = useAnalyticsFilterOption("top_domains", {
-    disabled: !isRequested("domain"),
-    omitGroupByFilterKey: true,
-    context,
-  });
-
-  const { data: groups } = useAnalyticsFilterOption("top_groups", {
-    disabled: !isRequested("groupId"),
-    omitGroupByFilterKey: true,
-    context,
-  });
   const { data: countries } = useAnalyticsFilterOption("countries", {
     disabled: !isRequested("country"),
     omitGroupByFilterKey: true,
@@ -192,11 +166,7 @@ export function useAnalyticsFilters({
     omitGroupByFilterKey: true,
     context,
   });
-  const { data: triggers } = useAnalyticsFilterOption("triggers", {
-    disabled: !isRequested("trigger"),
-    omitGroupByFilterKey: true,
-    context,
-  });
+
   const { data: referers } = useAnalyticsFilterOption("referers", {
     disabled: !isRequested("referer"),
     omitGroupByFilterKey: true,
@@ -247,128 +217,14 @@ export function useAnalyticsFilters({
   };
 
   const getFilterOptionTotal = useCallback(
-    ({ count, saleAmount }: { count?: number; saleAmount?: number }) => {
-      return selectedTab === "sales" && saleUnit === "saleAmount" && saleAmount
-        ? currencyFormatter(saleAmount)
-        : nFormatter(count, { full: true });
+    ({ count }: { count?: number; saleAmount?: number }) => {
+      return nFormatter(count, { full: true });
     },
     [selectedTab, saleUnit]
   );
 
-  const LinkFilterItem = {
-    key: "linkId",
-
-    label: "Link",
-
-    options:
-      links?.map(({ id, domain, key, url, ...rest }) => ({
-        value: id,
-        label: `${domain}/${key}`,
-        right: getFilterOptionTotal(rest),
-        data: { url, domain, key },
-      })) ?? null,
-  };
-
-  const DomainFilterItem = {
-    key: "domain",
-
-    label: "Domain",
-    getOptionIcon: (value) => (
-      <BlurImage
-        src={`https://www.google.com/s2/favicons?sz=64&domain=${value}`}
-        alt={value}
-        className="h-4 w-4 rounded-full"
-        width={16}
-        height={16}
-      />
-    ),
-    options:
-      domains?.map(({ domain, ...rest }) => ({
-        value: domain,
-        label: domain,
-        right: getFilterOptionTotal(rest),
-      })) ?? null,
-  };
-
-  const SaleTypeFilterItem = {
-    key: "saleType",
-
-    label: "Sale type",
-    separatorAfter: true,
-    hideMultipleIcons: true,
-    singleSelect: true,
-    options: [
-      {
-        value: "new",
-        label: "New",
-      },
-      {
-        value: "recurring",
-        label: "Recurring",
-      },
-    ],
-  };
-
   const filters: ComponentProps<typeof Filter.Select>["filters"] = useMemo(
     () => [
-      ...(dashboardProps
-        ? dashboardProps.key
-          ? []
-          : [DomainFilterItem, LinkFilterItem]
-        : programPage
-          ? [
-              {
-                key: "groupId",
-                icon: Users6,
-                label: "Group",
-                options:
-                  groups?.map(({ group, ...rest }) => ({
-                    value: group.id,
-
-                    label: group.name,
-                    data: { group },
-                    right: getFilterOptionTotal(rest),
-                  })) ?? null,
-              },
-
-              SaleTypeFilterItem,
-            ]
-          : partnerPage
-            ? [LinkFilterItem, SaleTypeFilterItem]
-            : [
-                {
-                  key: "folderId",
-
-                  label: "Folder",
-
-                  options:
-                    folders?.map(({ folder, ...rest }) => ({
-                      value: folder.id,
-
-                      label: folder.name,
-                      data: { folder },
-                      right: getFilterOptionTotal(rest),
-                    })) ?? null,
-                },
-                {
-                  key: "tagId",
-
-                  label: "Tag",
-
-                  options:
-                    linkTags?.map(({ tag: { id, name, color }, ...rest }) => ({
-                      value: id,
-
-                      label: name,
-                      data: { color },
-                      right: getFilterOptionTotal(rest),
-                    })) ?? null,
-                },
-                DomainFilterItem,
-                LinkFilterItem,
-
-                SaleTypeFilterItem,
-              ]),
       {
         key: "country",
 
@@ -469,7 +325,7 @@ export function useAnalyticsFilters({
       },
       {
         key: "browser",
-        icon: Window,
+       
         label: "Browser",
         getOptionIcon: (value) => {
           if (typeof value !== "string") return null;
@@ -501,27 +357,7 @@ export function useAnalyticsFilters({
             right: getFilterOptionTotal(rest),
           })) ?? null,
       },
-      ...(programPage
-        ? []
-        : [
-            {
-              key: "trigger",
-
-              label: "Trigger",
-              hideMultipleIcons: true,
-              options:
-                triggers?.map(({ trigger, ...rest }) => {
-                  const { title, icon } = TRIGGER_DISPLAY[trigger];
-                  return {
-                    value: trigger,
-                    label: title,
-                    icon,
-                    right: getFilterOptionTotal(rest),
-                  };
-                }) ?? null,
-              separatorAfter: true,
-            },
-          ]),
+      ...(programPage ? [] : []),
       {
         key: "referer",
 
@@ -570,11 +406,6 @@ export function useAnalyticsFilters({
     [
       dashboardProps,
       partnerPage,
-      domains,
-      links,
-      linkTags,
-      folders,
-      groups,
 
       countries,
       cities,

@@ -12,9 +12,9 @@ const page = () => {
       <SettingsChildrenLayout
         title="Security "
         description="Manage your password and two-factor authentication."
-        className="py-5"
+        className=""
       >
-        <div className="space-y-6 ">
+        <div className="space-y-6 bg-white p-4 rounded-2xl border border-neutral-200">
           <Password />
           <Passkey />
           <TwoFactorAuth />

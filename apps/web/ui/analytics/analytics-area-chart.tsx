@@ -26,6 +26,10 @@ const DEMO_DATA = [
   }))
   .reverse();
 
+function lowercaseAmPm(value: string) {
+  return value.replace(/\bAM\b/g, "am").replace(/\bPM\b/g, "pm");
+}
+
 export function AnalyticsAreaChart({
   resource,
   demo,
@@ -35,16 +39,14 @@ export function AnalyticsAreaChart({
 }) {
   const { createdAt: workspaceCreatedAt } = useWorkspace();
 
-  const dataAvailableFrom = [
-    workspaceCreatedAt,
-  ]
+  const dataAvailableFrom = [workspaceCreatedAt]
     .filter(Boolean)
     .reduce(
       (earliest, current) =>
         !earliest || (current && new Date(current) < new Date(earliest))
           ? current
           : earliest,
-      null,
+      null
     ) as Date;
 
   const {
@@ -73,7 +75,7 @@ export function AnalyticsAreaChart({
     fetcher,
     {
       shouldRetryOnError: !requiresUpgrade,
-    },
+    }
   );
 
   const chartData = useMemo(
@@ -81,17 +83,19 @@ export function AnalyticsAreaChart({
       demo
         ? DEMO_DATA
         : response?.data && Array.isArray(response.data)
-          ? response.data.map(({ start, clicks, leads, sales, saleAmount }) => ({
-              date: new Date(start),
-              values: {
-                clicks,
-                leads,
-                sales,
-                saleAmount,
-              },
-            }))
+          ? response.data.map(
+              ({ start, clicks, leads, sales, saleAmount }) => ({
+                date: new Date(start),
+                values: {
+                  clicks,
+                  leads,
+                  sales,
+                  saleAmount,
+                },
+              })
+            )
           : null,
-    [response, demo],
+    [response, demo]
   );
 
   const series = [
@@ -99,26 +103,15 @@ export function AnalyticsAreaChart({
       id: "clicks",
       valueAccessor: (d) => d.values.clicks,
       isActive: resource === "clicks",
-      colorClassName: "text-blue-500",
-    },
-    {
-      id: "leads",
-      valueAccessor: (d) => d.values.leads,
-      isActive: resource === "leads",
-      colorClassName: "text-violet-600",
-    },
-    {
-      id: "sales",
-      valueAccessor: (d) => d.values[saleUnit],
-      isActive: resource === "sales",
-      colorClassName: "text-teal-400",
+      colorClassName: "text-[#7D53E0]",
     },
   ];
 
   const activeSeries = series.find(({ id }) => id === resource);
+  const tooltipLabel = resource === "clicks" ? "Visitors" : resource;
 
   return (
-    <div className="flex h-96 w-full items-center justify-center">
+    <div className="flex h-96 px-10 w-full items-center justify-center">
       {chartData ? (
         <TimeSeriesChart
           key={queryString}
@@ -128,61 +121,58 @@ export function AnalyticsAreaChart({
           tooltipClassName="p-0"
           tooltipContent={(d) => {
             return (
-              <>
-                <p className="border-b border-neutral-200 px-4 py-3 text-sm text-neutral-900">
-                  {formatDateTooltip(d.date, {
-                    interval: demo ? "day" : interval,
-                    start,
-                    end,
-                    dataAvailableFrom,
-                  })}
+              <div className="w-[200px] p-4 space-y-2">
+                <p className="text-sm font-default font-medium text-neutral-500">
+                  {lowercaseAmPm(
+                    formatDateTooltip(d.date, {
+                      interval: demo ? "day" : interval,
+                      start,
+                      end,
+                      dataAvailableFrom,
+                    })
+                  )}
                 </p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2 px-4 py-3 text-sm">
+                <div className=" text-sm">
                   <Fragment key={resource}>
-                    <div className="flex items-center gap-2">
-                      {activeSeries && (
-                        <div
-                          className={cn(
-                            activeSeries.colorClassName,
-                            "h-2 w-2 rounded-sm bg-current opacity-50 shadow-[inset_0_0_0_1px_#0003]",
-                          )}
-                        />
-                      )}
-                      <p className="capitalize text-neutral-600">{resource}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-display text-base text-neutral-500">
+                        {tooltipLabel}
+                      </p>
+                      <h1 className="font-display text-[18px] font-medium text-neutral-700">
+                        {nFormatter(
+                          activeSeries?.valueAccessor(d) ?? d.values.clicks
+                        )}
+                      </h1>
                     </div>
-                    <p className="text-right font-medium text-neutral-900">
-                      {resource === "sales" && saleUnit === "saleAmount"
-                        ? currencyFormatter(d.values.saleAmount)
-                        : nFormatter(d.values[resource], { full: true })}
-                    </p>
                   </Fragment>
                 </div>
-              </>
+              </div>
             );
           }}
         >
-          <Areas />
+          <Areas
+            showLatestValueCircle={false}
+            seriesStyles={[
+              {
+                id: "clicks",
+                areaFill: "transparent",
+                lineStroke: "currentColor",
+              },
+            ]}
+          />
           <XAxis
             tickFormat={(d) =>
-              formatDateTooltip(d, {
-                interval,
-                start,
-                end,
-                dataAvailableFrom,
-              })
+              lowercaseAmPm(
+                formatDateTooltip(d, {
+                  interval,
+                  start,
+                  end,
+                  dataAvailableFrom,
+                })
+              )
             }
           />
-          <YAxis
-            showGridLines
-            tickFormat={
-              resource === "sales" && saleUnit === "saleAmount"
-                ? (v) =>
-                    currencyFormatter(v, {
-                      trailingZeroDisplay: "stripIfInteger",
-                    })
-                : nFormatter
-            }
-          />
+          <YAxis showGridLines tickFormat={nFormatter} />
         </TimeSeriesChart>
       ) : (
         <LoadingSpinner />

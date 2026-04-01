@@ -1,13 +1,13 @@
-import {prisma} from "@repo/db"
+import { prisma } from "@repo/db";
 import { waitUntil } from "@vercel/functions";
 import { WorkspaceProps } from "@/lib/types";
 import { storage } from "@/lib/storage";
 import { APP_DOMAIN_WITH_NGROK, R2_URL } from "@repo/utils";
-import {cancelSubscription} from "../../stripe/cancel-subscription";
+import { cancelSubscription } from "../../stripe/cancel-subscription";
 import { qstash } from "@/lib/cron";
 
 export async function deleteWorkspace(
-  workspace: Pick<WorkspaceProps, "id" | "slug" | "logo" | "stripeId">,
+  workspace: Pick<WorkspaceProps, "id" | "slug" | "logo" | "stripeCustomerId">
 ) {
   await Promise.all([
     // Remove the users
@@ -27,7 +27,10 @@ export async function deleteWorkspace(
       },
     }),
   ]).then((results) => {
-    console.log("Finished removing workspace users and default workspace. Results:", results);
+    console.log(
+      "Finished removing workspace users and default workspace. Results:",
+      results
+    );
   });
 
   waitUntil(
@@ -40,7 +43,8 @@ export async function deleteWorkspace(
       }),
 
       // Cancel the workspace's Stripe subscription if exists
-      workspace.stripeId && cancelSubscription(workspace.stripeId),
+      workspace.stripeCustomerId &&
+        cancelSubscription(workspace.stripeCustomerId),
 
       // Delete workspace logo if it's a custom logo stored in R2
       workspace.logo &&
@@ -56,6 +60,6 @@ export async function deleteWorkspace(
       }),
     ]).then((results) => {
       console.log("Finished deleting workspace. Results:", results);
-    }),
+    })
   );
 }

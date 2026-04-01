@@ -11,13 +11,13 @@ const NAV_AREAS = {
     pathname,
     queryString,
   }: {
-    slug?: string | null;
+    slug?: string;
     pathname: string;
     queryString?: string;
   }) => ({
     title: "",
     content: [
-      { title: "Home", href: `/${slug}` },
+      { title: "Analytics", href: `/${slug}`, exact: true },
       { title: "Settings", href: `/${slug}/settings` },
     ],
   }),
@@ -25,7 +25,7 @@ const NAV_AREAS = {
   workspaceSettings: ({
     slug,
   }: {
-    slug?: string | null;
+    slug?: string;
     pathname: string;
     queryString?: string;
   }) => ({
@@ -37,24 +37,27 @@ const NAV_AREAS = {
         items: [
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
-          // { title: "Security", href: `/${slug}/settings/security` },
+          { title: "Security", href: `/${slug}/settings/security` },
           { title: "Billing", href: `/${slug}/settings/billing` },
+          { title: "Alerts", href: `/${slug}/settings/alerts` },
+          { title: "Reports", href: `/${slug}/settings/reports` },
         ],
       },
-      // {
-      //   heading: "Developer",
-      //   items: [
-      //     { title: "API keys", href: `/${slug}/settings/tokens` },
-      //     { title: "Webhooks", href: `/${slug}/settings/webhooks` },
-      //   ],
-      // },
+      {
+        heading: "Developer",
+        items: [
+          { title: "API keys", href: `/${slug}/settings/tokens` },
+          { title: "Script", href: `/${slug}/settings/script` },
+          // { title: "Webhooks", href: `/${slug}/settings/webhooks` },
+        ],
+      },
     ],
   }),
 
   userSettings: ({
     slug,
   }: {
-    slug?: string | null;
+    slug?: string;
     pathname: string;
     queryString?: string;
   }) => ({
@@ -67,7 +70,11 @@ const NAV_AREAS = {
   }),
 };
 
-export function AppSidebar() {
+export function AppSidebar({
+  forcedArea,
+}: {
+  forcedArea?: "default" | "workspaceSettings" | "userSettings";
+} = {}) {
   const { slug: paramsSlug } = useParams<{ slug?: string }>();
   const pathname = usePathname();
   const { data: session, status } = useSession();
@@ -110,17 +117,21 @@ export function AppSidebar() {
           if (storedSlug && workspaces.some((ws) => ws.slug === storedSlug)) {
             return storedSlug;
           }
-          return null;
+          return undefined;
         })()
-      : null);
+      : undefined);
 
   const currentArea = useMemo(() => {
+    if (forcedArea) {
+      return forcedArea;
+    }
+
     return pathname.startsWith("/account/settings")
       ? "userSettings"
       : pathname.startsWith(`/${slug}/settings`)
         ? "workspaceSettings"
         : "default";
-  }, [pathname, slug]);
+  }, [forcedArea, pathname, slug]);
 
   return (
     <SidebarNav

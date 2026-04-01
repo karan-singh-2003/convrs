@@ -77,7 +77,7 @@ const Presets = <TPreset extends Preset, TValue>({
 
   return (
     <Command
-      className="w-full rounded ring-neutral-200 ring-offset-2 focus:outline-none"
+      className="w-full rounded-none ring-neutral-200 ring-offset-2 focus:outline-none"
       tabIndex={0}
       autoFocus
       loop
@@ -92,20 +92,19 @@ const Presets = <TPreset extends Preset, TValue>({
               title={preset.label}
               value={preset.id}
               className={cn(
-                "group relative flex cursor-pointer items-center justify-between overflow-hidden text-ellipsis whitespace-nowrap rounded border border-neutral-200",
-                "px-2.5 py-1.5 text-left text-sm text-neutral-700 shadow-sm outline-none sm:w-full sm:border-none sm:py-2 sm:shadow-none",
+                "group relative flex cursor-pointer font-default items-center justify-between overflow-hidden text-ellipsis whitespace-nowrap rounded-none border border-neutral-200",
+                "px-2.5 py-1.5 text-left text-sm md:text-[14.5px] text-neutral-500 shadow-sm outline-none sm:w-full sm:border-none sm:py-2 sm:shadow-none",
                 "disabled:pointer-events-none disabled:opacity-50",
                 "sm:data-[selected=true]:bg-neutral-100",
-                matchesCurrent(preset) && "font-semibold text-neutral-800",
+                matchesCurrent(preset) && "font-medium text-neutral-600",
               )}
             >
-              <span>{preset.label}</span>
+              <span className="">{preset.label}</span>
               {preset.requiresUpgrade ? (
                 <Lock className="h-3.5 w-3.5" aria-hidden="true" />
               ) : preset.shortcut ? (
-                <kbd className="text-neutral-4000 hidden rounded bg-neutral-100 px-2 py-0.5 text-xs font-light group-data-[selected=true]:bg-neutral-200 md:block">
-                  {preset.shortcut.toUpperCase()}
-                </kbd>
+               
+                null
               ) : null}
               {preset.requiresUpgrade && preset.tooltipContent && (
                 <Tooltip side="bottom" content={preset.tooltipContent}>

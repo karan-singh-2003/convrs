@@ -74,7 +74,7 @@ export const TwoFactorAuth = () => {
       <EnableTwoFactorAuthModal />
       <DisableTwoFactorAuthModal />
       <div className="flex flex-col gap-y-1">
-        <h1 className="font-display text-base font-medium text-[#5C5C5C]">
+        <h1 className="font-display text-[14px] font-medium text-[#5C5C5C]">
           Two Factor Authentication
         </h1>
         <h1 className="font-display text-sm  text-[#898989]">

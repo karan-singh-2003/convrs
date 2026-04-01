@@ -26,7 +26,7 @@ const addPaymentMethodSchema = z.object({
 // POST /api/workspaces/[idOrSlug]/billing/payment-methods – add a payment method
 export const POST = withWorkspace(
   async ({ req, workspace }) => {
-    if (!workspace.stripeId) {
+    if (!workspace.stripeCustomerId) {
       return NextResponse.json(
         {
           error: "No Stripe customer found. Please subscribe to a plan first.",
@@ -56,11 +56,11 @@ export const POST = withWorkspace(
 
       // Attach to customer
       await stripe.paymentMethods.attach(paymentMethod.id, {
-        customer: workspace.stripeId,
+        customer: workspace.stripeCustomerId,
       });
 
       // Set as default payment method
-      await stripe.customers.update(workspace.stripeId, {
+      await stripe.customers.update(workspace.stripeCustomerId, {
         invoice_settings: {
           default_payment_method: paymentMethod.id,
         },
@@ -91,7 +91,7 @@ export const POST = withWorkspace(
 // DELETE /api/workspaces/[idOrSlug]/billing/payment-methods – remove a payment method
 export const DELETE = withWorkspace(
   async ({ req, workspace }) => {
-    if (!workspace.stripeId) {
+    if (!workspace.stripeCustomerId) {
       return NextResponse.json(
         { error: "No Stripe customer found" },
         { status: 400 }

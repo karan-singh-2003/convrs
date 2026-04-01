@@ -6,9 +6,13 @@ import {
 import { ToggleGroup } from "@repo/ui";
 import { cn } from "@repo/utils";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
-import { ChevronRight, Lock } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Lock, TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
+import {
+  formatPercentageChange,
+  getChangeDirection,
+} from "@/lib/analytics/utils/calculate-percentage-change";
 
 type Tab = {
   id: EventType;
@@ -20,6 +24,7 @@ type Tab = {
 export function AnalyticsTabs({
   showConversions,
   totalEvents,
+  percentageChanges,
   tab,
   tabHref,
   saleUnit,
@@ -29,6 +34,7 @@ export function AnalyticsTabs({
 }: {
   showConversions?: boolean;
   totalEvents?: { [key in AnalyticsResponseOptions]: number };
+  percentageChanges?: { [key in AnalyticsResponseOptions]?: number | null };
   tab: Tab["id"];
   tabHref: (id: Tab["id"]) => string;
   saleUnit: AnalyticsSaleUnit;
@@ -36,6 +42,9 @@ export function AnalyticsTabs({
   requiresUpgrade?: boolean;
   showPaywall?: boolean;
 }) {
+  // Debug percentage changes
+  console.log("AnalyticsTabs - percentageChanges received:", percentageChanges);
+  console.log("AnalyticsTabs - totalEvents received:", totalEvents);
   const tabs = useMemo(
     () =>
       [
@@ -55,29 +64,27 @@ export function AnalyticsTabs({
           id: "avg_session_duration",
           label: "Avg. Session Duration",
           colorClassName: "text-green-500/50",
+          conversions: false,
         },
+        // {
+        //   id: "live_visitors",
+        //   label: "Online",
+        //   colorClassName: "text-blue-500/50",
+        //   conversions: false,
+        // },
       ] as Tab[],
     [showConversions]
   );
 
   return (
-    <div className="grid w-full grid-cols-3 divide-x divide-neutral-200 overflow-y-hidden">
+    <div className="flex overflow-y-hidden">
       <NumberFlowGroup>
         {tabs.map(({ id, label, colorClassName }, idx) => {
           return (
             <div key={id} className="relative z-0">
-              {idx > 0 && (
-                // <div className="absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-neutral-200 bg-white p-1.5">
-                //   <ChevronRight
-                //     className="h-3 w-3 text-neutral-400"
-                //     strokeWidth={2.5}
-                //   />
-                // </div>
-                <div></div>
-              )}
               <Link
                 className={cn(
-                  "border-box relative block h-full min-w-[110px] flex-none px-4 py-3 sm:min-w-[240px] sm:px-8 sm:py-6",
+                  " relative block h-full min-w-[110px] flex-none px-4 py-3 sm:min-w-[150px] ",
                   "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
                   "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
                 )}
@@ -85,22 +92,23 @@ export function AnalyticsTabs({
                 aria-current
               >
                 {/* Active tab indicator */}
-                <div
+                {/* <div
                   className={cn(
                     "absolute bottom-0 left-0 h-0.5 w-full bg-black transition-transform duration-100",
                     tab !== id && "translate-y-[3px]" // Translate an extra pixel to avoid sub-pixel issues
                   )}
-                />
+                /> */}
 
-                <div className="flex items-center gap-2.5 text-sm text-neutral-500">
-                  <span className="font-display font-medium ">{label}</span>
+                <div className="flex items-center gap-2.5 text-[14.5px] text-neutral-500">
+                  <span className="font-default font-medium ">{label}</span>
                 </div>
-                <div className="mt-1 flex h-12 items-center">
+              
+                <div className=" flex h-12 items-center">
                   {totalEvents?.[id] || totalEvents?.[id] === 0 ? (
                     id === "avg_session_duration" ? (
                       <div
                         className={cn(
-                          "text-xl font-medium sm:text-3xl",
+                          "text-xl text-neutral-600 font-medium sm:text-2xl",
                           showPaywall && "opacity-30"
                         )}
                       >
@@ -110,7 +118,7 @@ export function AnalyticsTabs({
                       <NumberFlow
                         value={totalEvents[id]}
                         className={cn(
-                          "text-xl font-medium sm:text-3xl",
+                          "text-xl text-neutral-600 font-medium sm:text-2xl",
                           showPaywall && "opacity-30"
                         )}
                       />
@@ -123,9 +131,59 @@ export function AnalyticsTabs({
                     <div className="h-9 w-16 animate-pulse rounded-none bg-neutral-200" />
                   )}
                 </div>
-                <div>
-                  <h1 className="font-display text-[13.5px]">10.25 </h1>
-                </div>
+                {/* Percentage change badge */}
+                {(() => {
+                  const change = percentageChanges?.[id];
+                  const hasChange = change !== undefined && change !== null;
+                  const hasData = totalEvents?.[id] !== undefined;
+
+                  if (!hasChange || !hasData) {
+                    console.log(`No change data for ${id}:`, {
+                      hasChange,
+                      hasData,
+                      change,
+                      totalEventsValue: totalEvents?.[id],
+                    });
+                    return null;
+                  }
+
+                  const direction = getChangeDirection(change);
+
+                  // Determine colors based on direction
+                  let bgColor: string;
+                  let textColor: string;
+                  let icon: React.ReactNode;
+
+                  if (direction === "up") {
+                
+                    textColor = "text-[#46AE56]";
+                    icon = <ArrowUp className="h-3 w-3" />;
+                  } else if (direction === "down") {
+                   
+                    textColor = "text-[#ff3b30]";
+                    icon = <ArrowDown className="h-3 w-3" />;
+                  } else {
+                    // Neutral - orange/yellow shades
+                
+                    textColor = "text-[#ff9500]";
+                    icon = <span className="text-[#ff9500]">−</span>; // Minus sign for neutral
+                  }
+
+                  return (
+                    <div className="">
+                      <div
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full  text-[13.5px] font-display",
+                       
+                          textColor
+                        )}
+                      >
+                        {icon}
+                        <span>{formatPercentageChange(change)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </Link>
             </div>
           );

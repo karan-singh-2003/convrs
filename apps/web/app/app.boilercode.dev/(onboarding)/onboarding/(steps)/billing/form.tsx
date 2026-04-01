@@ -41,7 +41,7 @@ export function BillingForm() {
         setSelectingFree(false);
         return;
       }
-      continueTo("invite", { slug });
+      continueTo("invite ", { slug });
     } catch {
       toast.error("Failed to select free plan");
       setSelectingFree(false);

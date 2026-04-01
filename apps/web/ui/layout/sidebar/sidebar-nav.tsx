@@ -38,12 +38,17 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
   const slug = data?.slug;
 
   return (
-    <div className="h-full w-[248px]">
+    <div
+      className={cn(
+        "flex  w-full flex-col gap-4",
+        currentArea === "default" ? "px-0" : "px-0"
+      )}
+    >
       <nav className="size-full">
-        <div className="size-full overflow-hidden rounded-none bg-[#fafafa] border-r border-[#EBEBEB] p-2">
-          <div className="scrollbar-hide relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
-            <div className="relative flex grow flex-col text-neutral-500">
-              <div className="relative w-full grow">
+        <div className="size-full overflow-hidden rounded-none   p-2">
+          <div className="scrollbar-hide relative flex h-full overflow-y-auto overflow-x-hidden">
+            <div className="relative flex grow items-center text-neutral-500">
+              <div className="relative w-full  grow">
                 {areas &&
                   Object.entries(areas).map(([area, areaConfig]) => {
                     const { title, backHref, content } = areaConfig(data);
@@ -51,65 +56,59 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                     return (
                       <Area key={area} visible={area === currentArea}>
                         {title === "" && (
-                          <div className="mb-4">
+                          <div className="w-full">
                             <WorkspaceDropdown />
                           </div>
                         )}
-                        {title && (
-                          <div className="mb-4 my-1 px-2">
-                            {backHref ? (
-                              <Link
-                                href={backHref}
-                                className="text-[13px] font-medium gap-x-2 flex items-center text-neutral-500 hover:text-neutral-600"
-                              >
-                                <ArrowLeft size={14} />
-                                <span className="font-display text-[13px] md:text-[13.5px]">
+                        <div
+                          className={cn(
+                            "flex w-full",
+                            area === "default"
+                              ? "flex-row"
+                              : "md:flex-col flex-row  "
+                          )}
+                        >
+                          {/* tabs */}
+                          {title && (
+                            <div className="my-1 px-2">
+                              {backHref ? //   <span className="font-display text-[13px] md:text-[13.5px]"> //   <ArrowLeft size={14} /> // > //   className="text-[13px] font-medium gap-x-2 flex items-center text-neutral-500 hover:text-neutral-600" //   href={backHref} // <Link
+                              //     {title}
+                              //   </span>
+                              // </Link>
+                              null : (
+                                <h2 className="text-sm font-medium font-display text-neutral-700">
                                   {title}
-                                </span>
-                              </Link>
-                            ) : (
-                              <h2 className="text-sm font-medium font-display text-neutral-700">
-                                {title}
-                              </h2>
+                                </h2>
+                              )}
+                            </div>
+                          )}
+                          <div
+                            className={cn(
+                              "flex w-full ",
+                              area === "default"
+                                ? "flex-row"
+                                : "md:flex-col  flex-row overflow-x-auto flex-nowrap scrollbar-none"
+                            )}
+                          >
+                            {content.map((item) =>
+                              "heading" in item ? (
+                                item.items.map((subItem) => (
+                                  <NavItem
+                                    key={subItem.href}
+                                    item={subItem}
+                                    area={area}
+                                  />
+                                ))
+                              ) : (
+                                <NavItem
+                                  key={item.href}
+                                  item={item}
+                                  area={area}
+                                />
+                              )
                             )}
                           </div>
-                        )}
-                        <div className="space-y-1">
-                          {content.map((item) =>
-                            "heading" in item ? (
-                              <div key={item.heading} className="px-1 my-4">
-                                <h3 className="text-[12.5px] font-medium px-2 font-display text-neutral-500 tracking-wide mt-2 mb-2">
-                                  {item.heading}
-                                </h3>
-                                <div className="space-y-1">
-                                  {item.items.map((subItem) => (
-                                    <NavItem key={subItem.href} item={subItem} />
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <NavItem key={item.href} item={item} />
-                            )
-                          )}
                         </div>
-                        {title === "" && (
-                          <div className="mt-auto border-t border-[#EBEBEB] p-3 flex flex-col gap-4">
-                            <h1 className="text-[12.5px] font-display font-medium">
-                              Your workspace is on the free plan. Get in touch
-                              with us for questions or feedback
-                            </h1>
-                            <Button
-                              variant="secondary"
-                              text="Upgrade"
-                              className="bg-[#F4F4F4] text-[#676767] h-fit py-1 text-sm rounded-full border-none"
-                              onClick={() => {
-                                if (slug) {
-                                  router.push(`/${slug}/settings/billing/upgrade`);
-                                }
-                              }}
-                            />
-                          </div>
-                        )}
                       </Area>
                     );
                   })}
@@ -122,7 +121,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
   );
 }
 
-function NavItem({ item }: { item: NavItemType }) {
+function NavItem({ item, area }: { item: NavItemType; area: string }) {
   const { title, href, exact, isActive: customIsActive } = item;
   const pathname = usePathname();
 
@@ -136,12 +135,19 @@ function NavItem({ item }: { item: NavItemType }) {
       : pathname.startsWith(hrefWithoutQuery);
   }, [pathname, href, exact, customIsActive]);
 
+  console.log("area in navitem", area);
+
   return (
     <Link
       href={href}
       className={cn(
-        "block rounded-none font-display font-medium py-0.5 px-2 text-[14px] md:text-[14.5px] transition-colors",
-        isActive ? "text-neutral-900" : "text-neutral-600/85"
+        "block rounded-none font-display font-medium my-0.5 py-0.5 px-2 transition-colors shrink-0",
+        area === "default"
+          ? "px-2 text-[14px] md:text-[14.5px]"
+          : "px-3 py-1  text-[14px] md:text-[16.5px]",
+        isActive
+          ? "text-neutral-700/90"
+          : "text-neutral-500/80 hover:text-neutral-500"
       )}
     >
       {title}
@@ -156,7 +162,7 @@ export function Area({
   return (
     <div
       className={cn(
-        "left-0 top-0 flex size-full flex-col transition-[opacity,transform] duration-300",
+        "left-0  top-0 flex sm:flex-row  size-full gap-x-1 md:gap-x-5 w-full items-center transition-[opacity,transform] duration-300",
         visible
           ? "relative opacity-100"
           : "pointer-events-none absolute translate-x-full opacity-0"

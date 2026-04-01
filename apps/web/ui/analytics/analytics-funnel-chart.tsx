@@ -1,53 +1,58 @@
+"use client";
+
 import { FunnelChart } from "@repo/ui";
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 
-export type totalEventsType = {
-  clicks: number;
-  leads: number;
-  sales: number;
-  saleAmount: number;
-};
-
-export function AnalyticsFunnelChart({ demo = false }: { demo?: boolean }) {
-  const totalEvents: totalEventsType = {
-    clicks: 130,
-    leads: 100,
-    sales: 24,
-    saleAmount: 228_00,
+export function AnalyticsFunnelChart({ demo = true }) {
+  const totalEvents = {
+    clicks: 0,
+    leads: 0,
+    sales: 0,
+    saleAmount: 0,
   };
-  const steps = useMemo(
-    () => [
-      {
-        id: "clicks",
-        label: "Clicks",
-        value: demo ? 130 : (totalEvents?.clicks ?? 0),
-        colorClassName: "text-blue-600",
-      },
-      {
-        id: "leads",
-        label: "Leads",
-        value: demo ? 100 : (totalEvents?.leads ?? 0),
-        colorClassName: "text-violet-600",
-      },
-      {
-        id: "sales",
-        label: "Sales",
-        value: demo ? 24 : (totalEvents?.sales ?? 0),
-        additionalValue: demo ? 228_00 : (totalEvents?.saleAmount ?? 0),
-        colorClassName: "text-teal-400",
-      },
-    ],
-    [demo, totalEvents]
-  );
+
+  const COLORS = [
+    "text-[#9D7CFF]",
+    "text-[#7CAAFF]",
+    "text-[#7CFFE0]",
+    "text-[#7CF6FF]",
+    "text-[#CF7CFF]",
+    "text-[#E0FF7C]",
+    "text-[#FF9A7C]",
+    "text-[#FF7CAC]",
+  ];
+
+  const rawSteps = [
+    { id: "clicks", label: "Clicks" },
+    { id: "visitors", label: "Visitors" },
+    { id: "signups", label: "Signups" },
+    { id: "activated", label: "Activated" },
+    // { id: "engaged", label: "Engaged" },
+    // { id: "trial", label: "Trial" },
+    // { id: "leads", label: "Leads" },
+    // { id: "sales", label: "Sales" },
+  ].slice(0, 8);
+
+  const steps = useMemo(() => {
+    return rawSteps.map((step, index) => ({
+      id: step.id,
+      label: step.label,
+      value: demo
+        ? ([130, 120, 100, 85, 70, 55, 40, 24][index] ?? 0)
+        : (totalEvents?.[step.id] ?? 0),
+      additionalValue:
+        step.id === "sales"
+          ? demo
+            ? 22800
+            : (totalEvents?.saleAmount ?? 0)
+          : undefined,
+      colorClassName: COLORS[index],
+    }));
+  }, [demo]);
 
   return (
-    <>
-      {totalEvents || demo ? (
-        <FunnelChart
-          steps={steps}
-          defaultTooltipStepId={demo ? "sales" : undefined}
-        />
-      ) : null}
-    </>
+    <div className="h-[400px] w-full">
+      <FunnelChart steps={steps} defaultTooltipStepId="" />
+    </div>
   );
 }

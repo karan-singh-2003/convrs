@@ -5,14 +5,11 @@ import {
 } from "@/lib/zod/schemas/workspaces";
 import { prisma } from "@repo/db";
 import { checkIfUserExists } from "@/lib/actions/auth/check-if-user-exists";
-import { waitUntil } from "@vercel/functions";
-import { createWorkspaceId } from "@/lib/api/workspaces/create-workspace-id";
-import { nanoid, R2_URL } from "@repo/utils";
+import { nanoid, Starter_Plan } from "@repo/utils";
 import { NextResponse } from "next/server";
 import { prefixWorkspaceId } from "@/lib/api/workspaces/workspace-id";
-import { storage } from "@/lib/storage";
 import { Prisma } from "@repo/db/client";
-import { id } from "zod/v4/locales";
+import { z } from "zod";
 
 // GET /api/workspaces - get all workspaces for the authenticated user
 export const GET = withSession(async ({ session }) => {
@@ -51,9 +48,32 @@ export const GET = withSession(async ({ session }) => {
 
 // POST /api/workspaces - create a new workspace
 export const POST = withSession(async ({ req, session }) => {
-  const { name, slug, logo } = await createWorkspaceSchema.parseAsync(
-    await req.json()
-  );
+  let name: string;
+  let slug: string;
+  let domain: string;
+
+  try {
+    ({ name, slug, domain } = await createWorkspaceSchema.parseAsync(
+      await req.json()
+    ));
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({
+          error: error.issues[0]?.message || "Invalid workspace payload",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({ error: "Invalid request body" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   const userExists = await checkIfUserExists(session.user.id);
 
@@ -64,20 +84,22 @@ export const POST = withSession(async ({ req, session }) => {
     });
   }
   try {
-    let uploadImageUrl: string | undefined;
-    const workspaceId = createWorkspaceId();
+    const starterPlanEvents = Starter_Plan?.limits.events ?? 10_000;
+    const trialEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
     const workspace = await prisma.$transaction(
       async (tx) => {
-        uploadImageUrl = logo
-          ? `${R2_URL}/workspaces/${workspaceId}/logo_${nanoid(7)}`
-          : undefined;
         return tx.workspace.create({
           data: {
             name,
             slug,
-            plan: "free",
-            billingCycleStart: new Date().getDate(),
-            logo: uploadImageUrl,
+            domain,
+            plan: "starter",
+            billingInterval: "month",
+            subscriptionStatus: "trialing",
+            freeTrialEndDate: trialEndDate,
+            tierEvents: starterPlanEvents,
+            usageLimit: starterPlanEvents,
+            projectToken: nanoid(32),
             users: {
               create: {
                 userId: session.user.id,
@@ -105,24 +127,26 @@ export const POST = withSession(async ({ req, session }) => {
       }
     );
 
-    waitUntil(
-      Promise.allSettled([
-        logo &&
-          uploadImageUrl &&
-          storage.upload({
-            key: uploadImageUrl.replace(`${R2_URL}/`, ""),
-            body: logo as string,
-          }),
-      ])
-    );
-
     return NextResponse.json(
       WorkspaceSchema.parse({
         ...workspace,
-        id: prefixWorkspaceId(workspaceId),
+        id: prefixWorkspaceId(workspace.id),
       })
     );
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return new Response(
+        JSON.stringify({ error: "Workspace slug is already taken" }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

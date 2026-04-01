@@ -30,10 +30,10 @@ export default function Section({
   }).error;
   return (
     <TooltipProvider>
-      <div className=" space-y-3">
+      <div className="space-y-3 border-neutral-200 bg-white rounded-xl border p-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium font-display text-neutral-900">
+            <h3 className="text-sm font-medium font-display text-neutral-700">
               {title}
             </h3>
             {/* <PremiumFeature /> */}

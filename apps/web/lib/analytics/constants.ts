@@ -98,6 +98,7 @@ export const VALID_ANALYTICS_ENDPOINTS = [
   "page",
   "entrypage",
   "exitlink",
+  "goals",
 ] as const;
 
 export const SINGULAR_ANALYTICS_ENDPOINTS = {
@@ -134,14 +135,7 @@ export const SINGULAR_ANALYTICS_ENDPOINTS = {
 };
 
 export const VALID_ANALYTICS_FILTERS = [
-  "domain",
-  "key",
-  "linkId",
-  "tagId",
-  "folderId",
-  "groupId",
-  "partnerId",
-  "customerId",
+ 
   "interval",
   "start",
   "end",
@@ -153,7 +147,7 @@ export const VALID_ANALYTICS_FILTERS = [
   "device",
   "browser",
   "os",
-  "trigger",
+
   "referer",
   "refererUrl",
   "url",

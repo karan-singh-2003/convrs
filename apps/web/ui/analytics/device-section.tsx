@@ -14,7 +14,7 @@ export function DeviceSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey = selectedTab === "sales" ? saleUnit : "count";
+  const dataKey =  "count";
 
   const [tab, setTab] = useState<DeviceTabs>("devices");
   const { data } = useAnalyticsFilterOption(tab);
@@ -57,7 +57,8 @@ export function DeviceSection() {
     setSelectedItems([]);
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
-
+console.log("DeviceSection - data:", data);
+console.log("DeviceSection - singular tab name:", singularTabName);
   return (
     <AnalyticsCard
       tabs={[
@@ -132,7 +133,7 @@ export function DeviceSection() {
             />
           ) : (
             <div className="flex h-[300px] items-center justify-center">
-              <p className="text-sm text-neutral-600">No data available</p>
+              <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
             </div>
           )
         ) : (

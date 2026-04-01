@@ -24,6 +24,7 @@ export default function useWorkspace({
 
   return {
     ...workspace,
+    subscription:workspace?.subscriptionStatus,
     role: (workspace?.users && workspace.users[0]?.role) || "member",
     isOwner: workspace?.users && workspace.users[0]?.role === "owner",
     error,

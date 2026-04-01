@@ -15,7 +15,7 @@ export default function SettingsChildrenLayout({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-y-4", className)}>
+    <div className={cn("flex flex-col gap-y-4 ", className)}>
       {/* Header */}
       <div className="px-1 flex items-center justify-between gap-4">
         <div className="flex flex-col">
@@ -32,7 +32,7 @@ export default function SettingsChildrenLayout({
       </div>
 
       {/* Content */}
-      <div className={`bg-[#fafafa] rounded-2xl  ${actions ? "p-0" : "p-4"}`}>
+      <div className={`bg-[#fafafa] rounded-2xl  ${actions ? "p-0" : "p-0"}`}>
         {children}
       </div>
     </div>

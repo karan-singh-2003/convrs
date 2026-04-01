@@ -8,171 +8,244 @@ export type PlanDetails = {
   price: {
     monthly: number | null;
     yearly: number | null;
-    ids?: string[];
+    ids?: {
+      monthly: string;
+      yearly: string;
+    };
   };
   limits: {
-    users: number;
-    // domains: number ;
-    // api: number ;
+    events: number; // monthly event quota
   };
   featureTitle?: string;
   features?: PlanFeatures[];
 };
 
-const FREE_PRICE_IDS = [
-  "price_1T7KZbL2qfTOZYhO1MaFLeBn" /* monthly */,
-  "price_1T7KZbL2qfTOZYhO1MaFLeBn" /* yearly */,
+// ─── Stripe Price IDs ────────────────────────────────────────────────────────
+// Replace each value with your actual price_xxx IDs from Stripe dashboard
+
+const STARTER_PRICE_IDS = {
+  monthly: "price_1TFutbL2qfTOZYhOVN8Hrrkz",
+  yearly: "price_1TFuu1L2qfTOZYhOr8Bdn1kj",
+};
+const BASIC_PRICE_IDS = {
+  monthly: "price_1TFv12L2qfTOZYhOONSu523a",
+  yearly: "price_1TFv4aL2qfTOZYhOSKslfMeL",
+};
+const PRO_PRICE_IDS = {
+  monthly: "price_1TFv1CL2qfTOZYhOLxjeZy9o",
+  yearly: "price_1TFv4oL2qfTOZYhONNzjxhdv",
+};
+const GROWTH_PRICE_IDS = {
+  monthly: "price_1TFv1JL2qfTOZYhOouegwoCj",
+  yearly: "price_1TFv54L2qfTOZYhOceRQEcTp",
+};
+const BUSINESS_PRICE_IDS = {
+  monthly: "price_1TFv1TL2qfTOZYhOzRYWmfnE",
+  yearly: "price_1TFv5HL2qfTOZYhObdS72RnU",
+};
+const SCALE_PRICE_IDS = {
+  monthly: "price_1TFv1gL2qfTOZYhOx7DcnxaM",
+  yearly: "price_1TFv5PL2qfTOZYhO820LGX5A",
+};
+const PRO_PLUS_PRICE_IDS = {
+  monthly: "price_1TFv1rL2qfTOZYhOmzKcf9Qq",
+  yearly: "price_1TFv5cL2qfTOZYhOkzTNEWck",
+};
+const ENTERPRISE_PRICE_IDS = {
+  monthly: "price_1TFv5yL2qfTOZYhOa9JtcpLJ",
+  yearly: "price_enterprise_yearly",
+};
+const ULTIMATE_PRICE_IDS = {
+  monthly: "price_1TFv2BL2qfTOZYhOyNWUJUuS",
+  yearly: "price_1TFv6BL2qfTOZYhO586yNdXn",
+};
+
+// ─── Common features (all plans get the same features, only limits differ) ───
+
+const CORE_FEATURES: PlanFeatures[] = [
+  { id: "analytics", name: "Full analytics dashboard" },
+  { id: "api", name: "API access" },
+  { id: "webhooks", name: "Webhook events" },
+  { id: "export", name: "Data export" },
+  { id: "support", name: "Email support" },
+  { id: "realtime", name: "Real-time event tracking" },
+  { id: "retention", name: "90-day data retention" },
 ];
 
-const PRO_PRICE_IDS = [
-  "price_1SyWkFL2qfTOZYhOGhm9Gng2" /* monthly */,
-  "price_1T9i8SL2qfTOZYhOcS2i6C3q" /* yearly */,
-];
-
-const BUSINESS_PRICE_IDS = [
-  "price_1SyWlbL2qfTOZYhO65SoPBvN" /* monthly */,
-  "price_1T9i9tL2qfTOZYhOYhh9hNFU" /* yearly */,
-];
-
-const ADVANCED_PRICE_IDS = [
-  "price_1SyWnQL2qfTOZYhOLtZW3JrI" /* monthly */,
-  "price_1T9iAyL2qfTOZYhOBkKJHLNf" /* yearly */,
-];
+// ─── Plans ───────────────────────────────────────────────────────────────────
 
 export const PLANS: PlanDetails[] = [
   {
-    name: "Free",
-    price: { monthly: 0, yearly: 0, ids: FREE_PRICE_IDS },
-    limits: { users: 1 },
+    name: "Starter",
+    price: { monthly: 9, yearly: 86, ids: STARTER_PRICE_IDS },
+    limits: { events: 10_000 },
     featureTitle: "Includes:",
-    features: [
-      { id: "workspaces", name: "1 workspace" },
-      { id: "users", name: "1 team member" },
-      { id: "api", name: "API access with 100/min rate limit" },
-    ],
+    features: CORE_FEATURES,
+  },
+  {
+    name: "Basic",
+    price: { monthly: 24, yearly: 230, ids: BASIC_PRICE_IDS },
+    limits: { events: 25_000 },
+    featureTitle: "Everything in Starter +",
+    features: CORE_FEATURES,
   },
   {
     name: "Pro",
-    price: { monthly: 30, yearly: 25, ids: PRO_PRICE_IDS },
-    limits: { users: 3 },
-    featureTitle: "Everything in free +",
-    features: [
-      { id: "workspaces", name: "2 workspaces" },
-      { id: "users", name: "3 team members" },
-      { id: "api", name: "API access with 600/min rate limit" },
-      { id: "sso", name: "SSO enabled" },
-      { id: "webhooks", name: "Enable webhook events" },
-    ],
+    price: { monthly: 48, yearly: 461, ids: PRO_PRICE_IDS },
+    limits: { events: 100_000 },
+    featureTitle: "Everything in Basic +",
+    features: CORE_FEATURES,
+  },
+  {
+    name: "Growth",
+    price: { monthly: 79, yearly: 758, ids: GROWTH_PRICE_IDS },
+    limits: { events: 500_000 },
+    featureTitle: "Everything in Pro +",
+    features: CORE_FEATURES,
   },
   {
     name: "Business",
-    price: { monthly: 90, yearly: 75, ids: BUSINESS_PRICE_IDS },
-    limits: { users: 10 },
-    featureTitle: "Everything in Pro +",
-    features: [
-      { id: "workspaces", name: "5 workspaces" },
-      { id: "users", name: "10 team members" },
-      { id: "api", name: "API access with 800/min rate limit" },
-      { id: "sso", name: "SSO enabled" },
-      { id: "webhooks", name: "Enable webhook events" },
-    ],
+    price: { monthly: 149, yearly: 1_430, ids: BUSINESS_PRICE_IDS },
+    limits: { events: 1_000_000 },
+    featureTitle: "Everything in Growth +",
+    features: CORE_FEATURES,
   },
   {
-    name: "Advanced",
-    price: { monthly: 200, yearly: 175, ids: ADVANCED_PRICE_IDS },
-    limits: { users: 25 },
+    name: "Scale",
+    price: { monthly: 249, yearly: 2_390, ids: SCALE_PRICE_IDS },
+    limits: { events: 5_000_000 },
     featureTitle: "Everything in Business +",
-    features: [
-      { id: "workspaces", name: "10 workspaces" },
-      { id: "users", name: "50 team members" },
-      { id: "api", name: "API access with 600/min rate limit" },
-      { id: "sso", name: "SSO enabled" },
-      { id: "webhooks", name: "Enable webhook events" },
-    ],
+    features: CORE_FEATURES,
+  },
+  {
+    name: "Pro Plus",
+    price: { monthly: 399, yearly: 3_830, ids: PRO_PLUS_PRICE_IDS },
+    limits: { events: 10_000_000 },
+    featureTitle: "Everything in Scale +",
+    features: CORE_FEATURES,
   },
   {
     name: "Enterprise",
-    price: { monthly: null, yearly: null },
-    limits: { users: 100 },
-    featureTitle: "Everything in Advanced +",
-    features: [
-      { id: "workspaces", name: "Unlimited workspaces" },
-      { id: "users", name: "Unlimited team members" },
-      { id: "api", name: "Unlimited API access" },
-      { id: "sso", name: "SSO enabled" },
-      { id: "webhooks", name: "Enable webhook events" },
-    ],
+    price: { monthly: 569, yearly: 5_462, ids: ENTERPRISE_PRICE_IDS },
+    limits: { events: 15_000_000 },
+    featureTitle: "Everything in Pro Plus +",
+    features: CORE_FEATURES,
+  },
+  {
+    name: "Ultimate",
+    price: { monthly: 899, yearly: 8_630, ids: ULTIMATE_PRICE_IDS },
+    limits: { events: 25_000_000 },
+    featureTitle: "Everything in Enterprise +",
+    features: CORE_FEATURES,
   },
 ];
 
-export const Free_Plan = PLANS.find((plan) => plan.name === "Free")!;
-export const Pro_Plan = PLANS.find((plan) => plan.name === "Pro")!;
-export const Business_Plan = PLANS.find((plan) => plan.name === "Business")!;
-export const Advanced_Plan = PLANS.find((plan) => plan.name === "Advanced")!;
-export const Enterprise_Plan = PLANS.find(
-  (plan) => plan.name === "Enterprise"
-)!;
+// ─── Named plan exports ───────────────────────────────────────────────────────
 
-export const SELF_SERVE_PAID_PLANS = PLANS.filter((p) =>
-  ["Pro", "Business", "Advanced"].includes(p.name)
-);
+export const Starter_Plan = PLANS.find((p) => p.name === "Starter")!;
+export const Basic_Plan = PLANS.find((p) => p.name === "Basic")!;
+export const Pro_Plan = PLANS.find((p) => p.name === "Pro")!;
+export const Growth_Plan = PLANS.find((p) => p.name === "Growth")!;
+export const Business_Plan = PLANS.find((p) => p.name === "Business")!;
+export const Scale_Plan = PLANS.find((p) => p.name === "Scale")!;
+export const ProPlus_Plan = PLANS.find((p) => p.name === "Pro Plus")!;
+export const Enterprise_Plan = PLANS.find((p) => p.name === "Enterprise")!;
+export const Ultimate_Plan = PLANS.find((p) => p.name === "Ultimate")!;
 
+export const SELF_SERVE_PLANS = PLANS; // all plans are self-serve
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Find a plan from a Stripe price ID (works for both monthly and yearly).
+ */
 export const getPlanFromPriceId = ({
   priceId,
 }: {
   priceId: string;
-}): { plan: PlanDetails | null } => {
-  const planDetails = PLANS.find((plan) => plan.price.ids?.includes(priceId));
-  if (!planDetails) {
-    return { plan: null };
+}): { plan: PlanDetails | null; interval: "monthly" | "yearly" | null } => {
+  for (const plan of PLANS) {
+    if (!plan.price.ids) continue;
+    if (plan.price.ids.monthly === priceId)
+      return { plan, interval: "monthly" };
+    if (plan.price.ids.yearly === priceId) return { plan, interval: "yearly" };
   }
-  return { plan: planDetails };
+  return { plan: null, interval: null };
 };
 
+/**
+ * Find a plan by name (case-insensitive).
+ */
 export const getPlanDetails = ({
   plan,
 }: {
   plan: string;
 }): { plan: PlanDetails | null } => {
-  const planDetails = PLANS.find(
-    (p) => p.name.toLowerCase() === plan.toLowerCase()
+  const found = PLANS.find((p) => p.name.toLowerCase() === plan.toLowerCase());
+  return { plan: found ?? null };
+};
+
+/**
+ * Get the correct Stripe price ID for a plan + billing interval.
+ * Monthly plans get a 14-day trial; yearly plans do not.
+ */
+export const getPriceId = ({
+  planName,
+  interval,
+}: {
+  planName: string;
+  interval: "monthly" | "yearly";
+}): string | null => {
+  const { plan } = getPlanDetails({ plan: planName });
+  if (!plan?.price.ids) return null;
+  return plan.price.ids[interval];
+};
+
+/**
+ * Returns true if interval is monthly (trial-eligible).
+ * Yearly plans never get a trial — pay upfront.
+ */
+export const isTrialEligible = (interval: "monthly" | "yearly"): boolean => {
+  return interval === "monthly";
+};
+
+/**
+ * Get the next plan up from the current one.
+ * Returns the last plan if already at the top.
+ */
+export const getNextPlan = (planName?: string | null): PlanDetails => {
+  if (!planName) return Starter_Plan;
+  const currentIndex = PLANS.findIndex(
+    (p) => p.name.toLowerCase() === planName.toLowerCase()
   );
-  if (!planDetails) {
-    return { plan: null };
-  }
-  return { plan: planDetails };
+  if (currentIndex === -1) return Starter_Plan;
+  return PLANS[Math.min(currentIndex + 1, PLANS.length - 1)];
 };
 
-export const getNextPlan = (plan?: string | null) => {
-  if (!plan) return Pro_Plan;
-  const currentPlan = plan.toLowerCase().split(" ")[0];
-  return PLANS[
-    Math.min(
-      PLANS.findIndex((p) => p.name.toLowerCase() === currentPlan) + 1,
-      PLANS.length - 1
-    )
-  ];
-};
-
+/**
+ * Returns true if switching from currentPlan to newPlan is a downgrade.
+ */
 export const isDowngradePlan = ({
   currentPlan,
   newPlan,
-  currentTier,
-  newTier,
 }: {
   currentPlan: string;
   newPlan: string;
-  currentTier?: number;
-  newTier?: number;
-}) => {
-  const currentPlanIndex = PLANS.findIndex(
+}): boolean => {
+  const currentIndex = PLANS.findIndex(
     (p) => p.name.toLowerCase() === currentPlan.toLowerCase()
   );
-  const newPlanIndex = PLANS.findIndex(
+  const newIndex = PLANS.findIndex(
     (p) => p.name.toLowerCase() === newPlan.toLowerCase()
   );
-  return (
-    currentPlanIndex > newPlanIndex ||
-    (currentPlanIndex === newPlanIndex && (currentTier ?? 1) > (newTier ?? 1))
-  );
+  return newIndex < currentIndex;
+};
+
+/**
+ * Format event limit for display (e.g. 1_000_000 → "1M events/mo").
+ */
+export const formatEventLimit = (events: number): string => {
+  if (events >= 1_000_000) return `${events / 1_000_000}M events/mo`;
+  if (events >= 1_000) return `${events / 1_000}K events/mo`;
+  return `${events} events/mo`;
 };

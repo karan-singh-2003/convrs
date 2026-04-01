@@ -1,22 +1,33 @@
-import { SVGProps } from "react";
 
-export function Desktop(props: SVGProps<SVGSVGElement>) {
+export function Desktop() {
   return (
     <svg
-      height="18"
-      width="18"
-      viewBox="0 0 18 18"
       xmlns="http://www.w3.org/2000/svg"
-      {...props}
+      width="20"
+      height="15"
+      viewBox="0 0 20 15"
+      fill="none"
     >
-      <g fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        {/* Monitor screen */}
-        <path d="M14.5 2.5H3.5C2.4 2.5 1.5 3.4 1.5 4.5v7c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2z" />
-        {/* Stand neck */}
-        <line x1="9" y1="13.5" x2="9" y2="15.5" />
-        {/* Stand base */}
-        <line x1="6.5" y1="15.5" x2="11.5" y2="15.5" />
-      </g>
+      <path
+        d="M2 0.650391H18C18.7456 0.650391 19.3496 1.25442 19.3496 2V10.2227C19.3494 10.968 18.7454 11.5723 18 11.5723H2C1.25456 11.5723 0.650625 10.968 0.650391 10.2227V2C0.650391 1.25442 1.25442 0.650391 2 0.650391Z"
+        stroke="#8B8B8B"
+        stroke-width="1.3"
+      />
+      <rect
+        x="7.77783"
+        y="13.333"
+        width="4.44444"
+        height="1.11111"
+        rx="0.555556"
+        fill="#8B8B8B"
+      />
+      <rect
+        x="8.88867"
+        y="12.2227"
+        width="2.22222"
+        height="1.11111"
+        fill="#8B8B8B"
+      />
     </svg>
   );
-}   
+}

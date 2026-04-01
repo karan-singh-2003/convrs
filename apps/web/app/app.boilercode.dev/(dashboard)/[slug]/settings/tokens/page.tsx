@@ -32,11 +32,10 @@ export default function TokensPage() {
           const token = row.original;
           return (
             <div className="flex items-center gap-3">
-             
               <div className="flex flex-col leading-tight">
                 <span className="text-[13.5px] font-display font-medium text-neutral-600">
                   {token.name}
-                </span>   
+                </span>
               </div>
             </div>
           );
@@ -173,7 +172,7 @@ export default function TokensPage() {
             onClick={() => setShowAddEditTokenModal(true)}
           />
         }
-        className="my-4"
+        className="px-3 lg:px-8"
       >
         <Table table={table} {...tableProps} />
       </SettingsChildrenLayout>

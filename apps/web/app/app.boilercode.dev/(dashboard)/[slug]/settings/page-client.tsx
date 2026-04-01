@@ -7,6 +7,9 @@ import UpdateWorkspaceSlug from "@/ui/workspaces/update-workspace-slug";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 import { clientAccessCheck } from "@/lib/client-access-check";
 import useWorkspace from "@/lib/swr/use-workspace";
+import ProjectToken from "@/ui/workspaces/copy-project-token";
+import Domain from "@/ui/workspaces/domain";
+import PublicStats from "@/ui/workspaces/public-stats";
 
 export default function WorkspaceSettingsClient() {
   const { role } = useWorkspace();
@@ -15,16 +18,19 @@ export default function WorkspaceSettingsClient() {
     role,
   });
   return (
-    <div className="flex flex-col gap-8 my-4">
+    <div className="flex flex-col gap-8 ">
       <SettingsChildrenLayout
         title="General"
         description="Change your organization name and URL, set up custom email settings, or request Typeform data."
-        className="md:my-5"
+        className=""
       >
         <div className="space-y-7">
           <UpdateWorkspaceName />
-          <UpdateWorkspaceSlug />
-          <UploadLogo />
+          {/* <UpdateWorkspaceSlug /> */}
+          {/* <UploadLogo /> */}
+          <Domain />
+          <ProjectToken/>
+          <PublicStats></PublicStats>
           <DeleteWorkspace />
         </div>
       </SettingsChildrenLayout>

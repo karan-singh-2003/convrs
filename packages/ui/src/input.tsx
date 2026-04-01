@@ -20,7 +20,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={isPassword && showPassword ? "text" : type}
             className={cn(
-              "h-10 w-full rounded-sm font-display border border-neutral-300 bg-white px-3 text-sm md:text-[15px] text-neutral-700 placeholder-neutral-400 transition-colors",
+              "h-10 w-full rounded-sm font-display border border-neutral-200 bg-neutral-100/80 px-3 text-sm md:text-[15px] text-neutral-700 placeholder-neutral-400 transition-colors",
               "read-only:bg-neutral-50 read-only:text-neutral-500",
               "focus:border-neutral-500 focus:outline-none focus:ring-0",
               error && "border-red-400 focus:border-red-500",
@@ -45,13 +45,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 )}
               </button>
             ) : error ? (
-              <AlertCircle className="size-4 text-red-500 pointer-events-none" aria-hidden />
+              <AlertCircle
+                className="size-4 font-default text-red-500 pointer-events-none"
+                aria-hidden
+              />
             ) : null}
           </div>
         </div>
 
         {error && (
-          <p className="text-xs font-medium text-red-500" role="alert" aria-live="assertive">
+          <p
+            className="text-xs font-default font-medium text-red-500"
+            role="alert"
+            aria-live="assertive"
+          >
             {error}
           </p>
         )}

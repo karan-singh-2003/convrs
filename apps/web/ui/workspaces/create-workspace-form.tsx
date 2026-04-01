@@ -1,22 +1,24 @@
 "use client";
-import { Input, useMediaQuery, Button, FileUpload } from "@repo/ui";
-import { useForm, Controller } from "react-hook-form";
+
+import { Input, useMediaQuery, Button } from "@repo/ui";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { Label } from "@repo/ui";
-import { set, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircleFill } from "@repo/ui";
-import { cn } from "@repo/utils";
 import { createWorkspaceSchema } from "@/lib/zod/schemas/workspaces";
 import { toast } from "sonner";
 
-type formData = z.infer<typeof createWorkspaceSchema>;
+type FormData = z.infer<typeof createWorkspaceSchema>;
 
 export function CreateWorkspaceForm({
   onSuccess,
 }: {
-  onSuccess: (data: formData) => void;
+  onSuccess: (data: FormData) => void;
 }) {
+  const router = useRouter();
   const { isMobile } = useMediaQuery();
+
   const {
     register,
     handleSubmit,
@@ -25,122 +27,179 @@ export function CreateWorkspaceForm({
     clearErrors,
     setError,
     setValue,
-    control,
-  } = useForm<formData>({
+  } = useForm<FormData>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: "",
       slug: "",
+      domain: "",
     },
   });
 
+  const name = watch("name");
   const slug = watch("slug");
 
-  return (
-    <form
-      onSubmit={handleSubmit(async (data: formData) => {
-        try {
-          const res = await fetch("/api/workspaces", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-          if (res.ok) {
-            const { id: workspaceId } = await res.json();
-            onSuccess?.(data);
-          } else {
-            const { error } = await res.json();
-            toast.error(error.message);
-            setError("name", { message: error.message });
+  // 🔥 slug generator
+  const generateSlug = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+
+  async function createWorkspace(
+    data: FormData
+  ): Promise<{ id: string; slug: string }> {
+    const res = await fetch("/api/workspaces", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const { error } = await res.json();
+      throw new Error(error || "Failed to create workspace");
+    }
+
+    return res.json();
+  }
+
+  async function startFreeTrial(
+    workspaceIdOrSlug: string
+  ): Promise<{ trialEndsAt?: string }> {
+    const res = await fetch(
+      `/api/workspaces/${workspaceIdOrSlug}/billing/start-free-trial`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    if (!res.ok) {
+      const { error } = await res.json();
+      throw new Error(error || "Failed to start free trial");
+    }
+
+    return res.json();
+  }
+
+  async function onSubmit(data: FormData) {
+    let workspace: { id: string; slug: string } | null = null;
+
+    try {
+      const createWorkspacePromise = createWorkspace(data);
+      toast.promise(createWorkspacePromise, {
+        loading: "Creating your workspace...",
+        success: `Workspace "${data.name}" created!`,
+        error: (err: Error) => err.message,
+      });
+      workspace = await createWorkspacePromise;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create workspace";
+      setError("name", { message });
+      return;
+    }
+
+    if (!workspace) return;
+
+    try {
+      const startFreeTrialPromise = startFreeTrial(workspace.id);
+      console.log("free trial promise:", startFreeTrialPromise);
+      toast.promise(startFreeTrialPromise, {
+        loading: "Starting your free trial...",
+        success: (result) => {
+          if (!result?.trialEndsAt) {
+            return "Free trial started successfully!";
           }
-        } catch (e) {
-          toast.error("Failed to create workspace. Please try again.");
-          setError("name", {
-            message: "Failed to create workspace. Please try again.",
-          });
-        }
-      })}
-      className="w-full  space-y-4"
-    >
+
+          return `Your 14-day free trial has started! Enjoy full access until ${new Date(
+            result.trialEndsAt
+          ).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+          })}.`;
+        },
+        error: (err: Error) => err.message,
+      });
+      await startFreeTrialPromise;
+    } catch {
+      toast.warning(
+        "Workspace created, but trial setup failed. Visit billing to activate."
+      );
+    }
+
+    onSuccess?.(data);
+    if (!onSuccess) {
+      router.push(`/${workspace.slug}`);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
+      {/* Project Name */}
       <div className="flex flex-col gap-y-2.5">
-        <Label className="font-display text-neutral-600">Workspace Name</Label>
+        <Label className="font-display text-neutral-600">Project Name</Label>
         <Input
-          {...register("name", {
-            onChange: (e) => setValue("slug", e.target.value),
-          })}
+          {...register("name")}
           id="name"
           autoComplete="off"
           autoFocus={!isMobile}
           placeholder="Acme Inc."
           error={errors.name?.message}
+          onChange={async (e) => {
+            const value = e.target.value;
+            const generated = generateSlug(value);
+
+            setValue("name", value);
+            setValue("slug", generated);
+
+            if (!generated) return;
+
+            // 🔥 check availability
+            const res = await fetch(
+              `/api/workspaces/check-workspace-slug?slug=${generated}`
+            );
+
+            if (res.status !== 200) return;
+
+            const exists = await res.json();
+
+            if (exists === 1) {
+              setError("name", {
+                message: `"${value}" is already taken.`,
+              });
+            } else {
+              clearErrors("name");
+            }
+          }}
         />
       </div>
+
+      {/* Domain */}
       <div>
-        <Label className="font-display text-neutral-600">Workspace Slug</Label>
+        <Label className="font-display text-neutral-600">Domain</Label>
 
         <div className="mt-2 flex min-w-0">
           <span className="inline-flex shrink-0 items-center rounded-l-sm border border-r-0 border-neutral-300 bg-neutral-50 px-2 sm:px-3 font-medium font-display text-neutral-500 text-[13px] sm:text-sm">
-            app.{process.env.NEXT_PUBLIC_APP_DOMAIN}
+            https://
           </span>
+
           <Input
-            id="slug"
             type="text"
+            placeholder="acme.com"
             autoComplete="off"
-            placeholder="acme"
-            error={errors.slug?.message}
             className="flex-1 font-display min-w-0 [&_input]:rounded-l-none"
-            {...register("slug")}
-            onBlur={() => {
-              fetch(`/api/workspaces/check-workspace-slug?slug=${slug}`).then(
-                async (res) => {
-                  if (res.status !== 200) return;
-                  const exists = await res.json();
-                  if (exists === 1) {
-                    setError("slug", {
-                      message: `"${slug}" is already taken.`,
-                    });
-                  } else {
-                    clearErrors("slug");
-                  }
-                }
-              );
-            }}
+            {...register("domain")}
           />
         </div>
-      </div>
-      <div>
-        <Label className="font-display text-neutral-600">Workspace logo</Label>
-        <div className="mt-1.5 flex items-center gap-5">
-          <Controller
-            control={control}
-            name="logo"
-            render={({ field }) => (
-              <FileUpload
-                accept="images"
-                className={cn(
-                  "size-20 rounded-full border border-neutral-300",
-                  errors.logo && "border-0 ring-2 ring-red-500"
-                )}
-                iconClassName="size-5"
-                previewClassName="size-10 rounded-full"
-                variant="plain"
-                imageSrc={field.value as string | null | undefined}
-                readFile
-                onChange={({ src }) => field.onChange(src)}
-                content={null}
-                maxFileSizeMB={2}
-                targetResolution={{ width: 160, height: 160 }}
-              />
-            )}
-          />
-          <div>
-            <p className="mt-1.5 text-[12.5px] font-display font-medium text-neutral-500">
-              Recommended size: 160x160px
-            </p>
-          </div>
-        </div>
+        {errors.domain && (
+          <p className="text-[13px] my-1 font-default text-red-500">
+            {errors.domain.message}
+          </p>
+        )}
       </div>
 
       <Button

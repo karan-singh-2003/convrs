@@ -6,12 +6,12 @@ import { Dispatch, SetStateAction, useId } from "react";
 // import { ArrowUpRight } from "./icons";
 
 const tabSelectButtonVariants = cva(
-  "p-2.5 px-4 transition-colors duration-75",
+  "p-2.5 py-2.5 px-4 transition-colors duration-75",
   {
     variants: {
       variant: {
         default:
-          "text-neutral-500 data-[selected=true]:text-neutral-500 data-[selected=true]:font-medium data-[selected=false]:hover:text-content-default",
+          "text-neutral-500  data-[selected=true]:text-neutral-500 data-[selected=true]:font-medium data-[selected=false]:hover:text-content-default",
         accent:
           "text-content-subtle transition-[color,font-weight] data-[selected=true]:text-blue-600 data-[selected=false]:hover:text-content-default data-[selected=true]:font-medium",
       },
@@ -22,7 +22,7 @@ const tabSelectButtonVariants = cva(
   }
 );
 
-const tabSelectIndicatorVariants = cva("absolute bottom-0 w-full px-1.5", {
+const tabSelectIndicatorVariants = cva("absolute bottom-0 w-full  px-1.5", {
   variants: {
     variant: {
       default: "text-neutral-500",

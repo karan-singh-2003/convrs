@@ -5,6 +5,7 @@ import { Calendar as CalendarPrimitive } from "./calendar";
 import { DatePickerContext, formatDate } from "./shared";
 import { Trigger } from "./trigger";
 import { PickerProps } from "./types";
+import { cn } from "@repo/utils";
 
 export type DatePickerTriggerRenderProps = {
   displayValue: string | null;
@@ -92,7 +93,7 @@ export function DatePicker({
           <Trigger
             placeholder={placeholder}
             disabled={disabled}
-            className={className}
+            className={cn( "rounded-full", className)}
             hasError={hasError}
             aria-required={props.required || props["aria-required"]}
             aria-invalid={props["aria-invalid"]}

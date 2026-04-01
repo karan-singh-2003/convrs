@@ -5,6 +5,7 @@ import type { Config } from "tailwindcss";
 import radix from "tailwindcss-radix";
 // @ts-ignore - CommonJS module
 import scrollbarHide from "tailwind-scrollbar-hide";
+import { bricolageGrotesque } from "@/styles/fonts";
 
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
@@ -35,6 +36,8 @@ const config: Config = {
           "ui-monospace",
           "monospace",
         ],
+        poppins: ["var(--font-poppins)", "system-ui", "sans-serif"],
+        bricolageGrotesque:["var(--font-bricolage-grotesque)", "system-ui", "sans-serif"],
       },
       fontSize: {
         "2xs": [

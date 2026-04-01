@@ -73,22 +73,20 @@ export function WorkspaceDropdown() {
         >
           <button
             onClick={() => setOpenPopover(!openPopover)}
-            className="gap-2 flex items-center bg-[#F0F0F0] p-1.5 rounded-full w-full justify-between"
+            className="flex w-auto items-center gap-1.5 rounded-full bg-neutral-100 p-1.5 sm:w-full sm:gap-2"
           >
-            <div className="flex items-center gap-2">
-              <BlurImage
-                src={selected.image}
-                alt={selected.name}
-                className=" rounded-full"
-                width={21}
-                height={21}
-                draggable={false}
-              />
-              <span className="truncate font-medium font-default text-[14px]">
-                {selected.name}
-              </span>
-            </div>
-            <ChevronDown className="size-3.5 text-neutral-500" />
+            <BlurImage
+              src={selected.image}
+              alt={selected.name}
+              className="rounded-full shrink-0"
+              width={21}
+              height={21}
+              draggable={false}
+            />
+            <span className="font-medium sm:block hidden font-default text-[14px] flex-1 truncate">
+              {selected.name}
+            </span>
+            <ChevronDown className="size-3.5 text-neutral-500 shrink-0" />
           </button>
         </Popover>
       </div>
@@ -124,10 +122,10 @@ function WorkspaceList({
         <div
           ref={scrollRef}
           onScroll={updateScrollProgress}
-          className="w-xs md:max-h-84 relative w-full overflow-auto rounded-none bg-white text-base sm:w-[300px] sm:text-sm"
+          className="md:w-xs md:max-h-84 relative w-full overflow-auto rounded-none bg-white text-base sm:w-[300px] sm:text-sm"
         >
           {/* Current workspace section */}
-          <div className="flex flex-col gap-2.5 border-b border-neutral-200 px-3 pb-3 sm:p-2">
+          {/* <div className="flex flex-col gap-2.5 border-b border-neutral-200 px-3 pb-3 sm:p-2">
             <div className="flex items-center gap-x-2.5">
               <BlurImage
                 src={selected.image}
@@ -138,7 +136,7 @@ function WorkspaceList({
                 draggable={false}
               />
               <div className="min-w-0 flex items-center gap-x-1 justify-between w-full">
-                <div className="truncate font-display  font-medium leading-5 text-neutral-500 text-[14px] sm:text-sm">
+                <div className="truncate font-default font-medium leading-5 text-neutral-500 text-[14px] sm:text-sm">
                   {selected.name}
                 </div>
                 {selected.slug && (
@@ -154,11 +152,11 @@ function WorkspaceList({
                 )}
               </div>
             </div>
-          </div>
+          </div> */}
           {/* Workspaces section */}
-          <div className="flex flex-col gap-2.5 border-b border-neutral-200  px-1 ">
+          <div className="flex flex-col gap-2.5   px-1 ">
             <div>
-              <p className="px-2 py-1.5 text-[12px] font-default  text-neutral-600">
+              <p className="px-2 py-1.5 text-[12.5px] font-display font-medium text-neutral-500">
                 Workspaces
               </p>
               <div className="flex flex-col ">
@@ -185,7 +183,7 @@ function WorkspaceList({
                         className="size-5 shrink-0 overflow-hidden rounded-full"
                         draggable={false}
                       />
-                      <span className="block truncate font-display leading-5 text-neutral-600 sm:max-w-[140px] text-[13px] sm:text-[12.5px]">
+                      <span className="block truncate font-medium font-default leading-5 text-neutral-600 sm:max-w-[140px] text-[13px] sm:text-[14px]">
                         {name}
                       </span>
                       {selected.slug === slug ? (
@@ -212,7 +210,7 @@ function WorkspaceList({
               </div>
             </div>
           </div>
-          <div className="p-1">
+          {/* <div className="p-1">
             <div className="flex flex-col mb-1">
               <Link
                 href={`/${selected.slug ? selected.slug : "account"}/settings`}
@@ -246,7 +244,7 @@ function WorkspaceList({
                 </Link>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

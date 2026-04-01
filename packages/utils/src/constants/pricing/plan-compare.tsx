@@ -91,10 +91,20 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
     category: "Team & Collaboration",
     features: [
       {
-        text: ({ plan }) => (
+        text: ({ id }) => (
           <>
-            <strong>{plan.limits.users}</strong>{" "}
-            {plan.limits.users === 1 ? "team member" : "team members"}
+            <strong>
+              {
+                {
+                  free: "1",
+                  pro: "3",
+                  business: "10",
+                  advanced: "25",
+                  enterprise: "Unlimited",
+                }[id]
+              }
+            </strong>{" "}
+            {id === "free" ? "team member" : "team members"}
           </>
         ),
       },

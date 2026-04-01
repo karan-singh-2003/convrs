@@ -27,11 +27,7 @@ export function BarList({
   unit,
   data,
   allData,
-  barBackground,
   hoverBackground,
-  filterSelectedBackground = "bg-neutral-900",
-  filterSelectedHoverBackground,
-  filterHoverClass,
   maxValue,
   setShowModal,
   limit,
@@ -133,19 +129,11 @@ export function BarList({
     tab,
     unit,
     setShowModal,
-    barBackground,
     hoverBackground,
-    filterSelectedBackground,
-    filterSelectedHoverBackground,
-    filterHoverClass,
     limit,
     isSelected: data.filterValue
       ? (effectiveSelectedValues ?? []).includes(data.filterValue)
       : false,
-    isActivelyFiltered:
-      !!limit &&
-      !!data.filterValue &&
-      (activeFilterValues ?? []).includes(data.filterValue),
     onFilterClick: data.filterValue
       ? !limit
         ? () => handleModalToggle(data.filterValue!)
@@ -155,33 +143,7 @@ export function BarList({
       : undefined,
   }));
 
-  const filterButtons = hasSelection &&
-    onApplyFilterValues &&
-    onClearFilter && (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 8 }}
-        transition={{ ease: "easeOut", duration: 0.15 }}
-        className="absolute bottom-0 left-0 z-20 flex w-full items-end"
-      >
-        <div className="pointer-events-none absolute bottom-0 left-0 h-48 w-full bg-gradient-to-t from-white" />
-        <div className="relative flex w-full items-center justify-center gap-2 py-4">
-          <Button
-            text="Filter"
-            variant="primary"
-            className="h-8 w-fit rounded-lg px-3 py-2"
-            onClick={() => onApplyFilterValues(selectedFilterValues ?? [])}
-          />
-          <Button
-            text="Clear"
-            variant="secondary"
-            className="h-8 w-fit rounded-lg px-3 py-2"
-            onClick={onClearFilter}
-          />
-        </div>
-      </motion.div>
-    );
+  // Removed filterButtons: No Filter/Clear buttons when clicking a bar
 
   const bars = (
     <NumberFlowGroup>
@@ -210,12 +172,7 @@ export function BarList({
   );
 
   if (limit) {
-    return (
-      <>
-        {bars}
-        <AnimatePresence>{filterButtons}</AnimatePresence>
-      </>
-    );
+    return bars;
   } else {
     return (
       <>
@@ -233,32 +190,6 @@ export function BarList({
         </div>
         <div className="relative">
           <div className="h-[50vh] overflow-auto pb-4 md:h-[40vh]">{bars}</div>
-          {hasModalSelection && onApplyFilterValues && (
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex h-[130px] items-end justify-center bg-gradient-to-t from-white from-40% to-white/0 pb-4">
-              <div className="pointer-events-auto flex items-center gap-2">
-                <Button
-                  text="Filter"
-                  variant="primary"
-                  className="h-8 w-fit rounded-lg px-3 py-2"
-                  onClick={() => {
-                    onApplyFilterValues(modalSelectedValues);
-                    setShowModal(false);
-                  }}
-                />
-
-                <Button
-                  text="Clear"
-                  variant="secondary"
-                  className="h-8 w-fit rounded-lg px-3 py-2"
-                  onClick={() => {
-                    setModalSelectedValues([]);
-                    onClearFilter?.();
-                    setShowModal(false);
-                  }}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </>
     );
@@ -273,15 +204,10 @@ export function LineItem({
   tab,
   unit,
   setShowModal,
-  barBackground,
   hoverBackground,
-  filterSelectedBackground = "bg-neutral-900",
-  filterSelectedHoverBackground,
-  filterHoverClass,
   linkData,
   limit,
   isSelected,
-  isActivelyFiltered,
   onFilterClick,
   href,
 }: {
@@ -292,19 +218,13 @@ export function LineItem({
   tab: string;
   unit: string;
   setShowModal: Dispatch<SetStateAction<boolean>>;
-  barBackground: string;
   hoverBackground: string;
-  filterSelectedBackground?: string;
-  filterSelectedHoverBackground?: string;
-  filterHoverClass?: string;
   linkData?: any;
   limit?: number;
   isSelected?: boolean;
-  isActivelyFiltered?: boolean;
   onFilterClick?: () => void;
   href?: string;
 }) {
-  const [isHovered, setIsHovered] = useState(false);
   const [filterButtonHovered, setFilterButtonHovered] = useState(false);
   const [tooltipResetKey, setTooltipResetKey] = useState(0);
   const { saleUnit } = useContext(AnalyticsContext);
@@ -313,67 +233,35 @@ export function LineItem({
   const percentage = Math.round((value / totalSum) * 1000) / 10;
   const isModalView = !limit;
 
-
   const lineItem = (
-    <div className="z-10 flex items-center space-x-4 overflow-hidden px-3">
-      {onFilterClick
-        ? icon && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!isActivelyFiltered) onFilterClick();
-              }}
-              onMouseEnter={() => {
-                setFilterButtonHovered(true);
-                setTooltipResetKey((k) => k + 1);
-              }}
-              onMouseLeave={() => setFilterButtonHovered(false)}
-              aria-label={`${isSelected ? "Remove" : "Add"} filter: ${title}`}
-              aria-pressed={isSelected}
-              className="relative size-6 shrink-0 cursor-pointer"
-            >
-              {icon && (
-                <div
-                  className={cn(
-                    "flex size-full items-center justify-center transition-all duration-200",
-                    isSelected || isHovered ? "translate-x-3 opacity-0" : ""
-                  )}
-                >
-                  {icon}
-                </div>
-              )}
-              <div
-                className={cn(
-                  "absolute inset-0 flex items-center justify-center rounded-sm transition-all duration-200",
-                  isSelected
-                    ? cn(
-                        "translate-x-0 opacity-100",
-                        filterSelectedBackground,
-                        filterSelectedHoverBackground
-                      )
-                    : isHovered
-                      ? cn(
-                          "translate-x-0 opacity-100",
-                          isActivelyFiltered
-                            ? cn(
-                                filterSelectedBackground,
-                                filterSelectedHoverBackground
-                              )
-                            : filterHoverClass
-                        )
-                      : "-translate-x-3 opacity-0"
-                )}
-              >
-                <h1>Filterbars icons</h1>
-              </div>
-            </button>
-          )
-        : icon && (
-            <div className="flex size-6 shrink-0 items-center justify-center">
-              {icon}
-            </div>
-          )}
+    <div className="z-10 flex items-center space-x-2  overflow-hidden ">
+      {icon ? (
+        onFilterClick ? (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onFilterClick();
+            }}
+            onMouseEnter={() => {
+              setFilterButtonHovered(true);
+              setTooltipResetKey((k) => k + 1);
+            }}
+            onMouseLeave={() => setFilterButtonHovered(false)}
+            aria-label={`${isSelected ? "Remove" : "Add"} filter: ${title}`}
+            aria-pressed={isSelected}
+            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-neutral-100"
+          >
+            {icon}
+          </button>
+        ) : (
+          <div className="flex size-6  shrink-0 items-center justify-center">
+            {icon}
+          </div>
+        )
+      ) : (
+        <div className="size-0 shrink-0" aria-hidden="true" />
+      )}
       {tab === "links" && linkData ? (
         <h1>getPrettyUrl(title)</h1>
       ) : tab === "urls" ? (
@@ -383,27 +271,24 @@ export function LineItem({
           contentClassName="max-w-lg"
           disabled={filterButtonHovered}
         >
-          <div className="truncate text-sm text-neutral-800">
+          <div className="truncate text-[16px] text-neutral-600">
             {getPrettyUrl(title)}
           </div>
         </Tooltip>
       ) : (
-        <div className="truncate text-sm text-neutral-800">
+        <div className="truncate text-[15px] text-neutral-600">
           {getPrettyUrl(title)}
         </div>
       )}
     </div>
   );
 
-  const rowClickable =
-    (onFilterClick && !isActivelyFiltered) || (!!href && !onFilterClick);
+  const rowClickable = !!onFilterClick || (!!href && !onFilterClick);
 
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={() => {
-        if (onFilterClick && !isActivelyFiltered) {
+        if (onFilterClick) {
           onFilterClick();
         } else if (href && !onFilterClick) {
           router.push(href);
@@ -411,9 +296,8 @@ export function LineItem({
         }
       }}
       className={cn(
-        "group block min-w-0 border-l-2 border-transparent px-4 py-1 transition-all",
-        rowClickable && "cursor-pointer",
-        hoverBackground
+        "group block min-w-0 border-l-2  border-transparent py-1 transition-all",
+        rowClickable && "cursor-pointer"
       )}
     >
       <div
@@ -428,15 +312,15 @@ export function LineItem({
             position: "absolute",
             inset: 0,
           }}
-          className={cn("-z-10 h-full origin-left rounded-sm", barBackground)}
+          className="-z-10 h-full  origin-left rounded-none px-4 bg-neutral-100"
           transition={{ ease: "easeOut", duration: 0.3 }}
           initial={{ transform: "scaleX(0)" }}
           animate={{ transform: "scaleX(1)" }}
         />
-        <div className="relative z-10 flex h-8 w-full min-w-0 max-w-[calc(100%-2rem)] font-display items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
+        <div className="relative z-10 flex h-8 px-4 w-full min-w-0 max-w-[calc(100%-2rem)] border-l-4 border-neutral-500 font-display items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
           {lineItem}
         </div>
-        <div className="z-10 flex items-center">
+        <div className="z-10 px-3 flex items-center">
           <NumberFlow
             value={
               unit === "sales" && saleUnit === "saleAmount"
@@ -444,7 +328,7 @@ export function LineItem({
                 : value
             }
             className={cn(
-              "z-10 px-2 text-sm text-neutral-600 transition-transform duration-300",
+              "z-10 px-2 text-sm font-display text-neutral-600 transition-transform duration-300",
               isModalView ? "-translate-x-14" : "group-hover:-translate-x-14"
             )}
             style={{
@@ -464,7 +348,7 @@ export function LineItem({
           />
           <div
             className={cn(
-              "absolute right-0 px-3 text-sm text-neutral-600/70 transition-all duration-300",
+              "absolute right-0 font-display px-3 text-sm text-neutral-600/70 transition-all duration-300",
               isModalView
                 ? "visible translate-x-0 opacity-100"
                 : "invisible translate-x-14 opacity-0 group-hover:visible group-hover:translate-x-0 group-hover:opacity-100"

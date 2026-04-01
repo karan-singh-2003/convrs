@@ -12,7 +12,7 @@ export default async function DashboardLayout({
 }) {
   
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen w-full  mx-auto py-1 bg-white">
       <MainNav sidebar={AppSidebar}>{children}</MainNav>
     </div>
   );

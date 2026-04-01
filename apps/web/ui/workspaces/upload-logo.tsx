@@ -34,10 +34,11 @@ export default function UploadLogo() {
             })
             .finally(() => setUploading(false));
         }}
+         className="bg-white border border-neutral-200 p-4 rounded-xl"
       >
         <div className="flex flex-col gap-5">
           {/* Heading */}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <h2 className="font-medium text-sm font-display text-neutral-700">
               Workspace Logo
             </h2>

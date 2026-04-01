@@ -12,8 +12,8 @@ const Passkey = () => {
       <ManagePasskeyModal />
 
       <div className="">
-        <div className="space-y-1">
-          <h1 className="font-display text-base font-medium text-[#5C5C5C]">
+        <div className="space-y-0.5">
+          <h1 className="font-display text-sm font-medium text-[#5C5C5C]">
             Passkey
           </h1>
           <h1 className="font-display text-sm text-[#898989]">

@@ -1,35 +1,53 @@
 model Workspace {
-  id               String  @id @default(cuid())
-  name             String
-  slug             String  @unique
-  logo             String?
-  inviteCode       String? @unique
+  id         String  @id @default(cuid())
+  name       String
+  slug       String  @unique
+  domain     String?
+  logo       String?
+  inviteCode String? @unique
+  plan      String? 
 
-  plan             String?  @default("free")
-  planTier         Int      @default(0)
-  stripeId         String?  @unique
-  billingCycleStart Int
-  paymentFailedAt  DateTime?
-  invoicePrefix      String?  @unique
+  // Stripe (clean + required)
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+  subscriptionStatus   String? // "active" | "past_due" | "canceled"
+  billingInterval      String? // "month" | "year"
+  currentPeriodEnd     DateTime?
+  paymentFailedAt      DateTime?
 
-  userLimit        Int      @default(1)
+  //  Usage-based pricing
+  usage        Int  @default(0)
+  usageLimit   Int  @default(10000) // enforced limit
+  tierEvents   Int?                 // 10k, 100k, etc
 
-  ssoEmailDomain   String?   @unique
-  ssoEnforcedAt    DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  usageLastChecked DateTime  @default(now())
+  // Trial (internal, NOT Stripe)
+  freeTrialEndDate DateTime?
 
-  webhookEnabled    Boolean   @default(false)
+  // Workspace config
+  userLimit Int @default(1)
 
-  users                 WorkspaceUsers[]
-  invites               WorkspaceInvite[]
-  sentEmails            SentEmail[]
-  invoices             Invoice[]
-  restrictedTokens      RestrictedToken[]
-  webhooks             Webhook[]
+  ssoEmailDomain String? @unique
+  ssoEnforcedAt  DateTime?
 
-  @@index(usageLastChecked(sort: Asc))
+  webhookEnabled Boolean @default(false)
+
+  //  System
+  usageLastChecked DateTime @default(now())
+  projectToken     String?  @unique
+  invoicePrefix    String?  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //  Relations
+  users            WorkspaceUsers[]
+  invites          WorkspaceInvite[]
+  sentEmails       SentEmail[]
+  invoices         Invoice[]
+  restrictedTokens RestrictedToken[]
+  webhooks         Webhook[]
+
+  @@index([usageLastChecked])
 }
 
 enum WorkspaceRole {

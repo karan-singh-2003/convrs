@@ -51,10 +51,10 @@ function DiscoverySourceUI() {
 
   return (
     <div className="w-full max-w-lg relative top-16 sm:top-16 mx-auto flex flex-col items-center px-4">
-      <h1 className="font-display text-neutral-600 font-semibold text-base sm:text-[18px] text-center">
+      <h1 className="font-display text-neutral-500 font-semibold text-base sm:text-[18px] text-center">
         How did you discover us?
       </h1>
-      <h3 className="text-muted-foreground font-medium font-display text-center text-sm sm:text-[14.5px]">
+      <h3 className="text-neutral-600 font-medium font-display text-center text-sm sm:text-[14.5px]">
         We&apos;d love to know what caught your attention.
       </h3>
 

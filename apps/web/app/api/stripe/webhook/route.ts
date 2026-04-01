@@ -19,7 +19,6 @@ export const POST = async (req: Request) => {
   let event: Stripe.Event;
   try {
     if (!signature || !webhookSecret) {
-    
       return new Response(
         "Webhook Error: Missing signature or webhook secret",
         { status: 400 }
@@ -27,12 +26,10 @@ export const POST = async (req: Request) => {
     }
     event = stripe.webhooks.constructEvent(buf, signature, webhookSecret);
   } catch (err) {
-   
     return new Response("Webhook Error: Invalid signature", { status: 400 });
   }
 
   if (!relevantEvents.has(event.type)) {
-   
     return new Response("Event received", { status: 200 });
   }
 
@@ -40,13 +37,13 @@ export const POST = async (req: Request) => {
     switch (event.type) {
       case "customer.subscription.deleted":
         return await customerSubscriptionDeleted(event);
+      case "customer.subscription.created":
       case "customer.subscription.updated":
         return await customerSubscriptionUpdated(event);
       case "checkout.session.completed":
         return await checkoutSessionCompleted(event);
     }
   } catch (err) {
-  
     return new Response("Error processing event", { status: 500 });
   }
 

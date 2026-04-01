@@ -1,4 +1,5 @@
 import { cn } from "@repo/utils";
+import { curveMonotoneX } from "@visx/curve";
 import { LinearGradient } from "@visx/gradient";
 import { Group } from "@visx/group";
 import { Area, AreaClosed, Circle } from "@visx/shape";
@@ -77,6 +78,7 @@ export function Areas({
                   x={(d) => xScale(d.date)}
                   y={(d) => yScale(s.valueAccessor(d) ?? 0)}
                   yScale={yScale}
+                  curve={curveMonotoneX}
                 >
                   {({ path }) => {
                     return (
@@ -84,8 +86,8 @@ export function Areas({
                         initial={{ d: path(zeroedData) || "", opacity: 0 }}
                         animate={{ d: path(data) || "", opacity: 1 }}
                         className={cn(
-                          s.colorClassName ?? "text-blue-500",
-                          seriesStyle?.gradientClassName,
+                          s.colorClassName ?? "text-[#7D53E0]",
+                          seriesStyle?.lineClassName
                         )}
                         mask={`url(#${s.id}-mask)`}
                         fill={seriesStyle?.areaFill ?? "currentColor"}
@@ -99,14 +101,15 @@ export function Areas({
                   data={data}
                   x={(d) => xScale(d.date)}
                   y={(d) => yScale(s.valueAccessor(d) ?? 0)}
+                  curve={curveMonotoneX}
                 >
                   {({ path }) => (
                     <motion.path
                       initial={{ d: path(zeroedData) || "" }}
                       animate={{ d: path(data) || "" }}
                       className={cn(
-                        s.colorClassName ?? "text-blue-700",
-                        seriesStyle?.lineClassName,
+                        s.colorClassName ?? "text-[#7D53E0]",
+                        seriesStyle?.lineClassName
                       )}
                       stroke={seriesStyle?.lineStroke ?? "currentColor"}
                       strokeOpacity={0.8}
@@ -123,8 +126,8 @@ export function Areas({
                     cy={yScale(s.valueAccessor(data.at(-1)!))}
                     r={4}
                     className={cn(
-                      s.colorClassName ?? "text-blue-700",
-                      seriesStyle?.lineClassName,
+                      s.colorClassName ?? "text-[#7D53E0]",
+                      seriesStyle?.lineClassName
                     )}
                     fill="currentColor"
                   />

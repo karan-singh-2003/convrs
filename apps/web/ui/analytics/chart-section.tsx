@@ -26,6 +26,7 @@ type Tab = {
 export function ChartSection() {
   const {
     totalEvents,
+    percentageChanges,
     requiresUpgrade,
     showConversions,
     selectedTab,
@@ -61,7 +62,7 @@ export function ChartSection() {
             ]
           : []),
       ] as Tab[],
-    [showConversions],
+    [showConversions]
   );
 
   const tab = tabs.find(({ id }) => id === selectedTab) ?? tabs[0];
@@ -71,11 +72,12 @@ export function ChartSection() {
     (plan === "free" || plan === "pro");
 
   return (
-    <div className="w-full overflow-hidden bg-white">
-      <div className="border border-neutral-200 sm:rounded-t-xl">
+    <div className="w-full overflow-hidden py-2 bg-neutral-50">
+      <div className="max-w-screen-lg mx-auto">
         <AnalyticsTabs
           showConversions={showConversions}
           totalEvents={totalEvents}
+          percentageChanges={percentageChanges}
           tab={selectedTab}
           tabHref={(id) =>
             queryParams({
@@ -98,13 +100,13 @@ export function ChartSection() {
       <div className="relative">
         <div
           className={cn(
-            "relative overflow-hidden border-x border-b border-neutral-200 sm:rounded-b-xl",
+            "relative overflow-hidden  sm:rounded-b-xl",
             showPaywall &&
-              "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]",
+              "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]"
           )}
         >
           {view === "timeseries" && (
-            <div className="p-5 pt-10 sm:p-10">
+            <div className="">
               <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
             </div>
           )}
@@ -114,32 +116,7 @@ export function ChartSection() {
             </div>
           )}
         </div>
-        <div className="absolute right-3 top-3 flex items-center gap-2">
-          {showConversions && (
-            <ToggleGroup
-              className="flex w-fit shrink-0 items-center gap-1 border-neutral-100 bg-neutral-100 sm:hidden"
-              optionClassName="size-8 p-0 flex items-center justify-center"
-              indicatorClassName="border border-neutral-200 bg-white"
-              options={[
-                {
-                  label: <div className="text-base">$</div>,
-                  value: "saleAmount",
-                },
-                {
-                  label: <div className="text-[11px]">123</div>,
-                  value: "sales",
-                },
-              ]}
-              selected={saleUnit}
-              selectAction={(option) =>
-                queryParams({
-                  set: { saleUnit: option },
-                })
-              }
-            />
-          )}
-          {/* <ChartViewSwitcher /> */}
-        </div>
+        {/* Removed ToggleGroup for small screens above the graph */}
         {showPaywall && <ConversionTrackingPaywall />}
       </div>
     </div>
@@ -185,7 +162,7 @@ function ConversionTrackingPaywall() {
           href={`/${slug}/upgrade`}
           className={cn(
             buttonVariants({ variant: "primary" }),
-            "mt-4 flex h-8 items-center justify-center whitespace-nowrap rounded-lg border px-3 text-sm",
+            "mt-4 flex h-8 items-center justify-center whitespace-nowrap rounded-lg border px-3 text-sm"
           )}
         >
           Upgrade to Business

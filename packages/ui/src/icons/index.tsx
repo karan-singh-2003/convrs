@@ -31,7 +31,8 @@ export * from "./window";
 export * from "./latop";
 export * from "./apple-logo";
 export * from "./desktop";
-export * from "./mobile";
+export * from "./mobile"
 export * from "./unknown"
+
 
 export type Icon = LucideIcon | ComponentType<SVGProps<SVGSVGElement>>;

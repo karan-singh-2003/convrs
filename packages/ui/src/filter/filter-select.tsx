@@ -1,6 +1,6 @@
 import { cn, truncate } from "@repo/utils";
 import { Command, useCommandState } from "cmdk";
-import { ChevronDown,  ListFilter } from "lucide-react";
+import { ChevronDown, ListFilter } from "lucide-react";
 import {
   Fragment,
   PropsWithChildren,
@@ -188,10 +188,11 @@ export function FilterSelect({
             shouldFilter={
               !selectedFilter || selectedFilter.shouldFilter !== false
             }
+            className="w-[250px]"
           >
-            <div className="flex items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
+            <div className="flex font-display items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
               <CommandInput
-                placeholder={`${selectedFilter?.label || "Filter"}...`}
+                placeholder={`${selectedFilter?.label || "Search"}`}
                 value={search}
                 onValueChange={setSearch}
                 onKeyDown={(e) => {
@@ -218,12 +219,8 @@ export function FilterSelect({
                     setIsOpen(false);
                   } else selectOption(search);
                 }}
+                className="font-display placeholder:font-display "
               />
-              {!selectedFilter && (
-                <kbd className="mr-2 hidden shrink-0 rounded border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs font-light text-neutral-500 md:block">
-                  F
-                </kbd>
-              )}
             </div>
             <FilterScroll key={selectedFilterKey} ref={listContainer}>
               <Command.List
@@ -317,9 +314,8 @@ export function FilterSelect({
       <button
         type="button"
         className={cn(
-          "group flex h-10 cursor-pointer appearance-none items-center gap-x-2 truncate rounded-md border px-3 text-sm outline-none transition-all",
+          "group flex h-10 cursor-pointer appearance-none font-display items-center gap-x-2 truncate rounded-md border px-3 text-sm outline-none transition-all",
           "border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400",
-          "focus-visible:border-neutral-500 data-[state=open]:border-neutral-500 data-[state=open]:ring-4 data-[state=open]:ring-neutral-200",
           className
         )}
       >
@@ -362,7 +358,7 @@ const CommandInput = (
     <Command.Input
       {...restProps}
       size={1}
-      className="grow border-0 py-3 pl-4 pr-2 outline-none placeholder:text-neutral-400 focus:ring-0 sm:text-sm"
+      className="grow border-0 py-2 pl-4 pr-2 outline-none font-default placeholder:text-neutral-400 focus:ring-0 sm:text-[14.5px]"
       onKeyDown={(e) => {
         props.onKeyDown?.(e);
 
@@ -430,7 +426,7 @@ function FilterButton({
   return (
     <Command.Item
       className={cn(
-        "flex cursor-pointer items-center gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-sm",
+        "flex cursor-pointer font-display items-center gap-3 whitespace-nowrap rounded-none px-3 pr-4 py-2 text-left text-sm",
         "data-[selected=true]:bg-neutral-100"
       )}
       onSelect={onSelect}
@@ -450,8 +446,8 @@ function FilterButton({
       )}
       {/* Guard: only render if Icon exists */}
       {Icon && (
-        <span className="shrink-0 text-neutral-600">
-          {isReactNode(Icon) ? Icon : <Icon className="h-4 w-4" />}
+        <span className="shrink-0 text-neutral-500">
+          {isReactNode(Icon) ? Icon : <Icon className="h-3 w-3" />}
         </span>
       )}
       <span className="flex-1">{truncate(label, 48)}</span>
@@ -485,7 +481,7 @@ const CommandEmpty = ({
   ) {
     if (!search)
       return (
-        <Command.Empty className="p-2 text-center text-sm text-neutral-400">
+        <Command.Empty className="p-2 text-center font-default text-[14.5px] text-neutral-400">
           Start typing to search...
         </Command.Empty>
       );

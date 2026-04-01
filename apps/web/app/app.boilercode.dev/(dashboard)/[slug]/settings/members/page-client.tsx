@@ -141,7 +141,7 @@ export default function WorkspacePeopleClient() {
     <>
       <InviteWorkspaceUserModal />
       <InviteCodeModal />
-      <div className="my-5 space-y-4">
+      <div className=" space-y-4 px-3 lg:px-8">
         {/* Header */}
         <div className="px-1 flex items-center justify-between gap-4">
           <div className="flex flex-col">
@@ -166,7 +166,7 @@ export default function WorkspacePeopleClient() {
         </div>
 
         <div className="flex flex-col gap-y-4">
-          <div className=" h-fit p-4 space-y-3 bg-[#fafafa] rounded-2xl">
+          <div className=" h-fit p-4 space-y-3 bg-white border border-neutral-200 rounded-2xl">
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="font-display text-[14.5px] font-medium text-[#555555]">
@@ -223,7 +223,7 @@ export default function WorkspacePeopleClient() {
           </div>
           <div className="bg-[#fafafa] rounded-2xl ">
             {/* Table */}
-            <Table table={table} {...tableProps} />
+            <Table table={table} {...tableProps} className="bg-white rounded-2xl"/>
           </div>
         </div>
       </div>

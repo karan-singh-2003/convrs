@@ -21,7 +21,6 @@ export async function updateWorkspacePlan({
         where: { id: workspace.id },
         data: {
           plan: newPlanName,
-          userLimit: newPlan.limits.users,
           paymentFailedAt: null,
         },
         include: {

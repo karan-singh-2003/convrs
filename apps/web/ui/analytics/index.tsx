@@ -13,9 +13,11 @@ export default function Analytics() {
       <AnalyticsContext.Consumer>
         {({ requiresUpgrade }) => {
           return (
-            <div className="my-5">
-              <AnalyticsToggle/>
-              <div className="my-7 mx-auto grid gap-5">
+            <div className="my-2  space-y-4">
+              <div className="max-w-screen-lg mx-auto rounded-md py-3 text-sm ">
+                <AnalyticsToggle/>
+              </div>
+              <div className="space-y-[6rem] ">
                 <ChartSection />
                 <StatsGrid />
               </div>
@@ -29,7 +31,7 @@ export default function Analytics() {
 
 function StatsGrid() {
   return (
-    <div className="grid grid-cols-1  gap-5  md:grid-cols-2">
+    <div className="grid grid-cols-1 max-w-screen-lg mx-auto gap-5  md:grid-cols-2">
       <PagesSection />
       <SourcesSection />
       <LocationSection />

@@ -29,8 +29,6 @@ export function AnalyticsCard<T extends string>({
   onSelectSubTab,
   expandLimit,
   dataLength,
-  isFilterActive,
-  onClearFilter,
   children,
   className,
 }: {
@@ -77,13 +75,6 @@ export function AnalyticsCard<T extends string>({
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
           <h1 className="text-lg font-semibold">{selectedTab?.label}</h1>
           <div className="flex items-center gap-1 text-neutral-500">
-            {event === "sales" ? (
-              <h1 className="hidden h-4 w-4 sm:block"></h1>
-            ) : event === "leads" ? (
-              <h1 className="hidden h-4 w-4 sm:block"></h1>
-            ) : (
-              <h1 className="hidden h-4 w-4 sm:block"></h1>
-            )}
             <p className="text-xs uppercase">{event}</p>
           </div>
         </div>
@@ -98,7 +89,7 @@ export function AnalyticsCard<T extends string>({
       </Modal>
       <div
         className={cn(
-          "group relative z-0 h-[400px] overflow-hidden rounded-lg border border-neutral-200 bg-white sm:rounded-xl",
+          "group relative z-0 h-[450px] overflow-hidden rounded-lg border border-neutral-200 bg-white sm:rounded-xl",
           className
         )}
       >
@@ -149,19 +140,13 @@ export function AnalyticsCard<T extends string>({
               options={tabs}
               selected={selectedTabId}
               onSelect={onSelectTab}
+              className="font-display  text-[15px]"
             />
           )}
 
-          <div className="flex items-center gap-1 pr-2 text-neutral-500">
-            {event === "sales" ? (
-              <h1 className="hidden h-4 w-4 sm:block"></h1>
-            ) : event === "leads" ? (
-              <h1 className="hidden h-4 w-4 sm:block"></h1>
-            ) : (
-              <h1 className="hidden h-4 w-4 sm:block"></h1>
-            )}
+          {/* <div className="flex items-center gap-1 pr-2 text-neutral-500">
             <p className="text-xs uppercase">{event}</p>
-          </div>
+          </div> */}
         </div>
         <AnimatedSizeContainer
           height
@@ -182,30 +167,16 @@ export function AnalyticsCard<T extends string>({
             setShowModal,
           })}
         </div>
-        {/* View All when filtered: modal shows full list (items not on card). */}
-        {(showViewAll || isFilterActive) && (
+        {showViewAll && (
           <div className="absolute bottom-0 left-0 z-10 flex w-full items-end">
             <div className="pointer-events-none absolute bottom-0 left-0 h-48 w-full bg-gradient-to-t from-white" />
             <div className="relative flex w-full items-center justify-center gap-2 py-4">
               <button
                 onClick={() => setShowModal(true)}
-                className={cn(
-                  "h-8 w-fit rounded-lg px-3 text-sm transition-colors",
-                  isFilterActive
-                    ? "text-content-inverted hover:bg-inverted hover:ring-border-subtle border-black bg-black hover:ring-4"
-                    : "border border-neutral-200 bg-white text-neutral-950 hover:bg-neutral-100 active:border-neutral-300"
-                )}
+                className="h-8 w-fit rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 transition-colors hover:bg-neutral-100 active:border-neutral-300"
               >
                 View All
               </button>
-              {isFilterActive && onClearFilter && (
-                <button
-                  onClick={onClearFilter}
-                  className="h-8 w-fit rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 active:border-neutral-300"
-                >
-                  Clear
-                </button>
-              )}
             </div>
           </div>
         )}
@@ -232,8 +203,8 @@ function SubTabs({
       }))}
       selected={selectedTab}
       selectAction={(period) => onSelectTab(period)}
-      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-6 py-2 sm:flex-nowrap"
-      optionClassName="text-[13px] px-2 font-normal hover:text-neutral-700"
+      className="flex w-full font-display  flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-6 py-2 sm:flex-nowrap"
+      optionClassName="text-[15px] px-2.5 text-neutral-500 font-medium hover:text-neutral-700"
       indicatorClassName="border-0 bg-transparent rounded-md"
     />
   );

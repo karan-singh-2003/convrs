@@ -3,7 +3,7 @@ import { cva, VariantProps } from "class-variance-authority";
 import { ReactNode } from "react";
 
 const pageWidthVariants = cva(
-  "@container/page mx-auto w-full px-3 lg:px-6",
+  "@container/page mx-auto w-full  ",
   {
     variants: {
       size: {
