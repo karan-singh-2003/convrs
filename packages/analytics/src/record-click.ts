@@ -1,6 +1,6 @@
 import { fetchWithRetry, capitalize, getDomainWithoutWWW } from "@repo/utils";
+import type { RequestContext } from "./types";
 import { detectBot } from "./utils/detect-bot";
-import { getIdentityHash } from "./utils/get-identity-hash";
 import { parseUserAgent } from "./utils/parse-user-agent";
 import {
   getGeoData,
@@ -10,10 +10,12 @@ import {
 } from "./utils/get-geo-data";
 
 export async function recordClick({
+  context,
   req,
   payload,
 }: {
-  req: Request;
+  context?: RequestContext;
+  req?: Request;
   payload: Record<string, any>;
 }) {
   const {
@@ -30,32 +32,68 @@ export async function recordClick({
 
   if (!visitor_id || !website_id) return null;
 
-  // Skip if no-track header or query param present
-  const searchParams = new URL(req.url).searchParams;
-  if (req.headers.has("dub-no-track") || searchParams.has("dub-no-track")) {
+  // Use provided context or build from req
+  let ctx: RequestContext;
+  if (context) {
+    ctx = context;
+  } else if (req) {
+    // Legacy Express support: build context from Request
+    const searchParams = new URL(req.url).searchParams;
+    if (req.headers.has("dub-no-track") || searchParams.has("dub-no-track")) {
+      return null;
+    }
+
+    const uaString = req.headers.get("user-agent") || "";
+    const isBot = detectBot(req);
+
+    if (isBot) {
+      console.log(`[Track] Bot detected — not recording`);
+      return null;
+    }
+
+    const geo = getGeoData(req);
+    const region = getGeoRegion(req);
+    const vercelRegion = getVercelRegion();
+    const continent = getContinent(req);
+
+    ctx = {
+      url: req.url,
+      method: req.method,
+      ip: ip_address || "unknown",
+      userAgent: parseUserAgent(uaString),
+      geo: {
+        country: geo.country ?? "Unknown",
+        city: geo.city ?? "Unknown",
+        latitude: geo.latitude ?? "Unknown",
+        longitude: geo.longitude ?? "Unknown",
+        region: region || "Unknown",
+        continent: continent || "Unknown",
+        vercelRegion: vercelRegion,
+      },
+      referer: payload.referrer || req.headers.get("referer") || "",
+      headers: {
+        get(name: string) {
+          return req.headers.get(name);
+        },
+      },
+    };
+  } else {
+    throw new Error("Either context or req must be provided");
+  }
+
+  // Check for no-track headers from context
+  if (ctx.headers.get("dub-no-track")) {
     return null;
   }
 
-  // Parse user agent
-  const uaString = req.headers.get("user-agent") || "";
-  const ua = parseUserAgent(uaString);
-  const isBot = detectBot(req);
-
-  if (isBot) {
+  // Check if bot
+  if (ctx.userAgent.isBot) {
     console.log(`[Track] Bot detected — not recording`);
     return null;
   }
 
-  // Get identity hash
-  const identityHash = await getIdentityHash(req);
-
-  // Geo data — Vercel headers in prod, fallback for local
-  const geo = getGeoData(req);
-  const region = getGeoRegion(req);
-  const vercelRegion = getVercelRegion();
-  const continent = getContinent(req);
-
-  const referer = payload.referrer || req.headers.get("referer") || "";
+  // Generate identity hash from context
+  const identityHash = await hashFromContext(ctx);
 
   // Generate a click_id
   const clickId = `${visitor_id}_${Date.now()}`;
@@ -77,35 +115,37 @@ export async function recordClick({
     exitlink: null,
 
     // Geo
-    country: geo.country ?? "Unknown",
-    city: geo.city ?? "Unknown",
-    region: region || "Unknown",
-    latitude: geo.latitude ?? "Unknown",
-    longitude: geo.longitude ?? "Unknown",
-    continent: continent || "Unknown",
-    vercel_region: vercelRegion,
+    country: ctx.geo.country ?? "Unknown",
+    city: ctx.geo.city ?? "Unknown",
+    region: ctx.geo.region || "Unknown",
+    latitude: ctx.geo.latitude ?? "Unknown",
+    longitude: ctx.geo.longitude ?? "Unknown",
+    continent: ctx.geo.continent || "Unknown",
+    vercel_region: ctx.geo.vercelRegion,
 
     // Device / Browser
-    device: capitalize(ua.device.type ?? "") || "Desktop",
-    device_model: ua.device.model ?? "Unknown",
-    device_vendor: ua.device.vendor ?? "Unknown",
-    browser: ua.browser.name ?? "Unknown",
-    browser_version: ua.browser.version ?? "Unknown",
-    os: ua.os.name ?? "Unknown",
-    os_version: ua.os.version ?? "Unknown",
-    engine: ua.engine.name ?? "Unknown",
-    engine_version: ua.engine.version ?? "Unknown",
-    cpu_architecture: ua.cpu?.architecture ?? "Unknown",
-    ua: user_agent || ua.ua || "Unknown",
+    device: capitalize(ctx.userAgent.device.type ?? "") || "Desktop",
+    device_model: ctx.userAgent.device.model ?? "Unknown",
+    device_vendor: ctx.userAgent.device.vendor ?? "Unknown",
+    browser: ctx.userAgent.browser.name ?? "Unknown",
+    browser_version: ctx.userAgent.browser.version ?? "Unknown",
+    os: ctx.userAgent.os.name ?? "Unknown",
+    os_version: ctx.userAgent.os.version ?? "Unknown",
+    engine: ctx.userAgent.engine.name ?? "Unknown",
+    engine_version: ctx.userAgent.engine.version ?? "Unknown",
+    cpu_architecture: ctx.userAgent.cpu?.architecture ?? "Unknown",
+    ua: user_agent || ctx.userAgent.ua || "Unknown",
 
     // Referrer
-    referer: referer ? getDomainWithoutWWW(referer) || "(direct)" : "(direct)",
-    referer_url: referer || "(direct)",
+    referer: ctx.referer
+      ? getDomainWithoutWWW(ctx.referer) || "(direct)"
+      : "(direct)",
+    referer_url: ctx.referer || "(direct)",
 
     // Identity
     identity_hash: identityHash ?? null,
     user_id: payload.user_id ?? null,
-    ip: ip_address || "unknown",
+    ip: ctx.ip || "unknown",
 
     // Flags
     bot: 0,
@@ -150,4 +190,12 @@ export async function recordClick({
   });
 
   return eventData;
+}
+
+/**
+ * Helper to generate identity hash from request context
+ */
+async function hashFromContext(ctx: RequestContext): Promise<string | null> {
+  const { hashStringSHA256 } = await import("@repo/utils");
+  return hashStringSHA256(`${ctx.ip}-${ctx.userAgent.ua}`);
 }
