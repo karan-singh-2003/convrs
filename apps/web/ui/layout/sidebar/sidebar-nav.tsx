@@ -135,7 +135,7 @@ function NavItem({ item, area }: { item: NavItemType; area: string }) {
       : pathname.startsWith(hrefWithoutQuery);
   }, [pathname, href, exact, customIsActive]);
 
-  console.log("area in navitem", area);
+ 
 
   return (
     <Link

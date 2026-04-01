@@ -30,6 +30,7 @@
     "@prisma/nextjs-monorepo-workaround-plugin": "^7.3.0",
     "@repo/db": "workspace:*",
     "@repo/email": "workspace:*",
+    "@repo/analytics": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/ui": "workspace:*",
     "@repo/utils": "workspace:*",

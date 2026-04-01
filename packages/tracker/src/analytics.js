@@ -55,7 +55,7 @@
 
   // Derive default endpoint from script src so relative paths work automatically
   var _src = (_script && _script.src) || "";
-  var _defaultEndpoint = _src ? new URL("/api/track", _src).href : "/api/track";
+  var _defaultEndpoint = _src ? new URL("http://localhost:3000/api/track", _src).href : "http://localhost:3000/api/track";
   var _rawApi = attr("data-api");
   var _endpoint = _rawApi ? _rawApi : _defaultEndpoint;
 

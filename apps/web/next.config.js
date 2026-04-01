@@ -21,6 +21,15 @@ console.warn = (...args) => {
 const nextConfig = {
   reactStrictMode: false,
 
+  async rewrites() {
+    return [
+      {
+        source: "/analytics.js",
+        destination: "/api/analytics.js",
+      },
+    ];
+  },
+
   transpilePackages: [
     "prettier",
     "shiki",
