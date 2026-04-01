@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { trackClickController } from "./controllers/track";
+import { trackClickController } from "./controllers/track.js";
 
 const app = express();
 
