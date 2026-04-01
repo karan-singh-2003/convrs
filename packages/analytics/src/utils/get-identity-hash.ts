@@ -1,12 +1,13 @@
 import { hashStringSHA256 } from "@repo/utils";
-import { ipAddress } from "@vercel/functions";
-import { userAgent } from "next/server";
+import { parseUserAgent } from "./parse-user-agent";
+import { getIpAddress } from "./get-ip-address";
 
 /**
  * Combine IP + UA to create a unique identifier for the user (for deduplication)
  */
 export async function getIdentityHash(req: Request) {
-  const ip = ipAddress(req) || "127.0.0.1";
-  const ua = userAgent(req);
+  const ip = getIpAddress(req) || "127.0.0.1";
+  const uaString = req.headers.get("user-agent") || "";
+  const ua = parseUserAgent(uaString);
   return await hashStringSHA256(`${ip}-${ua.ua}`);
 }

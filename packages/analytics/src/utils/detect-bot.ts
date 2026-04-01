@@ -1,7 +1,7 @@
-import { ipAddress } from "@vercel/functions";
-import { userAgent } from "next/server";
 import { IP_BOTS, IP_RANGES_BOTS, REFERRER_BOTS, UA_BOTS } from "./bots-list";
 import { isIpInRange } from "./is-ip-in-range";
+import { parseUserAgent } from "./parse-user-agent";
+import { getIpAddress } from "./get-ip-address";
 
 export const detectBot = (req: Request) => {
   const searchParams = new URL(req.url).searchParams;
@@ -16,7 +16,8 @@ export const detectBot = (req: Request) => {
   }
 
   // Check ua
-  const ua = userAgent(req);
+  const uaString = req.headers.get("user-agent") || "";
+  const ua = parseUserAgent(uaString);
 
   if (ua) {
     return ua.isBot || UA_BOTS.some((bot) => new RegExp(bot, "i").test(ua.ua));
@@ -32,7 +33,7 @@ export const detectBot = (req: Request) => {
   }
 
   // Check ip
-  let ip = ipAddress(req);
+  let ip = getIpAddress(req);
 
   if (!ip) {
     return false;

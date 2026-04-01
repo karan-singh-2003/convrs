@@ -21,9 +21,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/utils": "workspace:*",
-    "@vercel/functions": "*",
-    "next": "*"
+    "@repo/utils": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^6.1.3",
