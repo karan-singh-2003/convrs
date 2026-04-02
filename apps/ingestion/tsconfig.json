@@ -1,12 +1,11 @@
 {
+  "extends": "../../packages/tsconfig/base.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "Node",
     "outDir": "dist",
     "rootDir": "src",
-    "strict": true,
-    "esModuleInterop": true
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"]
 }

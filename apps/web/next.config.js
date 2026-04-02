@@ -29,6 +29,14 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://ingest.karanbuilds.me/api/:path*",
+      },
+    ];
+  },
 
   transpilePackages: [
     "prettier",
