@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "dist/analytics.js",
   "scripts": {
-    "build": "tsup src/analytics.js --format iife --minify --out-dir ../../apps/web/public && node -e \"require('fs').renameSync('../../apps/web/public/analytics.global.js', '../../apps/web/public/analytics.js')\""
+    "build": "tsup src/analytics.js --format iife --minify --out-dir dist && node -e \"require('fs').renameSync('dist/analytics.global.js', 'dist/analytics.js')\""
   },
   "devDependencies": {
     "tsup": "^7.0.0",

@@ -4,35 +4,45 @@ import { trackClickController } from "./controllers/track.js";
 
 const app = express();
 
-// ✅ CORS CONFIG (production-ready for analytics SaaS)
+// ✅ 1. FIRST — handle preflight manually
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204); // 👈 MUST stop here
+  }
+
+  next();
+});
+
+// ✅ 2. THEN cors middleware
 const corsOptions = {
   origin: function (origin: string | undefined, callback: Function) {
-    // allow requests with no origin (like curl, server-to-server)
     if (!origin) return callback(null, true);
-
-    // allow all origins (analytics SaaS requirement)
     return callback(null, origin);
   },
   methods: ["POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
-  credentials: true, // ⭐ VERY IMPORTANT (fixes your error)
+  credentials: true,
   optionsSuccessStatus: 204,
 };
 
-// Apply CORS
 app.use(cors(corsOptions));
 
+// ✅ 3. body parser
 app.use(express.json());
 
-// Health check
+// ✅ 4. routes
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
-// Track endpoint
 app.post("/api/track", trackClickController);
 
-// Start server
+// ✅ 5. start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Ingestion server running on port ${PORT}`);
