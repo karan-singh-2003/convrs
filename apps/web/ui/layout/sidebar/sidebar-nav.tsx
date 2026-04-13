@@ -41,12 +41,12 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
     <div
       className={cn(
         "flex  w-full flex-col gap-4",
-        currentArea === "default" ? "px-0" : "px-0"
+        currentArea === "default" ? "px-0 " : "px-0 p-2"
       )}
     >
       <nav className="size-full">
-        <div className="size-full overflow-hidden rounded-none   p-2">
-          <div className="scrollbar-hide relative flex h-full overflow-y-auto overflow-x-hidden">
+        <div className="size-full overflow-visible md:overflow-hidden rounded-none">
+          <div className="scrollbar-hide relative flex h-full overflow-y-auto overflow-x-visible md:overflow-x-hidden">
             <div className="relative flex grow items-center text-neutral-500">
               <div className="relative w-full  grow">
                 {areas &&
@@ -54,7 +54,11 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                     const { title, backHref, content } = areaConfig(data);
 
                     return (
-                      <Area key={area} visible={area === currentArea}>
+                      <Area
+                        key={area}
+                        visible={area === currentArea}
+                        area={area}
+                      >
                         {title === "" && (
                           <div className="w-full">
                             <WorkspaceDropdown />
@@ -63,19 +67,13 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                         <div
                           className={cn(
                             "flex w-full",
-                            area === "default"
-                              ? "flex-row"
-                              : "md:flex-col flex-row  "
+                            area === "default" ? "flex-row" : "flex-col"
                           )}
                         >
                           {/* tabs */}
                           {title && (
                             <div className="my-1 px-2">
-                              {backHref ? //   <span className="font-display text-[13px] md:text-[13.5px]"> //   <ArrowLeft size={14} /> // > //   className="text-[13px] font-medium gap-x-2 flex items-center text-neutral-500 hover:text-neutral-600" //   href={backHref} // <Link
-                              //     {title}
-                              //   </span>
-                              // </Link>
-                              null : (
+                              {backHref ? null : ( // </Link> //   </span> //     {title} //   <span className="font-display text-[13px] md:text-[13.5px]"> //   <ArrowLeft size={14} /> // > //   className="text-[13px] font-medium gap-x-2 flex items-center text-neutral-500 hover:text-neutral-600" //   href={backHref} // <Link
                                 <h2 className="text-sm font-medium font-display text-neutral-700">
                                   {title}
                                 </h2>
@@ -84,10 +82,10 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                           )}
                           <div
                             className={cn(
-                              "flex w-full ",
+                              "flex w-full",
                               area === "default"
                                 ? "flex-row"
-                                : "md:flex-col  flex-row overflow-x-auto flex-nowrap scrollbar-none"
+                                : "md:flex-col flex-row overflow-x-auto flex-nowrap scrollbar-hide pb-px"
                             )}
                           >
                             {content.map((item) =>
@@ -121,6 +119,27 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
   );
 }
 
+export function Area({
+  visible,
+  area,
+  children,
+}: PropsWithChildren<{ visible: boolean; area: string }>) {
+  return (
+    <div
+      className={cn(
+        "left-0  top-0 flex sm:flex-row  size-full gap-x-1 md:gap-x-5 w-full transition-[opacity,transform] duration-300",
+        area === "default" ? "items-center" : "items-start",
+        visible
+          ? "relative opacity-100"
+          : "pointer-events-none absolute translate-x-full opacity-0"
+      )}
+      aria-hidden={!visible ? "true" : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
 function NavItem({ item, area }: { item: NavItemType; area: string }) {
   const { title, href, exact, isActive: customIsActive } = item;
   const pathname = usePathname();
@@ -135,16 +154,15 @@ function NavItem({ item, area }: { item: NavItemType; area: string }) {
       : pathname.startsWith(hrefWithoutQuery);
   }, [pathname, href, exact, customIsActive]);
 
- 
-
   return (
     <Link
       href={href}
       className={cn(
-        "block rounded-none font-display font-medium my-0.5 py-0.5 px-2 transition-colors shrink-0",
+        "block rounded-none font-display font-medium my-0.5 py-0.5 px-2 transition-colors",
+        // flex-shrink-0 prevents tabs from squishing on mobile scroll
         area === "default"
           ? "px-2 text-[14px] md:text-[14.5px]"
-          : "px-3 py-1  text-[14px] md:text-[16.5px]",
+          : "flex-shrink-0 px-3 py-1 text-[14px] md:text-[16.5px]",
         isActive
           ? "text-neutral-700/90"
           : "text-neutral-500/80 hover:text-neutral-500"
@@ -152,24 +170,5 @@ function NavItem({ item, area }: { item: NavItemType; area: string }) {
     >
       {title}
     </Link>
-  );
-}
-
-export function Area({
-  visible,
-  children,
-}: PropsWithChildren<{ visible: boolean }>) {
-  return (
-    <div
-      className={cn(
-        "left-0  top-0 flex sm:flex-row  size-full gap-x-1 md:gap-x-5 w-full items-center transition-[opacity,transform] duration-300",
-        visible
-          ? "relative opacity-100"
-          : "pointer-events-none absolute translate-x-full opacity-0"
-      )}
-      aria-hidden={!visible ? "true" : undefined}
-    >
-      {children}
-    </div>
   );
 }

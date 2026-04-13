@@ -30,7 +30,7 @@ export const ONBOARDING_STEPS = [
   "invite ",
   "billing",
   "source",
-  "members"
+  "members",
 ] as const;
 
 export const plans = [
@@ -76,3 +76,24 @@ export type WebhookTrigger = (typeof WEBHOOK_TRIGGERS)[number];
 export type WebhookEventProps = z.infer<typeof webhookEventSchemaTB>;
 
 export type InvoiceProps = z.infer<typeof InvoiceSchema>;
+
+export type FunnelStepType = "goal" | "page_view";
+
+export interface FunnelStepProps {
+  id: string;
+  name: string;
+  value: string;
+  type: FunnelStepType;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FunnelProps {
+  id: string;
+  workspaceId: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  steps: FunnelStepProps[];
+}

@@ -2,28 +2,25 @@
 import { Button } from "@repo/ui";
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { PageContent } from "@/ui/layout/page-content";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 import Analytics from "@/ui/analytics";
 import useWorkspace from "@/lib/swr/use-workspace";
-import { PLANS } from "@repo/utils";
-import { LowerGrid } from "@/ui/analytics/lower-grid";
-import { AnalyticsFunnelChart } from "@/ui/analytics/analytics-funnel-chart";
-import { useCreateFunnelModal } from "@/ui/modals/create-funnel-modal";
+import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 
 const DashboardPage = () => {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
-  const { plan, usageLimit, usage, subscriptionStatus } = useWorkspace();
-  const { setShowCreateFunnelModal, CreateFunnelModal } =
-    useCreateFunnelModal();
+  const { usageLimit, usage, subscriptionStatus, id,  } =
+    useWorkspace();
+    console.log("workspaceId in DashboardPage:", id);
+  const { count: liveVisitorsCount } = useLiveVisitors(id ?? null);
+
   return (
     <>
-      <CreateFunnelModal />
       <PageWidthWrapper size={"full"}>
         <Analytics />
-        {subscriptionStatus !== "active" && (
+        {subscriptionStatus == "cancelled" && (
           <div className="relative">
             <div className="justify-center max-w-screen-lg mx-auto px-4 h-[500px]">
               <h1 className="font-default text-sm text-neutral-600">
@@ -52,18 +49,6 @@ const DashboardPage = () => {
             </div>
           </div>
         )}
-
-        {/* <div className="h-[400px] bg-[#fafafa] w-full">
-          <AnalyticsFunnelChart />
-        </div>
-        <div className="max-w-screen-lg mx-auto my-4">
-          <button
-            className="bg-black text-white font-medium font-display px-3 py-1 rounded-full"
-            onClick={() => setShowCreateFunnelModal(true)}
-          >
-            Create funnel
-          </button>
-        </div> */}
       </PageWidthWrapper>
     </>
   );

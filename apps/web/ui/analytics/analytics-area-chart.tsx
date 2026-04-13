@@ -111,7 +111,7 @@ export function AnalyticsAreaChart({
   const tooltipLabel = resource === "clicks" ? "Visitors" : resource;
 
   return (
-    <div className="flex h-96 px-10 w-full items-center justify-center">
+    <div className="flex h-full px-10 w-full items-center justify-center">
       {chartData ? (
         <TimeSeriesChart
           key={queryString}

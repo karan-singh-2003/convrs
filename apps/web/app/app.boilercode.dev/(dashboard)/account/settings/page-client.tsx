@@ -15,7 +15,7 @@ export function SettingsPageClient() {
     <SettingsChildrenLayout
       title="General"
       description="Put a face to your name, edit your login details, and set preferences"
-      className=""
+      className="lg:px-8 px-3"
     >
       <div className="space-y-6 ">
         <Form

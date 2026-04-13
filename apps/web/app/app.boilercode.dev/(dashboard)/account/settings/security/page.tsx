@@ -12,7 +12,7 @@ const page = () => {
       <SettingsChildrenLayout
         title="Security "
         description="Manage your password and two-factor authentication."
-        className=""
+         className="lg:px-8 px-3"
       >
         <div className="space-y-6 bg-white p-4 rounded-2xl border border-neutral-200">
           <Password />
@@ -23,7 +23,7 @@ const page = () => {
       <SettingsChildrenLayout
         title="Security "
         description="Manage devices where you’re signed in"
-        className="py-5"
+        className="py-5 lg:px-8 px-3"
         actions={[]}
       >
         <Sessions />

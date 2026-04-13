@@ -1,10 +1,12 @@
+import "dotenv/config";
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { trackClickController } from "./controllers/track.js";
+import { stripeWebhookController } from "./controllers/stripe-webhook-controller";
 
 const app = express();
 
-// ✅ 1. FIRST — handle preflight manually
+//  1. FIRST — handle preflight manually
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -12,13 +14,13 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
-    return res.sendStatus(204); // 👈 MUST stop here
+    return res.sendStatus(204); //  MUST stop here
   }
 
   next();
 });
 
-// ✅ 2. THEN cors middleware
+//  2. THEN cors middleware
 const corsOptions = {
   origin: function (origin: string | undefined, callback: Function) {
     if (!origin) return callback(null, true);
@@ -32,17 +34,24 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// ✅ 3. body parser
+// 3. Stripe webhook route must use raw body for signature verification
+app.post(
+  "/api/stripe/webhook/:workspaceId",
+  express.raw({ type: "*/*" }),
+  stripeWebhookController
+);
+
+// 4. body parser for non-Stripe routes
 app.use(express.json());
 
-// ✅ 4. routes
+//  5. routes
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
 app.post("/api/track", trackClickController);
 
-// ✅ 5. start server
+//  6. start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Ingestion server running on port ${PORT}`);

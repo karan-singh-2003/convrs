@@ -1,53 +1,113 @@
 model Workspace {
-  id         String  @id @default(cuid())
-  name       String
-  slug       String  @unique
-  domain     String?
-  logo       String?
-  inviteCode String? @unique
-  plan      String? 
-
-  // Stripe (clean + required)
-  stripeCustomerId     String? @unique
-  stripeSubscriptionId String? @unique
-  subscriptionStatus   String? // "active" | "past_due" | "canceled"
-  billingInterval      String? // "month" | "year"
-  currentPeriodEnd     DateTime?
+  id                   String            @id @default(cuid())
+  name                 String
+  slug                 String            @unique
+  logo                 String?
+  inviteCode           String?           @unique
+  ssoEmailDomain       String?           @unique
+  ssoEnforcedAt        DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  usageLastChecked     DateTime          @default(now())
+  invoicePrefix        String?           @unique
   paymentFailedAt      DateTime?
-
-  //  Usage-based pricing
-  usage        Int  @default(0)
-  usageLimit   Int  @default(10000) // enforced limit
-  tierEvents   Int?                 // 10k, 100k, etc
-
-  // Trial (internal, NOT Stripe)
-  freeTrialEndDate DateTime?
-
-  // Workspace config
-  userLimit Int @default(1)
-
-  ssoEmailDomain String? @unique
-  ssoEnforcedAt  DateTime?
-
-  webhookEnabled Boolean @default(false)
-
-  //  System
-  usageLastChecked DateTime @default(now())
-  projectToken     String?  @unique
-  invoicePrefix    String?  @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  //  Relations
-  users            WorkspaceUsers[]
-  invites          WorkspaceInvite[]
-  sentEmails       SentEmail[]
-  invoices         Invoice[]
-  restrictedTokens RestrictedToken[]
-  webhooks         Webhook[]
+  userLimit            Int               @default(1)
+  webhookEnabled       Boolean           @default(false)
+  billingInterval      String?
+  currentPeriodEnd     DateTime?
+  freeTrialEndDate     DateTime?
+  projectToken         String?           @unique
+  stripeCustomerId     String?           @unique
+  stripeSubscriptionId String?           @unique
+  subscriptionStatus   String?
+  tierEvents           Int?
+  usage                Int               @default(0)
+  usageLimit           Int               @default(10000)
+  domain               String?
+  plan                 String?
+  invoices             Invoice[]
+  restrictedTokens     RestrictedToken[]
+  sentEmails           SentEmail[]
+  webhooks             Webhook[]
+  invites              WorkspaceInvite[]
+  users                WorkspaceUsers[]
+  funnels              Funnel[]
+  customers            Customer[]
+  stripeIntegration    StripeIntegration?
 
   @@index([usageLastChecked])
+}
+
+model WorkspaceInvite {
+  email       String
+  expires     DateTime
+  workspaceId String
+  role        WorkspaceRole @default(member)
+  createdAt   DateTime      @default(now())
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([email, workspaceId])
+  @@index([workspaceId])
+}
+
+model WorkspaceUsers {
+  id                   String        @id @default(cuid())
+  role                 WorkspaceRole @default(member)
+  userId               String
+  workspaceId          String
+  workspacePreferences Json?
+  defaultFolderId      String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace            Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+model SentEmail {
+  id          String     @id @default(cuid())
+  type        String
+  createdAt   DateTime   @default(now())
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+enum FunnelStepType {
+  goal
+  page_view
+}
+
+model Funnel {
+  id          String     @id @default(cuid())
+  workspaceId String
+  name        String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  steps     FunnelStep[]
+
+  @@index([workspaceId])
+}
+
+model FunnelStep {
+  id        String         @id @default(cuid())
+  funnelId  String
+  name      String
+  value     String
+  type      FunnelStepType
+  order     Int
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  funnel Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
+  @@unique([funnelId, order])
 }
 
 enum WorkspaceRole {
@@ -55,44 +115,4 @@ enum WorkspaceRole {
   member
   viewer
   billing
-}
-
-model WorkspaceInvite {
-  email     String
-  expires   DateTime
-  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId String
-  role      WorkspaceRole @default(member)
-  createdAt DateTime      @default(now())
-
-  @@unique([email, workspaceId])
-  @@index([workspaceId])
-}
-
-model WorkspaceUsers {
-  id                     String                  @id @default(cuid())
-  role                   WorkspaceRole           @default(member)
-  userId                 String
-  workspaceId            String
-  workspacePreferences   Json?
-  defaultFolderId        String?
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, workspaceId])
-  @@index([workspaceId])
-}
-
-// TODO: could potentially combine this with NotificationEmail in the future?
-model SentEmail {
-  id        String   @id @default(cuid())
-  type      String
-  createdAt DateTime @default(now())
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId String?
-
-  @@index([workspaceId])
 }

@@ -8,7 +8,76 @@ import {
   Crosshair,
   MoveUpRight,
 } from "lucide-react";
-import { time } from "console";
+import { useSearchParams } from "next/navigation";
+import useCustomer from "@/lib/swr/use-customer";
+
+type CustomerDetails = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  avatar: string | null;
+  externalId: string | null;
+  stripeCustomerId: string | null;
+  country: string | null;
+  sales: number;
+  saleAmount: number;
+  firstSaleAt: string | null;
+  subscriptionCanceledAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
+
+const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+const shortTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const formatDate = (value: string | null) => {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? "-"
+    : fullDateFormatter.format(parsed);
+};
+
+const formatRelativeDays = (value: string | null) => {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "-";
+  const diffMs = Date.now() - parsed.getTime();
+  const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+};
+
+const formatAmount = (value: number) =>
+  currencyFormatter.format((value || 0) / 100);
+
+const getTimeToSale = (customer: CustomerDetails | null) => {
+  if (!customer?.createdAt || !customer.firstSaleAt) return "-";
+  const createdAt = new Date(customer.createdAt).getTime();
+  const firstSaleAt = new Date(customer.firstSaleAt).getTime();
+  if (
+    Number.isNaN(createdAt) ||
+    Number.isNaN(firstSaleAt) ||
+    firstSaleAt < createdAt
+  ) {
+    return "-";
+  }
+  const days = Math.floor((firstSaleAt - createdAt) / (1000 * 60 * 60 * 24));
+  return `${days} day${days === 1 ? "" : "s"}`;
+};
 
 const activities = [
   {
@@ -94,39 +163,90 @@ const activities = [
 ];
 
 export default function CustomerDetailsPage() {
+  const searchParams = useSearchParams();
+  const customerId = searchParams.get("customerId");
+  const { customer, loading: isLoading } = useCustomer(customerId);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
   const toggleGroup = (date: string) => {
     setOpenGroups((prev) => ({
       ...prev,
       [date]: !prev[date],
     }));
   };
+
+  const metrics = [
+    {
+      label: "First Sale date",
+      value: formatDate(customer?.firstSaleAt ?? null),
+    },
+    { label: "Time to sale", value: getTimeToSale(customer) },
+    { label: "Lifetime Value", value: formatAmount(customer?.saleAmount ?? 0) },
+    {
+      label: "Subscription Cancelled",
+      value: formatDate(customer?.subscriptionCanceledAt ?? null),
+    },
+  ];
+
+  const displayName = customer?.name || "Unnamed customer";
+  const displayEmail = customer?.email || "No email";
+  const displayAvatar =
+    customer?.avatar ||
+    `https://api.dicebear.com/9.x/glass/svg?seed=${encodeURIComponent(
+      customer?.name || customer?.email || customer?.id || "customer"
+    )}`;
+
+  if (!customerId) {
+    return (
+      <div className="max-w-screen-lg mx-auto px-3 sm:px-0">
+        <div className="rounded-2xl font-display bg-[#fafafa] p-4 text-sm text-neutral-400">
+          Missing customerId in URL. Open a customer from the customers list.
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="max-w-screen-lg mx-auto px-3 sm:px-0">
+        <div className="rounded-2xl font-display bg-[#fafafa] p-4 text-sm text-neutral-400">
+          Loading customer details...
+        </div>
+      </div>
+    );
+  }
+
+  if (!customer) {
+    return (
+      <div className="max-w-screen-lg mx-auto px-3 sm:px-0">
+        <div className="rounded-2xl font-display bg-[#fafafa] p-4 text-sm text-neutral-400">
+          Customer not found.
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-screen-lg mx-auto  space-y-6">
+    <div className="max-w-screen-lg mx-auto px-3 sm:px-0 space-y-6">
       {/* Top Metrics */}
-      <div className="grid grid-cols-4 gap-2 bg-[#fafafa] p-2 rounded-[18px]">
-        {[
-          { label: "First Sale date", value: "Apr 1, 2026" },
-          { label: "Time to sale", value: "20 days" },
-          { label: "Lifetime Value", value: "$400" },
-          { label: "Subscription Cancelled", value: "—" },
-        ].map((item) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 bg-[#fafafa] p-2 rounded-[18px]">
+        {metrics.map((item) => (
           <div
             key={item.label}
-            className="bg-white rounded-[16px] space-y-1 px-6 py-5 h-28  "
+            className="bg-white rounded-[16px] space-y-1 px-4 sm:px-6 py-5 min-h-24"
           >
             <p className="text-[14px] font-display  text-neutral-400">
               {item.label}
             </p>
-            <p className="text-xl font-display font-medium font-bricolageGrotesque text-neutral-600">
+            <p className="text-lg sm:text-xl font-bricolageGrotesque font-medium text-neutral-600 break-words">
               {item.value}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-6 px-3">
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <h2 className="text-[14.5px] font-medium font-display text-neutral-500">
             Activity
           </h2>
@@ -161,13 +281,17 @@ export default function CustomerDetailsPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-x-3 text-neutral-500">
                               {item.icon}
-                              <p className="text-neutral-500/85 font-medium text-[15px]">
+                              <p className="text-neutral-500/85 font-medium text-[14px] sm:text-[15px]">
                                 {item.title}
                               </p>
                             </div>
 
                             <div className="text-xs font-poppins text-neutral-400">
-                              {item.time}
+                              {customer.updatedAt
+                                ? shortTimeFormatter.format(
+                                    new Date(customer.updatedAt)
+                                  )
+                                : item.time}
                             </div>
                           </div>
                         </div>
@@ -177,7 +301,8 @@ export default function CustomerDetailsPage() {
 
                   <div className=" py-0.5">
                     <h1 className="font-display font-medium text-neutral-500 text-sm px-4 py-1">
-                      Session lasted for 12 min
+                      Session lasted for {Math.max(1, customer.sales || 1) * 3}{" "}
+                      min
                     </h1>
                   </div>
                 </div>
@@ -186,18 +311,19 @@ export default function CustomerDetailsPage() {
           ))}
         </div>
 
-        <div className="relative">
+        <div className="relative order-1 lg:order-2">
           {/* Card */}
-          <div className="bg-white border border-neutral-100 rounded-[34px] p-6 space-y-4 shadow-[0_10px_30px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.04)]">
+          <div className="bg-white border border-neutral-100 rounded-[24px] sm:rounded-[34px] p-5 sm:p-6 space-y-4 shadow-[0_10px_30px_rgba(0,0,0,0.06),0_2px_6px_rgba(0,0,0,0.04)]">
             {/* Avatar + Name */}
             <div className="flex flex-col gap-3">
               <img
-                src="https://api.dicebear.com/9.x/glass/svg?seed=GorgeousWolf"
+                src={displayAvatar}
                 className="h-16 w-16 rounded-full"
+                alt={displayName}
               />
 
               <h3 className="font-medium text-[20px] text-neutral-600">
-                Gorgeous Wolf
+                {displayName}
               </h3>
             </div>
 
@@ -220,23 +346,24 @@ export default function CustomerDetailsPage() {
                   />
                 </svg>
 
-                <span className="text-neutral-600">gorgeouswolf@gmail.com</span>
+                <span className="text-neutral-600 break-all">
+                  {displayEmail}
+                </span>
               </div>
 
               {/* Country */}
               <div className="flex items-center gap-2">
-                <img
-                  alt="France flag"
-                  src="https://hatscripts.github.io/circle-flags/flags/fr.svg"
-                  className="h-4 w-4 shrink-0"
-                />
-                <span className="text-neutral-600">France</span>
+                <span className="text-neutral-600">
+                  {customer.country || "-"}
+                </span>
               </div>
 
               {/* Activity */}
               <div className="flex items-center gap-2">
                 <Activity size={16} />
-                <span className="text-neutral-600">7 days ago</span>
+                <span className="text-neutral-600">
+                  {formatRelativeDays(customer.updatedAt || customer.createdAt)}
+                </span>
               </div>
             </div>
 
@@ -245,21 +372,21 @@ export default function CustomerDetailsPage() {
               <div className="flex flex-col gap-y-2 text-sm">
                 <span className="text-neutral-400">User ID</span>
                 <span className="font-mono text-neutral-700 bg-neutral-100 px-2 py-1 rounded-md">
-                  user_kcni1948nclanhfvi6
+                  {customer.externalId || customer.id}
                 </span>
               </div>
 
               <div className="flex flex-col gap-y-2 text-sm">
                 <span className="text-neutral-400">Stripe Customer</span>
                 <span className="font-mono text-neutral-700 bg-neutral-100 px-2 py-1 rounded-md">
-                  cus_afujintg08954
+                  {customer.stripeCustomerId || "-"}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Bottom Lift Shadow (THIS is the key) */}
-          <div className="pointer-events-none absolute inset-x-6 -bottom-5 h-8 bg-black/10 blur-2xl rounded-full" />
+          <div className="pointer-events-none absolute inset-x-6 -bottom-4 h-8 bg-black/10 blur-2xl rounded-full" />
         </div>
       </div>
     </div>

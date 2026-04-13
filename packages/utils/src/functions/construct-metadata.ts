@@ -3,7 +3,7 @@ import { Metadata } from "next";
 export function constructMetadata({
   title,
   fullTitle,
-  description = "Boilercode is a production-ready SaaS starter that helps developers launch modern web applications faster with authentication, workspaces, billing, and scalable infrastructure.",
+  description = "Visitors - Fast and reliable visitor analytics for your SaaS. Get insights on user behavior, traffic sources, and more to grow your business.",
   image = "https://boilercode.dev/og-image.png",
   video,
   icons = {
@@ -33,8 +33,8 @@ export function constructMetadata({
     title:
       fullTitle ||
       (title
-        ? `${title} | Boilercode`
-        : "Boilercode — Production-Ready SaaS Starter"),
+        ? `${title} | Visitors`
+        : "Visitors — Fast and reliable visitor analytics"),
 
     description,
 
@@ -48,7 +48,7 @@ export function constructMetadata({
       ...(video && {
         videos: video,
       }),
-      siteName: "BoilerCode",
+      siteName: "Visitors",
       type: "website",
     },
 
@@ -63,7 +63,7 @@ export function constructMetadata({
 
     icons,
 
-    metadataBase: new URL("https://boilercode.dev"),
+    metadataBase: new URL("https://visitors.dev"),
 
     ...((url || canonicalUrl) && {
       alternates: {

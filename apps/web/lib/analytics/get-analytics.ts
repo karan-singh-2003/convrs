@@ -24,6 +24,51 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     dataAvailableFrom,
   } = params;
 
+  if (event === "funnel") {
+    const funnelPipe = tb.buildPipe({
+      pipe: "v1_funnel",
+      parameters: z.object({
+        workspaceId: z.string().min(1),
+        steps: z.string().optional(),
+      }),
+      data: z.object({
+        step: z.string(),
+        users: z.coerce.number().int().nonnegative(),
+      }),
+    });
+
+    const rawSteps = (params as any)?.steps;
+    const rawStepsCsv = (params as any)?.stepsCsv;
+
+    const normalizedFromArray = Array.isArray(rawSteps)
+      ? rawSteps
+          .map((step) => String(step).trim())
+          .filter(Boolean)
+          .slice(0, 8)
+      : [];
+
+    const normalizedFromCsv =
+      typeof rawStepsCsv === "string" && rawStepsCsv.trim().length > 0
+        ? rawStepsCsv
+            .split(",")
+            .map((step) => step.trim())
+            .filter(Boolean)
+            .slice(0, 8)
+        : [];
+
+    const normalizedSteps =
+      normalizedFromArray.length > 0 ? normalizedFromArray : normalizedFromCsv;
+
+    const funnelResponse = await funnelPipe({
+      workspaceId: workspaceId as string,
+      ...(normalizedSteps.length > 0
+        ? { steps: normalizedSteps.join(",") }
+        : {}),
+    });
+
+    return funnelResponse.data;
+  }
+
   const { startDate, endDate, granularity } = getStartEndDates({
     interval,
     start,
@@ -39,17 +84,25 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       country,
     });
 
+  const selectedPipe = ["count", "timeseries"].includes(groupBy!)
+    ? `v1_${groupBy}`
+    : "v1_group_by";
+
+  // v1_count handles composite via count_composite and should not receive
+  // eventType='composite', because count_clicks would apply an event_type filter.
+  const eventTypeForPipe =
+    selectedPipe === "v1_count" && event === "composite" ? undefined : event;
+
   // Create a Tinybird pipe
   const pipe = tb.buildPipe({
-    pipe: ["count", "timeseries"].includes(groupBy!)
-      ? `v1_${groupBy}`
-      : "v1_group_by",
+    pipe: selectedPipe,
     parameters: analyticsFilterTB,
     data: z.object({
       groupByField: z.string().optional(),
       clicks: z.number().nullable().default(0),
       bounce_rate: z.number().nullable().default(0),
       avg_session_duration: z.number().nullable().default(0),
+      events: z.number().nullable().default(0),
       saleAmount: z.number().nullable().default(0),
       country: z.string().optional(),
       region: z.string().optional(),
@@ -62,12 +115,10 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     trigger: triggerForPipe,
   });
 
-  console.log(advancedFilters);
-
   const tinybirdParams: any = {
     workspaceId,
     groupBy,
-    eventType: event,
+    eventType: eventTypeForPipe,
     start: formatUTCDateTimeClickhouse(startDate),
     end: formatUTCDateTimeClickhouse(endDate),
     granularity,
@@ -77,9 +128,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
   };
 
-  console.log("Tinybird params:", tinybirdParams);
   const response = await pipe(tinybirdParams);
-  console.log("Tinybird response:", response);
 
   // Return parsed response
   const schema = analyticsResponse[groupBy!];

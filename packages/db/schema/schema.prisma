@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,29 +7,23 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  source        String?   // twitter, producthunt, google, direct
-
-  // password data
-  passwordHash String?
-  
-  defaultWorkspace String?
-  createdAt DateTime @default(now())
-
-  twoFactorSecret        String?   @unique
+  id                     String            @id @default(cuid())
+  name                   String?
+  email                  String?           @unique
+  emailVerified          DateTime?
+  image                  String?
+  passwordHash           String?
+  createdAt              DateTime          @default(now())
+  defaultWorkspace       String?
   twoFactorConfirmedAt   DateTime?
-  twoFactorRecoveryCodes String? // comma separated list
-
-  // relational data
-  accounts       Account[]
-  sessions       Session[]
-  workspaceUsers WorkspaceUsers[]
-  restrictedTokens RestrictedToken[]
-  tokens         Token[]
+  twoFactorRecoveryCodes String?
+  twoFactorSecret        String?           @unique
+  source                 String?
+  accounts               Account[]
+  restrictedTokens       RestrictedToken[]
+  sessions               Session[]
+  tokens                 Token[]
+  workspaceUsers         WorkspaceUsers[]
 }
 
 model Account {
@@ -44,16 +32,15 @@ model Account {
   type                     String
   provider                 String
   providerAccountId        String
-  refresh_token            String? @db.Text
+  refresh_token            String?
   refresh_token_expires_in Int?
-  access_token             String? @db.Text
+  access_token             String?
   expires_at               Int?
   token_type               String?
   scope                    String?
-  id_token                 String? @db.Text
+  id_token                 String?
   session_state            String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -64,17 +51,14 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  // Device & location tracking
-  deviceName   String?
-  deviceType   String?  // "desktop", "mobile", "tablet"
   browser      String?
-  os           String?
-  ipAddress    String?
-  location     String?
-  lastActive   DateTime @default(now())
   createdAt    DateTime @default(now())
-
+  deviceName   String?
+  deviceType   String?
+  ipAddress    String?
+  lastActive   DateTime @default(now())
+  location     String?
+  os           String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

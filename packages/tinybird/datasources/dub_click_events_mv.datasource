@@ -1,42 +1,69 @@
-# Data Source created from Pipe 'dub_click_events_pipe'
+TOKEN "dub_tinybird_token" APPEND
 
 SCHEMA >
-    `timestamp` DateTime64(3),
-    `click_id` String,
-    `workspace_id` LowCardinality(String),
-    `link_id` String,
-    `domain` String,
-    `key` String,
-    `url` String,
-    `continent` LowCardinality(String),
-    `country` LowCardinality(String),
-    `city` LowCardinality(String),
-    `region` LowCardinality(String),
-    `latitude` String,
-    `longitude` String,
-    `device` LowCardinality(String),
-    `browser` LowCardinality(String),
-    `os` LowCardinality(String),
-    `trigger` String,
-    `ua` String,
-    `referer` String,
-    `referer_url` String,
-    `ip` String,
-    `identity_hash` String,
-    `hostname` Nullable(String),
-    `page` Nullable(String),
-    `entrypage` Nullable(String),
-    `exitlink` Nullable(String),
-    `device_model` LowCardinality(String),
-    `device_vendor` LowCardinality(String),
-    `browser_version` String,
-    `os_version` String,
-    `engine` LowCardinality(String),
-    `engine_version` String,
-    `cpu_architecture` LowCardinality(String),
-    `qr` UInt8,
-    `bot` UInt8
 
-ENGINE "MergeTree"
-ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
-ENGINE_SORTING_KEY "workspace_id, link_id, timestamp"
+--  Core identity
+`event_id` UUID `json:$.event_id`,
+`timestamp` DateTime64(3) `json:$.timestamp`,
+`event_type` LowCardinality(String) `json:$.event_type`,  
+`event_name` LowCardinality(String) `json:$.event_name`,   
+
+--  Identity & correlation
+`workspace_id` Nullable(String) `json:$.workspace_id`,
+`user_id` Nullable(Int64) `json:$.user_id`,
+`visitor_id` Nullable(String) `json:$.visitor_id`,
+`session_id` Nullable(String) `json:$.session_id`,
+`identity_hash` Nullable(String) `json:$.identity_hash`,
+
+-- Attribution (your Dub advantage)
+`utm_source` Nullable(String) `json:$.utm_source`,
+`utm_medium` Nullable(String) `json:$.utm_medium`,
+`utm_campaign` Nullable(String) `json:$.utm_campaign`,
+`utm_content` Nullable(String) `json:$.utm_content`,
+`utm_term` Nullable(String) `json:$.utm_term`,
+
+--  Navigation context
+`url` Nullable(String) `json:$.url`,
+`hostname` Nullable(String) `json:$.hostname`,
+`page` Nullable(String) `json:$.page`,
+`entrypage` Nullable(String) `json:$.entrypage`,
+`exitlink` Nullable(String) `json:$.exitlink`,
+`referer` Nullable(String) `json:$.referer`,
+`referer_url` Nullable(String) `json:$.referer_url`,
+
+--  Geo
+`country` LowCardinality(String) `json:$.country`,
+`city` String `json:$.city`,
+`region` String `json:$.region`,
+`continent` LowCardinality(String) `json:$.continent`,
+`latitude` Nullable(String) `json:$.latitude`,
+`longitude` Nullable(String) `json:$.longitude`,
+
+--  Device / UA
+`device` LowCardinality(String) `json:$.device`,
+`device_model` LowCardinality(String) `json:$.device_model`,
+`device_vendor` LowCardinality(String) `json:$.device_vendor`,
+`browser` LowCardinality(String) `json:$.browser`,
+`browser_version` String `json:$.browser_version`,
+`os` LowCardinality(String) `json:$.os`,
+`os_version` String `json:$.os_version`,
+`engine` LowCardinality(String) `json:$.engine`,
+`engine_version` String `json:$.engine_version`,
+`cpu_architecture` LowCardinality(String) `json:$.cpu_architecture`,
+`ua` String `json:$.ua`,
+`bot` UInt8 `json:$.bot`,
+
+--  Infra
+`ip` Nullable(String) `json:$.ip`,
+`vercel_region` Nullable(String) `json:$.vercel_region`,
+
+--  Flags
+`qr` UInt8 `json:$.qr`,
+`trigger` Nullable(String) `json:$.trigger`,
+
+--  Custom payload (flexible)
+`event_properties` String `json:$.event_properties`,
+
+-- Revenue (critical for analytics)
+`revenue` Nullable(Float64) `json:$.revenue`,
+`currency` LowCardinality(String) `json:$.currency`,

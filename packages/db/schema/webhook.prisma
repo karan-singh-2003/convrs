@@ -1,14 +1,10 @@
-enum WebhookReceiver {
-  user
-}
-
 model Webhook {
   id                  String          @id @default(cuid())
-  workspaceId           String
-  installationId      String? // indicates which integration installation added the webhook
+  workspaceId         String
+  installationId      String?
   receiver            WebhookReceiver
   name                String
-  url                 String          
+  url                 String
   secret              String
   triggers            Json
   consecutiveFailures Int             @default(0)
@@ -16,41 +12,42 @@ model Webhook {
   disabledAt          DateTime?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
+  links               LinkWebhook[]
+  workspace           Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  events              WebhookEvent[]
 
-  workspace              Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  links                LinkWebhook[]
-  events               WebhookEvent[]
-
-  @@index(workspaceId)
-  @@index(installationId)
+  @@index([workspaceId])
+  @@index([installationId])
 }
 
 model LinkWebhook {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   linkId    String
   webhookId String
-
-  webhook Webhook @relation(fields: [webhookId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  webhook   Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@unique([linkId, webhookId])
-  @@index(webhookId)
+  @@index([webhookId])
 }
 
 model WebhookEvent {
   id           String   @id @default(cuid())
-  eventId      String   @unique // evt_xxx format
+  eventId      String   @unique
   webhookId    String
-  messageId    String   // QStash message ID
-  event        String   // workspace.created, etc.
+  messageId    String
+  event        String
   url          String
   httpStatus   Int
-  requestBody  String   @db.Text
-  responseBody String   @db.Text
+  requestBody  String
+  responseBody String
   timestamp    DateTime @default(now())
   createdAt    DateTime @default(now())
+  webhook      Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
-  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  @@index([webhookId])
+  @@index([timestamp])
+}
 
-  @@index(webhookId)
-  @@index(timestamp)
+enum WebhookReceiver {
+  user
 }

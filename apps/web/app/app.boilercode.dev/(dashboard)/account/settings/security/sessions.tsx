@@ -167,5 +167,5 @@ export default function Sessions() {
     error: undefined,
   });
 
-  return <Table table={table} {...tableProps} />;
+  return <Table table={table} {...tableProps} className="bg-white rounded-2xl border border-neutral-200"/>;
 }

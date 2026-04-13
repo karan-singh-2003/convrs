@@ -32,7 +32,7 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
+        source: "/api/track",
         destination: "https://ingest.karanbuilds.me/api/:path*",
       },
     ];

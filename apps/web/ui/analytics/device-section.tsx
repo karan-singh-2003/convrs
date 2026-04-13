@@ -57,8 +57,7 @@ export function DeviceSection() {
     setSelectedItems([]);
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
-console.log("DeviceSection - data:", data);
-console.log("DeviceSection - singular tab name:", singularTabName);
+
   return (
     <AnalyticsCard
       tabs={[

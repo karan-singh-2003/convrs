@@ -358,7 +358,7 @@ export function LineItem({
               transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)`,
             }}
           >
-            {percentage}%
+            {percentage > 0 ? `${percentage}%` : "0%"}
           </div>
         </div>
       </div>

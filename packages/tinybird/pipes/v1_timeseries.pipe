@@ -5,6 +5,8 @@ DESCRIPTION >
 TAGS "Dub Endpoints"
 
 NODE month_intervals
+
+
 SQL >
 
     %
@@ -157,14 +159,14 @@ SQL >
             )
         {% else %} toDateTime64(toStartOfDay(timestamp, {{ String(timezone, 'UTC') }}), 3)
         {% end %} AS interval,
-        uniq(click_id) as clicks
+        uniq(event_id) as clicks
     FROM
         {% if defined(customerId) %} dub_click_events_id
         {% else %} dub_click_events_mv
         {% end %}
         {% if defined(customerId) %}
-            PREWHERE click_id IN (
-                SELECT DISTINCT click_id
+            PREWHERE event_id IN (
+                SELECT DISTINCT event_id
                 FROM dub_lead_events_mv
                 WHERE customer_id = {{ String(customerId) }}
             )

@@ -1,26 +1,29 @@
 model jackson_index {
-  id       Int    @id @default(autoincrement())
-  key      String @db.VarChar(250)
-  storeKey String @db.VarChar(250)
+  id            Int           @id @default(autoincrement())
+  key           String        @db.VarChar(1500)
+  storeKey      String        @db.VarChar(1500)
+  jackson_store jackson_store @relation(fields: [storeKey], references: [key], onDelete: Cascade, onUpdate: NoAction, map: "FK_937b040fb2592b4671cbde09e83")
 
   @@index([key, storeKey], map: "_jackson_index_key_store")
+  @@index([key], map: "_jackson_index_key")
 }
 
 model jackson_store {
-  key        String    @id @db.VarChar(250)
-  value      String    @db.Text
-  iv         String?   @db.VarChar(64)
-  tag        String?   @db.VarChar(64)
-  namespace  String?   @db.VarChar(64)
-  createdAt  DateTime  @default(now()) @db.Timestamp(0)
-  modifiedAt DateTime? @db.Timestamp(0)
+  value         String
+  iv            String?         @db.VarChar(64)
+  tag           String?         @db.VarChar(64)
+  createdAt     DateTime        @default(now()) @db.Timestamp(6)
+  modifiedAt    DateTime?       @db.Timestamp(6)
+  key           String          @id(map: "PK_87b6fc1475fbd1228d2f53c6f4a") @db.VarChar(1500)
+  namespace     String?         @db.VarChar(256)
+  jackson_index jackson_index[]
 
   @@index([namespace], map: "_jackson_store_namespace")
 }
 
 model jackson_ttl {
-  key       String @id @db.VarChar(250)
   expiresAt BigInt
+  key       String @id(map: "PK_7c9bcdfb4d82e873e19935ec806") @db.VarChar(1500)
 
   @@index([expiresAt], map: "_jackson_ttl_expires_at")
 }

@@ -53,14 +53,49 @@
     return _script ? _script.getAttribute(name) : null;
   };
 
-  // Derive default endpoint from script src so relative paths work automatically
+  // Get script src safely
   var _src = (_script && _script.src) || "";
-  var _defaultEndpoint = _src
-    ? "https://ingest.karanbuilds.me/api/track" // always hardcoded, not derived from _src
-    : "http://localhost:3000/api/track";
-    
+  var isCDN = _src.includes("cdn.karanbuilds.me");
+
+  function normalizeApiEndpoint(value) {
+    if (value == null) return null;
+
+    var v = String(value).trim();
+    if (!v) return null;
+
+    var lower = v.toLowerCase();
+    if (
+      lower === "undefined" ||
+      lower === "null" ||
+      lower === "false" ||
+      lower === "nan" ||
+      lower === "/undefined" ||
+      lower.indexOf("undefined") === 0
+    ) {
+      return null;
+    }
+
+    try {
+      // Validate URL shape (absolute or relative) to avoid fetch('/undefined').
+      new URL(v, window.location.href);
+      return v;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  var _defaultEndpoint = isCDN
+    ? "http://localhost:3000/api/track"
+    : new URL("/api/track", window.location.origin).href;
   var _rawApi = attr("data-api");
-  var _endpoint = _rawApi ? _rawApi : _defaultEndpoint;
+  var _sanitizedApi = normalizeApiEndpoint(_rawApi);
+  var _invalidApiValue = _rawApi && !_sanitizedApi ? _rawApi : null;
+  var _endpoint = _sanitizedApi || _defaultEndpoint;
+
+  if (!_endpoint || _endpoint.includes("undefined")) {
+    console.error("Invalid endpoint:", _endpoint);
+    return;
+  }
 
   var _websiteId = attr("data-website-id") || attr("data-token") || "";
   var _domain = attr("data-domain") || "";
@@ -74,6 +109,10 @@
     var args = Array.prototype.slice.call(arguments, 1);
     args.unshift("[Analytics]");
     console[level].apply(console, args);
+  }
+
+  if (_invalidApiValue) {
+    log("warn", "Ignoring invalid data-api value:", _invalidApiValue);
   }
 
   // ─── ENABLED STATE ─────────────────────────────────────────────────────────
@@ -234,24 +273,37 @@
 
   // ─── PAYLOAD ───────────────────────────────────────────────────────────────
   function buildBase() {
+    var href = window.location.href;
+    var hostname = window.location.hostname;
+    var referrer = document.referrer || null;
+    var language = navigator.language || "";
+    var timezone =
+      (Intl && Intl.DateTimeFormat
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : "") || "";
+    var screenWidth = screen.width || 0;
+    var screenHeight = screen.height || 0;
+    var viewportWidth = window.innerWidth || 0;
+    var viewportHeight = window.innerHeight || 0;
+    var sessionId = getSessionId();
+    var visitorId = getVisitorId();
+
     return {
-      website_id: _websiteId,
-      url: window.location.href,
-      hostname: window.location.hostname,
-      referrer: document.referrer || null,
-      title: document.title || "",
-      language: navigator.language || "",
-      timezone:
-        (Intl && Intl.DateTimeFormat
-          ? Intl.DateTimeFormat().resolvedOptions().timeZone
-          : "") || "",
-      screen_w: screen.width || 0,
-      screen_h: screen.height || 0,
-      viewport_w: window.innerWidth || 0,
-      viewport_h: window.innerHeight || 0,
-      timestamp: new Date().toISOString(),
-      session_id: getSessionId(),
-      visitor_id: getVisitorId(),
+      // Camel-case payload (requested format)
+      websiteId: _websiteId,
+      visitorId: visitorId,
+      timezone: timezone,
+      domain: _domain || hostname,
+      href: href,
+      language: language,
+      referrer: referrer,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+      viewport: {
+        width: viewportWidth,
+        height: viewportHeight,
+      },
+      sessionId: sessionId,
     };
   }
 
@@ -288,7 +340,6 @@
     return out;
   }
 
-  // ─── NETWORK ───────────────────────────────────────────────────────────────
   // ─── NETWORK ───────────────────────────────────────────────────────────────
 
   // sendBeacon always uses credentials: 'include' and can't be changed.
@@ -372,9 +423,18 @@
     }
 
     var payload = buildBase();
-    payload.type = "event";
-    payload.event_name = eventName;
-    payload.props = sanitizeProps(props);
+    payload.type = "custom";
+    payload.eventName = eventName;
+
+    var cleanProps = sanitizeProps(props);
+    payload.extraData = Object.assign({ eventName: eventName }, cleanProps);
+
+    // Surface custom keys at top-level (requested shape examples).
+    for (var k in cleanProps) {
+      if (Object.prototype.hasOwnProperty.call(cleanProps, k)) {
+        payload[k] = cleanProps[k];
+      }
+    }
     send(payload);
     if (typeof callback === "function") callback({ status: 200 });
   }
@@ -553,12 +613,75 @@
     initScrollTracking();
     trackPageview();
     drainQueue();
+    startHeartbeat();
   }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
+  }
+  // ─── LIVE HEARTBEAT ────────────────────────────────────────────────────────
+  // Sends a heartbeat every 10s so the dashboard knows who is currently online.
+  // Uses the same endpoint base as analytics but hits /api/live/heartbeat.
+  // Pauses when tab is hidden to save bandwidth.
+
+  var _heartbeatInterval = null;
+  var _liveEndpoint =
+    (isCDN
+      ? "http://localhost:8888/api/live/heartbeat"
+      : new URL("/api/live/heartbeat", window.location.origin).href);
+
+  function sendHeartbeat() {
+    if (!_enabled || isOptedOut()) return;
+    if (document.hidden) return; // don't send when tab not visible
+
+    var body = JSON.stringify({
+      workspaceId: _websiteId,
+      visitorId: getVisitorId(),
+      sessionId: getSessionId(),
+      page: window.location.pathname,
+      url: window.location.href,
+    });
+
+    // Use sendBeacon for heartbeats — survives page unload perfectly
+    if (
+      typeof navigator.sendBeacon === "function" &&
+      !isCrossOrigin(_liveEndpoint)
+    ) {
+      navigator.sendBeacon(
+        _liveEndpoint,
+        new Blob([body], { type: "application/json" })
+      );
+      return;
+    }
+
+    // fetch fallback
+    try {
+      fetch(_liveEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body,
+        keepalive: true,
+        credentials: "omit",
+      }).catch(function () {});
+    } catch (_) {}
+  }
+
+  function startHeartbeat() {
+    if (!_enabled || isOptedOut()) return;
+    sendHeartbeat(); // send immediately on load
+    _heartbeatInterval = setInterval(sendHeartbeat, 10000); // then every 10s
+
+    // Resume when tab becomes visible again
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) sendHeartbeat();
+    });
+
+    // Stop on page unload — beacon already handles the final ping
+    window.addEventListener("beforeunload", function () {
+      if (_heartbeatInterval) clearInterval(_heartbeatInterval);
+    });
   }
 
   // ─── PUBLIC API ────────────────────────────────────────────────────────────
@@ -567,4 +690,63 @@
     trackEvent: trackEvent,
     identify: identify,
   };
+
+  // ─── window.datafast ALIAS ─────────────────────────────────────────────────
+  // Mirrors the datafast calling convention exactly:
+  //
+  //   window.datafast("initiate_checkout", { plan: "pro", email: "a@b.com" })
+  //   window.datafast("identify", { user_id: "u_123", name: "Jane" })
+  //   window.datafast("pageview")
+  //
+  // Special event names:
+  //   "pageview"          → trackPageview()
+  //   "identify"          → identify(props)   requires props.user_id
+  //   anything else       → trackEvent(name, props)
+
+  function datafast(eventName, props) {
+    if (!eventName || typeof eventName !== "string") {
+      log("warn", "window.datafast: first argument must be a non-empty string");
+      return;
+    }
+
+    if (eventName === "pageview") {
+      trackPageview();
+      return;
+    }
+
+    if (eventName === "identify") {
+      if (!props || !props.user_id) {
+        log("warn", "window.datafast: identify requires props.user_id");
+        return;
+      }
+      identify(props);
+      return;
+    }
+
+    // Everything else is a custom event
+    trackEvent(eventName, props);
+  }
+
+  // Drain any pre-init queue: window.datafast = { q: [] } pattern
+  // Usage before script loads:
+  //   window.datafast = window.datafast || { q: [] };
+  //   window.datafast.q.push(["initiate_checkout", { plan: "pro" }]);
+  if (
+    window.datafast &&
+    window.datafast.q &&
+    Array.isArray(window.datafast.q)
+  ) {
+    var _datafastQueue = window.datafast.q.slice();
+    window.datafast = datafast;
+    for (var _i = 0; _i < _datafastQueue.length; _i++) {
+      var _call = _datafastQueue[_i];
+      if (Array.isArray(_call) && _call.length) {
+        try {
+          datafast.apply(null, _call);
+        } catch (_) {}
+      }
+    }
+  } else {
+    window.datafast = datafast;
+  }
 })();

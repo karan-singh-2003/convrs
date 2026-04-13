@@ -8,7 +8,6 @@
     "build": "pnpm prisma:generate && next build",
     "lint": "next lint",
     "start": "next start",
-    "script": "tsx ./scripts/run.ts",
     "test": "pnpm prisma:generate && vitest -no-file-parallelism --bail=1",
     "prisma:generate": "dotenv-flow -e .env -- pnpm --filter=@repo/db prisma:generate",
     "prisma:push": "dotenv-flow -e .env -- pnpm --filter=@repo/db prisma:push",
@@ -28,9 +27,9 @@
     "@number-flow/react": "^0.5.11",
     "@prisma/client": "^7.3.0",
     "@prisma/nextjs-monorepo-workaround-plugin": "^7.3.0",
+    "@repo/analytics": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/email": "workspace:*",
-    "@repo/analytics": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/ui": "workspace:*",
     "@repo/utils": "workspace:*",
@@ -71,6 +70,7 @@
     "sonner": "^1.7.3",
     "stripe": "^20.3.1",
     "swr": "^2.3.8",
+    "ws": "^8.20.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {

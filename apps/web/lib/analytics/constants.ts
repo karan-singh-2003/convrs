@@ -98,7 +98,9 @@ export const VALID_ANALYTICS_ENDPOINTS = [
   "page",
   "entrypage",
   "exitlink",
+
   "goals",
+  "event_type",
 ] as const;
 
 export const SINGULAR_ANALYTICS_ENDPOINTS = {
@@ -132,6 +134,9 @@ export const SINGULAR_ANALYTICS_ENDPOINTS = {
   page: "page",
   entrypage: "entrypage",
   exitlink: "exitlink",
+
+  // goal fields
+  goals:"goal"
 };
 
 export const VALID_ANALYTICS_FILTERS = [
@@ -188,7 +193,7 @@ export const DIMENSIONAL_ANALYTICS_FILTERS = [
 
 export const TRIGGER_TYPES = ["pageview"] as const;
 
-export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration"] as const;
+export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration","goals","funnel"] as const;
 
 export const ANALYTICS_VIEWS = ["timeseries", "funnel"] as const;
 

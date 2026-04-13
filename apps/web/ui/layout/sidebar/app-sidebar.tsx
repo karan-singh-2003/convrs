@@ -19,6 +19,8 @@ const NAV_AREAS = {
     content: [
       { title: "Analytics", href: `/${slug}`, exact: true },
       { title: "Settings", href: `/${slug}/settings` },
+      { title: "Customers", href: `/${slug}/customers` },
+      { title: "Realtime", href: `/${slug}/realtime` },
     ],
   }),
 
@@ -39,6 +41,7 @@ const NAV_AREAS = {
           { title: "Members", href: `/${slug}/settings/members` },
           { title: "Security", href: `/${slug}/settings/security` },
           { title: "Billing", href: `/${slug}/settings/billing` },
+          { title: "Revenue", href: `/${slug}/settings/revenue` },
           { title: "Alerts", href: `/${slug}/settings/alerts` },
           { title: "Reports", href: `/${slug}/settings/reports` },
         ],

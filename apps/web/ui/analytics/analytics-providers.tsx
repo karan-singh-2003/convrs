@@ -189,7 +189,6 @@ export default function AnalyticsProvider({
   }, [
     adminPage,
     workspaceSlug,
-
     dashboardProps?.domain,
     dashboardId,
     domainSlug,
@@ -285,7 +284,8 @@ export default function AnalyticsProvider({
 
     return null;
   }, [queryString, baseApiPath, start, end, fetchCompositeStats]);
-
+  
+  console.log("Current query URL:", currentQueryUrl);
   // Fetch current period data
   const { data: apiResponse, isLoading: totalEventsLoading } = useSWR<{
     data: Array<{ [key in AnalyticsResponseOptions]: number }>;

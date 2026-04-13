@@ -1,0 +1,6 @@
+{
+  "dev_mode": "local",
+  "include": [
+    "tinybird"
+  ]
+}

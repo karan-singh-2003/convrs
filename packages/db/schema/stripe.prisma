@@ -1,0 +1,11 @@
+model StripeIntegration {
+  id               String   @id @default(cuid())
+  workspaceId      String   @unique   // 👈 IMPORTANT (1:1)
+  stripeAccountId  String   @unique
+  apiKeyEncrypted  String
+  webhookId        String
+  webhookSecret    String
+  createdAt        DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}

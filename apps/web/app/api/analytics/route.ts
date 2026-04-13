@@ -12,6 +12,7 @@ export const GET = withWorkspace(
     const data = await getAnalytics({
       ...parsedParams,
       workspaceId: workspace.id,
+      
     });
 
     return NextResponse.json({ data });

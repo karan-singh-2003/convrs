@@ -58,8 +58,8 @@ export function SourcesSection() {
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
   const dataKey = "count";
 
-  const [tab, setTab] = useState<TabId>("utm");
-  const [subtab, setSubtab] = useState<Subtab>(TAB_CONFIG["utm"].defaultSubtab);
+  const [tab, setTab] = useState<TabId>("referers");
+  const [subtab, setSubtab] = useState<Subtab>(TAB_CONFIG["referers"].defaultSubtab);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   // Reset subtab when tab changes to ensure it's valid for the new tab

@@ -28,12 +28,28 @@ const analyticsTriggersResponse = z.object({
 
 export const analyticsResponse = {
   count: z.object({
-    clicks: z.coerce.number().describe("The total number of clicks").default(0).transform(val => val ?? 0),
-    avg_session_duration: z.coerce.number().describe("The total average session duration").default(0).transform(val => val ?? 0),
-    bounce_rate: z.coerce.number().describe("The total bounce rate").default(0).transform(val => val ?? 0),
+    clicks: z.coerce
+      .number()
+      .describe("The total number of clicks")
+      .default(0)
+      .transform((val) => val ?? 0),
+    avg_session_duration: z.coerce
+      .number()
+      .describe("The total average session duration")
+      .default(0)
+      .transform((val) => val ?? 0),
+    bounce_rate: z.coerce
+      .number()
+      .describe("The total bounce rate")
+      .default(0)
+      .transform((val) => val ?? 0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales, in cents"
     ),
+  }),
+  goals: z.object({
+    goal: z.string(),
+    clicks: z.number().default(0),
   }),
   timeseries: z.object({
     start: z.string().describe("The starting timestamp of the interval"),
@@ -473,9 +489,18 @@ export const analyticsResponse = {
 
   hostname: z.object({
     hostname: z.string().describe("The hostname of the page"),
-    clicks: z.number().describe("The number of clicks from this hostname").default(0),  
-    leads: z.number().describe("The number of leads from this hostname").default(0),
-    sales: z.number().describe("The number of sales from this hostname").default(0),
+    clicks: z
+      .number()
+      .describe("The number of clicks from this hostname")
+      .default(0),
+    leads: z
+      .number()
+      .describe("The number of leads from this hostname")
+      .default(0),
+    sales: z
+      .number()
+      .describe("The number of sales from this hostname")
+      .default(0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this hostname, in cents"
     ),
@@ -483,7 +508,10 @@ export const analyticsResponse = {
 
   page: z.object({
     page: z.string().describe("The full URL of the page"),
-    clicks: z.number().describe("The number of clicks from this page").default(0),
+    clicks: z
+      .number()
+      .describe("The number of clicks from this page")
+      .default(0),
     leads: z.number().describe("The number of leads from this page").default(0),
     sales: z.number().describe("The number of sales from this page").default(0),
     saleAmount: centsSchemaWithDefault.describe(
@@ -493,9 +521,18 @@ export const analyticsResponse = {
 
   entrypage: z.object({
     entrypage: z.string().describe("The full URL of the entry page"),
-    clicks: z.number().describe("The number of clicks from this entry page").default(0),
-    leads: z.number().describe("The number of leads from this entry page").default(0),
-    sales: z.number().describe("The number of sales from this entry page").default(0),
+    clicks: z
+      .number()
+      .describe("The number of clicks from this entry page")
+      .default(0),
+    leads: z
+      .number()
+      .describe("The number of leads from this entry page")
+      .default(0),
+    sales: z
+      .number()
+      .describe("The number of sales from this entry page")
+      .default(0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this entry page, in cents"
     ),
@@ -503,9 +540,18 @@ export const analyticsResponse = {
 
   exitlink: z.object({
     exitlink: z.string().describe("The full URL of the exit link"),
-    clicks: z.number().describe("The number of clicks from this exit link").default(0),
-    leads: z.number().describe("The number of leads from this exit link").default(0),
-    sales: z.number().describe("The number of sales from this exit link").default(0),
+    clicks: z
+      .number()
+      .describe("The number of clicks from this exit link")
+      .default(0),
+    leads: z
+      .number()
+      .describe("The number of leads from this exit link")
+      .default(0),
+    sales: z
+      .number()
+      .describe("The number of sales from this exit link")
+      .default(0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this exit link, in cents"
     ),

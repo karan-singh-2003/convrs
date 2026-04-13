@@ -96,7 +96,7 @@ const DateRangePickerInner = ({
         <Trigger
           placeholder={placeholder}
           disabled={disabled}
-          className={cn("w-[200px]", className)}
+          className={cn("", className)}
           hasError={hasError}
           aria-required={props.required || props["aria-required"]}
           aria-invalid={props["aria-invalid"]}

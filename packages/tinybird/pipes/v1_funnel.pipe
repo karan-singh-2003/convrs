@@ -1,0 +1,108 @@
+DESCRIPTION >
+	Ordered funnel counts by step
+
+
+TAGS "Dub Endpoints"
+
+NODE parsed_steps
+SQL >
+
+%
+WITH
+    arrayFilter(
+        x -> x != '',
+        splitByChar(
+            ',',
+            {{
+                String(
+                    steps,
+                    'signup,user_registered',
+                    description="Comma-separated ordered funnel step event names",
+                    required=True,
+                )
+            }}
+        )
+    ) AS steps
+SELECT
+    tupleElement(step_tuple, 1) AS step_name,
+    toUInt64(tupleElement(step_tuple, 2)) AS step_index
+FROM
+    (
+        SELECT arrayJoin(arrayZip(steps, arrayEnumerate(steps))) AS step_tuple
+    )
+
+
+NODE per_visitor
+SQL >
+
+%
+WITH
+    arrayFilter(
+        x -> x != '',
+        splitByChar(
+            ',',
+            {{
+                String(
+                    steps,
+                    'signup,user_registered',
+                    description="Comma-separated ordered funnel step event names",
+                    required=True,
+                )
+            }}
+        )
+    ) AS steps
+SELECT
+    e.visitor_id,
+    arrayMap(
+        t -> t.2,
+        arraySort(t -> t.1, groupArray((step_index, step_time)))
+    ) AS step_times
+FROM
+    (
+        SELECT
+            ev.visitor_id,
+            ps.step_index,
+            minIf(ev.timestamp, ev.event_name = ps.step_name) AS step_time
+        FROM dub_click_events_mv ev
+        CROSS JOIN parsed_steps ps
+        WHERE
+            ev.event_type = 'goals'
+            AND ev.workspace_id
+                = {{
+                    String(
+                        workspaceId,
+                        'cl7pj5kq4006835rbjlt2ofka',
+                        description="The unique ID for the workspace",
+                        required=True,
+                    )
+                }}
+            AND has(steps, ev.event_name)
+        GROUP BY ev.visitor_id, ps.step_index
+    ) e
+GROUP BY e.visitor_id
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT
+    ps.step_name AS step,
+    countIf(
+        arrayAll(
+            i ->
+                isNotNull(pv.step_times[i])
+                AND if(
+                    i = 1,
+                    1,
+                    isNotNull(pv.step_times[i - 1])
+                    AND pv.step_times[i] > pv.step_times[i - 1]
+                ),
+            range(1, ps.step_index + 1)
+        )
+    ) AS users
+FROM per_visitor pv
+CROSS JOIN parsed_steps ps
+GROUP BY ps.step_name, ps.step_index
+ORDER BY ps.step_index ASC

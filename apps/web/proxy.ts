@@ -11,9 +11,8 @@ export const config = {
      * 2. /_next/ (Next.js internals)
      * 3. /_proxy/ (proxies for third-party services)
      * 4. Metadata files: favicon.ico, sitemap.xml, robots.txt, manifest.webmanifest
-     * 5. /analytics.js (tracker script)
      */
-    "/((?!api/|_next/|_proxy/|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|analytics\\.js).*)",
+    "/((?!api/|_next/|_proxy/|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest).*)",
   ],
 };
 

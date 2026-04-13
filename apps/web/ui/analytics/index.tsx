@@ -4,6 +4,7 @@ import { AnalyticsToggle } from "./analytics-toggle";
 import { ChartSection } from "./chart-section";
 import { DeviceSection } from "./device-section";
 import { LocationSection } from "./location-section";
+import { LowerGrid } from "./goals-section";
 import { PagesSection } from "./pages-section";
 import { SourcesSection } from "./sources-section";
 
@@ -20,6 +21,9 @@ export default function Analytics() {
               <div className="space-y-[6rem] ">
                 <ChartSection />
                 <StatsGrid />
+              </div>
+              <div className="max-w-screen-lg mx-auto">
+                <LowerGrid />
               </div>
             </div>
           );

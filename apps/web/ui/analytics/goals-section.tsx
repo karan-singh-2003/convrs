@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useRouterStuff } from "@repo/ui";
-import { AnalyticsCard } from "../analytics/analytics-card";
-import { BarList } from "../analytics/bar-list";
+import { AnalyticsCard } from "./analytics-card";
+import { BarList } from "./bar-list";
 import { LoadingSpinner } from "@repo/ui";
-import { AnalyticsContext } from "../analytics/analytics-providers";
-import { useAnalyticsFilterOption } from "../analytics/use-analytics-filter-option";
+import { AnalyticsContext } from "./analytics-providers";
+import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 
 export function LowerGrid() {
@@ -19,9 +25,9 @@ export function LowerGrid() {
   const { data: allData } = useAnalyticsFilterOption(tab, {
     omitGroupByFilterKey: true,
   });
-
+console.log("data for goals section is ", allData);
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
-  const dataKey = "count";
+  const dataKey = "clicks";
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 

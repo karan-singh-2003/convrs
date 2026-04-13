@@ -75,7 +75,7 @@ export function useAnalyticsQuery({
     );
     return new URLSearchParams({
       ...availableFilterParams,
-      event: selectedTab,
+      event: "goals",
       ...(workspaceId && { workspaceId }),
       ...(domain && { domain }),
       ...(key && { key }),

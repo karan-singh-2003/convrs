@@ -44,15 +44,27 @@ export function MainNav({
 
   const isSettings = pathname.includes("/settings");
   const isDashboard = pathname === "/" || pathname === "/dashboard";
+  const isRealtime = pathname.includes("/realtime");
 
   return (
-    <div className="min-h-full w-full  flex flex-col ">
+    <div
+      className={cn(
+        "w-full flex flex-col",
+        isRealtime && "h-dvh overflow-hidden"
+      )}
+    >
       {!isDashboard ? (
-        <div className="h-12  bg-white">
-          <div className=" flex h-full w-full mx-auto  max-w-screen-lg items-center justify-between gap-4  ">
-            <div className="flex items-center gap-4 min-w-0">
-              {/* <NavButton /> */}
-              <div className="w-full ">
+        <div
+          className={cn(
+            "fixed top-0 left-0 z-30 w-full",
+            isRealtime
+              ? "bg-white/55 backdrop-blur-md supports-[backdrop-filter]:bg-white/45 "
+              : "bg-white"
+          )}
+        >
+          <div className=" flex h-12 w-full px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between gap-x-4  ">
+            <div className="flex items-center justify-center gap-4 min-w-0">
+              <div className="w-full  flex items-center gap-4">
                 <Sidebar forcedArea="default" />
               </div>
             </div>
@@ -79,29 +91,46 @@ export function MainNav({
                   fill="white"
                 />
               </svg>
-              <h1 className="font-normal font-default text-[14.5px]">Posthog</h1>
+              <h1 className="font-normal font-default text-[14.5px]">
+                Posthog
+              </h1>
             </div>
             <UserDropdown />
           </nav>
         </div>
       )}
 
-      <div className="flex-1 min-h-0 py-4">
+      <div
+        className={cn(
+          "flex-1 min-h-0",
+          isRealtime ? "p-0 " : !isDashboard ? "pt-10 md:pt-16 pb-4" : "py-4"
+        )}
+      >
         {isSettings ? (
-          <div className=" w-full max-w-screen-lg mx-auto my-2 sm:flex-row lg:px-8 px-0 md:px-0 md:grid md:grid-cols-[248px_minmax(0,1fr)] md:gap-4">
-            <div className="md:my-5 ">
-              <Sidebar />
+          <div className="w-full md:max-w-screen-lg mx-auto sm:flex-row lg:px-8 px-0 md:px-0 md:grid md:grid-cols-[248px_minmax(0,1fr)] md:gap-4">
+            <div className="md:my-0 md:py-0 py-2 w-full min-w-0">
+              {/* On mobile: horizontal scroll with fade edges to hint more tabs exist */}
+              <div className="relative md:static  w-full min-w-0">
+                {/* Fade right edge — only visible on mobile when content overflows */}
+                {/* <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10 md:hidden" /> */}
+                <Sidebar />
+              </div>
             </div>
             <div className="min-w-0 max-w-screen-lg rounded-2xl bg-neutral-50">
               <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
-                <div className="px-6 md:px-0 py-8">{children}</div>
+                <div className="px-6 md:px-0 py-5">{children}</div>
               </SideNavContent.Provider>
             </div>
           </div>
         ) : (
-          <div className=" px-6 md:px-0 bg-white">
+          <div
+            className={cn(
+              "px-6 md:px-0",
+              isRealtime ? "bg-transparent" : "bg-white"
+            )}
+          >
             <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
-              <div className="py-4">{children}</div>
+              <div className={cn(isRealtime ? "py-0" : "py-4")}>{children}</div>
             </SideNavContent.Provider>
           </div>
         )}

@@ -43,8 +43,58 @@ export default function ScriptInstallationCard({
           selected={mode}
           selectAction={(option) => setMode(option as "script" | "npm")}
           options={[
-            { value: "script", label: "Script" },
-            { value: "npm", label: "npm" },
+            {
+              value: "script",
+              label: (
+                <span className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                    className="size-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
+                    />
+                  </svg>
+                  Script Tag
+                </span>
+              ),
+            },
+            {
+              value: "npm",
+              label: (
+                <span className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    id="Npm-Icon--Streamline-Svg-Logos"
+                    height="16"
+                    width="16"
+                  >
+                    <desc>
+                      Npm Icon Streamline Icon: https://streamlinehq.com
+                    </desc>
+                    <path
+                      fill="#c12127"
+                      d="M0.25 23.75V0.25h23.5v23.5H0.25Z"
+                      stroke-width="0.25"
+                    ></path>
+                    <path
+                      fill="#ffffff"
+                      d="M4.65625 4.65625h14.6875v14.6875h-2.9375v-11.75H12v11.75H4.65625v-14.6875Z"
+                      stroke-width="0.25"
+                    ></path>
+                  </svg>
+                  npm
+                </span>
+              ),
+            },
           ]}
           className="bg-neutral-100 w-full text-center border border-neutral-200"
           optionClassName="w-full px-3 py-1 text-center text-sm justify-center"

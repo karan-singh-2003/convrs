@@ -48,7 +48,6 @@ export function useAnalyticsFilterOption(
         )
       : {};
 
-
   const { data: response, isLoading } = useSWR<{ data: Record<string, any>[] }>(
     !options?.disabled &&
       `${baseApiPath}?${editQueryString(
@@ -76,7 +75,7 @@ export function useAnalyticsFilterOption(
     data:
       response?.data?.map((d) => ({
         ...d,
-        count: d[selectedTab] as number | undefined,
+        count: (d["events"] ?? d[selectedTab]) as number | undefined,
         saleAmount: d.saleAmount as number | undefined,
       })) ?? null,
     loading: !response?.data || isLoading,

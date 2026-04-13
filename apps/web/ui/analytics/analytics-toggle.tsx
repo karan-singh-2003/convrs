@@ -25,6 +25,7 @@ import { useContext } from "react";
 import { AnalyticsContext } from "./analytics-providers";
 // import { ShareButton } from "./share-button";
 import { useAnalyticsFilters } from "./use-analytics-filter";
+import { RefreshCcw } from "lucide-react";
 
 export function AnalyticsToggle({
   page = "analytics",
@@ -82,7 +83,7 @@ export function AnalyticsToggle({
 
   const dateRangePicker = (
     <DateRangePicker
-      className="w-full md:w-fit font-display"
+      className="font-display  rounded-full"
       align={dashboardProps ? "end" : "center"}
       value={
         start && end
@@ -149,7 +150,7 @@ export function AnalyticsToggle({
   const isAppPage = !dashboardProps && !adminPage;
 
   return (
-    <div  className="w-full overflow-hidden  px-3 ">
+    <div className="w-full overflow-hidden  ">
       <div
         className={cn("py-2 md:py-2", isAppPage && "pt-0 md:pt-0", {
           "sticky top-14 z-10 justify-between bg-neutral-50": dashboardProps,
@@ -207,9 +208,12 @@ export function AnalyticsToggle({
               )}
             >
               <div
-                className={cn("flex w-full px-2 grow items-center gap-2 md:w-auto", {
-                  "grow-0": dashboardProps,
-                })}
+                className={cn(
+                  "flex w-full  grow items-center gap-2 md:w-auto",
+                  {
+                    "grow-0": dashboardProps,
+                  }
+                )}
               >
                 {dateRangePicker}
                 {!dashboardProps &&
@@ -243,7 +247,12 @@ export function AnalyticsToggle({
                   // </div>
                   null}
               </div>
-              {filterSelect}
+              <div className="flex items-center gap-2">
+                <div className="border border-neutral-200 rounded-full p-2">
+                  <RefreshCcw size={16} />
+                </div>
+                {filterSelect}
+              </div>
             </div>
           </div>
         </div>

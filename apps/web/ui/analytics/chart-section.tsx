@@ -9,12 +9,15 @@ import {
 import { cn } from "@repo/utils";
 import { Play } from "lucide-react";
 import Link from "next/link";
-import { useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { AnalyticsAreaChart } from "./analytics-area-chart";
 import { AnalyticsFunnelChart } from "./analytics-funnel-chart";
 import { AnalyticsContext } from "./analytics-providers";
 import { AnalyticsTabs } from "./analytics-tabs";
-// import { ChartViewSwitcher } from "./chart-view-switcher";
+import { ChartViewSwitcher } from "./chart-view-switcher";
+import { useCreateFunnelModal } from "../modals/create-funnel-modal";
+import useFunnels from "@/lib/swr/use-funnels";
+import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 
 type Tab = {
   id: EventType;
@@ -33,8 +36,31 @@ export function ChartSection() {
     saleUnit,
     view,
   } = useContext(AnalyticsContext);
-  const { plan } = useWorkspace();
+  const { plan, projectToken, id } = useWorkspace();
   const { queryParams } = useRouterStuff();
+  const { funnels } = useFunnels();
+  const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null);
+  const handleSelectFunnel = useCallback((funnel: { id: string }) => {
+    setSelectedFunnelId(funnel.id);
+  }, []);
+
+  const selectedFunnel = useMemo(() => {
+    if (selectedFunnelId) {
+      return funnels.find((funnel) => funnel.id === selectedFunnelId) ?? null;
+    }
+    return funnels[0] ?? null;
+  }, [funnels, selectedFunnelId]);
+
+  const {
+    openCreateFunnelModal,
+    openFunnelListModal,
+    CreateFunnelEditorModal,
+    FunnelListModal,
+  } = useCreateFunnelModal({
+    onSelectFunnel: handleSelectFunnel,
+  });
+
+  const { count: liveVisitorsCount } = useLiveVisitors(id ?? null);
 
   const tabs = useMemo(
     () =>
@@ -72,54 +98,82 @@ export function ChartSection() {
     (plan === "free" || plan === "pro");
 
   return (
-    <div className="w-full overflow-hidden py-2 bg-neutral-50">
-      <div className="max-w-screen-lg mx-auto">
-        <AnalyticsTabs
-          showConversions={showConversions}
-          totalEvents={totalEvents}
-          percentageChanges={percentageChanges}
-          tab={selectedTab}
-          tabHref={(id) =>
-            queryParams({
-              set: {
-                event: id,
-              },
-              getNewPath: true,
-            }) as string
-          }
-          saleUnit={saleUnit}
-          setSaleUnit={(option) =>
-            queryParams({
-              set: { saleUnit: option },
-            })
-          }
-          requiresUpgrade={requiresUpgrade}
-          showPaywall={showPaywall}
-        />
-      </div>
-      <div className="relative">
-        <div
-          className={cn(
-            "relative overflow-hidden  sm:rounded-b-xl",
-            showPaywall &&
-              "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]"
-          )}
-        >
-          {view === "timeseries" && (
-            <div className="">
-              <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
-            </div>
-          )}
-          {view === "funnel" && (
-            <div className="h-[444px] w-full sm:h-[464px]">
-              <AnalyticsFunnelChart demo={showPaywall} />
-            </div>
-          )}
+    <>
+      <CreateFunnelEditorModal />
+      <FunnelListModal />
+      <div className="w-full overflow-hidden py-2 bg-neutral-50">
+        <div className="max-w-screen-lg mx-auto">
+          <AnalyticsTabs
+            showConversions={showConversions}
+            totalEvents={totalEvents}
+            percentageChanges={percentageChanges}
+            liveVisitorsCount={liveVisitorsCount}
+            tab={selectedTab}
+            tabHref={(id) =>
+              queryParams({
+                set: {
+                  event: id,
+                },
+                getNewPath: true,
+              }) as string
+            }
+            saleUnit={saleUnit}
+            setSaleUnit={(option) =>
+              queryParams({
+                set: { saleUnit: option },
+              })
+            }
+            requiresUpgrade={requiresUpgrade}
+            showPaywall={showPaywall}
+          />
         </div>
-        {/* Removed ToggleGroup for small screens above the graph */}
-        {showPaywall && <ConversionTrackingPaywall />}
+        <div className="relative">
+          <div
+            className={cn(
+              "relative overflow-hidden  sm:rounded-b-xl",
+              showPaywall &&
+                "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]"
+            )}
+          >
+            {view === "timeseries" && (
+              <div className="h-[444px] w-full sm:h-[464px]">
+                <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
+              </div>
+            )}
+            {view === "funnel" && (
+              <div className="h-[444px] w-full sm:h-[464px]">
+                <AnalyticsFunnelChart
+                  demo={showPaywall}
+                  selectedFunnel={selectedFunnel}
+                />
+              </div>
+            )}
+          </div>
+          {/* Removed ToggleGroup for small screens above the graph */}
+          <div>
+            <div className="absolute right-3 top-3 flex items-center gap-2 z-10">
+              {/* Create Funnel Button (only for funnel view) */}
+              {view === "funnel" && (
+                <button
+                  className="bg-neutral-100 font-display text-neutral-600 text-sm font-medium px-6 py-2 rounded-full hover:bg-neutral-100 transition"
+                  onClick={() =>
+                    funnels.length === 0
+                      ? openCreateFunnelModal()
+                      : openFunnelListModal()
+                  }
+                >
+                  {funnels.length === 0
+                    ? "Create funnel"
+                    : selectedFunnel?.name || "Choose funnel"}
+                </button>
+              )}
+              <ChartViewSwitcher />
+            </div>
+          </div>
+          {showPaywall && <ConversionTrackingPaywall />}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

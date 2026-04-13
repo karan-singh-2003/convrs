@@ -49,7 +49,9 @@ export function TabSelect<T extends string>({
   const layoutGroupId = useId();
 
   return (
-    <div className={cn("flex text-sm", className)}>
+    <div
+      className={cn("flex items-stretch overflow-x-auto text-sm", className)}
+    >
       <LayoutGroup id={layoutGroupId}>
         {options.map(({ id, label, href, target }) => {
           const isSelected = id === selected;
@@ -57,7 +59,7 @@ export function TabSelect<T extends string>({
           return (
             <As
               key={id}
-              className="relative font-display "
+              className="relative flex shrink-0 font-display"
               href={href ?? "#"}
               target={target ?? undefined}
             >
@@ -66,6 +68,7 @@ export function TabSelect<T extends string>({
                 {...(onSelect && !href && { onClick: () => onSelect(id) })}
                 className={cn(
                   tabSelectButtonVariants({ variant }),
+                  "flex h-11 items-center whitespace-nowrap",
                   target === "_blank" && "group flex items-center gap-1.5"
                 )}
                 data-selected={isSelected}

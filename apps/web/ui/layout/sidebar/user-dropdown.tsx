@@ -77,7 +77,7 @@ export function UserDropdown() {
         )}
       >
         {session?.user ? (
-          <div className="flex items-center gap-1 px-4">
+          <div className="flex items-center gap-1 ">
             {session.user.image ? (
               <BlurImage
                 src={session.user.image}

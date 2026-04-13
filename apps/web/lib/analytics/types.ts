@@ -26,6 +26,9 @@ export type AnalyticsResponseOptions =
   | "bounce_rate"
   | "avg_session_duration"
   | "sales"
+  | "conversion_rate"
+  | "revenue_per_visitor"
+  | "live_visitors"
   | "saleAmount";
 
 export type AnalyticsResponse = {

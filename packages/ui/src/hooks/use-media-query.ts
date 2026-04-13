@@ -17,13 +17,14 @@ function getDimensions() {
 }
 
 export function useMediaQuery() {
+  // Keep SSR and first client render identical to avoid hydration mismatches.
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop" | null>(
-    getDevice(),
+    null
   );
   const [dimensions, setDimensions] = useState<{
     width: number;
     height: number;
-  } | null>(getDimensions());
+  } | null>(null);
 
   useEffect(() => {
     const checkDevice = () => {
