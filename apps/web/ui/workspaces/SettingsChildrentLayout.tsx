@@ -28,7 +28,7 @@ export default function SettingsChildrenLayout({
         </div>
 
         {/* Actions (Buttons) */}
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <>{actions}</>}
       </div>
 
       {/* Content */}

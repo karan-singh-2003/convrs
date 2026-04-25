@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
-import { AnalyticsEventSchema, recordEvent } from "@repo/analytics";
+import {
+  AnalyticsEventSchema,
+  recordEvent,
+  upsertCustomer,
+} from "@repo/analytics";
+import { prisma } from "@repo/db";
+import * as UAParserLib from "ua-parser-js";
 
 export async function trackClickController(req: Request, res: Response) {
   try {
@@ -19,10 +25,164 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
+    // ── GEO / IP ────────────────────────────────────────────────────────────
+    const countryHeader = req.headers["x-vercel-ip-country"];
+    const country = Array.isArray(countryHeader)
+      ? (countryHeader[0] ?? "")
+      : (countryHeader ?? "");
+
+    // Prefer x-forwarded-for (first IP in chain), fall back to socket address
+    const ip =
+      ((req.headers["x-forwarded-for"] as string | undefined)
+        ?.split(",")[0]
+        ?.trim() ??
+        "") ||
+      req.socket?.remoteAddress ||
+      req.ip ||
+      "";
+
+    // ── ENFORCE TRACKING FILTERS ─────────────────────────────────────────────
+    const workspaceId = parsed.data.website_id;
+    if (!workspaceId) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing workspace ID in payload",
+      });
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        blockedHostnames: true,
+        blockedIpAddresses: true,
+        blockedPages: true,
+      },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({
+        success: false,
+        error: "Workspace not found",
+      });
+    }
+
+    const eventHostname = (parsed.data.hostname || "").toLowerCase();
+    // const eventPage = (parsed.data.page || "").toLowerCase();
+
+    // Hostname filter
+    if (
+      workspace.blockedHostnames &&
+      workspace.blockedHostnames.length > 0 &&
+      workspace.blockedHostnames.some(
+        (h) => h && eventHostname === h.toLowerCase()
+      )
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Blocked by hostname filter",
+      });
+    }
+
+    // IP filter (supports comma-separated IPs in x-forwarded-for)
+    if (
+      workspace.blockedIpAddresses &&
+      workspace.blockedIpAddresses.length > 0
+    ) {
+      const eventIps = ip.split(",").map((i) => i.trim());
+      if (
+        eventIps.some((i) =>
+          workspace.blockedIpAddresses.some(
+            (blocked) => blocked && i === blocked
+          )
+        )
+      ) {
+        return res.status(403).json({
+          success: false,
+          error: "Blocked by IP filter",
+        });
+      }
+    }
+
+    // Page filter — fixed syntax error (removed dangling comma)
+    if (
+      workspace.blockedPages &&
+      workspace.blockedPages.length > 0
+      //   workspace.blockedPages.some((p) => p && eventPage === p.toLowerCase())
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Blocked by page filter",
+      });
+    }
+
+    // ── IDENTIFY ─────────────────────────────────────────────────────────────
+    let customer = null;
+    if (parsed.data.type === "identify") {
+      customer = await upsertCustomer({
+        workspaceId: parsed.data.website_id,
+        traits: parsed.data.traits,
+        geo: country,
+      });
+    }
+
+    // ── UA PARSING ───────────────────────────────────────────────────────────
+    const ua = (req.headers["user-agent"] as string) || "";
+    const parsedUA = new UAParserLib.UAParser(ua).getResult();
+
+    // helper → NEVER send undefined/null to Tinybird for String fields
+    const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
+
+    // ── ENRICH PAYLOAD ───────────────────────────────────────────────────────
+    const enrichedPayload = {
+      ...parsed.data,
+
+      // Identity
+      customer_id: customer?.id ?? null,
+
+      // 🔥 REQUIRED FIX: timestamp format for DateTime64
+      timestamp: parsed.data.timestamp
+        ? parsed.data.timestamp.replace("T", " ").replace("Z", "")
+        : new Date().toISOString().replace("T", " ").replace("Z", ""),
+
+      // Raw UA
+      ua,
+
+      // Device
+      device: safe(parsedUA.device.type || "desktop"),
+      device_model: safe(parsedUA.device.model),
+      device_vendor: safe(parsedUA.device.vendor),
+
+      // Browser
+      browser: safe(parsedUA.browser.name),
+      browser_version: safe(parsedUA.browser.version),
+
+      // OS
+      os: safe(parsedUA.os.name),
+      os_version: safe(parsedUA.os.version),
+
+      // Engine
+      engine: safe(parsedUA.engine.name),
+      engine_version: safe(parsedUA.engine.version),
+
+      // CPU
+      cpu_architecture: safe(parsedUA.cpu.architecture),
+
+      // Geo / infra
+      ip: ip ?? null,
+      country: safe(country || "Unknown"),
+
+      // ⚠️ MUST be string
+      event_properties: JSON.stringify(parsed.data.props ?? {}),
+
+      // ⚠️ ensure bot is UInt8
+      bot: 0,
+    };
+
     const nativeReq = toNativeRequest(req);
+
     await recordEvent({
       req: nativeReq,
-      payload: parsed.data,
+      payload: { ...enrichedPayload, customer_id: customer?.id ?? "" },
       logger: console as any,
     });
 
@@ -37,6 +197,7 @@ export async function trackClickController(req: Request, res: Response) {
 }
 
 function normalizeTrackPayload(raw: Record<string, any>) {
+  console.log("NORMALIZER VERSION: v2");
   const websiteId = raw.website_id || raw.websiteId;
   const visitorId = raw.visitor_id || raw.visitorId;
   const sessionId = raw.session_id || raw.sessionId;
@@ -89,7 +250,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     normalized.trigger = "page";
   }
 
-  // ── Custom event (analytics.js sends type: "custom") ─────────────────────
+  // ── Custom event ─────────────────────────────────────────────────────────
   else if (raw.type === "custom") {
     const customEventName =
       raw.event_name ??
@@ -97,17 +258,13 @@ function normalizeTrackPayload(raw: Record<string, any>) {
       raw.extraData?.eventName ??
       "unknown_event";
 
-    // Merge extraData + any top-level prop keys as props
     const customProps: Record<string, any> = {};
-
     if (raw.extraData && typeof raw.extraData === "object") {
       Object.assign(customProps, raw.extraData);
     }
     if (raw.props && typeof raw.props === "object") {
       Object.assign(customProps, raw.props);
     }
-
-    // Remove eventName from props since it's promoted to event_name
     delete customProps.eventName;
     delete customProps.event_name;
 
@@ -126,6 +283,14 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     normalized.traits = raw.traits ?? {};
     normalized.props = {};
     normalized.trigger = null;
+  }
+
+  // ── Generic event ─────────────────────────────────────────────────────────
+  else if (raw.type === "event") {
+    normalized.type = "event";
+    normalized.event_name = raw.event_name ?? "unknown_event";
+    normalized.props = raw.props ?? {};
+    normalized.trigger = "goal";
   }
 
   return normalized;

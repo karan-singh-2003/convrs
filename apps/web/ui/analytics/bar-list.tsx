@@ -321,6 +321,7 @@ export function LineItem({
           {lineItem}
         </div>
         <div className="z-10 px-3 flex items-center">
+          {/** Revenue and saleAmount should render with currency formatting on the value pill. */}
           <NumberFlow
             value={
               unit === "sales" && saleUnit === "saleAmount"
@@ -335,11 +336,14 @@ export function LineItem({
               // Adds translateZ(0) to fix transition jitter
               transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)`,
             }}
+            locales="en-US"
             format={
-              unit === "sales" && saleUnit === "saleAmount"
+              (unit === "sales" && saleUnit === "saleAmount") ||
+              unit === "revenue"
                 ? {
                     style: "currency",
                     currency: "USD",
+                    currencyDisplay: "symbol", // ensures "$" instead of "US$"
                   }
                 : {
                     notation: value > 999999 ? "compact" : "standard",

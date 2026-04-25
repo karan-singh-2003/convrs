@@ -1,0 +1,43 @@
+TOKEN "dub_tinybird_token" APPEND
+
+SCHEMA >
+
+`event_id` UUID `json:$.event_id`,
+`timestamp` DateTime64(3) `json:$.timestamp`,
+`event_type` LowCardinality(String) `json:$.event_type`,
+`event_name` LowCardinality(String) `json:$.event_name`,
+
+`workspace_id` Nullable(String) `json:$.workspace_id`,
+`user_id` Nullable(Int64) `json:$.user_id`,
+`visitor_id` Nullable(String) `json:$.visitor_id`,
+`session_id` Nullable(String) `json:$.session_id`,
+`identity_hash` Nullable(String) `json:$.identity_hash`,
+
+`utm_source` Nullable(String) `json:$.utm_source`,
+`utm_medium` Nullable(String) `json:$.utm_medium`,
+`utm_campaign` Nullable(String) `json:$.utm_campaign`,
+`utm_content` Nullable(String) `json:$.utm_content`,
+`utm_term` Nullable(String) `json:$.utm_term`,
+
+`url` Nullable(String) `json:$.url`,
+`hostname` Nullable(String) `json:$.hostname`,
+`page` Nullable(String) `json:$.page`,
+`entrypage` Nullable(String) `json:$.entrypage`,
+`exitlink` Nullable(String) `json:$.exitlink`,
+`referer` Nullable(String) `json:$.referer`,
+`referer_url` Nullable(String) `json:$.referer_url`,
+
+`country` LowCardinality(String) `json:$.country`,
+`city` String `json:$.city`,
+`region` String `json:$.region`,
+`continent` LowCardinality(String) `json:$.continent`,
+
+`device` LowCardinality(String) `json:$.device`,
+`browser` LowCardinality(String) `json:$.browser`,
+`os` LowCardinality(String) `json:$.os`,
+`trigger` Nullable(String) `json:$.trigger`,
+
+`event_properties` String `json:$.event_properties`,
+
+`revenue` Nullable(Float64) `json:$.revenue`,
+`currency` LowCardinality(String) `json:$.currency`,

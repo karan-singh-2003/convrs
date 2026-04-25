@@ -19,7 +19,7 @@ const DashboardPage = () => {
   return (
     <>
       <PageWidthWrapper size={"full"}>
-        <Analytics />
+        <Analytics mode="private"/>
         {subscriptionStatus == "cancelled" && (
           <div className="relative">
             <div className="justify-center max-w-screen-lg mx-auto px-4 h-[500px]">

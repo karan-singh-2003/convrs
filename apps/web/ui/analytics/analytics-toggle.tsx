@@ -1,3 +1,5 @@
+"use client";
+
 import {
   DUB_LINKS_ANALYTICS_INTERVAL,
   INTERVAL_DISPLAYS,
@@ -150,7 +152,7 @@ export function AnalyticsToggle({
   const isAppPage = !dashboardProps && !adminPage;
 
   return (
-    <div className="w-full overflow-hidden  ">
+    <div className="w-full flex flex-col justify-center gap-2">
       <div
         className={cn("py-2 md:py-2", isAppPage && "pt-0 md:pt-0", {
           "sticky top-14 z-10 justify-between bg-neutral-50": dashboardProps,
@@ -258,7 +260,7 @@ export function AnalyticsToggle({
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-screen-xl">
+      <div className=" w-full ">
         <Filter.List
           filters={filters}
           activeFilters={activeFiltersWithStreaming}

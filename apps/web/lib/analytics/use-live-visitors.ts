@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * useLiveVisitors.ts
  *
@@ -16,9 +18,17 @@ interface PageStat {
   count: number;
 }
 
+interface LivePoint {
+  id: string;
+  latitude: number;
+  longitude: number;
+  value: number;
+}
+
 interface LiveState {
   count: number;
   pages: PageStat[];
+  points: LivePoint[];
   connected: boolean;
 }
 
@@ -34,6 +44,7 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
   const [state, setState] = useState<LiveState>({
     count: 0,
     pages: [],
+    points: [],
     connected: false,
   });
 
@@ -64,13 +75,12 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
         ...prev,
         count: payload.count ?? 0,
         pages: payload.pages ?? [],
+        points: payload.points ?? [],
       }));
     } catch {
       // Ignore transient polling failures; websocket or next poll will recover.
     }
   }, [workspaceId]);
-
-
 
   const connect = useCallback(() => {
     if (!workspaceId || unmounted.current) return;
@@ -106,6 +116,7 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
           setState({
             count: msg.count ?? 0,
             pages: msg.pages ?? [],
+            points: msg.points ?? [],
             connected: true,
           });
         }

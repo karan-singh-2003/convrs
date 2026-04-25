@@ -1,3 +1,5 @@
+"use client";
+
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { useRouterStuff } from "@repo/ui";
 
@@ -8,13 +10,13 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 // import { ContinentIcon } from "./continent-icon";
-import { useAnalyticsFilterOption } from "./use-analytics-filter-option"
+import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey =  "count";
+  const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<
     "countries" | "cities" | "regions" | "continents"
@@ -24,8 +26,11 @@ export function LocationSection() {
   const { data: allData } = useAnalyticsFilterOption(tab, {
     omitGroupByFilterKey: true,
   });
+
+  console.log("LocationSection data:", data);
+
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
-console.log("LocationSection - data:", data);
+
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   useEffect(() => {
@@ -34,7 +39,7 @@ console.log("LocationSection - data:", data);
 
   const onToggleFilter = useCallback((val: string) => {
     setSelectedItems((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val],
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
   }, []);
 
@@ -47,13 +52,13 @@ console.log("LocationSection - data:", data);
       }
       setSelectedItems([]);
     },
-    [singularTabName, queryParams],
+    [singularTabName, queryParams]
   );
 
   const isFilterActive = searchParams.has(singularTabName);
   const activeFilterValues = useMemo(
     () => searchParams.get(singularTabName)?.split(",") ?? [],
-    [singularTabName, searchParams],
+    [singularTabName, searchParams]
   );
 
   const onClearFilter = useCallback(() => {
@@ -61,12 +66,19 @@ console.log("LocationSection - data:", data);
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
 
+  const countryCodeMap: Record<string, string> = {
+    germany: "de",
+    india: "in",
+    "united states": "us",
+    usa: "us",
+    uk: "gb",
+  };
   return (
     <AnalyticsCard
       tabs={[
-        { id: "countries", label: "Countries"},
+        { id: "countries", label: "Countries" },
         { id: "cities", label: "Cities" },
-        { id: "regions", label: "Regions"},
+        { id: "regions", label: "Regions" },
         { id: "continents", label: "Continents" },
       ]}
       selectedTabId={tab}
@@ -86,23 +98,28 @@ console.log("LocationSection - data:", data);
                   ?.map((d) => ({
                     icon:
                       tab === "continents" ? (
-                       (
                         <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
                           {CONTINENTS[d.continent][0]}
                         </h1>
-                       )
                       ) : (
                         <img
                           alt={d.country}
-                          src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
+                          src={`https://hatscripts.github.io/circle-flags/flags/${
+                            countryCodeMap[d.country.toLowerCase()] ||
+                            d.country.toLowerCase()
+                          }.svg`}
                           className="size-4 shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://hatscripts.github.io/circle-flags/flags/un.svg";
+                          }}
                         />
                       ),
                     title:
                       tab === "continents"
                         ? CONTINENTS[d.continent]
                         : tab === "countries"
-                          ? COUNTRIES[d.country]
+                          ? COUNTRIES[d.country] || "Germany"
                           : `${tab === "cities" ? `${d.city}, ` : ""}${
                               REGIONS[d.region] ||
                               (d.region.endsWith("-Unknown")
@@ -118,9 +135,9 @@ console.log("LocationSection - data:", data);
                 ?.map((d) => ({
                   icon:
                     tab === "continents" ? (
-                     <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
-                          {CONTINENTS[d.continent][0]}
-                        </h1>
+                      <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
+                        {CONTINENTS[d.continent][0]}
+                      </h1>
                     ) : (
                       <img
                         alt={d.country}
@@ -161,7 +178,9 @@ console.log("LocationSection - data:", data);
             />
           ) : (
             <div className="flex h-[300px] items-center justify-center">
-                  <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
+              <p className="text-sm font-medium font-default text-neutral-500">
+                No data available
+              </p>
             </div>
           )
         ) : (

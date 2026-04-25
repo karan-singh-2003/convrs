@@ -106,10 +106,12 @@ export const AnalyticsContext = createContext<{
 export default function AnalyticsProvider({
   adminPage,
   dashboardProps,
+  workspaceId,
   children,
 }: PropsWithChildren<{
   adminPage?: boolean;
   dashboardProps?: AnalyticsDashboardProps;
+  workspaceId?: string;
 }>) {
   const searchParams = useSearchParams();
   const { slug: workspaceSlug, plan: workspacePlan } = useWorkspace();
@@ -165,6 +167,13 @@ export default function AnalyticsProvider({
         eventsApiPath: "/api/admin/events",
         domain: domainSlug,
       };
+    } else if (workspaceId) {
+      return {
+        basePath: "",
+        baseApiPath: "/api/analytics",
+        eventsApiPath: "/api/events",
+        domain: domainSlug,
+      };
     } else if (workspaceSlug) {
       return {
         basePath: `/${workspaceSlug}/analytics`,
@@ -188,6 +197,7 @@ export default function AnalyticsProvider({
     }
   }, [
     adminPage,
+    workspaceId,
     workspaceSlug,
     dashboardProps?.domain,
     dashboardId,
@@ -205,6 +215,7 @@ export default function AnalyticsProvider({
     selectedTab,
   } = useAnalyticsQuery({
     domain: domain ?? undefined,
+    workspaceId,
     defaultKey: dashboardProps?.key,
     defaultFolderId: dashboardProps?.folderId,
     defaultInterval: DUB_LINKS_ANALYTICS_INTERVAL,
@@ -229,6 +240,7 @@ export default function AnalyticsProvider({
 
   // Build current period query
   const currentQueryUrl = useMemo(() => {
+    if (!baseApiPath) return null;
     return `${baseApiPath}?${editQueryString(queryString, {
       event: fetchCompositeStats ? "composite" : "clicks",
     })}`;
@@ -236,6 +248,7 @@ export default function AnalyticsProvider({
 
   // Build previous period query (same length as current period)
   const previousQueryUrl = useMemo(() => {
+    if (!baseApiPath) return null;
     try {
       if (!start || !end) {
         // For interval-based queries, calculate previous period
@@ -284,7 +297,7 @@ export default function AnalyticsProvider({
 
     return null;
   }, [queryString, baseApiPath, start, end, fetchCompositeStats]);
-  
+
   console.log("Current query URL:", currentQueryUrl);
   // Fetch current period data
   const { data: apiResponse, isLoading: totalEventsLoading } = useSWR<{

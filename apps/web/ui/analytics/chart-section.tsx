@@ -1,3 +1,5 @@
+"use client";
+
 import { EventType } from "@/lib/analytics/types";
 import useWorkspace from "@/lib/swr/use-workspace";
 import {
@@ -20,13 +22,13 @@ import useFunnels from "@/lib/swr/use-funnels";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 
 type Tab = {
-  id: EventType;
+  id: "clicks" | "revenue";
   label: string;
   colorClassName: string;
   conversions: boolean;
 };
 
-export function ChartSection() {
+export function ChartSection({ mode }: { mode: "private" | "public" }) {
   const {
     totalEvents,
     percentageChanges,
@@ -71,22 +73,12 @@ export function ChartSection() {
           colorClassName: "text-blue-500/50",
           conversions: false,
         },
-        ...(showConversions
-          ? [
-              {
-                id: "leads",
-                label: "Leads",
-                colorClassName: "text-violet-600/50",
-                conversions: true,
-              },
-              {
-                id: "sales",
-                label: "Sales",
-                colorClassName: "text-teal-400/50",
-                conversions: true,
-              },
-            ]
-          : []),
+        {
+          id: "revenue",
+          label: "Revenue",
+          colorClassName: "text-teal-400/50",
+          conversions: true,
+        },
       ] as Tab[],
     [showConversions]
   );
@@ -101,61 +93,43 @@ export function ChartSection() {
     <>
       <CreateFunnelEditorModal />
       <FunnelListModal />
-      <div className="w-full overflow-hidden py-2 bg-neutral-50">
-        <div className="max-w-screen-lg mx-auto">
-          <AnalyticsTabs
-            showConversions={showConversions}
-            totalEvents={totalEvents}
-            percentageChanges={percentageChanges}
-            liveVisitorsCount={liveVisitorsCount}
-            tab={selectedTab}
-            tabHref={(id) =>
-              queryParams({
-                set: {
-                  event: id,
-                },
-                getNewPath: true,
-              }) as string
-            }
-            saleUnit={saleUnit}
-            setSaleUnit={(option) =>
-              queryParams({
-                set: { saleUnit: option },
-              })
-            }
-            requiresUpgrade={requiresUpgrade}
-            showPaywall={showPaywall}
-          />
-        </div>
-        <div className="relative">
-          <div
-            className={cn(
-              "relative overflow-hidden  sm:rounded-b-xl",
-              showPaywall &&
-                "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]"
-            )}
-          >
-            {view === "timeseries" && (
-              <div className="h-[444px] w-full sm:h-[464px]">
-                <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
-              </div>
-            )}
-            {view === "funnel" && (
-              <div className="h-[444px] w-full sm:h-[464px]">
-                <AnalyticsFunnelChart
-                  demo={showPaywall}
-                  selectedFunnel={selectedFunnel}
+      <div>
+        <div className="w-full bg-neutral-50 border-b">
+          <div className="w-full relative  py-2">
+            {/* CENTER → Tabs */}
+            <div className="max-w-screen-lg mx-auto flex justify-center ">
+              {view === "timeseries" ? (
+                <AnalyticsTabs
+                  showConversions={showConversions}
+                  totalEvents={totalEvents}
+                  percentageChanges={percentageChanges}
+                  liveVisitorsCount={liveVisitorsCount}
+                  tab={tab.id}
+                  tabHref={(id) =>
+                    queryParams({
+                      set: { event: id },
+                      getNewPath: true,
+                    }) as string
+                  }
+                  saleUnit={saleUnit}
+                  setSaleUnit={(option) =>
+                    queryParams({
+                      set: { saleUnit: option },
+                    })
+                  }
+                  requiresUpgrade={requiresUpgrade}
+                  showPaywall={showPaywall}
                 />
-              </div>
-            )}
-          </div>
-          {/* Removed ToggleGroup for small screens above the graph */}
-          <div>
-            <div className="absolute right-3 top-3 flex items-center gap-2 z-10">
-              {/* Create Funnel Button (only for funnel view) */}
-              {view === "funnel" && (
+              ) : (
+                <div className="min-h-[134px]" />
+              )}
+            </div>
+
+            {/* RIGHT → Toggle (floating) */}
+            <div className="absolute right-3 top-1  z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
+              {mode === "private" && view === "funnel" && (
                 <button
-                  className="bg-neutral-100 font-display text-neutral-600 text-sm font-medium px-6 py-2 rounded-full hover:bg-neutral-100 transition"
+                  className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
                   onClick={() =>
                     funnels.length === 0
                       ? openCreateFunnelModal()
@@ -167,9 +141,36 @@ export function ChartSection() {
                     : selectedFunnel?.name || "Choose funnel"}
                 </button>
               )}
+
               <ChartViewSwitcher />
             </div>
           </div>
+        </div>
+        {/* chart */}
+        <div className="relative">
+          <div
+            className={cn(
+              "relative overflow-hidden sm:rounded-b-xl",
+              showPaywall &&
+                "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]"
+            )}
+          >
+            {view === "timeseries" && (
+              <div className="h-[444px] w-full sm:h-[464px]">
+                <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
+              </div>
+            )}
+
+            {view === "funnel" && (
+              <div className="h-[444px] w-full sm:h-[464px]">
+                <AnalyticsFunnelChart
+                  demo={showPaywall}
+                  selectedFunnel={selectedFunnel}
+                />
+              </div>
+            )}
+          </div>
+
           {showPaywall && <ConversionTrackingPaywall />}
         </div>
       </div>

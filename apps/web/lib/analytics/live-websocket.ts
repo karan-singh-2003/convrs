@@ -1,9 +1,9 @@
 /**
  * live-websocket.ts
- * 
+ *
  * WebSocket server that pushes live visitor counts to dashboard clients.
  * Each dashboard connection subscribes to a specific workspaceId.
- * 
+ *
  * Protocol:
  *   Client → Server:  { type: "subscribe", workspaceId: "ws_xxx" }
  *   Server → Client:  { type: "live_count", count: 5, pages: [...] }
@@ -16,9 +16,9 @@ import { getLiveStats } from "./live-visitors";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface DashboardClient {
-  ws:          WebSocket;
+  ws: WebSocket;
   workspaceId: string | null;
-  isAlive:     boolean;
+  isAlive: boolean;
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -65,16 +65,16 @@ export function initWebSocketServer(server: Server): WebSocketServer {
           // Send current count immediately on subscribe
           const stats = await getLiveStats(msg.workspaceId);
           safeSend(client, {
-            type:  "live_count",
+            type: "live_count",
             count: stats.count,
             pages: stats.pages,
+            points: stats.points,
           });
         }
 
         if (msg.type === "pong") {
           client.isAlive = true;
         }
-
       } catch (err) {
         console.error("[WS] Message parse error:", err);
       }

@@ -83,12 +83,12 @@ export default function ScriptInstallationCard({
                     <path
                       fill="#c12127"
                       d="M0.25 23.75V0.25h23.5v23.5H0.25Z"
-                      stroke-width="0.25"
+                      strokeWidth="0.25"
                     ></path>
                     <path
                       fill="#ffffff"
                       d="M4.65625 4.65625h14.6875v14.6875h-2.9375v-11.75H12v11.75H4.65625v-14.6875Z"
-                      stroke-width="0.25"
+                      strokeWidth="0.25"
                     ></path>
                   </svg>
                   npm

@@ -6,17 +6,20 @@ const funnelRequestSchema = z.object({
   steps: z.array(z.string().min(1)).min(1).max(8),
 });
 
-function parseStepsFromSearchParams(searchParams: URLSearchParams): string[] {
-  const repeated = searchParams.getAll("steps").filter(Boolean);
-  if (repeated.length > 0) return repeated;
+function parseStepsFromSearchParams(
+  searchParams: Record<string, string>
+): string[] {
+  const steps = searchParams.steps;
+  const stepsCsv = searchParams.stepsCsv;
+  const raw = steps?.trim() ? steps : stepsCsv;
 
-  const csv = searchParams.get("stepsCsv");
-  if (!csv) return [];
+  if (!raw) return [];
 
-  return csv
+  return raw
     .split(",")
     .map((step) => step.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 8);
 }
 
 export const GET = withWorkspace(

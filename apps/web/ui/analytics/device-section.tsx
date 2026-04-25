@@ -1,3 +1,5 @@
+"use client";
+
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { DeviceTabs } from "@/lib/analytics/types";
 import { useRouterStuff } from "@repo/ui";
@@ -14,7 +16,7 @@ export function DeviceSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey =  "count";
+  const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<DeviceTabs>("devices");
   const { data } = useAnalyticsFilterOption(tab);
@@ -31,7 +33,7 @@ export function DeviceSection() {
 
   const onToggleFilter = useCallback((val: string) => {
     setSelectedItems((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val],
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     );
   }, []);
 
@@ -44,13 +46,13 @@ export function DeviceSection() {
       }
       setSelectedItems([]);
     },
-    [singularTabName, queryParams],
+    [singularTabName, queryParams]
   );
 
   const isFilterActive = searchParams.has(singularTabName);
   const activeFilterValues = useMemo(
     () => searchParams.get(singularTabName)?.split(",") ?? [],
-    [singularTabName, searchParams],
+    [singularTabName, searchParams]
   );
 
   const onClearFilter = useCallback(() => {
@@ -61,10 +63,9 @@ export function DeviceSection() {
   return (
     <AnalyticsCard
       tabs={[
-        { id: "devices", label: "Devices"  },
-        { id: "browsers", label: "Browsers"},
+        { id: "devices", label: "Devices" },
+        { id: "browsers", label: "Browsers" },
         { id: "os", label: "OS" },
-    
       ]}
       selectedTabId={tab}
       onSelectTab={setTab}
@@ -132,7 +133,9 @@ export function DeviceSection() {
             />
           ) : (
             <div className="flex h-[300px] items-center justify-center">
-              <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
+              <p className="text-sm font-medium font-default text-neutral-500">
+                No data available
+              </p>
             </div>
           )
         ) : (

@@ -1,3 +1,5 @@
+"use client";
+
 import { EventType } from "@/lib/analytics/types";
 import {
   AnimatedSizeContainer,

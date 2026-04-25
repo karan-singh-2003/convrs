@@ -1,3 +1,5 @@
+"use client";
+
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { useRouterStuff } from "@repo/ui";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -56,10 +58,12 @@ export function SourcesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit } = useContext(AnalyticsContext);
-  const dataKey = "count";
+  const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<TabId>("referers");
-  const [subtab, setSubtab] = useState<Subtab>(TAB_CONFIG["referers"].defaultSubtab);
+  const [subtab, setSubtab] = useState<Subtab>(
+    TAB_CONFIG["referers"].defaultSubtab
+  );
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   // Reset subtab when tab changes to ensure it's valid for the new tab
@@ -177,7 +181,9 @@ export function SourcesSection() {
               />
             ) : (
               <div className="flex h-[300px] items-center justify-center">
-                     <p className="text-sm font-medium font-default text-neutral-500">No data available</p>
+                <p className="text-sm font-medium font-default text-neutral-500">
+                  No data available
+                </p>
               </div>
             )
           ) : (

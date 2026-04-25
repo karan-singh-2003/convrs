@@ -52,9 +52,7 @@ export default function DashboardPage() {
                     {workspace.name}
                   </h2>
 
-                  {/* <span className="text-xs text-neutral-400 group-hover:text-neutral-600 transition">
-                    →
-                  </span> */}
+                
                 </div>
 
                 {/* Graph */}

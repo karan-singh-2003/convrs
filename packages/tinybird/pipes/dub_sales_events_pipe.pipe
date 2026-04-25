@@ -1,0 +1,107 @@
+TAGS "Dub MV Pipes"
+
+NODE mv
+SQL >
+
+    SELECT
+        r.event_id AS event_id,
+        r.timestamp AS timestamp,
+        r.event_type AS event_type,
+        r.event_name AS event_name,
+
+        r.workspace_id AS workspace_id,
+        r.user_id AS user_id,
+        r.visitor_id AS visitor_id,
+        r.session_id AS session_id,
+        r.identity_hash AS identity_hash,
+
+        coalesce(sc.utm_source, vc.utm_source, r.utm_source) AS utm_source,
+        coalesce(sc.utm_medium, vc.utm_medium, r.utm_medium) AS utm_medium,
+        coalesce(sc.utm_campaign, vc.utm_campaign, r.utm_campaign) AS utm_campaign,
+        coalesce(sc.utm_content, vc.utm_content, r.utm_content) AS utm_content,
+        coalesce(sc.utm_term, vc.utm_term, r.utm_term) AS utm_term,
+
+        coalesce(sc.url, vc.url, r.url) AS url,
+        coalesce(sc.hostname, vc.hostname, r.hostname) AS hostname,
+        coalesce(sc.page, vc.page, r.page) AS page,
+        coalesce(sc.entrypage, vc.entrypage, r.entrypage) AS entrypage,
+        coalesce(sc.exitlink, vc.exitlink, r.exitlink) AS exitlink,
+        coalesce(sc.referer, vc.referer, r.referer) AS referer,
+        coalesce(sc.referer_url, vc.referer_url, r.referer_url) AS referer_url,
+
+        toLowCardinality(coalesce(sc.country, vc.country, r.country)) AS country,
+        coalesce(sc.city, vc.city, r.city) AS city,
+        coalesce(sc.region, vc.region, r.region) AS region,
+        toLowCardinality(coalesce(sc.continent, vc.continent, r.continent)) AS continent,
+
+        toLowCardinality(coalesce(sc.device, vc.device, r.device)) AS device,
+        toLowCardinality(coalesce(sc.browser, vc.browser, r.browser)) AS browser,
+        toLowCardinality(coalesce(sc.os, vc.os, r.os)) AS os,
+        coalesce(sc.trigger, vc.trigger, r.trigger) AS trigger,
+
+        r.event_properties AS event_properties,
+
+        r.revenue AS revenue,
+        r.currency AS currency
+
+    FROM dub_click_events_mv AS r
+    LEFT JOIN (
+        SELECT
+            workspace_id,
+            session_id,
+            argMax(utm_source, timestamp) AS utm_source,
+            argMax(utm_medium, timestamp) AS utm_medium,
+            argMax(utm_campaign, timestamp) AS utm_campaign,
+            argMax(utm_content, timestamp) AS utm_content,
+            argMax(utm_term, timestamp) AS utm_term,
+            argMax(url, timestamp) AS url,
+            argMax(hostname, timestamp) AS hostname,
+            argMax(page, timestamp) AS page,
+            argMax(entrypage, timestamp) AS entrypage,
+            argMax(exitlink, timestamp) AS exitlink,
+            argMax(referer, timestamp) AS referer,
+            argMax(referer_url, timestamp) AS referer_url,
+            argMax(country, timestamp) AS country,
+            argMax(city, timestamp) AS city,
+            argMax(region, timestamp) AS region,
+            argMax(continent, timestamp) AS continent,
+            argMax(device, timestamp) AS device,
+            argMax(browser, timestamp) AS browser,
+            argMax(os, timestamp) AS os,
+            argMax(trigger, timestamp) AS trigger
+        FROM dub_click_events_mv
+        WHERE event_type != 'revenue' AND session_id IS NOT NULL AND session_id != ''
+        GROUP BY workspace_id, session_id
+    ) AS sc USING (workspace_id, session_id)
+    LEFT JOIN (
+        SELECT
+            workspace_id,
+            visitor_id,
+            argMax(utm_source, timestamp) AS utm_source,
+            argMax(utm_medium, timestamp) AS utm_medium,
+            argMax(utm_campaign, timestamp) AS utm_campaign,
+            argMax(utm_content, timestamp) AS utm_content,
+            argMax(utm_term, timestamp) AS utm_term,
+            argMax(url, timestamp) AS url,
+            argMax(hostname, timestamp) AS hostname,
+            argMax(page, timestamp) AS page,
+            argMax(entrypage, timestamp) AS entrypage,
+            argMax(exitlink, timestamp) AS exitlink,
+            argMax(referer, timestamp) AS referer,
+            argMax(referer_url, timestamp) AS referer_url,
+            argMax(country, timestamp) AS country,
+            argMax(city, timestamp) AS city,
+            argMax(region, timestamp) AS region,
+            argMax(continent, timestamp) AS continent,
+            argMax(device, timestamp) AS device,
+            argMax(browser, timestamp) AS browser,
+            argMax(os, timestamp) AS os,
+            argMax(trigger, timestamp) AS trigger
+        FROM dub_click_events_mv
+        WHERE event_type != 'revenue' AND visitor_id IS NOT NULL AND visitor_id != ''
+        GROUP BY workspace_id, visitor_id
+    ) AS vc USING (workspace_id, visitor_id)
+    WHERE r.event_type = 'revenue' AND coalesce(r.revenue, 0) > 0
+
+TYPE materialized
+DATASOURCE dub_sales_events_mv

@@ -1,3 +1,5 @@
+"use client";
+
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { AnalyticsGroupByOptions } from "@/lib/analytics/types";
 import { editQueryString } from "@/lib/analytics/utils";
@@ -76,7 +78,7 @@ export function useAnalyticsFilterOption(
       response?.data?.map((d) => ({
         ...d,
         count: (d["events"] ?? d[selectedTab]) as number | undefined,
-        saleAmount: d.saleAmount as number | undefined,
+        saleAmount: d.revenue as number | undefined,
       })) ?? null,
     loading: !response?.data || isLoading,
   };

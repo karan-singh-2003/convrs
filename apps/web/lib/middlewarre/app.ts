@@ -9,7 +9,12 @@ import { WorkspacesMiddleware } from "./workspace";
 
 export async function AppMiddleware(req: NextRequest) {
   const { path, fullPath, searchParamsString } = parse(req);
-
+  if (path.startsWith("/shared/")) {
+    console.log("Accessing shared analytics page with path:", path);
+    return NextResponse.rewrite(
+      new URL(`/app.boilercode.dev${path}${searchParamsString}`, req.url)
+    );
+  }
   const user = await getUserViaToken(req);
 
   // if there's no user and the path isn't /login or /register, redirect to /login

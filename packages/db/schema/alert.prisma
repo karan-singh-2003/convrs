@@ -1,0 +1,15 @@
+model Alert {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  trigger     String
+  subject     String
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([createdAt])
+}

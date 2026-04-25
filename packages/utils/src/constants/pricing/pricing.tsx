@@ -1,3 +1,14 @@
+/**
+ * packages/utils/src/pricing.ts
+ *
+ * Each plan has TWO separate Dodo product IDs — one for the monthly price,
+ * one for the yearly price.  This matches your PRODUCT_IDS object exactly.
+ *
+ * getPlanFromProductId searches both ids.monthly and ids.yearly, and also
+ * returns which interval matched, so webhook handlers know which billing
+ * cycle was purchased.
+ */
+
 export type PlanFeatures = {
   id: string;
   name: string;
@@ -7,175 +18,154 @@ export type PlanDetails = {
   name: string;
   price: {
     monthly: number | null;
-    yearly: number | null;
+    yearly: number | null; // total billed yearly  (e.g. 86 = $86/yr for Starter)
     ids?: {
-      monthly: string;
-      yearly: string;
+      monthly: string; // Dodo product ID for the monthly-billed price
+      yearly: string;  // Dodo product ID for the yearly-billed price
     };
   };
   limits: {
-    events: number; // monthly event quota
+    events: number;
   };
   featureTitle?: string;
   features?: PlanFeatures[];
 };
 
-// ─── Stripe Price IDs ────────────────────────────────────────────────────────
-// Replace each value with your actual price_xxx IDs from Stripe dashboard
+// ─── Dodo Product IDs ─────────────────────────────────────────────────────────
+// Dashboard → Products → click a plan → copy "Product ID" (pdt_xxx).
+// Each plan needs two products: one priced monthly, one priced yearly.
 
-const STARTER_PRICE_IDS = {
-  monthly: "price_1TFutbL2qfTOZYhOVN8Hrrkz",
-  yearly: "price_1TFuu1L2qfTOZYhOr8Bdn1kj",
-};
-const BASIC_PRICE_IDS = {
-  monthly: "price_1TFv12L2qfTOZYhOONSu523a",
-  yearly: "price_1TFv4aL2qfTOZYhOSKslfMeL",
-};
-const PRO_PRICE_IDS = {
-  monthly: "price_1TFv1CL2qfTOZYhOLxjeZy9o",
-  yearly: "price_1TFv4oL2qfTOZYhONNzjxhdv",
-};
-const GROWTH_PRICE_IDS = {
-  monthly: "price_1TFv1JL2qfTOZYhOouegwoCj",
-  yearly: "price_1TFv54L2qfTOZYhOceRQEcTp",
-};
-const BUSINESS_PRICE_IDS = {
-  monthly: "price_1TFv1TL2qfTOZYhOzRYWmfnE",
-  yearly: "price_1TFv5HL2qfTOZYhObdS72RnU",
-};
-const SCALE_PRICE_IDS = {
-  monthly: "price_1TFv1gL2qfTOZYhOx7DcnxaM",
-  yearly: "price_1TFv5PL2qfTOZYhO820LGX5A",
-};
-const PRO_PLUS_PRICE_IDS = {
-  monthly: "price_1TFv1rL2qfTOZYhOmzKcf9Qq",
-  yearly: "price_1TFv5cL2qfTOZYhOkzTNEWck",
-};
-const ENTERPRISE_PRICE_IDS = {
-  monthly: "price_1TFv5yL2qfTOZYhOa9JtcpLJ",
-  yearly: "price_enterprise_yearly",
-};
-const ULTIMATE_PRICE_IDS = {
-  monthly: "price_1TFv2BL2qfTOZYhOyNWUJUuS",
-  yearly: "price_1TFv6BL2qfTOZYhO586yNdXn",
-};
+const PRODUCT_IDS = {
+  starter: {
+    monthly: "pdt_0NdQZEKYFbEhiC2G1iuxI",
+    yearly:  "pdt_0NdQZKlr1ulxmSL4H2pLm",
+  },
+  basic: {
+    monthly: "pdt_0NdQZTTKkCwfKuvWEwtl2",
+    yearly:  "pdt_0NdQZYyYCzDYkgGAqltpK",
+  },
+  pro: {
+    monthly: "pdt_0NdQZe5tfdWWGVyBbEzMC",
+    yearly:  "pdt_0NdQZj9gYH2urESRYKdbd",
+  },
+  growth: {
+    monthly: "pdt_0NdQZocJrfVDBby2RMhs4",
+    yearly:  "pdt_0NdQdnhULy6GydM4QmtWs",
+  },
+  business: {
+    monthly: "pdt_0NdQZvCbP0tQpbhnmUTIp",
+    yearly:  "pdt_0NdQa4CQrqsCFvt9B3dhH",
+  },
+  scale: {
+    monthly: "pdt_0NdQa8Vc6T6NGnVx2DfPd",
+    yearly:  "pdt_0NdQaDEbN58MSda9aDwwt",
+  },
+  pro_plus: {
+    monthly: "pdt_0NdQaHQ5se9vGGkR44nds",
+    yearly:  "pdt_0NdQaNTXSjo8UlZYx9ga5",
+  },
+} as const;
 
-// ─── Common features (all plans get the same features, only limits differ) ───
+// ─── Common features ──────────────────────────────────────────────────────────
 
 const CORE_FEATURES: PlanFeatures[] = [
   { id: "analytics", name: "Full analytics dashboard" },
-  { id: "api", name: "API access" },
-  { id: "webhooks", name: "Webhook events" },
-  { id: "export", name: "Data export" },
-  { id: "support", name: "Email support" },
-  { id: "realtime", name: "Real-time event tracking" },
+  { id: "api",       name: "API access" },
+  { id: "webhooks",  name: "Webhook events" },
+  { id: "export",    name: "Data export" },
+  { id: "support",   name: "Email support" },
+  { id: "realtime",  name: "Real-time event tracking" },
   { id: "retention", name: "90-day data retention" },
 ];
 
-// ─── Plans ───────────────────────────────────────────────────────────────────
+// ─── Plans ────────────────────────────────────────────────────────────────────
 
 export const PLANS: PlanDetails[] = [
   {
-    name: "Starter",
-    price: { monthly: 9, yearly: 86, ids: STARTER_PRICE_IDS },
+    name:  "Starter",
+    price: { monthly: 9,   yearly: 86,    ids: PRODUCT_IDS.starter   },
     limits: { events: 10_000 },
     featureTitle: "Includes:",
     features: CORE_FEATURES,
   },
   {
-    name: "Basic",
-    price: { monthly: 24, yearly: 230, ids: BASIC_PRICE_IDS },
+    name:  "Basic",
+    price: { monthly: 24,  yearly: 230,   ids: PRODUCT_IDS.basic     },
     limits: { events: 25_000 },
     featureTitle: "Everything in Starter +",
     features: CORE_FEATURES,
   },
   {
-    name: "Pro",
-    price: { monthly: 48, yearly: 461, ids: PRO_PRICE_IDS },
+    name:  "Pro",
+    price: { monthly: 48,  yearly: 461,   ids: PRODUCT_IDS.pro       },
     limits: { events: 100_000 },
     featureTitle: "Everything in Basic +",
     features: CORE_FEATURES,
   },
   {
-    name: "Growth",
-    price: { monthly: 79, yearly: 758, ids: GROWTH_PRICE_IDS },
+    name:  "Growth",
+    price: { monthly: 79,  yearly: 758,   ids: PRODUCT_IDS.growth    },
     limits: { events: 500_000 },
     featureTitle: "Everything in Pro +",
     features: CORE_FEATURES,
   },
   {
-    name: "Business",
-    price: { monthly: 149, yearly: 1_430, ids: BUSINESS_PRICE_IDS },
+    name:  "Business",
+    price: { monthly: 149, yearly: 1_430, ids: PRODUCT_IDS.business  },
     limits: { events: 1_000_000 },
     featureTitle: "Everything in Growth +",
     features: CORE_FEATURES,
   },
   {
-    name: "Scale",
-    price: { monthly: 249, yearly: 2_390, ids: SCALE_PRICE_IDS },
+    name:  "Scale",
+    price: { monthly: 249, yearly: 2_390, ids: PRODUCT_IDS.scale     },
     limits: { events: 5_000_000 },
     featureTitle: "Everything in Business +",
     features: CORE_FEATURES,
   },
   {
-    name: "Pro Plus",
-    price: { monthly: 399, yearly: 3_830, ids: PRO_PLUS_PRICE_IDS },
+    name:  "Pro Plus",
+    price: { monthly: 399, yearly: 3_830, ids: PRODUCT_IDS.pro_plus  },
     limits: { events: 10_000_000 },
     featureTitle: "Everything in Scale +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Enterprise",
-    price: { monthly: 569, yearly: 5_462, ids: ENTERPRISE_PRICE_IDS },
-    limits: { events: 15_000_000 },
-    featureTitle: "Everything in Pro Plus +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Ultimate",
-    price: { monthly: 899, yearly: 8_630, ids: ULTIMATE_PRICE_IDS },
-    limits: { events: 25_000_000 },
-    featureTitle: "Everything in Enterprise +",
     features: CORE_FEATURES,
   },
 ];
 
 // ─── Named plan exports ───────────────────────────────────────────────────────
 
-export const Starter_Plan = PLANS.find((p) => p.name === "Starter")!;
-export const Basic_Plan = PLANS.find((p) => p.name === "Basic")!;
-export const Pro_Plan = PLANS.find((p) => p.name === "Pro")!;
-export const Growth_Plan = PLANS.find((p) => p.name === "Growth")!;
+export const Starter_Plan  = PLANS.find((p) => p.name === "Starter")!;
+export const Basic_Plan    = PLANS.find((p) => p.name === "Basic")!;
+export const Pro_Plan      = PLANS.find((p) => p.name === "Pro")!;
+export const Growth_Plan   = PLANS.find((p) => p.name === "Growth")!;
 export const Business_Plan = PLANS.find((p) => p.name === "Business")!;
-export const Scale_Plan = PLANS.find((p) => p.name === "Scale")!;
-export const ProPlus_Plan = PLANS.find((p) => p.name === "Pro Plus")!;
-export const Enterprise_Plan = PLANS.find((p) => p.name === "Enterprise")!;
-export const Ultimate_Plan = PLANS.find((p) => p.name === "Ultimate")!;
+export const Scale_Plan    = PLANS.find((p) => p.name === "Scale")!;
+export const ProPlus_Plan  = PLANS.find((p) => p.name === "Pro Plus")!;
 
-export const SELF_SERVE_PLANS = PLANS; // all plans are self-serve
+export const SELF_SERVE_PLANS = PLANS;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Find a plan from a Stripe price ID (works for both monthly and yearly).
+ * Find a plan AND billing interval from a Dodo product ID.
+ *
+ * Searches both ids.monthly and ids.yearly on every plan so webhook
+ * handlers can do a single lookup and know exactly what was purchased.
+ *
+ * Replaces getPlanFromPriceId — same call signature, richer return value.
  */
-export const getPlanFromPriceId = ({
-  priceId,
-}: {
-  priceId: string;
-}): { plan: PlanDetails | null; interval: "monthly" | "yearly" | null } => {
+export const getPlanFromProductId = (
+  productId: string
+): { plan: PlanDetails | null; interval: "monthly" | "yearly" | null } => {
   for (const plan of PLANS) {
     if (!plan.price.ids) continue;
-    if (plan.price.ids.monthly === priceId)
-      return { plan, interval: "monthly" };
-    if (plan.price.ids.yearly === priceId) return { plan, interval: "yearly" };
+    if (plan.price.ids.monthly === productId) return { plan, interval: "monthly" };
+    if (plan.price.ids.yearly  === productId) return { plan, interval: "yearly"  };
   }
   return { plan: null, interval: null };
 };
 
-/**
- * Find a plan by name (case-insensitive).
- */
+/** Find a plan by name (case-insensitive). */
 export const getPlanDetails = ({
   plan,
 }: {
@@ -186,10 +176,10 @@ export const getPlanDetails = ({
 };
 
 /**
- * Get the correct Stripe price ID for a plan + billing interval.
- * Monthly plans get a 14-day trial; yearly plans do not.
+ * Get the correct Dodo product ID for a plan + billing interval.
+ * Used in the upgrade route when creating a checkout session or changing plan.
  */
-export const getPriceId = ({
+export const getProductId = ({
   planName,
   interval,
 }: {
@@ -201,30 +191,17 @@ export const getPriceId = ({
   return plan.price.ids[interval];
 };
 
-/**
- * Returns true if interval is monthly (trial-eligible).
- * Yearly plans never get a trial — pay upfront.
- */
-export const isTrialEligible = (interval: "monthly" | "yearly"): boolean => {
-  return interval === "monthly";
-};
-
-/**
- * Get the next plan up from the current one.
- * Returns the last plan if already at the top.
- */
+/** Get the next plan up from the current one. Returns last plan if already at top. */
 export const getNextPlan = (planName?: string | null): PlanDetails => {
   if (!planName) return Starter_Plan;
-  const currentIndex = PLANS.findIndex(
+  const idx = PLANS.findIndex(
     (p) => p.name.toLowerCase() === planName.toLowerCase()
   );
-  if (currentIndex === -1) return Starter_Plan;
-  return PLANS[Math.min(currentIndex + 1, PLANS.length - 1)];
+  if (idx === -1) return Starter_Plan;
+  return PLANS[Math.min(idx + 1, PLANS.length - 1)];
 };
 
-/**
- * Returns true if switching from currentPlan to newPlan is a downgrade.
- */
+/** Returns true if switching from currentPlan to newPlan is a downgrade. */
 export const isDowngradePlan = ({
   currentPlan,
   newPlan,
@@ -232,20 +209,26 @@ export const isDowngradePlan = ({
   currentPlan: string;
   newPlan: string;
 }): boolean => {
-  const currentIndex = PLANS.findIndex(
+  const currentIdx = PLANS.findIndex(
     (p) => p.name.toLowerCase() === currentPlan.toLowerCase()
   );
-  const newIndex = PLANS.findIndex(
+  const newIdx = PLANS.findIndex(
     (p) => p.name.toLowerCase() === newPlan.toLowerCase()
   );
-  return newIndex < currentIndex;
+  return newIdx < currentIdx;
+};
+
+/** Format event limit for display (e.g. 1_000_000 → "1M events/mo"). */
+export const formatEventLimit = (events: number): string => {
+  if (events >= 1_000_000) return `${events / 1_000_000}M events/mo`;
+  if (events >= 1_000)     return `${events / 1_000}K events/mo`;
+  return `${events} events/mo`;
 };
 
 /**
- * Format event limit for display (e.g. 1_000_000 → "1M events/mo").
+ * @deprecated Use getPlanFromProductId instead.
+ * Kept so any remaining call-sites don't break at compile time.
  */
-export const formatEventLimit = (events: number): string => {
-  if (events >= 1_000_000) return `${events / 1_000_000}M events/mo`;
-  if (events >= 1_000) return `${events / 1_000}K events/mo`;
-  return `${events} events/mo`;
-};
+export const getPlanFromPriceId = getPlanFromProductId as unknown as (args: {
+  priceId: string;
+}) => { plan: PlanDetails | null; interval: "monthly" | "yearly" | null };

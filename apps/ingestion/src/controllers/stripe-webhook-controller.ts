@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { prisma } from "@repo/db";
 import { decrypt } from "@repo/analytics";
 import { handleCheckoutCompleted } from "./handle-checkout-complete";
-import { handleChargeSucceeded } from "./handle-charge-succeeded";
+
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
   const workspaceIdParam = req.params.workspaceId;
@@ -59,41 +59,6 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
           event.data.object as Stripe.Checkout.Session,
           workspaceId,
           event.id
-        );
-        break;
-
-      case "invoice.paid":
-        // await handleInvoicePaid(
-        //   event.data.object as Stripe.Invoice,
-        //   workspaceId,
-        //   event.id
-        // );
-        console.log(
-          "Received invoice.paid event, but handler not implemented yet."
-        );
-        break;
-
-      case "charge.succeeded":
-        await handleChargeSucceeded(
-          event.data.object as Stripe.Charge,
-          workspaceId,
-          event.id
-        );
-        console.log(
-          "Received charge.succeeded event, but handler not implemented yet."
-        );
-        break;
-
-      case "customer.subscription.created":
-      case "customer.subscription.updated":
-        // await handleSubscriptionChange(
-        //   event.data.object as Stripe.Subscription,
-        //   workspaceId,
-        //   event.id,
-        //   event.type
-        // );
-        console.log(
-          `Received ${event.type} event, but handler not implemented yet.`
         );
         break;
 

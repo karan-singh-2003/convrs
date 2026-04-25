@@ -1,5 +1,4 @@
-import { AnalyticsContext } from "./analytics-providers";
-import AnalyticsProvider from "./analytics-providers";
+import AnalyticsProvider, { AnalyticsContext } from "./analytics-providers";
 import { AnalyticsToggle } from "./analytics-toggle";
 import { ChartSection } from "./chart-section";
 import { DeviceSection } from "./device-section";
@@ -7,29 +6,41 @@ import { LocationSection } from "./location-section";
 import { LowerGrid } from "./goals-section";
 import { PagesSection } from "./pages-section";
 import { SourcesSection } from "./sources-section";
+import { useContext } from "react";
 
-export default function Analytics() {
+export default function Analytics({ mode, workspaceId }) {
   return (
-    <AnalyticsProvider>
-      <AnalyticsContext.Consumer>
-        {({ requiresUpgrade }) => {
-          return (
-            <div className="my-2  space-y-4">
-              <div className="max-w-screen-lg mx-auto rounded-md py-3 text-sm ">
-                <AnalyticsToggle/>
-              </div>
-              <div className="space-y-[6rem] ">
-                <ChartSection />
-                <StatsGrid />
-              </div>
-              <div className="max-w-screen-lg mx-auto">
-                <LowerGrid />
-              </div>
-            </div>
-          );
-        }}
-      </AnalyticsContext.Consumer>
+    <AnalyticsProvider
+      workspaceId={mode === "public" ? workspaceId : undefined}
+    >
+      <AnalyticsContent mode={mode} />
     </AnalyticsProvider>
+  );
+}
+
+function AnalyticsContent({ mode }: { mode: "private" | "public" }) {
+  const { selectedTab    } = useContext(AnalyticsContext);
+
+  return (
+    <>
+      <div className="my-2 space-y-4">
+        <div className="max-w-screen-lg mx-auto rounded-md py-3 text-sm">
+          <AnalyticsToggle />
+        </div>
+
+        <div className="space-y-[6rem]">
+          <ChartSection mode={mode} />
+          <StatsGrid />
+        </div>
+
+        {/*  Hide for revenue */}
+        {selectedTab !== "revenue" && (
+          <div className="max-w-screen-lg mx-auto">
+            <LowerGrid />
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 

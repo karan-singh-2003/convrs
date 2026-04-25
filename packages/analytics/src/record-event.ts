@@ -158,13 +158,21 @@ export async function recordEvent({
     event_id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
 
-    event_type: payload.type === "event" ? "goals" : payload.type,
+    event_type:
+      payload.type === "event"
+        ? "goals"
+        : payload.type === "payment"
+          ? "revenue"
+          : payload.type,
     event_name: payload.event_name ?? null,
 
     workspace_id: website_id, // ← only workspace_id, drop website_id
     visitor_id: visitor_id,
     session_id: session_id,
     identity_hash: identityHash ?? null,
+
+    revenue: payload.revenue?.amount ?? null,
+    currency: payload.revenue?.currency ?? "",
 
     // UTM (send nulls explicitly)
     utm_source: null,
@@ -248,16 +256,23 @@ export async function recordEvent({
         },
         body: JSON.stringify(eventData),
       });
-      console.log("Tinybird response:", response);
+      // ADD THIS — Tinybird puts the real error in the body even on 200
+      const responseBody = await response.json().catch(() => ({}));
+      console.log(
+        "Tinybird response body:",
+        JSON.stringify(responseBody, null, 2)
+      );
 
-      if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}));
+      if (!response.ok || responseBody.error) {
         logger.error(
-          { status: response.status, errBody },
+          { status: response.status, body: responseBody },
           "[recordEvent] Tinybird error"
         );
       } else {
-        logger.info({ event_id: eventId }, "[recordEvent] Ingested ✓");
+        logger.info(
+          { status: response.status, body: responseBody },
+          "[recordEvent] Tinybird success"
+        );
       }
     } catch (error) {
       logger.error({ error }, "[recordEvent] Failed");

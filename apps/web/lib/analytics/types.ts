@@ -23,6 +23,7 @@ export type AnalyticsGroupByOptions =
 
 export type AnalyticsResponseOptions =
   | "clicks"
+  | "revenue"
   | "bounce_rate"
   | "avg_session_duration"
   | "sales"
@@ -90,5 +91,3 @@ const partnerAnalyticsSchema = analyticsQuerySchema
     groupBy: true,
   })
   .partial();
-
-

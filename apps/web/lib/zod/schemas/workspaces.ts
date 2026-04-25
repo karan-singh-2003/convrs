@@ -92,6 +92,15 @@ export const WorkspaceSchema = z
       .nullable()
       .optional()
       .describe("The analytics project token for the workspace."),
+      isPublic: z
+      .boolean()
+      .optional()
+      .describe("Whether the workspace is public or not."),
+    publicId: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("The public ID for the workspace, used for public workspaces."),
     createdAt: z
       .date()
       .describe("The date and time when the workspace was created."),

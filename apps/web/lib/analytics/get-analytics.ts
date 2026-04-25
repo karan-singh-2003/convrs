@@ -24,6 +24,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     dataAvailableFrom,
   } = params;
 
+
   if (event === "funnel") {
     const funnelPipe = tb.buildPipe({
       pipe: "v1_funnel",
@@ -102,6 +103,8 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       clicks: z.number().nullable().default(0),
       bounce_rate: z.number().nullable().default(0),
       avg_session_duration: z.number().nullable().default(0),
+      revenue: z.number().nullable().default(0),
+      conversion_rate: z.number().nullable().default(0),
       events: z.number().nullable().default(0),
       saleAmount: z.number().nullable().default(0),
       country: z.string().optional(),
@@ -129,14 +132,20 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
   };
 
   const response = await pipe(tinybirdParams);
-
+ 
   // Return parsed response
   const schema = analyticsResponse[groupBy!];
 
-  return response.data.map((item: any) =>
-    schema.parse({
+  return response.data.map((item: any) => {
+    const parsed = schema.parse({
       ...item,
       [SINGULAR_ANALYTICS_ENDPOINTS[groupBy!]]: item.groupByField,
-    })
-  );
+    });
+
+    // Some group-by schemas do not declare revenue yet. Preserve it so revenue views can render values.
+    return {
+      ...parsed,
+      revenue: item?.revenue ?? 0,
+    };
+  });
 };

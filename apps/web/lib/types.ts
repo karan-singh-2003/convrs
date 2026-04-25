@@ -3,6 +3,7 @@ import { DirectorySyncProviders } from "@boxyhq/saml-jackson";
 import { keyof, z } from "zod";
 import { workspaceUserSchema } from "@/lib/zod/schemas/workspaces";
 import { tokenSchema } from "./zod/schemas/token";
+import { alertSchema } from "./zod/schemas/alert";
 import {
   createWebhookSchema,
   webhookSchema,
@@ -66,6 +67,8 @@ export interface SAMLProviderProps {
 export type StripeMode = "test" | "sandbox" | "live";
 
 export type TokenProps = z.infer<typeof tokenSchema>;
+
+export type AlertProps = z.infer<typeof alertSchema>;
 
 export type WebhookProps = z.infer<typeof webhookSchema>;
 

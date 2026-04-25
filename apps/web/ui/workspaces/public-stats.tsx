@@ -1,22 +1,62 @@
 "use client";
 
 import useWorkspace from "@/lib/swr/use-workspace";
-import { Switch } from "@repo/ui";
-import { useState } from "react";
+import { Switch,Input } from "@repo/ui";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function PublicStats() {
-  const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { id, isPublic, publicId } = useWorkspace();
+  console.log("isPublic", isPublic);
+  console.log("publicId", publicId);
+
+  const [enabled, setEnabled] = useState(isPublic ?? false);
+
+  useEffect(() => {
+    if (isPublic !== undefined) {
+      setEnabled(isPublic);
+    }
+  }, [isPublic]);
+  const handleToggle = async (next: boolean) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(`/api/workspaces/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isPublic: next }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.error || "Failed");
+      }
+
+      toast.success(`Dashboard is now ${next ? "public" : "private"}`);
+    } catch (error) {
+      console.error(error);
+
+      // rollback UI if failed
+      setEnabled((prev) => !prev);
+
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <>
-      <div className="relative w-full flex justify-between items-center bg-white p-4 border-neutral-200 rounded-2xl border space-y-2 ">
+    <div className="bg-white p-4 border-neutral-200 rounded-2xl border space-y-2">
+      <div className="relative w-full flex justify-between items-center  ">
         <div className="space-y-0.5 font-display">
           <h2 className="font-medium text-neutral-600 text-sm">
             Public Dashboard
           </h2>
-          <p className="font-default text-[13.5px] text-neutral-500">
+          <div className="font-default text-[13.5px] text-neutral-500">
             Share your project stats with the public.
-          </p>
+          </div>
         </div>
         <Switch
           disabled={loading}
@@ -24,9 +64,21 @@ export default function PublicStats() {
           trackDimensions="radix-state-checked:bg-black focus-visible:ring-black/20 w-7 h-4"
           thumbDimensions="size-3"
           thumbTranslate="translate-x-3"
-          fn={setEnabled}
+          fn={(value) => {
+            setEnabled(value);
+            handleToggle(value);
+          }}
         />
       </div>
-    </>
+      {enabled && (
+        <div className="mt-3">
+          <Input
+            readOnly
+            value={`${window.location.origin}/shared/${publicId}`}
+    
+          />
+        </div>
+      )}
+    </div>
   );
 }

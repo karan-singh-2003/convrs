@@ -6,6 +6,7 @@ export const AnalyticsEventSchema = z
     // ── Base (always present) ─────────────────────────────────────────────────
     website_id: z.string().min(1).max(64),
     visitor_id: z.string().min(1).max(128),
+    customer_id: z.string().min(1).max(128).optional(),
     session_id: z.string().min(1).max(128),
     type: z.enum(["pageview", "event", "identify", "payment", "refund"]),
     url: z.string().url(),

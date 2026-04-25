@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { trackClickController } from "./controllers/track.js";
+import { trackClickController } from "./controllers/track";
 import { stripeWebhookController } from "./controllers/stripe-webhook-controller";
 
 const app = express();

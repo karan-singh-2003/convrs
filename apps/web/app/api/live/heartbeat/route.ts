@@ -42,12 +42,30 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await recordHeartbeat(parsed.data);
-    return NextResponse.json({ ok: true }, { status: 200, headers: CORS_HEADERS });
+    const latitudeHeader = req.headers.get("x-vercel-ip-latitude");
+    const longitudeHeader = req.headers.get("x-vercel-ip-longitude");
+    const countryHeader = req.headers.get("x-vercel-ip-country") ?? undefined;
+
+    const latitude = latitudeHeader ? Number(latitudeHeader) : undefined;
+    const longitude = longitudeHeader ? Number(longitudeHeader) : undefined;
+
+    await recordHeartbeat({
+      ...parsed.data,
+      latitude: Number.isFinite(latitude) ? latitude : undefined,
+      longitude: Number.isFinite(longitude) ? longitude : undefined,
+      country: countryHeader,
+    });
+    return NextResponse.json(
+      { ok: true },
+      { status: 200, headers: CORS_HEADERS }
+    );
   } catch (error) {
     console.error("[api/live/heartbeat] Error:", error);
     // Keep tracker resilient: do not surface 500s to heartbeat callers.
-    return NextResponse.json({ ok: false }, { status: 200, headers: CORS_HEADERS });
+    return NextResponse.json(
+      { ok: false },
+      { status: 200, headers: CORS_HEADERS }
+    );
   }
 }
 

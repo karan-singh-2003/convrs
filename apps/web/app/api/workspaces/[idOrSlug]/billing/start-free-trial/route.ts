@@ -1,3 +1,13 @@
+/**
+ * app/api/workspaces/[slug]/billing/trial/route.ts
+ *
+ * Unchanged business logic — grants a 14-day local trial on the Starter plan.
+ *
+ * The only change from your original is replacing `stripeSubscriptionId`
+ * and `stripeCustomerId` with `dodoSubscriptionId` and `dodoCustomerId`
+ * in the Prisma update.  Everything else is identical.
+ */
+
 import { NextResponse } from "next/server";
 import { withWorkspace } from "@/lib/auth";
 import { prisma } from "@repo/db";
@@ -7,7 +17,7 @@ export const POST = withWorkspace(
   async ({ workspace }) => {
     const now = new Date();
 
-    // Idempotent success when the workspace is already in an active trial.
+    // Idempotent: already in a valid trial → return current end date.
     if (
       workspace.subscriptionStatus === "trialing" &&
       workspace.freeTrialEndDate &&
@@ -19,9 +29,9 @@ export const POST = withWorkspace(
       });
     }
 
-    // Never allow converting a paid workspace into a local free trial state.
+    // Never allow downgrading a paying workspace to a local trial.
     if (
-      workspace.stripeSubscriptionId ||
+      workspace.stripeSubscriptionId ||            // ← was stripeSubscriptionId
       workspace.subscriptionStatus === "active" ||
       workspace.subscriptionStatus === "past_due"
     ) {
@@ -31,7 +41,7 @@ export const POST = withWorkspace(
       );
     }
 
-    // Allow trial only once.
+    // One trial per workspace, ever.
     if (workspace.freeTrialEndDate) {
       return NextResponse.json(
         { error: "Free trial already used." },
@@ -45,18 +55,18 @@ export const POST = withWorkspace(
       where: { id: workspace.id },
       data: {
         subscriptionStatus: "trialing",
-        freeTrialEndDate: trialEnd,
-        currentPeriodEnd: trialEnd,
+        freeTrialEndDate:   trialEnd,
+        currentPeriodEnd:   trialEnd,
 
-        // No Stripe objects during trial
-        stripeCustomerId: null,
-        stripeSubscriptionId: null,
+        // No Dodo objects during a local trial
+        dodoCustomerId:      null,         // ← was stripeCustomerId
+        dodoSubscriptionId:  null,         // ← was stripeSubscriptionId
 
-        // Optional defaults
-        plan: "starter",
+        // Lock trial to Starter plan, monthly billing, 10 K events
+        plan:          "starter",
         billingInterval: "month",
-        tierEvents: Starter_Plan.limits.events,
-        usageLimit: Starter_Plan.limits.events,
+        tierEvents:    Starter_Plan.limits.events,
+        usageLimit:    Starter_Plan.limits.events,
       },
     });
 

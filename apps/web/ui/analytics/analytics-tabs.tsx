@@ -38,6 +38,7 @@ export function AnalyticsTabs({
   setSaleUnit,
   requiresUpgrade,
   showPaywall,
+  country = "US",
 }: {
   showConversions?: boolean;
   totalEvents?: { [key in AnalyticsResponseOptions]: number };
@@ -49,6 +50,7 @@ export function AnalyticsTabs({
   setSaleUnit: (saleUnit: AnalyticsSaleUnit) => void;
   requiresUpgrade?: boolean;
   showPaywall?: boolean;
+  country?: string;
 }) {
   const tabs = useMemo(
     () =>
@@ -60,7 +62,7 @@ export function AnalyticsTabs({
           conversions: false,
         },
         {
-          id: "Revenue",
+          id: "revenue",
           label: "Revenue",
           colorClassName: "text-green-500/50",
           conversions: true,
@@ -71,7 +73,6 @@ export function AnalyticsTabs({
           colorClassName: "text-purple-500/50",
           conversions: true,
         },
-
         {
           id: "bounce_rate",
           label: "Bounce Rate",
@@ -80,7 +81,7 @@ export function AnalyticsTabs({
         },
         {
           id: "avg_session_duration",
-          label: "Avg. Session Duration",
+          label: "Avg. Session ",
           colorClassName: "text-green-500/50",
           conversions: false,
         },
@@ -97,9 +98,10 @@ export function AnalyticsTabs({
   return (
     <div className="w-full overflow-x-hidden">
       <NumberFlowGroup>
-        <div className="grid w-full grid-cols-3 gap-0 md:flex md:overflow-x-auto md:overflow-y-hidden">
+        <div className="grid w-full grid-cols-2 gap-0 md:grid-cols-3 xl:grid-cols-6">
           {tabs.map(({ id, label, colorClassName }, idx) => {
             const isLiveVisitorsTab = id === "live_visitors";
+            const isRevenueTab = label === "Revenue";
             const value = isLiveVisitorsTab
               ? (liveVisitorsCount ?? 0)
               : (totalEvents?.[id] ?? 0);
@@ -107,10 +109,7 @@ export function AnalyticsTabs({
               isLiveVisitorsTab || totalEvents?.[id] !== undefined;
 
             return (
-              <div
-                key={id}
-                className="relative z-0 flex min-w-0 md:min-w-[130px]"
-              >
+              <div key={id} className="relative z-0 flex min-w-0 w-full">
                 <Link
                   className={cn(
                     "relative flex h-full min-h-[134px] w-full flex-col justify-between px-4 py-3",
@@ -146,6 +145,16 @@ export function AnalyticsTabs({
                       ) : (
                         <NumberFlow
                           value={value}
+                          format={
+                            isRevenueTab
+                              ? {
+                                  style: "currency",
+                                  currency: country === "US" ? "USD" : "USD",
+                                  currencyDisplay: "symbol", // ensures "$" instead of "US$"
+                                }
+                              : undefined
+                          }
+                          locales="en-US"
                           className={cn(
                             "text-xl text-neutral-600 font-medium font-bricolageGrotesque sm:text-[26px]",
                             showPaywall && "opacity-30"

@@ -1,17 +1,32 @@
 "use client";
 
 import { Modal, Input, Button, ToggleGroup } from "@repo/ui";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import { Plus } from "lucide-react";
+import { AlertProps } from "@/lib/types";
+import { mutate } from "swr";
 
-function CreateAlertModal({
+const defaultSubject = "New {{goal_name}} from {{visitor_country}}";
+const defaultContent = `Hi {{first_name}},
+
+{{visitor_name}} just completed {{goal_name}}
+
+He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}} and device {{device_name}}`;
+
+function AddEditAlertModal({
   showModal,
   setShowModal,
+  alert,
+  onSaved,
+  setSelectedAlert,
 }: {
   showModal: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  alert?: AlertProps;
+  onSaved?: () => void;
+  setSelectedAlert?: (value: AlertProps | undefined) => void;
 }) {
   const params = useParams() as { slug?: string };
 
@@ -19,60 +34,83 @@ function CreateAlertModal({
   const [trigger, setTrigger] = useState("");
 
   const [view, setView] = useState<"editor" | "preview">("editor");
-  const [subject, setSubject] = useState(
-    "New {{goal_name}} from {{visitor_country}}"
-  );
+  const [subject, setSubject] = useState(defaultSubject);
 
-  const [content, setContent] = useState(`Hi {{first_name}},
-
-{{visitor_name}} just completed {{goal_name}}
-
-He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}} and device {{device_name}}`);
+  const [content, setContent] = useState(defaultContent);
 
   const [isLoading, setIsLoading] = useState(false);
 
   const resetEditor = useCallback(() => {
     setAlertName("");
     setTrigger("");
-    setSubject("New {{goal_name}} from {{visitor_country}}");
-    setContent(`Hi {{first_name}},
-
-{{visitor_name}} just completed {{goal_name}}
-
-He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}} and device {{device_name}}`);
+    setSubject(defaultSubject);
+    setContent(defaultContent);
     setView("editor");
   }, []);
 
+  useEffect(() => {
+    if (!showModal) return;
+
+    if (alert) {
+      setAlertName(alert.name);
+      setTrigger(alert.trigger);
+      setSubject(alert.subject);
+      setContent(alert.content);
+      setView("editor");
+      return;
+    }
+
+    resetEditor();
+  }, [alert, showModal, resetEditor]);
+
   const handleSave = async () => {
-    if (!alertName.trim() || !content.trim()) return;
+    if (
+      !alertName.trim() ||
+      !trigger.trim() ||
+      !subject.trim() ||
+      !content.trim()
+    )
+      return;
+
     if (!params.slug) {
       toast.error("Workspace not found.");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      const res = await fetch(`/api/workspaces/${params.slug}/alerts`, {
-        method: "POST",
+      const endpoint = alert
+        ? `/api/workspaces/${params.slug}/alerts/${alert.id}`
+        : `/api/workspaces/${params.slug}/alerts`;
+
+      const method = alert ? "PATCH" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: alertName,
-          trigger,
-          subject,
-          content,
+          name: alertName.trim(),
+          trigger: trigger.trim(),
+          subject: subject.trim(),
+          content: content.trim(),
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create alert");
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.error || "Failed to save alert");
       }
 
-      toast.success("Alert created!");
+      await mutate(`/api/workspaces/${params.slug}/alerts`);
+      toast.success(alert ? "Alert updated!" : "Alert created!");
       setShowModal(false);
+      setSelectedAlert?.(undefined);
+      onSaved?.();
       resetEditor();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create alert."
+        error instanceof Error ? error.message : "Failed to save alert."
       );
     } finally {
       setIsLoading(false);
@@ -89,7 +127,7 @@ He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}}
       <div className="shrink-0 border-b border-neutral-100 px-5 py-3">
         <div className="flex items-center justify-between gap-3">
           <h3 className="font-display text-[15px] font-medium text-black/70">
-            Create Alert
+            {alert ? "Edit Alert" : "Create Alert"}
           </h3>
           <h1 className="font-display font-medium text-neutral-500 text-[13px]">
             Alerts are sent to : official.jaskaran13@gmail.com
@@ -163,7 +201,7 @@ He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}}
                     onChange={(e) => setSubject(e.target.value)}
                   />
                 ) : (
-                  <p className="py-2 font-display text-sm text-neutral-700 w-full truncate">
+                  <p className="py-2 px-2 font-display text-sm text-neutral-700 w-full truncate">
                     {subject || "No subject"}
                   </p>
                 )}
@@ -195,15 +233,30 @@ He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}}
           variant="outline"
           onClick={() => {
             setShowModal(false);
+            setSelectedAlert?.(undefined);
             resetEditor();
           }}
           className="w-fit rounded-full"
         />
 
         <Button
-          text={isLoading ? "Creating..." : "Create Alert"}
+          text={
+            isLoading
+              ? alert
+                ? "Saving..."
+                : "Creating..."
+              : alert
+                ? "Save Changes"
+                : "Create Alert"
+          }
           onClick={handleSave}
-          disabled={isLoading || !alertName.trim() || !content.trim()}
+          disabled={
+            isLoading ||
+            !alertName.trim() ||
+            !trigger.trim() ||
+            !subject.trim() ||
+            !content.trim()
+          }
           className="w-fit rounded-full"
         />
       </div>
@@ -211,25 +264,37 @@ He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}}
   );
 }
 
-/* Hook */
-export function useCreateAlertModal() {
-  const [showCreateModal, setShowCreateModal] = useState(false);
+export function useAddEditAlertModal({
+  alert,
+  onSaved,
+  setSelectedAlert,
+}: {
+  alert?: AlertProps;
+  onSaved?: () => void;
+  setSelectedAlert?: (value: AlertProps | undefined) => void;
+} = {}) {
+  const [showAddEditAlertModal, setShowAddEditAlertModal] = useState(false);
 
-  const CreateAlertModalComponent = useCallback(
+  const AddEditAlertModalComponent = useCallback(
     () => (
-      <CreateAlertModal
-        showModal={showCreateModal}
-        setShowModal={setShowCreateModal}
+      <AddEditAlertModal
+        showModal={showAddEditAlertModal}
+        setShowModal={setShowAddEditAlertModal}
+        alert={alert}
+        onSaved={onSaved}
+        setSelectedAlert={setSelectedAlert}
       />
     ),
-    [showCreateModal]
+    [showAddEditAlertModal, alert, onSaved, setSelectedAlert]
   );
 
   return useMemo(
     () => ({
-      setShowCreateAlertModal: setShowCreateModal,
-      CreateAlertModal: CreateAlertModalComponent,
+      setShowAddEditAlertModal,
+      AddEditAlertModal: AddEditAlertModalComponent,
     }),
-    [CreateAlertModalComponent]
+    [AddEditAlertModalComponent, setShowAddEditAlertModal]
   );
 }
+
+export const useCreateAlertModal = useAddEditAlertModal;

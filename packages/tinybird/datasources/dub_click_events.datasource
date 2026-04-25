@@ -61,7 +61,7 @@ SCHEMA >
 `event_properties` String `json:$.event_properties`,
 
 -- Revenue (critical for analytics)
-`revenue` Float64 `json:$.revenue`,
+`revenue` Nullable(Float64) `json:$.revenue`,
 `currency` LowCardinality(String) `json:$.currency`,
 
 FORWARD_QUERY >

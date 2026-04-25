@@ -33,16 +33,27 @@ export interface HeartbeatPayload {
   sessionId: string;
   page: string;
   url: string;
+  latitude?: number;
+  longitude?: number;
+  country?: string;
 }
 
 export interface LiveStats {
   count: number; // total active visitors right now
   pages: PageStat[]; // breakdown by page
+  points: LivePoint[]; // live geo points for realtime globe
 }
 
 export interface PageStat {
   page: string;
   count: number;
+}
+
+export interface LivePoint {
+  id: string;
+  latitude: number;
+  longitude: number;
+  value: number;
 }
 
 // ─── Core functions ───────────────────────────────────────────────────────────
@@ -54,11 +65,19 @@ export interface PageStat {
 export async function recordHeartbeat(
   payload: HeartbeatPayload
 ): Promise<LiveStats> {
-  const { workspaceId, visitorId, page } = payload;
+  const { workspaceId, visitorId, page, latitude, longitude, country } =
+    payload;
   const normalizedWorkspaceId = normalizeWorkspaceId(workspaceId);
 
   const key = `live:${normalizedWorkspaceId}`;
-  const member = `${visitorId}|${page}`; // encode page into member so we can group by it
+  // Member format: visitorId|page|latitude|longitude|country
+  const member = [
+    visitorId,
+    page,
+    latitude ?? "",
+    longitude ?? "",
+    country ?? "",
+  ].join("|");
   const now = Date.now();
   const cutoff = now - VISITOR_TTL_MS;
 
@@ -94,14 +113,35 @@ export async function getLiveStats(workspaceId: string): Promise<LiveStats> {
   });
 
   if (!members || members.length === 0) {
-    return { count: 0, pages: [] };
+    return { count: 0, pages: [], points: [] };
   }
 
-  // Group by page (member format: "visitorId|/page")
+  // Group by page and coordinates.
   const pageCounts = new Map<string, number>();
+  const pointCounts = new Map<string, LivePoint>();
+
   for (const member of members) {
-    const page = member.split("|")[1] ?? "/";
+    const [visitorId = "", page = "/", latRaw = "", lonRaw = ""] =
+      member.split("|");
+
     pageCounts.set(page, (pageCounts.get(page) ?? 0) + 1);
+
+    const latitude = Number(latRaw);
+    const longitude = Number(lonRaw);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      const pointKey = `${latitude.toFixed(4)}|${longitude.toFixed(4)}`;
+      const existing = pointCounts.get(pointKey);
+      if (existing) {
+        existing.value += 1;
+      } else {
+        pointCounts.set(pointKey, {
+          id: `${visitorId || "live"}-${pointKey}`,
+          latitude,
+          longitude,
+          value: 1,
+        });
+      }
+    }
   }
 
   const pages: PageStat[] = Array.from(pageCounts.entries())
@@ -111,6 +151,7 @@ export async function getLiveStats(workspaceId: string): Promise<LiveStats> {
   return {
     count: members.length,
     pages,
+    points: Array.from(pointCounts.values()).sort((a, b) => b.value - a.value),
   };
 }
 

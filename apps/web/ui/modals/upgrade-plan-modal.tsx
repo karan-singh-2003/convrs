@@ -14,7 +14,7 @@ function UpgradePlanModal({
     <Modal
       showModal={showUpgradePlanModal}
       setShowModal={setShowUpgradePlanModal}
-      className="px-4 w-[22rem] py-2 rounded-[35px] md:px-0 md:py-2.5  max-h-[90vh] h-[500px] md:overflow-y-auto"
+      className="px-4 w-[22rem] py-2 rounded-[20px] md:px-0 md:py-2.5  max-h-[90vh] h-[500px] md:overflow-y-auto"
       desktopOnly={true}
     >
       <div className="space-y-1 py-1 text-center">

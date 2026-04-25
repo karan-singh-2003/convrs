@@ -67,7 +67,7 @@ export function FilterList({
     >
       <div
         className={cn(
-          "flex w-full flex-wrap items-start gap-4 font-display sm:flex-nowrap",
+          "flex w-full flex-wrap items-start gap-4 font-display ",
           className
         )}
       >
@@ -80,7 +80,7 @@ export function FilterList({
                     key={`loader-${values?.[0] ?? 0}`}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="h-9 w-48 animate-pulse rounded-md border border-neutral-200 bg-white"
+                    className="h-9 w-48 animate-pulse rounded-full border border-neutral-200 bg-white"
                   />
                 );
               }
@@ -310,7 +310,7 @@ function OperatorFilterPill({
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center divide-x rounded-full border border-neutral-200 bg-white text-sm text-black font-display"
+      className="flex items-center divide-x rounded-full border border-neutral-200 px-2 bg-white text-[15px] text-neutral-800  font-display"
     >
       <div className="flex items-center gap-2.5 px-3 py-2">
         {filter.icon && (

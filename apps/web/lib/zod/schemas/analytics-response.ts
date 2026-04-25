@@ -38,6 +38,16 @@ export const analyticsResponse = {
       .describe("The total average session duration")
       .default(0)
       .transform((val) => val ?? 0),
+    revenue: z.coerce
+      .number()
+      .describe("The total revenue")
+      .default(0)
+      .transform((val) => val ?? 0),
+    conversion_rate: z.coerce
+      .number()
+      .describe("The total conversion rate")
+      .default(0)
+      .transform((val) => val ?? 0),
     bounce_rate: z.coerce
       .number()
       .describe("The total bounce rate")

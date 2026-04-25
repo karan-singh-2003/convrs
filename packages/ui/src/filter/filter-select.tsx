@@ -435,7 +435,7 @@ function FilterButton({
       {showCheckbox && (
         <div
           className={cn(
-            "flex h-4 w-4 items-center justify-center rounded border",
+            "flex h-4 w-4 items-center justify-center rounded-full border",
             isChecked
               ? "border-neutral-900 bg-neutral-900"
               : "border-neutral-300"

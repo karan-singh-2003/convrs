@@ -424,17 +424,10 @@
 
     var payload = buildBase();
     payload.type = "custom";
-    payload.eventName = eventName;
 
     var cleanProps = sanitizeProps(props);
     payload.extraData = Object.assign({ eventName: eventName }, cleanProps);
 
-    // Surface custom keys at top-level (requested shape examples).
-    for (var k in cleanProps) {
-      if (Object.prototype.hasOwnProperty.call(cleanProps, k)) {
-        payload[k] = cleanProps[k];
-      }
-    }
     send(payload);
     if (typeof callback === "function") callback({ status: 200 });
   }

@@ -12,18 +12,21 @@ import { useMemo } from "react";
 export function useAnalyticsQuery({
   defaultEvent = "clicks",
   domain: domainParam,
+  workspaceId: workspaceIdParam,
   defaultKey,
   defaultFolderId,
   defaultInterval = DUB_LINKS_ANALYTICS_INTERVAL,
 }: {
   defaultEvent?: EventType;
   domain?: string;
+  workspaceId?: string;
   defaultKey?: string;
   defaultFolderId?: string;
   defaultInterval?: string;
 } = {}) {
   const searchParams = useSearchParams();
-  const { id: workspaceId } = useWorkspace();
+  const { id: workspaceIdFromContext } = useWorkspace();
+  const workspaceId = workspaceIdParam ?? workspaceIdFromContext;
 
   const domain = domainParam ?? searchParams?.get("domain");
   // key can be a query param (stats pages in app) or passed as a staticKey (shared analytics dashboards)
@@ -41,7 +44,7 @@ export function useAnalyticsQuery({
     return {
       start: hasRange
         ? startOfDay(
-            new Date(searchParams?.get("start") || subDays(new Date(), 1)),
+            new Date(searchParams?.get("start") || subDays(new Date(), 1))
           )
         : undefined,
 
@@ -53,12 +56,15 @@ export function useAnalyticsQuery({
 
   // Only set interval if start and end are not provided
   const interval =
-    start || end ? undefined : searchParams?.get("interval") ?? defaultInterval;
+    start || end
+      ? undefined
+      : (searchParams?.get("interval") ?? defaultInterval);
 
   const root = searchParams.get("root");
 
   const selectedTab: EventType = useMemo(() => {
     const event = searchParams.get("event");
+    console.log("selectedTab event from searchParams:", event);
 
     return EVENT_TYPES.find((t) => t === event) ?? defaultEvent;
   }, [searchParams.get("event"), defaultEvent]);
@@ -71,11 +77,11 @@ export function useAnalyticsQuery({
           [filter]: searchParams.get(filter),
         }),
       }),
-      {},
+      {}
     );
     return new URLSearchParams({
       ...availableFilterParams,
-      event: "goals",
+      event: selectedTab,
       ...(workspaceId && { workspaceId }),
       ...(domain && { domain }),
       ...(key && { key }),

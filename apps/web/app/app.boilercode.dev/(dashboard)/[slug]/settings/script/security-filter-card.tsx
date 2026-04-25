@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@repo/ui";
-import { Info } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 
 type SecurityFilterCardProps = {
@@ -11,7 +11,11 @@ type SecurityFilterCardProps = {
   actionLabel: string;
   helperText: string;
   emptyText: string;
-  defaultItems?: string[];
+  items: string[];
+  loading?: boolean;
+  saving?: boolean;
+  onAdd: (value: string) => void | Promise<void>;
+  onRemove: (value: string) => void | Promise<void>;
   allowInfoIcon?: boolean;
 };
 
@@ -26,18 +30,21 @@ export function SecurityFilterCard({
   actionLabel,
   helperText,
   emptyText,
-  defaultItems = [],
+  items,
+  loading = false,
+  saving = false,
+  onAdd,
+  onRemove,
   allowInfoIcon = false,
 }: SecurityFilterCardProps) {
   const [inputValue, setInputValue] = useState("");
-  const [items, setItems] = useState<string[]>(defaultItems);
 
   const canSubmit = useMemo(
-    () => normalizeValue(inputValue).length > 0,
-    [inputValue]
+    () => normalizeValue(inputValue).length > 0 && !saving,
+    [inputValue, saving]
   );
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const normalized = normalizeValue(inputValue);
@@ -45,17 +52,7 @@ export function SecurityFilterCard({
       return;
     }
 
-    setItems((previous) => {
-      const alreadyExists = previous.some(
-        (item) => item.toLowerCase() === normalized.toLowerCase()
-      );
-
-      if (alreadyExists) {
-        return previous;
-      }
-
-      return [...previous, normalized];
-    });
+    await onAdd(normalized);
 
     setInputValue("");
   };
@@ -78,6 +75,7 @@ export function SecurityFilterCard({
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               placeholder={placeholder}
+              disabled={loading || saving}
               className="h-10 w-full rounded-none border border-neutral-200 bg-neutral-100/80 pl-3 pr-24 text-[14px] font-display text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-300 focus:outline-none"
             />
 
@@ -91,8 +89,12 @@ export function SecurityFilterCard({
           </div>
         </form>
 
-        {items.length > 0 ? (
-          <div className="flex flex-wrap gap-x-2">
+        {loading ? (
+          <p className="text-[13.5px] font-display text-neutral-500">
+            Loading...
+          </p>
+        ) : items.length > 0 ? (
+          <div className="flex flex-wrap gap-x-2 gap-y-2">
             {items.map((item) => (
               <span
                 key={item}
@@ -102,6 +104,15 @@ export function SecurityFilterCard({
                 {allowInfoIcon && (
                   <Info className="h-3.5 w-3.5 text-neutral-400" />
                 )}
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => onRemove(item)}
+                  className="text-neutral-400 transition hover:text-neutral-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label={`Remove ${item}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </span>
             ))}
           </div>

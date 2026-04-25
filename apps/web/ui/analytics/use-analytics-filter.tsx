@@ -1,3 +1,5 @@
+"use client";
+
 import { VALID_ANALYTICS_FILTERS } from "@/lib/analytics/constants";
 import {
   BlurImage,
@@ -325,7 +327,7 @@ export function useAnalyticsFilters({
       },
       {
         key: "browser",
-       
+
         label: "Browser",
         getOptionIcon: (value) => {
           if (typeof value !== "string") return null;

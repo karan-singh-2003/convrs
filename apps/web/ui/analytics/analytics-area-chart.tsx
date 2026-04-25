@@ -1,9 +1,11 @@
+"use client";
+
 import { formatDateTooltip } from "./format-date-tooltip";
 import { EventType } from "@/lib/analytics/types";
 import { editQueryString } from "@/lib/analytics/utils";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { Areas, TimeSeriesChart, XAxis, YAxis } from "@repo/ui";
-import { cn, currencyFormatter, fetcher, nFormatter } from "@repo/utils";
+import { currencyFormatter, fetcher, nFormatter } from "@repo/utils";
 import { subDays } from "date-fns";
 import { Fragment, useContext, useMemo } from "react";
 import useSWR from "swr";
@@ -19,6 +21,7 @@ const DEMO_DATA = [
     date: subDays(new Date(), index),
     values: {
       clicks: value,
+      revenue: value * 19,
       leads: value,
       sales: value,
       saleAmount: value * 19,
@@ -28,6 +31,14 @@ const DEMO_DATA = [
 
 function lowercaseAmPm(value: string) {
   return value.replace(/\bAM\b/g, "am").replace(/\bPM\b/g, "pm");
+}
+
+function formatRevenueDollars(value: number) {
+  return Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(value ?? 0);
 }
 
 export function AnalyticsAreaChart({
@@ -59,10 +70,15 @@ export function AnalyticsAreaChart({
     requiresUpgrade,
   } = useContext(AnalyticsContext);
 
-  const { data: response } = useSWR<{
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<{
     data: Array<{
       start: string;
       clicks: number;
+      revenue: number;
       leads: number;
       sales: number;
       saleAmount: number;
@@ -72,10 +88,7 @@ export function AnalyticsAreaChart({
       `${baseApiPath}?${editQueryString(queryString, {
         groupBy: "timeseries",
       })}`,
-    fetcher,
-    {
-      shouldRetryOnError: !requiresUpgrade,
-    }
+    fetcher
   );
 
   const chartData = useMemo(
@@ -84,10 +97,11 @@ export function AnalyticsAreaChart({
         ? DEMO_DATA
         : response?.data && Array.isArray(response.data)
           ? response.data.map(
-              ({ start, clicks, leads, sales, saleAmount }) => ({
+              ({ start, clicks, revenue, leads, sales, saleAmount }) => ({
                 date: new Date(start),
                 values: {
                   clicks,
+                  revenue,
                   leads,
                   sales,
                   saleAmount,
@@ -98,6 +112,15 @@ export function AnalyticsAreaChart({
     [response, demo]
   );
 
+  const safeChartData = useMemo(
+    () =>
+      (chartData ?? []).filter(
+        (item) =>
+          item.date instanceof Date && !Number.isNaN(item.date.getTime())
+      ),
+    [chartData]
+  );
+
   const series = [
     {
       id: "clicks",
@@ -105,17 +128,31 @@ export function AnalyticsAreaChart({
       isActive: resource === "clicks",
       colorClassName: "text-[#7D53E0]",
     },
+    {
+      id: "revenue",
+      valueAccessor: (d) => d.values.revenue,
+      isActive: resource === "revenue",
+      colorClassName: "text-[#0f9d58]",
+    },
   ];
 
   const activeSeries = series.find(({ id }) => id === resource);
-  const tooltipLabel = resource === "clicks" ? "Visitors" : resource;
+  const tooltipLabel = resource === "clicks" ? "Visitors" : "Revenue";
+  const showInitialLoader = !demo && isLoading && !response;
+  const hasChartData = safeChartData.length > 0;
 
   return (
     <div className="flex h-full px-10 w-full items-center justify-center">
-      {chartData ? (
+      {showInitialLoader ? (
+        <LoadingSpinner />
+      ) : !hasChartData ? (
+        <p className="text-sm font-default text-neutral-500">
+          No analytics data yet.
+        </p>
+      ) : (
         <TimeSeriesChart
           key={queryString}
-          data={chartData}
+          data={safeChartData}
           series={series}
           defaultTooltipIndex={demo ? DEMO_DATA.length - 2 : undefined}
           tooltipClassName="p-0"
@@ -139,9 +176,13 @@ export function AnalyticsAreaChart({
                         {tooltipLabel}
                       </p>
                       <h1 className="font-display text-[18px] font-medium text-neutral-700">
-                        {nFormatter(
-                          activeSeries?.valueAccessor(d) ?? d.values.clicks
-                        )}
+                        {resource === "revenue"
+                          ? formatRevenueDollars(
+                              activeSeries?.valueAccessor(d) ?? d.values.revenue
+                            )
+                          : nFormatter(
+                              activeSeries?.valueAccessor(d) ?? d.values.clicks
+                            )}
                       </h1>
                     </div>
                   </Fragment>
@@ -155,6 +196,11 @@ export function AnalyticsAreaChart({
             seriesStyles={[
               {
                 id: "clicks",
+                areaFill: "transparent",
+                lineStroke: "currentColor",
+              },
+              {
+                id: "revenue",
                 areaFill: "transparent",
                 lineStroke: "currentColor",
               },
@@ -172,10 +218,15 @@ export function AnalyticsAreaChart({
               )
             }
           />
-          <YAxis showGridLines tickFormat={nFormatter} />
+          <YAxis
+            showGridLines
+            tickFormat={(val) =>
+              resource === "revenue"
+                ? formatRevenueDollars(val)
+                : nFormatter(val)
+            }
+          />
         </TimeSeriesChart>
-      ) : (
-        <LoadingSpinner />
       )}
     </div>
   );

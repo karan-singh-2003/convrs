@@ -12,53 +12,18 @@ export const DATE_RANGE_INTERVAL_PRESETS = [
 
 export const DUB_LINKS_ANALYTICS_INTERVAL = "24h";
 export const DUB_PARTNERS_ANALYTICS_INTERVAL = "30d";
-
 export const INTERVAL_DISPLAYS = [
-  {
-    display: "Last 24 hours",
-    value: "24h",
-    shortcut: "d",
-  },
-  {
-    display: "Last 7 days",
-    value: "7d",
-    shortcut: "w",
-  },
-  {
-    display: "Last 30 days",
-    value: "30d",
-    shortcut: "t",
-  },
-  {
-    display: "Last 3 months",
-    value: "90d",
-    shortcut: "3",
-  },
-  {
-    display: "Last 12 months",
-    value: "1y",
-    shortcut: "l",
-  },
-  {
-    display: "Month to Date",
-    value: "mtd",
-    shortcut: "m",
-  },
-  {
-    display: "Quarter to Date",
-    value: "qtd",
-    shortcut: "q",
-  },
-  {
-    display: "Year to Date",
-    value: "ytd",
-    shortcut: "y",
-  },
-  {
-    display: "All Time",
-    value: "all",
-    shortcut: "a",
-  },
+  { display: "24H", value: "24h", shortcut: "d" },
+  { display: "7D", value: "7d", shortcut: "w" },
+  { display: "30D", value: "30d", shortcut: "t" },
+  { display: "90D", value: "90d", shortcut: "3" },
+  { display: "12M", value: "1y", shortcut: "l" },
+
+  { display: "MTD", value: "mtd", shortcut: "m" },
+  { display: "QTD", value: "qtd", shortcut: "q" },
+  { display: "YTD", value: "ytd", shortcut: "y" },
+
+  { display: "All", value: "all", shortcut: "a" },
 ];
 
 export const VALID_ANALYTICS_ENDPOINTS = [
@@ -136,7 +101,8 @@ export const SINGULAR_ANALYTICS_ENDPOINTS = {
   exitlink: "exitlink",
 
   // goal fields
-  goals:"goal"
+  goals:"goal",
+  revenue: "revenue",
 };
 
 export const VALID_ANALYTICS_FILTERS = [
@@ -193,7 +159,7 @@ export const DIMENSIONAL_ANALYTICS_FILTERS = [
 
 export const TRIGGER_TYPES = ["pageview"] as const;
 
-export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration","goals","funnel"] as const;
+export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration","goals","funnel","revenue"] as const;
 
 export const ANALYTICS_VIEWS = ["timeseries", "funnel"] as const;
 

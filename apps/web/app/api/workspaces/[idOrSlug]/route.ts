@@ -18,6 +18,7 @@ import { deleteWorkspace } from "@/lib/api/workspaces/delete-workspace";
 const updateWorkspaceSchema = createWorkspaceSchema
   .extend({
     enforceSAML: z.boolean().optional(),
+    isPublic: z.boolean().optional(),
   })
   .partial();
 
@@ -39,9 +40,8 @@ export const GET = withWorkspace(
 // PATCH /api/workspaces/[idOrSlug] - update a specific workspace by id or slug
 export const PATCH = withWorkspace(
   async ({ req, workspace }) => {
-    const { name, slug,  enforceSAML } =
+    const { name, slug, enforceSAML, isPublic } =
       await updateWorkspaceSchema.parseAsync(await req.json());
-
 
     if (enforceSAML) {
       const apiController = (await jackson()).apiController;
@@ -69,13 +69,15 @@ export const PATCH = withWorkspace(
         ...(enforceSAML !== undefined && {
           ssoEnforcedAt: enforceSAML ? new Date() : null,
         }),
+        ...(isPublic !== undefined && {
+          isPublic,
+          publicId: isPublic ? (workspace.publicId ?? nanoid(12)) : null,
+        }),
       },
       include: {
         users: true,
       },
     });
-
-   
 
     const res = WorkspaceSchema.parse({
       ...updatedWorkspace,

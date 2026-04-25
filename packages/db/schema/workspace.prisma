@@ -24,7 +24,13 @@ model Workspace {
   usage                Int               @default(0)
   usageLimit           Int               @default(10000)
   domain               String?
+  blockedHostnames     String[]          @default([])
+  blockedIpAddresses   String[]          @default([])
+  blockedPages         String[]          @default([])
   plan                 String?
+  isPublic             Boolean           @default(false)
+  publicId             String?           @unique
+
   invoices             Invoice[]
   restrictedTokens     RestrictedToken[]
   sentEmails           SentEmail[]
@@ -32,6 +38,7 @@ model Workspace {
   invites              WorkspaceInvite[]
   users                WorkspaceUsers[]
   funnels              Funnel[]
+  alerts               Alert[]
   customers            Customer[]
   stripeIntegration    StripeIntegration?
 
