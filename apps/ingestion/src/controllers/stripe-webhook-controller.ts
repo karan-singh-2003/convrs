@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import { prisma } from "@repo/db";
 import { decrypt } from "@repo/analytics";
-import { handleCheckoutCompleted } from "./handle-checkout-complete";
+import { handleCheckoutCompleted } from "./handle-checkout-complete.js";
 
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
