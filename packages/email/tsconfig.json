@@ -11,6 +11,6 @@
     "resolveJsonModule": true,
     "noEmit": true
   },
-  "include": ["./**/*.ts", "src/templates/upgrade-email.tsx"],
+  "include": ["./**/*.ts", "./**/*.tsx"],
   "exclude": ["node_modules"]
 }

@@ -2,10 +2,16 @@
   "name": "@repo/email",
   "version": "0.0.1",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "dev": "email dev --dir ./src/templates -p 3333",
+    "build": "tsup",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -26,6 +32,7 @@
     "@types/nodemailer": "~6.4.17",
     "@types/react": "19.2.3",
     "@types/react-dom": "19.2.3",
+    "tsup": "^6.1.3",
     "typescript": "^5.9.2"
   },
   "peerDependencies": {
@@ -34,24 +41,34 @@
   },
   "exports": {
     ".": {
-      "import": "./src/index.ts",
-      "require": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
     "./templates/*": {
-      "import": "./src/templates/*.tsx",
-      "require": "./src/templates/*.tsx"
+      "types": "./dist/templates/*.d.ts",
+      "import": "./dist/templates/*.mjs",
+      "require": "./dist/templates/*.js"
     },
     "./resend": {
-      "import": "./src/resend/index.ts",
-      "require": "./src/resend/index.ts"
+      "types": "./dist/resend/index.d.ts",
+      "import": "./dist/resend/index.mjs",
+      "require": "./dist/resend/index.js"
     },
     "./resend/*": {
-      "import": "./src/resend/*.ts",
-      "require": "./src/resend/*.ts"
+      "types": "./dist/resend/*.d.ts",
+      "import": "./dist/resend/*.mjs",
+      "require": "./dist/resend/*.js"
     },
     "./send-via-nodemailer": {
-      "import": "./src/send-via-nodemailer.ts",
-      "require": "./src/send-via-nodemailer.ts"
+      "types": "./dist/send-via-nodemailer.d.ts",
+      "import": "./dist/send-via-nodemailer.mjs",
+      "require": "./dist/send-via-nodemailer.js"
+    },
+    "./send-via-resend": {
+      "types": "./dist/send-via-resend.d.ts",
+      "import": "./dist/send-via-resend.mjs",
+      "require": "./dist/send-via-resend.js"
     }
   }
 }
