@@ -11,7 +11,9 @@ import { LoadingSpinner } from "@repo/ui";
 
 export default function RevenueSettingsPage() {
   const [apiKey, setApiKey] = useState("");
-  const [provider, setProvider] = useState<"dodo" | "stripe" | "Polar">("stripe");
+  const [provider, setProvider] = useState<"dodo" | "stripe" | "Polar">(
+    "dodo"
+  );
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
     "idle"
   );
@@ -31,7 +33,7 @@ export default function RevenueSettingsPage() {
         body: JSON.stringify({ apiKey, workspaceId: id }),
       });
       const data = await res.json();
-      console.log("Stripe connect response:", data);
+
       if (!res.ok) {
         const message = data.error || "Failed to connect";
         toast.error(message);
@@ -97,11 +99,12 @@ export default function RevenueSettingsPage() {
             options={[
               {
                 value: "dodo",
+
                 label: (
                   <span className="flex items-center gap-2">
                     <svg
-                      width="40"
-                      height="40"
+                      width="36"
+                      height="36"
                       viewBox="0 0 126 126"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -122,6 +125,9 @@ export default function RevenueSettingsPage() {
                       ></path>
                     </svg>
                     <span>Dodo Payments</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-display bg-neutral-200 text-neutral-600">
+                      Coming Soon
+                    </span>
                   </span>
                 ),
               },
@@ -147,46 +153,24 @@ export default function RevenueSettingsPage() {
                   </span>
                 ),
               },
-           
             ]}
           />
 
           <div className="mt-4 rounded-2xl  bg-white p-4 sm:p-5">
             {provider === "dodo" ? (
               <>
-                <div>
-                  <h2 className="font-display text-[15px] leading-tight font-medium text-neutral-600">
-                    Restricted API Key
+                <div className="flex flex-col items-center justify-center py-5 font-display text-center">
+                  <h2 className="text-base font-medium text-neutral-600">
+                    Dodo Payments
                   </h2>
-                  <p className="mt-1 text-sm font-display font-medium text-neutral-500">
-                    Create a restricted API Key and paste the API key below.
-                    Create from{" "}
-                    <Link
-                      href={STRIPE_CONNECT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-neutral-800 underline underline-offset-2"
-                    >
-                      Stripe Dashboard
-                    </Link>
-                    .
+                  <p className="mt-2 text-sm text-neutral-500 max-w-sm">
+                    Dodo integration is currently under development and will be
+                    available soon.
                   </p>
-                </div>
 
-                <div className="flex flex-col gap-3 my-4 sm:flex-row sm:items-center">
-                  <Input
-                    placeholder="rk_live_***************"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="h-11 bg-neutral-50"
-                  />
-                  <Button
-                    text="Connect"
-                    className="h-11 w-full rounded-full px-6 sm:w-fit"
-                    onClick={handleConnect}
-                    loading={status === "loading"}
-                    disabled={!apiKey.trim() || status === "loading"}
-                  />
+                  <div className="mt-4 px-4 py-2 rounded-full bg-neutral-100 text-neutral-600 text-sm">
+                    Coming Soon
+                  </div>
                 </div>
               </>
             ) : loading ? (

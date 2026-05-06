@@ -1,5 +1,5 @@
 // app/shared/[id]/page.tsx
-
+'use client';
 import { notFound } from "next/navigation";
 import { prisma } from "@repo/db";
 import Analytics from "@/ui/analytics"; // adjust path
@@ -41,12 +41,13 @@ export default async function SharedAnalyticsPage({ params }: PageProps) {
   return (
     <div className="min-h-screen ">
       {/* Header (simple public view) */}
-      <div className="border-b border-neutral-200">
+      <div className="">
         <div className=" flex justify-between items-center max-w-5xl mx-auto bg-white px-2 py-3">
-          <h1 className="text-base font-medium font-display text-neutral-700">
-            {workspace.name} Analytics
+          <h1 className="text-sm font-medium font-display text-neutral-700">
+            {/* {workspace.name} Analytics */}
+            Convrs
           </h1>
-         <Button text="Get Started" className="w-fit rounded-full text-sm font-poppins h-fit py-1.5"/>
+         <Button text="Get Started" className="w-fit rounded-full text-[13px] font-poppins h-fit py-1.5"/>
 
  
         </div>

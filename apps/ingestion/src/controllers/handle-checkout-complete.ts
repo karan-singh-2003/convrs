@@ -14,7 +14,7 @@ export async function handleCheckoutCompleted(
   const amount    = session.amount_total ?? 0;
   const currency  = session.currency ?? "inr";
   const visitorId = session.metadata?.datafast_visitor_id;
-  const sessionId = session.metadata?.datafast_session_id || "";
+  const sessionId = session.metadata?.datafast_session_id ;
 
   if (!visitorId) {
     console.warn("[stripe/webhook] No visitor_id in metadata — skipping");
@@ -26,7 +26,7 @@ export async function handleCheckoutCompleted(
     payload: {
       website_id:  workspaceId,
       visitor_id:  visitorId,
-      session_id:  sessionId,          // null is fine now
+      session_id:  sessionId! ,    // ensure string type
       type:        "payment",
       url:         "",
       event_name:  "checkout_completed",

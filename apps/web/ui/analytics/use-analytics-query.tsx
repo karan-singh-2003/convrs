@@ -64,7 +64,7 @@ export function useAnalyticsQuery({
 
   const selectedTab: EventType = useMemo(() => {
     const event = searchParams.get("event");
-    console.log("selectedTab event from searchParams:", event);
+
 
     return EVENT_TYPES.find((t) => t === event) ?? defaultEvent;
   }, [searchParams.get("event"), defaultEvent]);

@@ -2,9 +2,10 @@ model Alert {
   id          String    @id @default(cuid())
   workspaceId String
   name        String
-  trigger     String
+  trigger     String?
   subject     String
   content     String
+  enabled     Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

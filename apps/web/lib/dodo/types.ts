@@ -30,6 +30,7 @@ export interface DodoBillingAddress {
 // Shape from: /developer-resources/webhooks/intents/subscription
 
 export interface DodoSubscriptionPayload {
+  type: string;
   payload_type: "Subscription";
   subscription_id: string;
   customer: DodoCustomer;

@@ -1,15 +1,13 @@
 "use client";
 
 import useWorkspace from "@/lib/swr/use-workspace";
-import { Switch,Input } from "@repo/ui";
+import { Switch, Input } from "@repo/ui";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function PublicStats() {
   const [loading, setLoading] = useState(false);
   const { id, isPublic, publicId } = useWorkspace();
-  console.log("isPublic", isPublic);
-  console.log("publicId", publicId);
 
   const [enabled, setEnabled] = useState(isPublic ?? false);
 
@@ -47,6 +45,11 @@ export default function PublicStats() {
       setLoading(false);
     }
   };
+
+  const shareUrl =
+    publicId && typeof window !== "undefined"
+      ? `${window.location.origin}/shared/${publicId}`
+      : "";
   return (
     <div className="bg-white p-4 border-neutral-200 rounded-2xl border space-y-2">
       <div className="relative w-full flex justify-between items-center  ">
@@ -70,13 +73,9 @@ export default function PublicStats() {
           }}
         />
       </div>
-      {enabled && (
+      {enabled && shareUrl && (
         <div className="mt-3">
-          <Input
-            readOnly
-            value={`${window.location.origin}/shared/${publicId}`}
-    
-          />
+          <Input readOnly value={shareUrl} />
         </div>
       )}
     </div>

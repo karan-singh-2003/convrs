@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   try {
     const account = await stripe.accounts.retrieve();
     accountId = account.id;
-    console.log("Retrieved Stripe account:", account.id, account.email);
+  
   } catch (err) {
     const stripeError = err as Stripe.errors.StripeError;
 

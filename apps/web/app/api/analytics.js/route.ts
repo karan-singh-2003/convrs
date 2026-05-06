@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 export async function GET() {
-  console.log("[Analytics Route] Serving analytics.js");
+ 
   const filePath = join(process.cwd(), "public/analytics.js");
   const file = readFileSync(filePath, "utf-8");
 

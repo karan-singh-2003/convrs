@@ -7,13 +7,12 @@ import { useParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import { AlertProps } from "@/lib/types";
 import { mutate } from "swr";
+import { Combobox, ComboboxOption } from "@repo/ui";
 
 const defaultSubject = "New {{goal_name}} from {{visitor_country}}";
 const defaultContent = `Hi {{first_name}},
 
-{{visitor_name}} just completed {{goal_name}}
-
-He is from {{country_name}} and discovered {{site_name}} using {{referrer_name}} and device {{device_name}}`;
+{{visitor_name}} just completed {{goal_name}}`;
 
 function AddEditAlertModal({
   showModal,
@@ -53,7 +52,7 @@ function AddEditAlertModal({
 
     if (alert) {
       setAlertName(alert.name);
-      setTrigger(alert.trigger);
+      setTrigger(alert.trigger ?? "");
       setSubject(alert.subject);
       setContent(alert.content);
       setView("editor");
@@ -64,13 +63,7 @@ function AddEditAlertModal({
   }, [alert, showModal, resetEditor]);
 
   const handleSave = async () => {
-    if (
-      !alertName.trim() ||
-      !trigger.trim() ||
-      !subject.trim() ||
-      !content.trim()
-    )
-      return;
+    if (!alertName.trim() || !subject.trim() || !content.trim()) return;
 
     if (!params.slug) {
       toast.error("Workspace not found.");
@@ -186,7 +179,18 @@ function AddEditAlertModal({
             />
           </div>
 
-          <div className="bg-neutral-50 min-h-64 max-h-full flex-1 rounded-2xl my-5 p-1 overflow-hidden">
+          {/* variables List */}
+          <div className="mt-3">
+            <VariablesPicker
+              onInsert={(variable) => {
+                setContent((prev) =>
+                  prev.length > 0 ? `${prev} ${variable}` : variable
+                );
+              }}
+            />
+          </div>
+
+          <div className="bg-neutral-50 min-h-64 max-h-full flex-1 rounded-2xl mt-2 p-1 overflow-hidden">
             <div className="flex h-full flex-col">
               <div className="flex items-center  px-3 border-b border-neutral-200/80">
                 <h1 className="font-display text-sm font-medium text-neutral-500 whitespace-nowrap">
@@ -201,7 +205,7 @@ function AddEditAlertModal({
                     onChange={(e) => setSubject(e.target.value)}
                   />
                 ) : (
-                  <p className="py-2 px-2 font-display text-sm text-neutral-700 w-full truncate">
+                  <p className="py-2 px-3 font-display text-sm text-neutral-700 w-full truncate">
                     {subject || "No subject"}
                   </p>
                 )}
@@ -210,7 +214,7 @@ function AddEditAlertModal({
               <div className="min-h-0 flex-1 px-3 py-2">
                 {view === "editor" ? (
                   <textarea
-                    className="bg-transparent h-full w-full resize-none border-none p-0 font-display text-sm font-medium leading-6 focus:ring-0 overflow-y-auto"
+                    className="bg-transparent h-full w-full resize-none border-none p-0 font-display text-[14px] font-medium leading-6 focus:ring-0 overflow-y-auto"
                     placeholder="Write your alert message..."
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
@@ -251,11 +255,7 @@ function AddEditAlertModal({
           }
           onClick={handleSave}
           disabled={
-            isLoading ||
-            !alertName.trim() ||
-            !trigger.trim() ||
-            !subject.trim() ||
-            !content.trim()
+            isLoading || !alertName.trim() || !subject.trim() || !content.trim()
           }
           className="w-fit rounded-full"
         />
@@ -298,3 +298,47 @@ export function useAddEditAlertModal({
 }
 
 export const useCreateAlertModal = useAddEditAlertModal;
+
+const variables = [
+  { name: "{{first_name}}" },
+  { name: "{{last_name}}" },
+  { name: "{{email}}" },
+  { name: "{{visitor_name}}" },
+  { name: "{{visitor_email}}" },
+  { name: "{{goal_name}}" },
+  { name: "{{visitor_country}}" },
+];
+
+const variableOptions: ComboboxOption[] = variables.map((v) => ({
+  label: v.name,
+  value: v.name,
+}));
+
+function VariablesPicker({
+  onInsert,
+}: {
+  onInsert: (variable: string) => void;
+}) {
+  const [selected, setSelected] = useState<ComboboxOption | null>(null);
+
+  return (
+    <Combobox
+      selected={selected}
+      setSelected={setSelected}
+      options={variableOptions}
+      inputClassName="w-full "
+      optionClassName="w-full font-mono"
+      placeholder="Choose variable"
+      searchPlaceholder="Search variables"
+      onSelect={(option) => {
+        onInsert(option.value);
+        setSelected(null);
+      }}
+      optionDescription={(option) => {
+        const variable = variables.find((v) => v.name === option.value);
+        return variable ? "Insert into content" : undefined;
+      }}
+      caret
+    />
+  );
+}

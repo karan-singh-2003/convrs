@@ -28,6 +28,7 @@ export function PagesSection() {
     { omitGroupByFilterKey: true }
   );
 
+
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
 
   useEffect(() => {

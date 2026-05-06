@@ -101,7 +101,7 @@ export function BarList({
 
   // Calculate total sum for percentage calculations
   const totalSum = useMemo(
-    () => sourceData.reduce((sum, item) => sum + item.value, 0),
+    () => sourceData.reduce((sum, item) => item.value, 0),
     [sourceData]
   );
 
@@ -232,7 +232,7 @@ export function LineItem({
 
   const percentage = Math.round((value / totalSum) * 1000) / 10;
   const isModalView = !limit;
-
+  
   const lineItem = (
     <div className="z-10 flex items-center space-x-2  overflow-hidden ">
       {icon ? (
@@ -263,7 +263,7 @@ export function LineItem({
         <div className="size-0 shrink-0" aria-hidden="true" />
       )}
       {tab === "links" && linkData ? (
-        <h1>getPrettyUrl(title)</h1>
+        <h1>{getPrettyUrl(title)}</h1>
       ) : tab === "urls" ? (
         <Tooltip
           key={tooltipResetKey}
@@ -277,7 +277,7 @@ export function LineItem({
         </Tooltip>
       ) : (
         <div className="truncate text-[15px] text-neutral-600">
-          {getPrettyUrl(title)}
+          {title}
         </div>
       )}
     </div>

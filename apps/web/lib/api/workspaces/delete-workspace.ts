@@ -27,10 +27,7 @@ export async function deleteWorkspace(
       },
     }),
   ]).then((results) => {
-    console.log(
-      "Finished removing workspace users and default workspace. Results:",
-      results
-    );
+  
   });
 
   waitUntil(
@@ -59,7 +56,7 @@ export async function deleteWorkspace(
         },
       }),
     ]).then((results) => {
-      console.log("Finished deleting workspace. Results:", results);
+      
     })
   );
 }

@@ -107,7 +107,7 @@ export function CreateWorkspaceForm({
 
     try {
       const startFreeTrialPromise = startFreeTrial(workspace.id);
-      console.log("free trial promise:", startFreeTrialPromise);
+  
       toast.promise(startFreeTrialPromise, {
         loading: "Starting your free trial...",
         success: (result) => {

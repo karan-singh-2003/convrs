@@ -1,5 +1,5 @@
 DESCRIPTION >
-    Top countries - clicks, avg session duration, bounce rate
+    Composite analytics - clicks, avg session duration, bounce rate, revenue, conversion rate
 
 TAGS "Dub Endpoints"
 
@@ -11,39 +11,20 @@ SQL >
 WITH session_data AS (
     SELECT
         identity_hash,
+        visitor_id,
+        session_id,
         COUNT(*) as session_clicks,
         dateDiff('second', min(timestamp), max(timestamp)) as session_duration_seconds,
-        sum(coalesce(revenue, 0)) as session_revenue,
         max(if(coalesce(revenue, 0) > 0, 1, 0)) as is_converted
-    FROM
-        {% if defined(customerId) %} dub_click_events_id
-        {% elif defined(eventType) and eventType != 'clicks' %} dub_click_events_mv
-        {% else %} dub_click_events_mv
-        {% end %}
-        {% if defined(customerId) %}
-            PREWHERE click_id IN (
-                SELECT DISTINCT click_id
-                FROM dub_lead_events_mv
-                WHERE customer_id = {{ String(customerId) }}
-            )
-        {% end %}
+    FROM dub_click_events_mv
     WHERE
         true
+        AND event_type != 'revenue'
         {% if defined(eventType) and eventType != 'clicks' %}
             AND event_type = {{ String(eventType) }}
         {% end %}
         {% if defined(eventName) %} AND event_name = {{ String(eventName) }} {% end %}
         {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
-        {% if defined(linkIds) %} AND link_id IN {{ Array(linkIds, 'String') }}
-        {% elif defined(linkId) %} AND link_id = {{ linkId }}
-        {% elif defined(programId) or defined(partnerId) or defined(groupId) or defined(
-            tenantId
-        ) or defined(folderIds) or defined(folderId) or defined(domain) or defined(
-            tagIds
-        ) or defined(
-            root
-        ) %} AND link_id in (SELECT link_id from workspace_links)
-        {% end %}
         {% if defined(continent) %} AND continent = {{ continent }} {% end %}
         {% if defined(country) %} AND country = {{ country }} {% end %}
         {% if defined(region) %} AND region = {{ region }} {% end %}
@@ -54,97 +35,128 @@ WITH session_data AS (
         {% if defined(trigger) %} AND trigger = {{ trigger }} {% end %}
         {% if defined(referer) %} AND referer = {{ referer }} {% end %}
         {% if defined(refererUrl) %} AND splitByString('?', referer_url)[1] = {{ refererUrl }} {% end %}
-        -- UTM: use dedicated columns from dub_click_events_mv, fall back to URL parsing for click events
-        {% if defined(utm_source) %}
-            {% if defined(eventType) and eventType != 'clicks' %}
-                AND utm_source = {{ String(utm_source) }}
-            {% else %}
-                AND url LIKE concat('%utm_source=', encodeURLFormComponent({{ String(utm_source) }}), '%')
-            {% end %}
-        {% end %}
-        {% if defined(utm_medium) %}
-            {% if defined(eventType) and eventType != 'clicks' %}
-                AND utm_medium = {{ String(utm_medium) }}
-            {% else %}
-                AND url LIKE concat('%utm_medium=', encodeURLFormComponent({{ String(utm_medium) }}), '%')
-            {% end %}
-        {% end %}
-        {% if defined(utm_campaign) %}
-            {% if defined(eventType) and eventType != 'clicks' %}
-                AND utm_campaign = {{ String(utm_campaign) }}
-            {% else %}
-                AND url LIKE concat('%utm_campaign=', encodeURLFormComponent({{ String(utm_campaign) }}), '%')
-            {% end %}
-        {% end %}
-        {% if defined(utm_term) %}
-            {% if defined(eventType) and eventType != 'clicks' %}
-                AND utm_term = {{ String(utm_term) }}
-            {% else %}
-                AND url LIKE concat('%utm_term=', encodeURLFormComponent({{ String(utm_term) }}), '%')
-            {% end %}
-        {% end %}
-        {% if defined(utm_content) %}
-            {% if defined(eventType) and eventType != 'clicks' %}
-                AND utm_content = {{ String(utm_content) }}
-            {% else %}
-                AND url LIKE concat('%utm_content=', encodeURLFormComponent({{ String(utm_content) }}), '%')
-            {% end %}
-        {% end %}
+        {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
+        {% if defined(page) %} AND page = {{ page }} {% end %}
+        {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
+        {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
+        {% if defined(goal) %} AND event_type = 'goals' AND event_name = {{ String(goal) }} {% end %}
+        {% if defined(utm_source) %} AND url LIKE concat('%utm_source=', encodeURLFormComponent({{ String(utm_source) }}), '%') {% end %}
+        {% if defined(utm_medium) %} AND url LIKE concat('%utm_medium=', encodeURLFormComponent({{ String(utm_medium) }}), '%') {% end %}
+        {% if defined(utm_campaign) %} AND url LIKE concat('%utm_campaign=', encodeURLFormComponent({{ String(utm_campaign) }}), '%') {% end %}
+        {% if defined(utm_term) %} AND url LIKE concat('%utm_term=', encodeURLFormComponent({{ String(utm_term) }}), '%') {% end %}
+        {% if defined(utm_content) %} AND url LIKE concat('%utm_content=', encodeURLFormComponent({{ String(utm_content) }}), '%') {% end %}
         {% if defined(url) %} AND splitByString('?', url)[1] = {{ url }} {% end %}
         {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
         {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
         {% if defined(filters) %}
-      {% for item in JSON(filters, '[]') %}
-        {% if item.get('field', '') %}
-          {% set field = item.get('field', '') %}
-          {% set operator = item.get('operator', 'IN') %}
-          {% set values = item.get('values', []) %}
-          {% if field == 'country' %}
-            {% if operator == 'IN' %} AND country IN {{ Array(values, 'String') }}
-            {% elif operator == 'NOT IN' %} AND country NOT IN {{ Array(values, 'String') }}
+            {% for item in JSON(filters, '[]') %}
+                {% if item.get('field', '') %}
+                    {% set field = item.get('field', '') %}
+                    {% set operator = item.get('operator', 'IN') %}
+                    {% set values = item.get('values', []) %}
+                    {% if field == 'country' %}
+                        {% if operator == 'IN' %} AND country IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND country NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'city' %}
+                        {% if operator == 'IN' %} AND city IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND city NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'device' %}
+                        {% if operator == 'IN' %} AND device IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND device NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'browser' %}
+                        {% if operator == 'IN' %} AND browser IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'hostname' %}
+                        {% if operator == 'IN' %} AND hostname IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND hostname NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'page' %}
+                        {% if operator == 'IN' %} AND page IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND page NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'entrypage' %}
+                        {% if operator == 'IN' %} AND entrypage IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND entrypage NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'exitlink' %}
+                        {% if operator == 'IN' %} AND exitlink IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND exitlink NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% elif field == 'goal' %}
+                        {% if operator == 'IN' %}
+                            AND event_type = 'goals' AND event_name IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %}
+                            AND NOT (event_type = 'goals' AND event_name IN {{ Array(values, 'String') }})
+                        {% end %}
+                    {% end %}
+                {% end %}
             {% end %}
-          {% elif field == 'city' %}
-            {% if operator == 'IN' %} AND city IN {{ Array(values, 'String') }}
-            {% elif operator == 'NOT IN' %} AND city NOT IN {{ Array(values, 'String') }}
-            {% end %}
-          {% elif field == 'device' %}
-            {% if operator == 'IN' %} AND device IN {{ Array(values, 'String') }}
-            {% elif operator == 'NOT IN' %} AND device NOT IN {{ Array(values, 'String') }}
-            {% end %}
-          {% elif field == 'browser' %}
-            {% if operator == 'IN' %} AND browser IN {{ Array(values, 'String') }}
-            {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }}
-            {% end %}
-          {% end %}
         {% end %}
-      {% end %}
-    {% end %}
-    GROUP BY identity_hash
+    GROUP BY identity_hash, visitor_id, session_id
+),
+
+-- Join revenue by visitor_id — revenue events have different identity_hash
+-- (Stripe webhook has no real browser UA/IP so hash differs from browser session)
+revenue_data AS (
+    SELECT
+        visitor_id,
+        SUM(coalesce(revenue, 0)) as visitor_revenue,
+        max(if(coalesce(revenue, 0) > 0, 1, 0)) as visitor_converted
+    FROM dub_click_events
+    WHERE
+        event_type = 'revenue'
+        AND coalesce(revenue, 0) > 0
+        {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+    GROUP BY visitor_id
 )
 
 SELECT
     'count' as groupByField,
 
-    coalesce(sum(session_clicks), 0) as clicks,
+    COUNT(DISTINCT sd.visitor_id) as clicks,
 
     coalesce(
-        avg(coalesce(session_duration_seconds, 0)),
+        avg(coalesce(sd.session_duration_seconds, 0)),
         0
     ) as avg_session_duration,
 
     coalesce(
-        countIf(session_clicks = 1) * 100.0 / nullIf(COUNT(*), 0),
+        countIf(sd.session_clicks = 1) * 100.0 / nullIf(COUNT(*), 0),
         0
     ) as bounce_rate,
 
-    coalesce(sum(session_revenue), 0) as revenue,
-
+    -- Revenue joined by visitor_id (not identity_hash)
     coalesce(
-        sum(is_converted) * 100.0 / nullIf(COUNT(*), 0),
+        (SELECT SUM(visitor_revenue) FROM revenue_data
+         WHERE visitor_id IN (SELECT DISTINCT visitor_id FROM session_data)),
+        0
+    ) as revenue,
+
+    -- Conversion: % of sessions whose visitor made a purchase
+    coalesce(
+        countIf(sd.visitor_id IN (SELECT visitor_id FROM revenue_data)) * 100.0
+        / nullIf(COUNT(*), 0),
         0
     ) as conversion_rate
 
-FROM session_data
+FROM session_data AS sd
+
+NODE count_revenue
+SQL >
+
+%
+SELECT
+    'count' as groupByField,
+    0 as clicks,
+    0 as avg_session_duration,
+    0 as bounce_rate,
+    coalesce(SUM(r.revenue), 0) as revenue,
+    0 as conversion_rate
+FROM dub_click_events AS r
+WHERE
+    r.event_type = 'revenue'
+    AND coalesce(r.revenue, 0) > 0
+    {% if defined(workspaceId) %} AND r.workspace_id = {{ workspaceId }} {% end %}
+    {% if defined(start) %} AND r.timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %} AND r.timestamp <= {{ DateTime64(end) }} {% end %}
 
 
 NODE count_composite

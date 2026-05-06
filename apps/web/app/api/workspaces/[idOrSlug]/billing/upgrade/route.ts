@@ -1,21 +1,15 @@
 /**
  * app/api/workspaces/[slug]/billing/upgrade/route.ts
  *
- * Replaces the Stripe upgrade route 1-for-1.
- *
- * Two cases — mirrors your original Stripe logic:
+ * Two cases:
  *
  *  CASE 1 – Active subscriber (active | on_hold)
- *    → Call Dodo's Change Plan API (PATCH /subscriptions/:id/plan).
- *      No redirect needed; Dodo handles proration internally.
+ *    → Call Dodo's Change Plan API.
  *      Returns { success: true }.
  *
  *  CASE 2 – No subscription yet (new user, or trial converting to paid)
  *    → Create a Dodo Checkout Session.
  *      Returns { url: "https://checkout.dodopayments.com/..." }.
- *      The frontend redirects the user there.
- *
- * Dodo billing_frequency values: "monthly" | "annual"  (NOT "yearly")
  */
 
 import { withWorkspace } from "@/lib/auth";
@@ -31,15 +25,23 @@ const VALID_PLAN_NAMES = PLANS.map((p) => p.name.toLowerCase()) as [
 ];
 
 const schema = z.object({
-  plan:       z.enum(VALID_PLAN_NAMES),
-  period:     z.enum(["monthly", "yearly"]),
-  baseUrl:    z.string(),
+  plan: z.enum(VALID_PLAN_NAMES),
+  period: z.enum(["monthly", "yearly"]),
+  baseUrl: z.string(),
   onboarding: booleanQuerySchema.nullish(),
 });
 
-/** Dodo expects "monthly" | "annual" — not "yearly" */
-function toDodoBillingFrequency(period: "monthly" | "yearly") {
-  return period === "yearly" ? "annual" : "monthly";
+/** Map Dodo error status codes to user-friendly messages. */
+function mapDodoError(status: number, message: string): string {
+  if (status === 409) {
+    // "Cannot change plan as previous payment is not successful yet"
+    // Dodo blocks plan changes when a payment is pending or failed.
+    return "Your previous payment hasn't completed yet. Please wait a few minutes and try again, or update your payment method.";
+  }
+  if (status === 422) return `Invalid request: ${message}`;
+  if (status === 429) return "Too many requests. Please wait a moment and try again.";
+  if (status === 404) return "Subscription not found. Please contact support.";
+  return message || "Failed to update plan. Please try again.";
 }
 
 export const POST = withWorkspace(
@@ -48,9 +50,6 @@ export const POST = withWorkspace(
       await req.json()
     );
 
-    // ── Resolve the Dodo product ID for this plan + interval ──────────────
-    // getProductId now requires an interval because monthly and yearly are
-    // separate product IDs in Dodo.
     const productId = getProductId({ planName: plan, interval: period });
 
     if (!productId) {
@@ -58,8 +57,6 @@ export const POST = withWorkspace(
     }
 
     // ── CASE 1: Active subscriber → Change Plan ────────────────────────────
-    // workspace.dodoSubscriptionId is the field that replaced
-    // workspace.stripeSubscriptionId in your Prisma schema.
     if (
       workspace.stripeSubscriptionId &&
       ["active", "on_hold"].includes(workspace.subscriptionStatus ?? "")
@@ -67,65 +64,91 @@ export const POST = withWorkspace(
       // Prevent no-op: same plan + same billing interval
       const sameInterval =
         (period === "monthly" && workspace.billingInterval === "month") ||
-        (period === "yearly"  && workspace.billingInterval === "year");
+        (period === "yearly" && workspace.billingInterval === "year");
 
       if (workspace.plan?.toLowerCase() === plan && sameInterval) {
         return NextResponse.json(
-          { error: "Already on this plan" },
+          { error: "You're already on this plan." },
           { status: 400 }
         );
       }
 
-      // Dodo Change Plan: POST /subscriptions/:id/plan
-      // Docs: https://docs.dodopayments.com/api-reference/subscriptions/change-plan
-      // Returns 200 with empty body (not a JSON object) — no need to read the response.
-      // await dodo.subscriptions.changePlan(workspace.stripeSubscriptionId, {
-      //   product_id:        productId,
-      //   billing_frequency: toDodoBillingFrequency(period),
-      //   // "immediate" applies the change now and prorates; "next_period"
-      //   // queues it for the next renewal date.
-      //   proration_billing_mode: isDowngradePlan({
-      //     currentPlan: workspace.plan ?? "",
-      //     newPlan:     plan,
-      //   })
-      //     ? "prorated_next_billing_cycle"  // downgrade: switch at period end
-      //     : "prorated_immediately",         // upgrade: switch now + prorate
-      // });
+      const isDowngrade = isDowngradePlan({
+        currentPlan: workspace.plan ?? "",
+        newPlan: plan,
+      });
+
+      try {
+        // Dodo constraint: effective_at "next_billing_date" ONLY pairs with
+        // proration_billing_mode "full_immediately" — any other mode returns 422.
+        //
+        // Upgrades:   immediate effect + prorated charge for the remainder.
+        // Downgrades: scheduled at next billing date + full charge now
+        //             (customer keeps current plan until the period ends).
+        //
+        // on_payment_failure "prevent_change" keeps the subscription on the
+        // current plan if the proration charge fails, rather than switching
+        // the plan anyway and leaving an unpaid balance.
+        await dodo.subscriptions.changePlan(workspace.stripeSubscriptionId, {
+          product_id: productId,
+          quantity: 1,
+          proration_billing_mode: isDowngrade
+            ? "full_immediately"
+            : "prorated_immediately",
+          effective_at: isDowngrade ? "next_billing_date" : "immediately",
+          on_payment_failure: "prevent_change",
+        });
+      } catch (err: any) {
+        const status = err?.status ?? err?.statusCode ?? 500;
+        const message = err?.error?.message ?? err?.message ?? "";
+        const userMessage = mapDodoError(status, message);
+
+        console.error("[billing/upgrade] Dodo changePlan failed:", {
+          status,
+          message,
+          subscriptionId: workspace.stripeSubscriptionId,
+        });
+
+        return NextResponse.json({ error: userMessage }, { status: 400 });
+      }
 
       return NextResponse.json({ success: true, message: "Plan updated" });
     }
-
 
     // ── CASE 2: New / trial user → Checkout Session ────────────────────────
     const successUrl = onboarding
       ? `${APP_DOMAIN}/onboarding/success?workspace=${workspace.slug}`
       : `${APP_DOMAIN}/${workspace.slug}?upgraded=true`;
 
-    // Dodo Create Checkout Session
-    // Docs: https://docs.dodopayments.com/api-reference/checkout-sessions/create
-    const checkoutSession = await dodo.checkoutSessions.create({
-      // product_cart is a TOP-LEVEL field — not nested inside billing.
-      // Monthly and yearly are separate product IDs in Dodo.
-      product_cart: [{ product_id: productId, quantity: 1 }],
+    try {
+      const checkoutSession = await dodo.checkoutSessions.create({
+        product_cart: [{ product_id: productId, quantity: 1 }],
 
-      // Pre-fill the customer's email so they don't have to type it.
-      customer: {
-        email: session.user.email ?? undefined,
-        name:  session.user.name ?? undefined,
-      },
+        customer: {
+          email: session.user.email ?? undefined,
+          name: session.user.name ?? undefined,
+        },
 
-      metadata: {
-        workspaceId: workspace.id,
-        userId:      session.user.id,
-        plan,
-        period,
-      },
+        metadata: {
+          workspaceId: workspace.id,
+          userId: session.user.id,
+          plan,
+          period,
+        },
 
-      return_url: successUrl,
-    });
+        return_url: successUrl,
+      });
 
-    // checkoutSession.url is the hosted Dodo checkout page
-    return NextResponse.json({ url: checkoutSession.checkout_url});
+      return NextResponse.json({ url: checkoutSession.checkout_url });
+    } catch (err: any) {
+      const status = err?.status ?? err?.statusCode ?? 500;
+      const message = err?.error?.message ?? err?.message ?? "";
+      const userMessage = mapDodoError(status, message);
+
+
+
+      return NextResponse.json({ error: userMessage }, { status: 400 });
+    }
   },
   { requiredPermission: "billing:write" }
 );

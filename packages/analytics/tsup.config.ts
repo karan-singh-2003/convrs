@@ -11,6 +11,6 @@ export default defineConfig({
   // the consuming app (apps/web) already has Next.js installed.
   // apps/ingestion (Express) will NOT have next installed,
   // so we need to handle that separately (see note below).
-  external: ["next", "next/server", "@vercel/functions", "@repo/utils"],
+  external: ["next", "next/server", "@vercel/functions", "@repo/utils","@repo/email"],
 });
  

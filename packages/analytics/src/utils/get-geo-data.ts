@@ -10,6 +10,22 @@ export interface GeoData {
 }
 
 export function getGeoData(req: Request): GeoData {
+  // Extract IP for dev detection
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "127.0.0.1";
+
+  // ── DEV OVERRIDE: localhost/127.0.0.1 always returns test geo
+  if (ip === "127.0.0.1" || ip === "::1") {
+    return {
+      country: "US",
+      city: "Local",
+      latitude: "0",
+      longitude: "0",
+    };
+  }
+
   // Check if we're running on Vercel
   const isVercel = process.env.VERCEL === "1";
 
@@ -23,7 +39,7 @@ export function getGeoData(req: Request): GeoData {
     };
   }
 
-  // Fallback for local/non-Vercel environments
+  // Fallback for local/non-Vercel environments (but not localhost)
   return {
     country: "Unknown",
     city: "Unknown",

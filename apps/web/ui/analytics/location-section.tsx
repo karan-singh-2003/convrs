@@ -2,20 +2,18 @@
 
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { useRouterStuff } from "@repo/ui";
-
 import { CONTINENTS, COUNTRIES, REGIONS } from "@repo/utils";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { AnalyticsCard } from "./analytics-card";
 import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
-// import { ContinentIcon } from "./continent-icon";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
-  const { selectedTab, saleUnit } = useContext(AnalyticsContext);
+  const { selectedTab } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<
@@ -27,10 +25,7 @@ export function LocationSection() {
     omitGroupByFilterKey: true,
   });
 
-  console.log("LocationSection data:", data);
-
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
-
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   useEffect(() => {
@@ -66,13 +61,54 @@ export function LocationSection() {
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
 
-  const countryCodeMap: Record<string, string> = {
-    germany: "de",
-    india: "in",
-    "united states": "us",
-    usa: "us",
-    uk: "gb",
+  //  Filter out "Unknown"
+  const isValidLocation = (d: any) => {
+    switch (tab) {
+      case "countries":
+        return d.country && d.country !== "Unknown";
+      case "cities":
+        return d.city && d.city !== "Unknown";
+      case "regions":
+        return d.region && !d.region.endsWith("-Unknown");
+      case "continents":
+        return d.continent && d.continent !== "Unknown";
+      default:
+        return true;
+    }
   };
+
+  //  Safe mapping
+  const mapData = (arr: any[]) =>
+    arr
+      ?.filter(isValidLocation)
+      ?.map((d) => ({
+        icon:
+          tab === "continents" ? (
+            <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
+              {CONTINENTS[d.continent]?.[0] || "🌍"}
+            </h1>
+          ) : (
+            <img
+              alt={d.country}
+              src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
+              className="size-4 shrink-0"
+            />
+          ),
+
+        title:
+          tab === "continents"
+            ? CONTINENTS[d.continent]
+            : tab === "countries"
+            ? COUNTRIES[d.country]
+            : `${tab === "cities" ? `${d.city}, ` : ""}${
+                REGIONS[d.region] || d.region?.split("-")[1]
+              }`,
+
+        filterValue: d[singularTabName],
+        value: d[dataKey] || 0,
+      }))
+      ?.sort((a, b) => b.value - a.value) || [];
+
   return (
     <AnalyticsCard
       tabs={[
@@ -90,78 +126,17 @@ export function LocationSection() {
     >
       {({ limit, setShowModal }) =>
         data ? (
-          data.length > 0 ? (
+          mapData(data).length > 0 ? (
             <BarList
               tab={singularTabName}
-              data={
-                data
-                  ?.map((d) => ({
-                    icon:
-                      tab === "continents" ? (
-                        <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
-                          {CONTINENTS[d.continent][0]}
-                        </h1>
-                      ) : (
-                        <img
-                          alt={d.country}
-                          src={`https://hatscripts.github.io/circle-flags/flags/${
-                            countryCodeMap[d.country.toLowerCase()] ||
-                            d.country.toLowerCase()
-                          }.svg`}
-                          className="size-4 shrink-0"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "https://hatscripts.github.io/circle-flags/flags/un.svg";
-                          }}
-                        />
-                      ),
-                    title:
-                      tab === "continents"
-                        ? CONTINENTS[d.continent]
-                        : tab === "countries"
-                          ? COUNTRIES[d.country] || "Germany"
-                          : `${tab === "cities" ? `${d.city}, ` : ""}${
-                              REGIONS[d.region] ||
-                              (d.region.endsWith("-Unknown")
-                                ? COUNTRIES[d.country]
-                                : d.region.split("-")[1])
-                            }`,
-                    filterValue: d[singularTabName],
-                    value: d[dataKey] || 0,
-                  }))
-                  ?.sort((a, b) => b.value - a.value) || []
-              }
-              allData={allData
-                ?.map((d) => ({
-                  icon:
-                    tab === "continents" ? (
-                      <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
-                        {CONTINENTS[d.continent][0]}
-                      </h1>
-                    ) : (
-                      <img
-                        alt={d.country}
-                        src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
-                        className="size-4 shrink-0"
-                      />
-                    ),
-                  title:
-                    tab === "continents"
-                      ? CONTINENTS[d.continent]
-                      : tab === "countries"
-                        ? COUNTRIES[d.country]
-                        : `${tab === "cities" ? `${d.city}, ` : ""}${
-                            REGIONS[d.region] ||
-                            (d.region.endsWith("-Unknown")
-                              ? COUNTRIES[d.country]
-                              : d.region.split("-")[1])
-                          }`,
-                  filterValue: d[singularTabName],
-                  value: d[dataKey] || 0,
-                }))
-                ?.sort((a, b) => b.value - a.value)}
+              data={mapData(data)}
+              allData={mapData(allData || [])}
               unit={selectedTab}
-              maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
+              maxValue={
+                Math.max(
+                  ...mapData(data).map((d) => d.value ?? 0)
+                ) || 0
+              }
               barBackground="bg-blue-100"
               hoverBackground="hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent hover:border-blue-500"
               filterSelectedBackground="bg-blue-600"
@@ -178,7 +153,7 @@ export function LocationSection() {
             />
           ) : (
             <div className="flex h-[300px] items-center justify-center">
-              <p className="text-sm font-medium font-default text-neutral-500">
+              <p className="text-sm font-medium text-neutral-500">
                 No data available
               </p>
             </div>

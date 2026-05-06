@@ -166,8 +166,8 @@ export default function WorkspacePeopleClient() {
         </div>
 
         <div className="flex flex-col gap-y-4">
-          <div className=" h-fit p-4 space-y-3 bg-white border border-neutral-200 rounded-2xl">
-            <div className="flex items-start justify-between">
+          <div className=" h-fit  space-y-3 bg-white border border-neutral-200 rounded-2xl">
+            <div className="flex items-start justify-between border-b p-4 border-neutral-200 pb-3">
               <div>
                 <h1 className="font-display text-[14.5px] font-medium text-[#555555]">
                   Invite Link
@@ -186,7 +186,7 @@ export default function WorkspacePeopleClient() {
                 className=" text-[13.5px] w-fit bg-transparent border-none font-display  h-7 px-3  rounded-full  text-black/60"
               />
             </div>
-            <div className="relative w-full">
+            <div className="relative w-full px-4 pb-3">
               <input
                 required
                 readOnly
@@ -202,7 +202,7 @@ export default function WorkspacePeopleClient() {
                   );
                   toast.success("Invite link copied to clipboard");
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
+                className="absolute right-8 top-1/2 -translate-y-3/4 text-neutral-500 hover:text-neutral-700"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -223,7 +223,7 @@ export default function WorkspacePeopleClient() {
           </div>
           <div className="bg-[#fafafa] rounded-2xl ">
             {/* Table */}
-            <Table table={table} {...tableProps} className="bg-white rounded-2xl"/>
+            <Table table={table} {...tableProps} className="bg-white border border-neutral-200 rounded-2xl"/>
           </div>
         </div>
       </div>

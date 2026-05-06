@@ -27,5 +27,11 @@
   "resolutions": {
     "chrono-node": "2.7.5"
   },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.3",
+      "@types/react-dom": "19.2.3"
+    }
+  },
   "packageManager": "pnpm@8.6.10"
 }

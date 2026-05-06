@@ -1,78 +1,79 @@
-import { formatDate } from "@repo/utils";
+import React from "react";
 import {
-  Body,
-  Container,
-  Head,
   Heading,
-  Html,
-  Img,
   Link,
   Preview,
   Section,
-  Tailwind,
-  Text,
+  Text as EmailText,
 } from "@react-email/components";
-import { Footer } from "../components/footer";
-import React from "react";
+import EmailLayout from "../components/email-layout";
+import { formatDate } from "@repo/utils";
 
-export default function APIKeyCreated({
-  email,
-  workspace,
-  token,
-}: {
-  email: string;
+export const PreviewProps = {
+  email: "user@example.com",
   workspace: {
+    name: "Example Workspace",
+    slug: "example-workspace",
+  },
+  token: {
+    name: "Main API Key",
+    type: "read-only",
+    permissions: "read-only access to analytics",
+  },
+};
+
+export default function APIKeyCreatedEmail({
+  email = "",
+  workspace = { name: "", slug: "" },
+  token = { name: "", type: "", permissions: "" },
+}: {
+  email?: string;
+  workspace?: {
     name: string;
     slug: string;
   };
-  token: {
+  token?: {
     name: string;
     type: string;
     permissions: string;
   };
 }) {
   return (
-    <Html>
-      <Head />
-      <Preview>New Workspace API Key Created</Preview>
-      <Tailwind>
-        <Body className="mx-auto my-auto bg-white font-sans">
-          <Container className="mx-auto my-10 max-w-[600px] rounded border border-solid border-neutral-200 px-10 py-5">
-            <Heading className="mx-0 my-6 p-0 text-lg font-medium text-black">
-              New Workspace API Key Created
-            </Heading>
-            <Text className="text-sm leading-6 text-black">
-              You've created a new API key for your Dub workspace{" "}
-              <strong>{workspace.name}</strong> with the name{" "}
-              <strong>"{token.name}"</strong> on{" "}
-              {formatDate(new Date().toString())}.
-            </Text>
-            <Text className="text-sm leading-6 text-black">
-              Since this is a <strong>{token.type}</strong> token, it has{" "}
-              {token.permissions}.
-            </Text>
-            <Section className="mb-8 mt-8">
-              <Link
-                className="rounded-lg bg-black px-6 py-3 text-center text-[12px] font-semibold text-white no-underline"
-                href={`https://app.dub.co/${workspace.slug}/settings/tokens`}
-              >
-                View API Keys
-              </Link>
-            </Section>
-            <Text className="text-sm leading-6 text-black">
-              If you did not create this API key, you can{" "}
-              <Link
-                href={`https://app.dub.co/${workspace.slug}/settings/tokens`}
-                className="text-black underline"
-              >
-                <strong>delete this key</strong>
-              </Link>{" "}
-              from your account.
-            </Text>
-            <Footer email={email} />
-          </Container>
-        </Body>
-      </Tailwind>
-    </Html>
+    <EmailLayout preview="New Workspace API Key Created" email={email}>
+      <Heading className="mx-0 my-7 text-lg font-medium text-black">
+        New Workspace API Key Created
+      </Heading>
+
+      <EmailText className="text-sm leading-6 text-black">
+        You've created a new API key for your workspace{" "}
+        <strong>{workspace.name}</strong> with the name{" "}
+        <strong>"{token.name}"</strong> on {formatDate(new Date().toString())}.
+      </EmailText>
+
+      <EmailText className="text-sm leading-6 text-black">
+        Since this is a <strong>{token.type}</strong> token, it has{" "}
+        {token.permissions}.
+      </EmailText>
+
+      <Section className="my-8">
+        <Link
+          className="inline-block bg-black px-6 py-3 text-center text-[12px] font-semibold text-white no-underline"
+          href={`https://app.dub.co/${workspace.slug}/settings/tokens`}
+        >
+          View API Keys
+        </Link>
+      </Section>
+
+      <EmailText className="text-sm leading-6 text-black">
+        If you did not create this API key, you can{" "}
+        <Link
+          href={`https://app.dub.co/${workspace.slug}/settings/tokens`}
+          className="text-black underline"
+        >
+          <strong>delete this key</strong>
+        </Link>{" "}
+        from your account.
+      </EmailText>
+    </EmailLayout>
   );
 }

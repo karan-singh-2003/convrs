@@ -114,7 +114,7 @@ export const VALID_ANALYTICS_FILTERS = [
   "country",
   "city",
   "region",
-  "continent",
+  // "continent",
   "device",
   "browser",
   "os",
@@ -132,6 +132,12 @@ export const VALID_ANALYTICS_FILTERS = [
   // deprecated filters, but keeping for now for backwards compatibility
   "tagIds",
   "qr",
+
+  "hostname",
+  "page",
+  "entrypage",
+  "exitlink",
+  "goal",
 ];
 
 // possible analytics filters for a given linkId

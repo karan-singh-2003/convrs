@@ -83,6 +83,7 @@ export async function subscriptionUpdated(data: DodoSubscriptionPayload) {
   await prisma.workspace.update({
     where: { id: workspace.id },
     data: {
+      stripeSubscriptionId: data.subscription_id,
       subscriptionStatus: dbStatus,
       billingInterval,
       currentPeriodEnd,

@@ -2,46 +2,38 @@
 
 import useWorkspace from "@/lib/swr/use-workspace";
 import { Button } from "@repo/ui";
-import {
-  APP_DOMAIN,
-  cn,
-  PLANS,
-  isDowngradePlan,
-} from "@repo/utils";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { APP_DOMAIN, cn, PLANS, isDowngradePlan } from "@repo/utils";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { getStripe } from "@/lib/stripe/client";
 import { toast } from "sonner";
 
 type Props = {
-  plan:      string;            // target plan name e.g. "growth"
-  period:    "monthly" | "yearly";
-  text?:     string;            // override button label
-  variant?:  "primary" | "secondary";
+  plan: string;
+  period: "monthly" | "yearly";
+  text?: string;
+  variant?: "primary" | "secondary";
   className?: string;
-  disabled?:  boolean;
+  disabled?: boolean;
 };
 
 export function UpgradePlanButton({
   plan,
   period,
   text,
-  variant   = "primary",
+  variant = "primary",
   className,
-  disabled  = false,
+  disabled = false,
 }: Props) {
-  const router      = useRouter();
-  const pathname    = usePathname();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(false);
 
   const {
     slug,
-    plan:               currentPlanName,
-    billingInterval:    currentInterval,
+    plan: currentPlanName,
+    billingInterval: currentInterval,
     subscriptionStatus,
-  
   } = useWorkspace();
 
   // ── Resolve target plan ───────────────────────────────────────────────────
@@ -54,29 +46,56 @@ export function UpgradePlanButton({
     currentPlanName?.toLowerCase() === plan.toLowerCase() &&
     currentInterval === period;
 
-  const isDowngrade = !isCurrentPlan &&
+  const isDowngrade =
+    !isCurrentPlan &&
     !!currentPlanName &&
     isDowngradePlan({
       currentPlan: currentPlanName,
-      newPlan:     plan,
+      newPlan: plan,
     });
 
   const isTrialing = subscriptionStatus === "trialing";
 
-  // Trial label: Starter + monthly + never trialed before + not already active
-  // Trial is a one-time signup perk for the Starter plan only.
-  // hasUsedTrial is permanently true after the first trial — never resets.
   const showTrialLabel =
-    plan.toLowerCase() === "starter" &&
-    period === "monthly"             
-   
-  const buttonLabel = text ?? (() => {
-    if (isCurrentPlan && isTrialing) return "Current plan (trial)";
-    if (isCurrentPlan)               return "Current plan";
-    if (showTrialLabel)              return "Start free trial";
-    if (isDowngrade)                 return "Downgrade";
-    return "Upgrade";
-  })();
+    plan.toLowerCase() === "starter" && period === "monthly";
+
+  const buttonLabel =
+    text ??
+    (() => {
+      if (isCurrentPlan && isTrialing) return "Current plan (trial)";
+      if (isCurrentPlan) return "Current plan";
+      if (showTrialLabel) return "Start free trial";
+      if (isDowngrade) return "Downgrade";
+      return "Upgrade";
+    })();
+
+  // Human-readable plan name for toast messages e.g. "Growth"
+  const planDisplayName = targetPlan?.name ?? plan;
+
+  // ── Core upgrade fetch — returns url or null (in-place change) ────────────
+  async function performUpgrade(): Promise<string | null> {
+    const queryString = searchParams.toString();
+    const baseUrl = `${APP_DOMAIN}${pathname}${queryString ? `?${queryString}` : ""}`;
+
+    const res = await fetch(`/api/workspaces/${slug}/billing/upgrade`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan,
+        period,
+        baseUrl,
+        onboarding: searchParams.get("workspace") ? "true" : "false",
+      }),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body?.error || "Upgrade failed");
+    }
+
+    const data = await res.json();
+    return data.url ?? null;
+  }
 
   // ── Handle click ──────────────────────────────────────────────────────────
   async function handleClick() {
@@ -84,46 +103,33 @@ export function UpgradePlanButton({
 
     setLoading(true);
 
-    const queryString = searchParams.toString();
-    const baseUrl     = `${APP_DOMAIN}${pathname}${queryString ? `?${queryString}` : ""}`;
+    const action = isDowngrade ? "Downgrading" : showTrialLabel ? "Starting trial" : "Upgrading";
+    const successMsg = isDowngrade
+      ? `Downgraded to ${planDisplayName}. Change takes effect at end of billing period.`
+      : showTrialLabel
+      ? `Your 14-day free trial of ${planDisplayName} has started!`
+      : `Upgraded to ${planDisplayName} successfully!`;
 
-    try {
-      const res = await fetch(`/api/workspaces/${slug}/billing/upgrade`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          plan,
-          period,
-          baseUrl,
-          onboarding: searchParams.get("workspace") ? "true" : "false",
-        }),
-      });
-
-      if (!res.ok) {
-        const { error } = await res.json();
-        throw new Error(error || "Upgrade failed");
-      }
-
-      const data = await res.json();
-
-      if (data.url) {
-        // Billing portal redirect (existing subscriber switching plans)
-        router.push(data.url);
-      } else if (data.id) {
-        // Stripe Checkout (new subscriber or re-subscribing)
-        const stripe = await getStripe();
-        await stripe?.redirectToCheckout({ sessionId: data.id });
-      }
-    } catch (err) {
-      console.error("[UpgradePlanButton]", err);
-      toast.error(
-        err instanceof Error
+    toast.promise(performUpgrade(), {
+      loading: `${action} to ${planDisplayName}...`,
+      success: (url) => {
+        if (url) {
+          // Redirect happens after toast resolves
+          setTimeout(() => window.location.assign(url), 500);
+          return `Redirecting to checkout...`;
+        }
+        return successMsg;
+      },
+      error: (err: unknown) => {
+        console.error("[UpgradePlanButton]", err);
+        return err instanceof Error
           ? err.message
-          : "Failed to upgrade plan. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+          : "Failed to update plan. Please try again.";
+      },
+      finally: () => {
+        setLoading(false);
+      },
+    });
   }
 
   return (
@@ -138,8 +144,8 @@ export function UpgradePlanButton({
         isCurrentPlan
           ? "cursor-default border border-neutral-200 !bg-white text-neutral-400 shadow-none"
           : isDowngrade
-            ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
-            : "bg-neutral-900 text-white hover:bg-neutral-800",
+          ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
+          : "bg-neutral-900 text-white hover:bg-neutral-800",
         className
       )}
     />

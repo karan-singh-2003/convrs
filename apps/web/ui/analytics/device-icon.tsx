@@ -16,7 +16,7 @@ export function DeviceIcon({
   if (tab === "devices") {
     switch (display) {
       case "Desktop":
-        return <Desktop />;
+        return <Laptop />;
       case "Desktop ":
         return <Mobile />;
       case "Tablet":
@@ -118,7 +118,7 @@ export function DeviceIcon({
             viewBox="0 0 40 40"
             fill="none"
           >
-            <g clip-path="url(#clip0_580_41)">
+            <g clipPath="url(#clip0_580_41)">
               <path
                 d="M39.3748 0.511719L18.4373 3.58484V19.157L39.3748 18.9902V0.511719ZM0.514492 20.8467L0.51543 34.098L16.3876 36.2802L16.3751 20.9498L0.514492 20.8467ZM18.2707 21.0592L18.3001 36.517L39.3551 39.4886L39.3601 21.0939L18.2707 21.0592ZM0.50293 6.03047L0.517617 19.2752L16.3898 19.1848L16.3826 3.86734L0.50293 6.03047Z"
                 fill="#00ADEF"

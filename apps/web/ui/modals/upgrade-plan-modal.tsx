@@ -14,14 +14,9 @@ function UpgradePlanModal({
     <Modal
       showModal={showUpgradePlanModal}
       setShowModal={setShowUpgradePlanModal}
-      className="px-4 w-[22rem] py-2 rounded-[20px] md:px-0 md:py-2.5  max-h-[90vh] h-[500px] md:overflow-y-auto"
+      className="w-full max-w-[780px] rounded-none p-0 sm:rounded-[24px]"
       desktopOnly={true}
     >
-      <div className="space-y-1 py-1 text-center">
-        <h3 className="text-[16px] md:text-[14.5px] md:px-5 font-display font-medium text-black/65">
-          Upgrade Plan
-        </h3>
-      </div>
       <UpgradePlanPricingCard />
     </Modal>
   );

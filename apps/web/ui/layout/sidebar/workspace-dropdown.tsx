@@ -6,7 +6,7 @@ import { Check2, Popover, BlurImage } from "@repo/ui";
 import { pluralize } from "@repo/utils";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, useRef } from "react";
 import { cn } from "@repo/utils";
 import { ChevronDown, Plus } from "lucide-react";
@@ -83,7 +83,7 @@ export function WorkspaceDropdown() {
               height={21}
               draggable={false}
             />
-            <span className="font-medium sm:block hidden font-default text-[14px] flex-1 truncate">
+            <span className="font-medium  font-default text-[14px] flex-1 truncate">
               {selected.name}
             </span>
             <ChevronDown className="size-3.5 text-neutral-500 shrink-0" />
@@ -116,6 +116,7 @@ function WorkspaceList({
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, updateScrollProgress } = useScrollProgress(scrollRef);
 
+  const router = useRouter();
   return (
     <>
       <div className="relative w-full">
@@ -157,7 +158,7 @@ function WorkspaceList({
           <div className="flex flex-col gap-2.5   px-1 ">
             <div>
               <p className="px-2 py-1.5 text-[12.5px] font-display font-medium text-neutral-500">
-                Workspaces
+                Projects
               </p>
               <div className="flex flex-col ">
                 {workspaces.map(({ id, name, slug, logo }) => {
@@ -204,7 +205,19 @@ function WorkspaceList({
                   <Plus className="ml-0.5 size-4 text-neutral-500" />
 
                   <span className="block truncate font-display text-[12.5px] sm:text-[14px] font-medium py-0.5 leading-5 text-neutral-600/85">
-                    Create workspace
+                    Add Project
+                  </span>
+                </button>
+                <button
+                  onClick={() => {
+                    router.push(`/dashboard`);
+                  }}
+                  className="group flex w-full cursor-pointer items-center gap-x-2.5 my-0.5 py-1 border-t border-neutral-200 text-neutral-500 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
+                >
+                  
+
+                  <span className="block truncate px-2 font-display text-[12.5px] sm:text-[14px] font-medium py-0.5 leading-5 text-neutral-600/85">
+                    All Projects
                   </span>
                 </button>
               </div>

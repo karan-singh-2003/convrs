@@ -31,7 +31,7 @@ function DeleteAccountModal({
           "Content-Type": "application/json",
         },
       }).then(async (res) => {
-        console.log("Delete account response status:", res.status);
+       
         if (res.status === 200) {
           await signOut({ redirect: false });
           router.push("/register");

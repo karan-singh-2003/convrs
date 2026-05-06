@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { PropsWithChildren, useMemo } from "react";
 import { Button } from "@repo/ui";
 import { WorkspaceDropdown } from "./workspace-dropdown";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export type NavItemType = {
@@ -41,7 +41,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
     <div
       className={cn(
         "flex  w-full flex-col gap-4",
-        currentArea === "default" ? "px-0 " : "px-0 p-2"
+        currentArea === "default" ? "px-3  py-2" : "px-0 p-2"
       )}
     >
       <nav className="size-full">
@@ -80,12 +80,21 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                               )}
                             </div>
                           )}
+                          {area !== "default" && backHref && (
+                            <Link href={`/${slug}`} className="px-3 py-1 text-[13.5px] flex items-center gap-x-2 md:hidden  mb-3 text-neutral-600 font-default font-medium">
+                              <ArrowLeft size={14} />
+                             
+                              {title === "Settings"
+                                ? "Workspaces"
+                                : "Dashboard"}
+                            </Link>
+                          )}
                           <div
                             className={cn(
                               "flex w-full",
                               area === "default"
-                                ? "flex-row"
-                                : "md:flex-col flex-row overflow-x-auto flex-nowrap scrollbar-hide pb-px"
+                                ? "md:flex-row flex-col "
+                                : "md:flex-col  flex-col overflow-x-auto flex-nowrap scrollbar-hide pb-px"
                             )}
                           >
                             {content.map((item) =>
@@ -127,7 +136,7 @@ export function Area({
   return (
     <div
       className={cn(
-        "left-0  top-0 flex sm:flex-row  size-full gap-x-1 md:gap-x-5 w-full transition-[opacity,transform] duration-300",
+        "left-0  top-0 flex md:flex-row flex-col gap-y-3 size-full gap-x-1 md:gap-x-5 w-full transition-[opacity,transform] duration-300",
         area === "default" ? "items-center" : "items-start",
         visible
           ? "relative opacity-100"
@@ -161,8 +170,8 @@ function NavItem({ item, area }: { item: NavItemType; area: string }) {
         "block rounded-none font-display font-medium my-0.5 py-0.5 px-2 transition-colors",
         // flex-shrink-0 prevents tabs from squishing on mobile scroll
         area === "default"
-          ? "px-2 text-[14px] md:text-[14.5px]"
-          : "flex-shrink-0 px-3 py-1 text-[14px] md:text-[16.5px]",
+          ? "px-2 text-[14.5px] md:text-[14.5px]"
+          : "flex-shrink-0 px-3 py-1 text-[14.5px] md:text-[16.5px]",
         isActive
           ? "text-neutral-700/90"
           : "text-neutral-500/80 hover:text-neutral-500"

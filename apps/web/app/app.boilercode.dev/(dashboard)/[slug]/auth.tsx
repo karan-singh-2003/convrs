@@ -9,13 +9,9 @@ import { ReactNode } from "react";
 export default function WorkspaceAuth({ children }: { children: ReactNode }) {
   const { slug } = useParams();
   const { loading, error } = useWorkspace();
-  console.log(
-    "tinybird url and key in auth.tsx:",
-    process.env.TINYBIRD_API_URL,
-    process.env.TINYBIRD_API_KEY
-  );
+
   if (loading) {
-    return null;
+    return <LayoutLoader />;
   }
 
   if (error) {

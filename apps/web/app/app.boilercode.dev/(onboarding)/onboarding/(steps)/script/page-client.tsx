@@ -86,7 +86,7 @@ function CodeSnippet({ code }: { code: string }) {
 export default function ScriptSettingsPage() {
   const searchParams = useSearchParams();
   const workspace = searchParams.get("workspace");
-  console.log("Workspace from search params:", workspace);
+
   const [scriptConfig, setScriptConfig] = useState<ScriptConfig>({
     domain: null,
     projectToken: null,
@@ -108,7 +108,7 @@ export default function ScriptSettingsPage() {
       });
   }, [workspace]);
 
-  console.log("Script config:", scriptConfig);
+  
 
   return <CodeSnippet code={buildScriptSnippet(scriptConfig)} />;
 }

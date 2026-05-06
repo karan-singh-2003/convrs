@@ -298,7 +298,7 @@ export default function AnalyticsProvider({
     return null;
   }, [queryString, baseApiPath, start, end, fetchCompositeStats]);
 
-  console.log("Current query URL:", currentQueryUrl);
+
   // Fetch current period data
   const { data: apiResponse, isLoading: totalEventsLoading } = useSWR<{
     data: Array<{ [key in AnalyticsResponseOptions]: number }>;
@@ -349,14 +349,7 @@ export default function AnalyticsProvider({
   // Calculate percentage changes
   const percentageChanges = useMemo(() => {
     if (!totalEvents || !previousTotalEvents) {
-      console.log("Analytics percentage change debug:", {
-        currentUrl: currentQueryUrl,
-        previousUrl: previousQueryUrl,
-        hasTotalEvents: !!totalEvents,
-        hasPreviousEvents: !!previousTotalEvents,
-        totalEvents,
-        previousTotalEvents,
-      });
+     
       return {};
     }
 
@@ -372,7 +365,7 @@ export default function AnalyticsProvider({
       }
     );
 
-    console.log("Calculated percentage changes:", changes);
+   
     return changes;
   }, [totalEvents, previousTotalEvents]);
 

@@ -17,13 +17,17 @@ export const PATCH = withWorkspace(
       return NextResponse.json({ error: "Alert not found" }, { status: 404 });
     }
 
+    const normalizedTrigger = payload.trigger?.trim();
+    const trigger = normalizedTrigger ? normalizedTrigger : null;
+
     const updated = await prisma.alert.update({
       where: { id: alertId },
       data: {
         ...(payload.name ? { name: payload.name.trim() } : {}),
-        ...(payload.trigger ? { trigger: payload.trigger.trim() } : {}),
+        ...(payload.trigger !== undefined ? { trigger } : {}),
         ...(payload.subject ? { subject: payload.subject.trim() } : {}),
         ...(payload.content ? { content: payload.content.trim() } : {}),
+        ...(payload.enabled !== undefined ? { enabled: payload.enabled } : {}),
       },
     });
 

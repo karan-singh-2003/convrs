@@ -7,12 +7,15 @@ export const sendEmail = async (opts: ResendEmailOptions) => {
   if (resend) {
     return await sendEmailViaResend(opts);
   }
-
+  console.log("smtp config", {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+  });
   // Fallback to SMTP if Resend is not configured
   const smtpConfigured = Boolean(
     process.env.SMTP_HOST && process.env.SMTP_PORT
   );
-  
+
   if (smtpConfigured) {
     const { to, subject, text, react } = opts;
     return await sendViaNodeMailer({
@@ -67,4 +70,9 @@ export const sendBatchEmail = async (
     data: null,
     error: null,
   };
+};
+
+export default {
+  sendEmail,
+  sendBatchEmail,
 };

@@ -142,9 +142,11 @@ export function AnalyticsAreaChart({
   const hasChartData = safeChartData.length > 0;
 
   return (
-    <div className="flex h-full px-10 w-full items-center justify-center">
+    <div className="flex h-full  w-full items-center justify-center">
       {showInitialLoader ? (
-        <LoadingSpinner />
+        <div className="w-full h-[464px]  bg-neutral-50 space-y-2">
+       
+        </div>
       ) : !hasChartData ? (
         <p className="text-sm font-default text-neutral-500">
           No analytics data yet.
@@ -155,11 +157,11 @@ export function AnalyticsAreaChart({
           data={safeChartData}
           series={series}
           defaultTooltipIndex={demo ? DEMO_DATA.length - 2 : undefined}
-          tooltipClassName="p-0"
+          tooltipClassName="p-0 px-10"
           tooltipContent={(d) => {
             return (
-              <div className="w-[200px] p-4 space-y-2">
-                <p className="text-sm font-default font-medium text-neutral-500">
+              <div className="w-[130px] py-3   space-y-2">
+                <p className="text-[13px] font-poppins font-medium text-neutral-500">
                   {lowercaseAmPm(
                     formatDateTooltip(d.date, {
                       interval: demo ? "day" : interval,
@@ -172,10 +174,10 @@ export function AnalyticsAreaChart({
                 <div className=" text-sm">
                   <Fragment key={resource}>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-display text-base text-neutral-500">
+                      <p className="font-display font-medium text-[18px] text-neutral-600">
                         {tooltipLabel}
                       </p>
-                      <h1 className="font-display text-[18px] font-medium text-neutral-700">
+                      <h1 className="font-display text-[18px] font-medium text-neutral-600">
                         {resource === "revenue"
                           ? formatRevenueDollars(
                               activeSeries?.valueAccessor(d) ?? d.values.revenue

@@ -9,22 +9,51 @@ export type ScriptConfig = {
   projectToken: string | null;
 };
 
-const buildScriptSnippet = ({ domain, projectToken }: ScriptConfig) =>
-  `<script\n  defer\n  src=\"https://www.dubcdn.com/analytics/script.js\"\n  data-domain=\"${domain || "yourdomain.com"}\"\n  data-website-token=\"${projectToken || "your-project-token"}\"\n></script>`;
+type ScriptSnippetConfig = ScriptConfig & { allowLocalhostDebugging: boolean };
+
+const buildScriptSnippet = ({
+  domain,
+  projectToken,
+  allowLocalhostDebugging,
+}: ScriptSnippetConfig) => {
+  const snippetDomain = allowLocalhostDebugging
+    ? "localhost"
+    : domain || "yourdomain.com";
+
+  const lines = [
+    "<Script",
+    `  data-website-id=\"${projectToken || "your-project-token"}\"`,
+    '  src="https://cdn.karanbuilds.me/analytics.js"',
+    `  data-domain=\"${snippetDomain}\"`,
+  ];
+
+  if (allowLocalhostDebugging) {
+    lines.push(
+      '  data-debug="true"',
+      '  data-allow-localhost="true"',
+      '  data-api="http://localhost:3000/api/track"'
+    );
+  }
+
+  lines.push("/>");
+  return lines.join("\n");
+};
 
 const buildNpmInitSnippet = ({ projectToken }: ScriptConfig) =>
-  `import { initSignal } from \"signal\";\n\nconst signal = await initSignal({\n  websiteId: \"${projectToken || "your-project-token"}\",\n});`;
+  `import { initDataFast } from '@karanbuilds/analytics-sdk';\n\nlet analyticsPromise: ReturnType<typeof initDataFast> | null = null;\n\nexport function getAnalytics() {\n  const hasCrossDomainParams =\n    typeof window !== 'undefined' &&\n    (window.location.search.includes('_df_vid') ||\n     window.location.search.includes('_df_sid'));\n\n  if (!analyticsPromise || hasCrossDomainParams) {\n    analyticsPromise = initDataFast({\n      websiteId: \"${projectToken || "your-project-token"}\",\n      domain: typeof window !== \"undefined\" ? window.location.host : \"localhost\",\n      autoCapturePageviews: true,\n      apiUrl: \"http://localhost:3000/api/track\",\n      allowLocalhost: true,\n      debug: true,\n    });\n  }\n  return analyticsPromise;\n}`;
 
 export default function ScriptInstallationCard({
   scriptConfig,
+  allowLocalhostDebugging,
 }: {
   scriptConfig: ScriptConfig;
+  allowLocalhostDebugging: boolean;
 }) {
   const [mode, setMode] = useState<"script" | "npm">("script");
 
   const scriptSnippet = useMemo(
-    () => buildScriptSnippet(scriptConfig),
-    [scriptConfig]
+    () => buildScriptSnippet({ ...scriptConfig, allowLocalhostDebugging }),
+    [scriptConfig, allowLocalhostDebugging]
   );
 
   const npmInitSnippet = useMemo(
@@ -122,7 +151,7 @@ export default function ScriptInstallationCard({
         <div className="space-y-3">
           <div>
             <h1 className="font-medium font-default text-[13.5px] text-neutral-600">
-              Install the Signal package and initialize it with your project
+              Install the analytics SDK and initialize it with your project
               token. Use it in React, Next.js, or any JavaScript app. See our
               npm docs for details.
             </h1>
@@ -133,7 +162,7 @@ export default function ScriptInstallationCard({
               1. Install the package
             </p>
             <CodeSnippet
-              code="npm i signal"
+              code="npm i @karanbuilds/analytics-sdk"
               lang="bash"
               ariaLabel="Copy npm install command"
             />

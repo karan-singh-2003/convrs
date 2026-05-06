@@ -1,12 +1,5 @@
 /**
  * packages/utils/src/pricing.ts
- *
- * Each plan has TWO separate Dodo product IDs — one for the monthly price,
- * one for the yearly price.  This matches your PRODUCT_IDS object exactly.
- *
- * getPlanFromProductId searches both ids.monthly and ids.yearly, and also
- * returns which interval matched, so webhook handlers know which billing
- * cycle was purchased.
  */
 
 export type PlanFeatures = {
@@ -18,10 +11,10 @@ export type PlanDetails = {
   name: string;
   price: {
     monthly: number | null;
-    yearly: number | null; // total billed yearly  (e.g. 86 = $86/yr for Starter)
+    yearly: number | null;
     ids?: {
-      monthly: string; // Dodo product ID for the monthly-billed price
-      yearly: string;  // Dodo product ID for the yearly-billed price
+      monthly: string;
+      yearly: string;
     };
   };
   limits: {
@@ -32,8 +25,6 @@ export type PlanDetails = {
 };
 
 // ─── Dodo Product IDs ─────────────────────────────────────────────────────────
-// Dashboard → Products → click a plan → copy "Product ID" (pdt_xxx).
-// Each plan needs two products: one priced monthly, one priced yearly.
 
 const PRODUCT_IDS = {
   starter: {
@@ -41,8 +32,8 @@ const PRODUCT_IDS = {
     yearly:  "pdt_0NdQZKlr1ulxmSL4H2pLm",
   },
   basic: {
-    monthly: "pdt_0NdQZTTKkCwfKuvWEwtl2",
-    yearly:  "pdt_0NdQZYyYCzDYkgGAqltpK",
+    monthly: "pdt_0Ne6T12o5m5JRQ3dxIC9c",
+    yearly:  "pdt_0Ne6T7wV7CK2jcSgL1tQ5",
   },
   pro: {
     monthly: "pdt_0NdQZe5tfdWWGVyBbEzMC",
@@ -64,17 +55,25 @@ const PRODUCT_IDS = {
     monthly: "pdt_0NdQaHQ5se9vGGkR44nds",
     yearly:  "pdt_0NdQaNTXSjo8UlZYx9ga5",
   },
+  enterprise: {
+    monthly: "pdt_0Ne6UOmg3pCcJljShHRP1",
+    yearly:  "pdt_0Ne6UJ3vHbjeY1J1613hD",
+  },
+  ultimate: {
+    monthly: "pdt_0Ne6UbBxxmN9VJ2SRLUfN",
+    yearly:  "pdt_0Ne6UXcHfmTprzFe5905p",
+  },
 } as const;
 
 // ─── Common features ──────────────────────────────────────────────────────────
 
 const CORE_FEATURES: PlanFeatures[] = [
   { id: "analytics", name: "Full analytics dashboard" },
-  { id: "api",       name: "API access" },
-  { id: "webhooks",  name: "Webhook events" },
-  { id: "export",    name: "Data export" },
-  { id: "support",   name: "Email support" },
-  { id: "realtime",  name: "Real-time event tracking" },
+  { id: "api", name: "API access" },
+  { id: "webhooks", name: "Webhook events" },
+  { id: "export", name: "Data export" },
+  { id: "support", name: "Email support" },
+  { id: "realtime", name: "Real-time event tracking" },
   { id: "retention", name: "90-day data retention" },
 ];
 
@@ -82,68 +81,83 @@ const CORE_FEATURES: PlanFeatures[] = [
 
 export const PLANS: PlanDetails[] = [
   {
-    name:  "Starter",
-    price: { monthly: 9,   yearly: 86,    ids: PRODUCT_IDS.starter   },
+    name: "Starter",
+    price: { monthly: 9, yearly: 84, ids: PRODUCT_IDS.starter },
     limits: { events: 10_000 },
     featureTitle: "Includes:",
     features: CORE_FEATURES,
   },
   {
-    name:  "Basic",
-    price: { monthly: 24,  yearly: 230,   ids: PRODUCT_IDS.basic     },
+    name: "Basic",
+    price: { monthly: 24, yearly: 230, ids: PRODUCT_IDS.basic },
     limits: { events: 25_000 },
     featureTitle: "Everything in Starter +",
     features: CORE_FEATURES,
   },
   {
-    name:  "Pro",
-    price: { monthly: 48,  yearly: 461,   ids: PRODUCT_IDS.pro       },
+    name: "Pro",
+    price: { monthly: 48, yearly: 461, ids: PRODUCT_IDS.pro },
     limits: { events: 100_000 },
     featureTitle: "Everything in Basic +",
     features: CORE_FEATURES,
   },
   {
-    name:  "Growth",
-    price: { monthly: 79,  yearly: 758,   ids: PRODUCT_IDS.growth    },
+    name: "Growth",
+    price: { monthly: 79, yearly: 758, ids: PRODUCT_IDS.growth },
     limits: { events: 500_000 },
     featureTitle: "Everything in Pro +",
     features: CORE_FEATURES,
   },
   {
-    name:  "Business",
-    price: { monthly: 149, yearly: 1_430, ids: PRODUCT_IDS.business  },
+    name: "Business",
+    price: { monthly: 149, yearly: 1_430, ids: PRODUCT_IDS.business },
     limits: { events: 1_000_000 },
     featureTitle: "Everything in Growth +",
     features: CORE_FEATURES,
   },
   {
-    name:  "Scale",
-    price: { monthly: 249, yearly: 2_390, ids: PRODUCT_IDS.scale     },
+    name: "Scale",
+    price: { monthly: 249, yearly: 2_390, ids: PRODUCT_IDS.scale },
     limits: { events: 5_000_000 },
     featureTitle: "Everything in Business +",
     features: CORE_FEATURES,
   },
   {
-    name:  "Pro Plus",
-    price: { monthly: 399, yearly: 3_830, ids: PRODUCT_IDS.pro_plus  },
+    name: "Pro Plus",
+    price: { monthly: 399, yearly: 3_830, ids: PRODUCT_IDS.pro_plus },
     limits: { events: 10_000_000 },
     featureTitle: "Everything in Scale +",
     features: CORE_FEATURES,
   },
+  {
+    name: "Enterprise",
+    price: { monthly: 569, yearly: 5_462, ids: PRODUCT_IDS.enterprise },
+    limits: { events: 15_000_000 },
+    featureTitle: "Everything in Pro Plus +",
+    features: CORE_FEATURES,
+  },
+  {
+    name: "Ultimate",
+    price: { monthly: 899, yearly: 8_630, ids: PRODUCT_IDS.ultimate },
+    limits: { events: 25_000_000 },
+    featureTitle: "Everything in Enterprise +",
+    features: CORE_FEATURES,
+  },
 ];
 
-// ─── Named plan exports ───────────────────────────────────────────────────────
+// ─── Named exports ────────────────────────────────────────────────────────────
 
-export const Starter_Plan  = PLANS.find((p) => p.name === "Starter")!;
-export const Basic_Plan    = PLANS.find((p) => p.name === "Basic")!;
-export const Pro_Plan      = PLANS.find((p) => p.name === "Pro")!;
-export const Growth_Plan   = PLANS.find((p) => p.name === "Growth")!;
-export const Business_Plan = PLANS.find((p) => p.name === "Business")!;
-export const Scale_Plan    = PLANS.find((p) => p.name === "Scale")!;
-export const ProPlus_Plan  = PLANS.find((p) => p.name === "Pro Plus")!;
+export const Starter_Plan = PLANS[0];
+export const Basic_Plan = PLANS[1];
+export const Pro_Plan = PLANS[2];
+export const Growth_Plan = PLANS[3];
+export const Business_Plan = PLANS[4];
+export const Scale_Plan = PLANS[5];
+export const ProPlus_Plan = PLANS[6];
+export const Enterprise_Plan = PLANS[7];
+export const Ultimate_Plan = PLANS[8];
 
 export const SELF_SERVE_PLANS = PLANS;
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**

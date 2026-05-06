@@ -93,7 +93,7 @@ SQL >
             )
         {% else %} toDateTime64(toStartOfDay(timestamp, {{ String(timezone, 'UTC') }}), 3)
         {% end %} AS interval,
-        uniq(event_id) as clicks
+        uniq(visitor_id) as clicks
     FROM
         {% if defined(customerId) %} dub_click_events_id
         {% else %} dub_click_events_mv
@@ -123,6 +123,11 @@ SQL >
         ) %} AND link_id in (SELECT link_id from workspace_links)
         {% end %}
         {% if defined(region) %} AND region = {{ region }} {% end %}
+        {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
+        {% if defined(page) %} AND page = {{ page }} {% end %}
+        {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
+        {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
+        {% if defined(goal) %} AND event_type = 'goals' AND event_name = {{ String(goal) }} {% end %}
         {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
         {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
         {% if defined(filters) %}
@@ -150,6 +155,28 @@ SQL >
                     {% elif field == 'browser' %}
                         {% if operator == 'IN' %} AND browser IN {{ Array(values, 'String') }}
                         {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }}
+                        {% end %}
+                    {% elif field == 'hostname' %}
+                        {% if operator == 'IN' %} AND hostname IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND hostname NOT IN {{ Array(values, 'String') }}
+                        {% end %}
+                    {% elif field == 'page' %}
+                        {% if operator == 'IN' %} AND page IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND page NOT IN {{ Array(values, 'String') }}
+                        {% end %}
+                    {% elif field == 'entrypage' %}
+                        {% if operator == 'IN' %} AND entrypage IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND entrypage NOT IN {{ Array(values, 'String') }}
+                        {% end %}
+                    {% elif field == 'exitlink' %}
+                        {% if operator == 'IN' %} AND exitlink IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %} AND exitlink NOT IN {{ Array(values, 'String') }}
+                        {% end %}
+                    {% elif field == 'goal' %}
+                        {% if operator == 'IN' %}
+                            AND event_type = 'goals' AND event_name IN {{ Array(values, 'String') }}
+                        {% elif operator == 'NOT IN' %}
+                            AND NOT (event_type = 'goals' AND event_name IN {{ Array(values, 'String') }})
                         {% end %}
                     {% elif field == 'os' %}
                         {% if operator == 'IN' %} AND os IN {{ Array(values, 'String') }}

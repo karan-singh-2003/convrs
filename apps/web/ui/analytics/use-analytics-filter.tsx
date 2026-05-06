@@ -184,6 +184,31 @@ export function useAnalyticsFilters({
     omitGroupByFilterKey: true,
     context,
   });
+  const { data: hostnames } = useAnalyticsFilterOption("hostname", {
+    disabled: !isRequested("hostname"),
+    omitGroupByFilterKey: true,
+    context,
+  });
+  const { data: pages } = useAnalyticsFilterOption("page", {
+    disabled: !isRequested("page"),
+    omitGroupByFilterKey: true,
+    context,
+  });
+  const { data: entrypages } = useAnalyticsFilterOption("entrypage", {
+    disabled: !isRequested("entrypage"),
+    omitGroupByFilterKey: true,
+    context,
+  });
+  const { data: exitlinks } = useAnalyticsFilterOption("exitlink", {
+    disabled: !isRequested("exitlink"),
+    omitGroupByFilterKey: true,
+    context,
+  });
+  const { data: goals } = useAnalyticsFilterOption("goals", {
+    disabled: !isRequested("goal"),
+    omitGroupByFilterKey: true,
+    context,
+  });
   const { data: utmSources } = useAnalyticsFilterOption("utm_sources", {
     disabled: !isRequested("utm_source"),
     omitGroupByFilterKey: true,
@@ -372,6 +397,67 @@ export function useAnalyticsFilters({
             right: getFilterOptionTotal(rest),
           })) ?? null,
       },
+      {
+        key: "hostname",
+
+        label: "Hostname",
+
+        options:
+          hostnames?.map(({ hostname, ...rest }) => ({
+            value: hostname,
+            label: hostname,
+            right: getFilterOptionTotal(rest),
+          })) ?? null,
+      },
+      {
+        key: "page",
+
+        label: "Page",
+
+        options:
+          pages?.map(({ page, ...rest }) => ({
+            value: page,
+            label: page,
+            right: getFilterOptionTotal(rest),
+          })) ?? null,
+      },
+      {
+        key: "entrypage",
+
+        label: "Entry Page",
+
+        options:
+          entrypages?.map(({ entrypage, ...rest }) => ({
+            value: entrypage,
+            label: entrypage,
+            right: getFilterOptionTotal(rest),
+          })) ?? null,
+      },
+      {
+        key: "exitlink",
+
+        label: "Exit Link",
+
+        options:
+          exitlinks?.map(({ exitlink, ...rest }) => ({
+            value: exitlink,
+            label: exitlink,
+            right: getFilterOptionTotal(rest),
+          })) ?? null,
+      },
+      {
+        key: "goal",
+
+        label: "Goal",
+        labelPlural: "goals",
+
+        options:
+          goals?.map(({ goal, ...rest }) => ({
+            value: goal,
+            label: goal,
+            right: getFilterOptionTotal(rest),
+          })) ?? null,
+      },
       ...(programPage
         ? []
         : [
@@ -417,6 +503,11 @@ export function useAnalyticsFilters({
       referers,
       refererUrls,
       baseUrls,
+      hostnames,
+      pages,
+      entrypages,
+      exitlinks,
+      goals,
       utmData,
       searchParamsObj.tagId,
       searchParamsObj.domain,
@@ -520,8 +611,6 @@ export function useAnalyticsFilters({
   );
 
   const onOpenFilter = useCallback((key) => {
-    console.log("open filter", key);
-    console.log("isRequested(city):", isRequested("city"));
     setRequestedFilters((rf) => (rf.includes(key) ? rf : [...rf, key]));
   }, []);
 

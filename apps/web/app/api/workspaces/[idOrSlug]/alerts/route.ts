@@ -32,13 +32,17 @@ export const POST = withWorkspace(
       );
     }
 
+    const normalizedTrigger = payload.trigger?.trim();
+    const trigger = normalizedTrigger ? normalizedTrigger : null;
+
     const alert = await prisma.alert.create({
       data: {
         workspaceId: workspace.id,
         name: payload.name.trim(),
-        trigger: payload.trigger.trim(),
+        trigger,
         subject: payload.subject.trim(),
         content: payload.content.trim(),
+        ...(payload.enabled !== undefined ? { enabled: payload.enabled } : {}),
       },
     });
 

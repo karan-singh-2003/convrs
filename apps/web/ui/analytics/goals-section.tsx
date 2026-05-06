@@ -25,7 +25,7 @@ export function LowerGrid() {
   const { data: allData } = useAnalyticsFilterOption(tab, {
     omitGroupByFilterKey: true,
   });
-console.log("data for goals section is ", allData);
+
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
   const dataKey = "clicks";
 

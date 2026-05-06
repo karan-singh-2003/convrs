@@ -37,7 +37,10 @@ export default function ScriptSettingsContent() {
   return (
     <div className="space-y-5">
       <div className="bg-white rounded-xl border border-gray-200 p-4 px-5 space-y-4">
-        <ScriptInstallationCard scriptConfig={scriptConfig} />
+        <ScriptInstallationCard
+          scriptConfig={scriptConfig}
+          allowLocalhostDebugging={enabled}
+        />
 
         <div className="bg-neutral-100 p-3 rounded-xl">
           <div className="flex items-center justify-between font-display text-neutral-600 font-medium text-sm">

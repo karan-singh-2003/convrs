@@ -69,7 +69,7 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(`[stripe/webhook] processing error for ${event.type}:`, err);
 
-    // ⚠️ Return 200 to avoid duplicate retries
+    //  Return 200 to avoid duplicate retries
     return res.status(200).json({ error: "Processing failed" });
   }
 

@@ -21,11 +21,16 @@ export async function recordEvent({
   payload: AnalyticsEvent;
   logger: FastifyBaseLogger;
 }) {
-  const { website_id, visitor_id, session_id } = payload;
-  console.log("[Tinybird] URL:", process.env.TINYBIRDS_API_URL);
-  if (!website_id || !visitor_id || !session_id) return null;
+  const { website_id, visitor_id } = payload;
 
-  // ── Build context from req (same pattern as recordClick) ─────────────────
+  // ── Guard: only website_id and visitor_id are required
+  // session_id is optional — revenue events from Stripe webhooks may not have it
+  if (!website_id || !visitor_id) {
+    logger.warn("[recordEvent] Missing website_id or visitor_id — skipping");
+    return null;
+  }
+
+  // ── Bot detection ─────────────────────────────────────────────────────────
   const uaString = req.headers.get("user-agent") || "";
   const isBot = detectBot(req);
 
@@ -45,12 +50,30 @@ export async function recordEvent({
     return null;
   }
 
+  // ── Self-referer fix ──────────────────────────────────────────────────────
+  // When a page loads, the browser sends its own URL as the Referer header.
+  // This makes localhost appear as a referrer of itself — treat as (direct).
+  const rawReferer = payload.referrer || req.headers.get("referer") || "";
+  const eventHostname = payload.hostname || safeHostname(payload.url || "");
+
+  const isSelfReferer =
+    rawReferer.length > 0 &&
+    eventHostname.length > 0 &&
+    safeHostname(rawReferer) === eventHostname.split(":")[0]; // strip port for comparison
+
+  const cleanReferer = isSelfReferer ? "" : rawReferer;
+
+  // ── Build request context ─────────────────────────────────────────────────
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const forwardedIp = forwardedFor ? forwardedFor.split(",")[0]?.trim() : null;
+
   const ctx: RequestContext = {
     url: req.url,
     method: req.method,
     ip:
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("x-real-ip") ??
+      req.headers.get("x-debug-ip") ||
+      forwardedIp ||
+      req.headers.get("x-real-ip") ||
       "unknown",
     userAgent: ua,
     geo: {
@@ -62,7 +85,7 @@ export async function recordEvent({
       continent: continent ?? "Unknown",
       vercelRegion: vercelRegion,
     },
-    referer: payload.referrer || req.headers.get("referer") || "",
+    referer: cleanReferer,
     headers: {
       get(name: string) {
         return req.headers.get(name);
@@ -70,90 +93,11 @@ export async function recordEvent({
     },
   };
 
-  // ── Identity hash (same as recordClick) ───────────────────────────────────
+  // ── Identity hash ─────────────────────────────────────────────────────────
   const identityHash = await hashFromContext(ctx);
-
   const eventId = `${visitor_id}_${Date.now()}`;
 
-  console.log("recording geo data", ctx.geo);
-  // ── Map to exact Tinybird schema field names ──────────────────────────────
-  // const eventData = {
-  //   // Base
-  //   event_id: crypto.randomUUID(), // pure UUID
-  //   timestamp: new Date().toISOString(), // ISO format
-  //   website_id: website_id,
-  //   workspace_id: website_id,
-  //   visitor_id: visitor_id,
-  //   session_id: session_id,
-  //   type: payload.type,
-  //   event_type: payload.type === "event" ? "goals" : payload.type,
-
-  //   // Page
-  //   url: payload.url ?? "",
-  //   hostname: payload.hostname ?? safeHostname(payload.url),
-  //   page: safePath(payload.url),
-  //   referrer: payload.referrer ?? null,
-  //   title: payload.title ?? null,
-
-  //   // Client (from SDK — not enriched server-side)
-  //   language: payload.language ?? "",
-  //   timezone: payload.timezone ?? "",
-  //   screen_w: payload.screen_w ?? 0,
-  //   screen_h: payload.screen_h ?? 0,
-  //   viewport_w: payload.viewport_w ?? 0,
-  //   viewport_h: payload.viewport_h ?? 0,
-
-  //   // Geo (server-enriched — same as recordClick)
-  //   country: ctx.geo.country,
-  //   city: ctx.geo.city,
-  //   region: ctx.geo.region,
-  //   latitude: ctx.geo.latitude,
-  //   longitude: ctx.geo.longitude,
-  //   continent: ctx.geo.continent,
-  //   vercel_region: ctx.geo.vercelRegion,
-
-  //   // Device (server-enriched — same as recordClick)
-  //   device: capitalize(ctx.userAgent.device.type ?? "") || "Desktop",
-  //   device_model: ctx.userAgent.device.model ?? "Unknown",
-  //   device_vendor: ctx.userAgent.device.vendor ?? "Unknown",
-  //   browser: ctx.userAgent.browser.name ?? "Unknown",
-  //   browser_version: ctx.userAgent.browser.version ?? "Unknown",
-  //   os: ctx.userAgent.os.name ?? "Unknown",
-  //   os_version: ctx.userAgent.os.version ?? "Unknown",
-  //   engine: ctx.userAgent.engine.name ?? "Unknown",
-  //   engine_version: ctx.userAgent.engine.version ?? "Unknown",
-  //   cpu_architecture: ctx.userAgent.cpu?.architecture ?? "Unknown",
-  //   ua: uaString || "Unknown",
-
-  //   // Referrer (same as recordClick)
-  //   referer: ctx.referer
-  //     ? getDomainWithoutWWW(ctx.referer) || "(direct)"
-  //     : "(direct)",
-  //   referer_url: ctx.referer || "(direct)",
-
-  //   // Identity (same as recordClick)
-  //   identity_hash: identityHash ?? null,
-  //   ip: ctx.ip,
-  //   bot: 0,
-
-  //   // ── type = "event" ──────────────────────────────────────────────────────
-  //   event_name: payload.event_name ?? null,
-  //   props: JSON.stringify(payload.props ?? {}),
-  //   event_properties: JSON.stringify(payload.props ?? {}),
-  //   trigger: payload.type === "event" ? "goal" : "page",
-
-  //   // ── type = "identify" ───────────────────────────────────────────────────
-  //   user_id: (payload.traits?.user_id as string) ?? null,
-  //   traits: JSON.stringify(payload.traits ?? {}),
-
-  //   // ── type = "payment" | "refund" ─────────────────────────────────────────
-  //   revenue_amount: revenue?.amount ?? null,
-  //   revenue_currency: revenue?.currency ?? "",
-  //   revenue_provider: revenue?.provider ?? "",
-  //   revenue_plan: revenue?.plan ?? null,
-  //   revenue_email: revenue?.email ?? null,
-  //   payment_type: revenue?.payment_type ?? "",
-  // };
+  // ── Build Tinybird event payload ──────────────────────────────────────────
   const eventData = {
     event_id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
@@ -166,15 +110,16 @@ export async function recordEvent({
           : payload.type,
     event_name: payload.event_name ?? null,
 
-    workspace_id: website_id, // ← only workspace_id, drop website_id
+    workspace_id: website_id,
     visitor_id: visitor_id,
-    session_id: session_id,
+    session_id: payload.session_id ?? null,
     identity_hash: identityHash ?? null,
 
-    revenue: payload.revenue?.amount ?? null,
+    // Revenue — always send 0 for non-revenue events (Float64 is non-nullable)
+    revenue: payload.revenue?.amount ?? 0,
     currency: payload.revenue?.currency ?? "",
 
-    // UTM (send nulls explicitly)
+    // UTM
     utm_source: null,
     utm_medium: null,
     utm_campaign: null,
@@ -183,14 +128,16 @@ export async function recordEvent({
 
     // Page
     url: payload.url ?? "",
-    hostname: payload.hostname ?? safeHostname(payload.url),
-    page: safePath(payload.url),
+    hostname: payload.hostname ?? safeHostname(payload.url ?? ""),
+    page: safePath(payload.url ?? ""),
     entrypage: null,
     exitlink: null,
-    referer: ctx.referer
-      ? getDomainWithoutWWW(ctx.referer) || "(direct)"
+
+    // Referer — (direct) if no referrer or self-referrer
+    referer: cleanReferer
+      ? getDomainWithoutWWW(cleanReferer) || "(direct)"
       : "(direct)",
-    referer_url: ctx.referer || "(direct)",
+    referer_url: cleanReferer || "(direct)",
 
     // Geo
     country: ctx.geo.country,
@@ -200,7 +147,7 @@ export async function recordEvent({
     latitude: ctx.geo.latitude,
     longitude: ctx.geo.longitude,
 
-    // Device
+    // Device / UA
     device: capitalize(ctx.userAgent.device.type ?? "") || "Desktop",
     device_model: ctx.userAgent.device.model ?? "Unknown",
     device_vendor: ctx.userAgent.device.vendor ?? "Unknown",
@@ -213,13 +160,21 @@ export async function recordEvent({
     cpu_architecture: ctx.userAgent.cpu?.architecture ?? "Unknown",
     ua: uaString || "Unknown",
 
+    // Infra
     bot: 0,
     ip: ctx.ip,
     vercel_region: ctx.geo.vercelRegion ?? null,
+    qr: 0,
 
-    qr: 0, // ← was missing
-    trigger: payload.type === "event" ? "goal" : "page",
+    // Trigger
+    trigger:
+      payload.type === "payment"
+        ? "payment"
+        : payload.type === "event"
+          ? "goal"
+          : "page",
 
+    // Custom event properties
     event_properties: JSON.stringify(payload.props ?? {}),
   };
 
@@ -228,15 +183,11 @@ export async function recordEvent({
     "[recordEvent] Sending to Tinybird"
   );
 
-  console.log("[recordEvent] Event data:", eventData);
-  // ── Fire off async Tinybird request without blocking (same as recordClick) ─
+  // ── Fire to Tinybird (non-blocking) ───────────────────────────────────────
   (async () => {
     try {
       const apiUrl = process.env.TINYBIRDS_API_URL;
       const apiKey = process.env.TINYBIRDS_API_KEY;
-
-      console.log("Tinybird URL:", apiUrl);
-      console.log("Tinybird Key:", apiKey);
 
       if (!apiUrl || !apiKey) {
         logger.error(
@@ -246,24 +197,21 @@ export async function recordEvent({
         return;
       }
 
-      const tinybirdUrl = `${apiUrl}/v0/events?name=dub_click_events&wait=true`;
-
-      const response = await fetchWithRetry(tinybirdUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventData),
-      });
-      // ADD THIS — Tinybird puts the real error in the body even on 200
-      const responseBody = await response.json().catch(() => ({}));
-      console.log(
-        "Tinybird response body:",
-        JSON.stringify(responseBody, null, 2)
+      const response = await fetchWithRetry(
+        `${apiUrl}/v0/events?name=dub_click_events&wait=true`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        }
       );
 
-      if (!response.ok || responseBody.error) {
+      const responseBody = await response.json().catch(() => ({}));
+
+      if (!response.ok || (responseBody as any).error) {
         logger.error(
           { status: response.status, body: responseBody },
           "[recordEvent] Tinybird error"

@@ -2,10 +2,12 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { useTable, Table } from "@repo/ui";
 import useCustomers, { type CustomerItem } from "@/lib/swr/use-customers";
+import { COUNTRIES } from "@repo/utils";
+import { is } from "date-fns/locale";
 
 type CustomerListItem = CustomerItem;
 
@@ -33,7 +35,9 @@ const formatDate = (value: string | null) => {
 export default function CustomersPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const { customers, loading: isLoading } = useCustomers({ limit: 200 });
+  const router = useRouter();
+
+  const { customers = [], loading: isLoading } = useCustomers({ limit: 200 });
 
   const columns = useMemo<ColumnDef<CustomerListItem>[]>(
     () => [
@@ -49,7 +53,6 @@ export default function CustomersPage() {
 
           return (
             <div className="flex items-center gap-3">
-              {/* Avatar */}
               <img
                 src={
                   user.avatar ||
@@ -61,7 +64,6 @@ export default function CustomersPage() {
                 className="h-7 w-7 rounded-full"
               />
 
-              {/* Name */}
               <div className="flex flex-col leading-tight">
                 <Link
                   href={`/${slug}/customers/details?customerId=${encodeURIComponent(
@@ -71,9 +73,10 @@ export default function CustomersPage() {
                 >
                   {user.name || "Unnamed customer"}
                 </Link>
-                {user.email ? (
-                  <span className="text-xs text-neutral-400">{user.email}</span>
-                ) : null}
+
+                {user.email && (
+                  <span className="text-xs text-neutral-500">{user.email}</span>
+                )}
               </div>
             </div>
           );
@@ -86,13 +89,27 @@ export default function CustomersPage() {
             Country
           </span>
         ),
-        cell: ({ row }) => (
-          <div className="flex items-center gap-x-2">
-            <span className="text-sm font-display font-medium text-neutral-500">
-              {row.original.country || "-"}
-            </span>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const country = row.original.country;
+
+          const countryCode =
+            Object.entries(COUNTRIES)
+              .find(([, name]) => name === country)?.[0]
+              ?.toLowerCase() || "unknown";
+
+          return (
+            <div className="flex items-center gap-2">
+              <img
+                alt={country || "Unknown"}
+                src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
+                className="size-5 shrink-0"
+              />
+              <span className="text-sm font-display font-medium text-neutral-500">
+                {country || "-"}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "ltv",
@@ -142,74 +159,28 @@ export default function CustomersPage() {
     columns,
     loading: isLoading,
     error: undefined,
+    onRowClick: (row) => {
+      const customer = row.original;
+
+      router.push(
+        `/${slug}/customers/details?customerId=${encodeURIComponent(
+          customer.id
+        )}`
+      );
+    },
   });
 
   return (
-    <div className="space-y-6 max-w-screen-lg mx-auto px-3 sm:px-0">
-      <div className="hidden md:block bg-[#fafafa] border-none rounded-2xl overflow-x-auto">
+    <div className="space-y-6 max-w-screen-lg mx-auto  sm:px-0">
+      {isLoading && (
+        <div className="w-full h-[300px] bg-neutral-50 animate-pulse rounded-2xl" />
+      )}
+      <div className=" bg-[#fafafa] rounded-2xl overflow-x-auto">
         <Table
           table={table}
           {...tableProps}
-          className="bg-[#FBFBFB] border-none rounded-2xl min-w-[760px]"
+          className="bg-[#FBFBFB] rounded-2xl min-w-[760px]"
         />
-      </div>
-
-      <div className="md:hidden space-y-3">
-        {isLoading ? (
-          <div className="rounded-2xl bg-[#fafafa] p-4 text-sm text-neutral-400">
-            Loading customers...
-          </div>
-        ) : customers.length === 0 ? (
-          <div className="rounded-2xl bg-[#fafafa] p-4 text-sm text-neutral-400">
-            No customers yet.
-          </div>
-        ) : (
-          customers.map((customer) => (
-            <Link
-              key={customer.id}
-              href={`/${slug}/customers/details?customerId=${encodeURIComponent(
-                customer.id
-              )}`}
-              className="block rounded-2xl bg-[#fafafa] p-4"
-            >
-              <div className="flex items-center gap-3">
-                <img
-                  src={
-                    customer.avatar ||
-                    `https://api.dicebear.com/9.x/glass/svg?seed=${encodeURIComponent(
-                      customer.name || customer.email || customer.id
-                    )}`
-                  }
-                  alt={customer.name || customer.email || "Customer avatar"}
-                  className="h-9 w-9 rounded-full"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium font-display text-neutral-600">
-                    {customer.name || "Unnamed customer"}
-                  </p>
-                  <p className="truncate text-xs text-neutral-400">
-                    {customer.email || "No email"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-xl bg-white p-2">
-                  <p className="text-neutral-400">LTV</p>
-                  <p className="font-medium text-neutral-600">
-                    {formatAmount(customer.saleAmount)}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-white p-2">
-                  <p className="text-neutral-400">Sales</p>
-                  <p className="font-medium text-neutral-600">
-                    {customer.sales}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
       </div>
     </div>
   );

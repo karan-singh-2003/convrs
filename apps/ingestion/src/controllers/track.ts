@@ -2,10 +2,15 @@ import { Request, Response } from "express";
 import {
   AnalyticsEventSchema,
   recordEvent,
+  sendAlertsForEvent,
   upsertCustomer,
+  upsertAnonymousCustomer,
 } from "@repo/analytics";
 import { prisma } from "@repo/db";
+import email from "@repo/email";
+import UsageLimitWarningEmailModule from "@repo/email/templates/usage-limit-warning";
 import * as UAParserLib from "ua-parser-js";
+import React from "react";
 
 export async function trackClickController(req: Request, res: Response) {
   try {
@@ -25,13 +30,9 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    // ── GEO / IP ────────────────────────────────────────────────────────────
-    const countryHeader = req.headers["x-vercel-ip-country"];
-    const country = Array.isArray(countryHeader)
-      ? (countryHeader[0] ?? "")
-      : (countryHeader ?? "");
-
-    // Prefer x-forwarded-for (first IP in chain), fall back to socket address
+    // ── IP EXTRACTION (GEO handled in recordEvent) ──────────────────────────────
+    // Geo is now centralized in recordEvent() → getGeoData()
+    // IP is extracted once here and passed through (no splitting)
     const ip =
       ((req.headers["x-forwarded-for"] as string | undefined)
         ?.split(",")[0]
@@ -53,9 +54,14 @@ export async function trackClickController(req: Request, res: Response) {
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: {
+        name: true,
+        slug: true,
         blockedHostnames: true,
         blockedIpAddresses: true,
         blockedPages: true,
+        subscriptionStatus: true,
+        usage: true,
+        usageLimit: true,
       },
     });
 
@@ -66,8 +72,15 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
+    if(workspace.subscriptionStatus === "canceled") {
+      return res.status(403).json({
+        success: false,
+        error: "Subscription canceled",
+      });
+    }
+
     const eventHostname = (parsed.data.hostname || "").toLowerCase();
-    // const eventPage = (parsed.data.page || "").toLowerCase();
+    const eventPage = (safePath(parsed.data.url) || "").toLowerCase();
 
     // Hostname filter
     if (
@@ -83,17 +96,15 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    // IP filter (supports comma-separated IPs in x-forwarded-for)
+    // IP filter (now supports CIDR via ip-range-check)
     if (
       workspace.blockedIpAddresses &&
       workspace.blockedIpAddresses.length > 0
     ) {
-      const eventIps = ip.split(",").map((i) => i.trim());
+      const ipRangeCheck = (await import("ip-range-check")).default;
       if (
-        eventIps.some((i) =>
-          workspace.blockedIpAddresses.some(
-            (blocked) => blocked && i === blocked
-          )
+        workspace.blockedIpAddresses.some((blocked) =>
+          ipRangeCheck(ip, blocked)
         )
       ) {
         return res.status(403).json({
@@ -103,11 +114,13 @@ export async function trackClickController(req: Request, res: Response) {
       }
     }
 
-    // Page filter — fixed syntax error (removed dangling comma)
+    // Page filter — blocks pages starting with the blocked path
     if (
       workspace.blockedPages &&
-      workspace.blockedPages.length > 0
-      //   workspace.blockedPages.some((p) => p && eventPage === p.toLowerCase())
+      workspace.blockedPages.length > 0 &&
+      workspace.blockedPages.some(
+        (p) => p && eventPage.startsWith(p.toLowerCase())
+      )
     ) {
       return res.status(403).json({
         success: false,
@@ -115,13 +128,32 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
+    const usageLimit = workspace.usageLimit ?? 0;
+    const usage = workspace.usage ?? 0;
+
+    if (usageLimit > 0 && usage >= usageLimit) {
+      return res.status(403).json({
+        success: false,
+        error: "Usage limit exceeded",
+        code: "exceeded_limit",
+      });
+    }
     // ── IDENTIFY ─────────────────────────────────────────────────────────────
     let customer = null;
+
     if (parsed.data.type === "identify") {
       customer = await upsertCustomer({
         workspaceId: parsed.data.website_id,
-        traits: parsed.data.traits,
-        geo: country,
+        traits: (parsed.data.traits ?? {}) as Record<string, any>,
+        visitorId: parsed.data.visitor_id ?? undefined, // ← pass so it can upgrade anon record
+      });
+    }
+
+    // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
+    else if (parsed.data.type === "pageview" && parsed.data.visitor_id) {
+      customer = await upsertAnonymousCustomer({
+        workspaceId: parsed.data.website_id,
+        visitorId: parsed.data.visitor_id,
       });
     }
 
@@ -169,22 +201,49 @@ export async function trackClickController(req: Request, res: Response) {
 
       // Geo / infra
       ip: ip ?? null,
-      country: safe(country || "Unknown"),
 
-      // ⚠️ MUST be string
+      //  MUST be string
       event_properties: JSON.stringify(parsed.data.props ?? {}),
 
-      // ⚠️ ensure bot is UInt8
+      //  ensure bot is UInt8
       bot: 0,
     };
 
     const nativeReq = toNativeRequest(req);
 
-    await recordEvent({
+    const recordedEvent = await recordEvent({
       req: nativeReq,
       payload: { ...enrichedPayload, customer_id: customer?.id ?? "" },
       logger: console as any,
     });
+
+    if (recordedEvent) {
+      const updatedWorkspace = await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: { usage: { increment: 1 } },
+        select: { usage: true, usageLimit: true, slug: true },
+      });
+
+      void maybeSendUsageLimitWarning({
+        workspaceId,
+        workspaceName: workspace.name,
+        workspaceSlug: updatedWorkspace.slug ?? workspace.slug,
+        usageBefore: usage,
+        usageAfter: updatedWorkspace.usage,
+        usageLimit: updatedWorkspace.usageLimit,
+      }).catch((error) => {
+        console.error("[Track POST] Failed to send usage warning", error);
+      });
+
+      void sendAlertsForEvent({
+        workspaceId,
+        eventName: parsed.data.event_name ?? parsed.data.type ?? "event",
+        event: {
+          ...recordedEvent,
+          workspaceName: workspace.name,
+        },
+      });
+    }
 
     return res.json({ success: true, recorded: true });
   } catch (error) {
@@ -329,4 +388,63 @@ function safePath(url?: string): string | null {
   } catch {
     return null;
   }
+}
+
+const UsageLimitWarningEmail =
+  (UsageLimitWarningEmailModule as any).default ?? UsageLimitWarningEmailModule;
+
+async function maybeSendUsageLimitWarning({
+  workspaceId,
+  workspaceName,
+  workspaceSlug,
+  usageBefore,
+  usageAfter,
+  usageLimit,
+}: {
+  workspaceId: string;
+  workspaceName: string;
+  workspaceSlug: string;
+  usageBefore: number;
+  usageAfter: number;
+  usageLimit: number;
+}) {
+  if (!usageLimit || usageLimit <= 0) return;
+
+  const warningThreshold = Math.ceil(usageLimit * 0.95);
+  if (usageBefore >= warningThreshold || usageAfter < warningThreshold) return;
+
+  const existingEmail = await prisma.sentEmail.findFirst({
+    where: { workspaceId, type: "usage_limit_95" },
+    select: { id: true },
+  });
+
+  if (existingEmail) return;
+
+  const owner = await prisma.workspaceUsers.findFirst({
+    where: { workspaceId, role: "owner" },
+    select: { user: { select: { email: true, name: true } } },
+  });
+
+  const recipientEmail = owner?.user?.email ?? null;
+  if (!recipientEmail) return;
+
+  const upgradeUrl = `https://app.boilercode.dev/${workspaceSlug}/settings/billing`;
+  const ownerName = owner?.user?.name ?? null;
+
+  await email.sendEmail({
+    to: recipientEmail,
+    subject: `You're at 95% of your ${workspaceName} event limit`,
+    react: React.createElement(UsageLimitWarningEmail, {
+      email: recipientEmail,
+      workspaceName,
+      ownerName,
+      usage: usageAfter,
+      usageLimit,
+      upgradeUrl,
+    }),
+  });
+
+  await prisma.sentEmail.create({
+    data: { type: "usage_limit_95", workspaceId },
+  });
 }

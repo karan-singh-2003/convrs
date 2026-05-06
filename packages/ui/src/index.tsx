@@ -27,6 +27,7 @@ export * from "./filter"
 export * from "./sliders"
 export * from "./utm_builder";
 export * from "./data-picker";
+export * from "./combobox"
 
 // hooks
 export * from "./hooks";

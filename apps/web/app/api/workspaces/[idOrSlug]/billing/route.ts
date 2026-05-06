@@ -1,44 +1,55 @@
+/**
+ * app/api/workspaces/[slug]/billing/route.ts
+ *
+ * Billing cycle is derived from the product_id on the Dodo subscription,
+ * matched against PRODUCT_IDS in pricing.ts.
+ *
+ * Why not use payment_frequency_interval?
+ * Dodo returns payment_frequency_interval: "Month" for yearly plans too
+ * (it reflects charge cadence, not plan term). subscription_period_interval
+ * can contain test-data noise. The product_id is the ground truth — it was
+ * set when the subscription was created and maps 1:1 to monthly/yearly.
+ */
+
 import { withWorkspace } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { dodo } from "@/lib/dodo";
+import { getPlanFromProductId } from "@repo/utils";
+import { NextResponse } from "next/server";
 
 export const GET = withWorkspace(
   async ({ workspace }) => {
-    const { stripeCustomerId } = workspace;
+    const { stripeSubscriptionId } = workspace;
 
     let billingCycle: "monthly" | "yearly" | null = null;
     let billingPeriodStart: number | null = null;
-    if (stripeCustomerId) {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: stripeCustomerId,
-        status: "all",
-        limit: 1,
-        expand: ["data.items.data.price"],
-      });
 
-      const subscription = subscriptions.data[0];
+    if (stripeSubscriptionId) {
+      try {
+        const subscription = await dodo.subscriptions.retrieve(
+          stripeSubscriptionId
+        );
 
-      if (subscription) {
-        const interval = subscription.items.data[0].price.recurring?.interval;
-        if (interval === "month") billingCycle = "monthly";
-        if (interval === "year") billingCycle = "yearly";
+        if (subscription) {
+          // Derive billing cycle from product_id — the only reliable source.
+          // getPlanFromProductId searches both ids.monthly and ids.yearly on
+          // every plan and returns which interval matched.
+          const { interval } = getPlanFromProductId(subscription.product_id);
+          if (interval) billingCycle = interval;
 
-        // Add this ↓
-        billingPeriodStart = subscription.billing_cycle_anchor;
+          // previous_billing_date = start of current billing period (ISO string).
+          // Convert to Unix seconds for getFormattedBillingPeriod().
+          if (subscription.previous_billing_date) {
+            billingPeriodStart = Math.floor(
+              new Date(subscription.previous_billing_date).getTime() / 1000
+            );
+          }
+        }
+      } catch (err) {
+        console.error("[billing/GET] Dodo subscription fetch failed:", err);
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        billingCycle,
-        billingPeriodStart,
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return NextResponse.json({ billingCycle, billingPeriodStart });
   },
-  {
-    requiredPermission: "billing:read",
-  }
+  { requiredPermission: "billing:read" }
 );

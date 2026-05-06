@@ -86,8 +86,8 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
     where: { id: workspaceId },
     data: {
       // ← was stripeCustomerId / stripeSubscriptionId
-      dodoCustomerId:     data.customer.customer_id,
-      dodoSubscriptionId: data.subscription_id,
+      stripeCustomerId:     data.customer.customer_id,
+      stripeSubscriptionId: data.subscription_id,
 
       subscriptionStatus: data.status,       // "active"
       billingInterval,

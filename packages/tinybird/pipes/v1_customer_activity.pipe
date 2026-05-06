@@ -1,0 +1,36 @@
+NODE customer_events
+SQL >
+
+%
+SELECT
+    event_id,
+    timestamp,
+    event_type,
+    event_name,
+    page,
+    url,
+    referer,
+    referer_url,
+    browser,
+    device,
+    country,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    event_properties,
+    revenue,
+    currency
+FROM dub_click_events
+WHERE
+    workspace_id = {{ String(workspaceId, 'cmoa5a5ld0001xkeupvc6bc57', description="Workspace ID", required=True) }}
+    AND visitor_id = {{ String(visitorId, '058f2298-a514-4965-9179-6037a41961a8', description="Visitor ID", required=True) }}
+    AND bot = 0
+ORDER BY timestamp DESC
+LIMIT {{ Int32(limit, 100) }}
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT * FROM customer_events

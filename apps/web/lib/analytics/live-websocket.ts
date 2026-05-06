@@ -114,7 +114,7 @@ export function initWebSocketServer(server: Server): WebSocketServer {
 
   wss.on("close", () => clearInterval(pingInterval));
 
-  console.log("[WS] Live WebSocket server ready at /ws/live");
+
   return wss;
 }
 

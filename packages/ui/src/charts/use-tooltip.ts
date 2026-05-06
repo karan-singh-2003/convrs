@@ -173,7 +173,7 @@ export function useTooltip<T extends Datum>({
             ] as Date | undefined);
 
       if (x0 === undefined) {
-        console.log("x0 is undefined", { defaultTooltipData });
+    
         if (defaultTooltipData) visxTooltip.showTooltip(defaultTooltipData);
         else visxTooltip.hideTooltip();
         return;

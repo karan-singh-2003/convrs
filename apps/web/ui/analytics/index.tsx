@@ -7,19 +7,34 @@ import { LowerGrid } from "./goals-section";
 import { PagesSection } from "./pages-section";
 import { SourcesSection } from "./sources-section";
 import { useContext } from "react";
+import { LoadingSpinner } from "@repo/ui";
 
 export default function Analytics({ mode, workspaceId }) {
   return (
     <AnalyticsProvider
       workspaceId={mode === "public" ? workspaceId : undefined}
     >
-      <AnalyticsContent mode={mode} />
+      <AnalyticsContent mode={mode} workspaceId={workspaceId} />
     </AnalyticsProvider>
   );
 }
 
-function AnalyticsContent({ mode }: { mode: "private" | "public" }) {
-  const { selectedTab    } = useContext(AnalyticsContext);
+function AnalyticsContent({
+  mode,
+  workspaceId,
+}: {
+  mode: "private" | "public";
+  workspaceId: string;
+}) {
+  const { selectedTab, totalEventsLoading } = useContext(AnalyticsContext);
+
+  if (totalEventsLoading) {
+    return (
+      <div className="flex items-center justify-center h-[500px]">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <>

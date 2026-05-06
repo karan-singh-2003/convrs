@@ -1,13 +1,9 @@
 "use client";
 
 import { editQueryString } from "@/lib/analytics/utils";
-import {
-  Areas,
-  TimeSeriesChart,
-  XAxis,
-  YAxis,
-} from "@repo/ui";
+import { Areas, TimeSeriesChart, XAxis, YAxis } from "@repo/ui";
 import { fetcher, nFormatter } from "@repo/utils";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { useMemo } from "react";
 import useSWR from "swr";
 
@@ -60,13 +56,17 @@ export default function DashboardGraph({
     () =>
       new URLSearchParams({
         event: "clicks",
-        interval: "30d",
+        interval: "24h",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       }).toString(),
     []
   );
 
-  const { data: response, error, isLoading } = useSWR<TimeseriesResponse>(
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<TimeseriesResponse>(
     `${baseApiPath}?${editQueryString(queryString, {
       groupBy: "timeseries",
     })}`,
@@ -86,14 +86,11 @@ export default function DashboardGraph({
     [response]
   );
 
-  const yTickValues = useMemo(
-    () => getYAxisTickValues(chartData),
-    [chartData]
-  );
+  const yTickValues = useMemo(() => getYAxisTickValues(chartData), [chartData]);
 
   if (error) {
     return (
-      <div className="flex h-[150px] items-center justify-center text-sm text-red-500">
+      <div className="flex h-[150px] font-medium font-display items-center justify-center text-sm text-red-500">
         Failed to load data
       </div>
     );
@@ -113,34 +110,47 @@ export default function DashboardGraph({
     );
   }
 
-  const first = chartData[0].values.visitors;
+  const totalVisitors = chartData.reduce(
+    (sum, point) => sum + point.values.visitors,
+    0
+  );
   const latest = chartData.at(-1)?.values.visitors ?? 0;
+  const previous = chartData.at(-2)?.values.visitors ?? latest;
 
-  const delta = latest - first;
-  const deltaPct = first > 0 ? (delta / first) * 100 : 0;
-  const isPositive = delta >= 0;
+  const delta = latest - previous;
+  const deltaPct = previous > 0 ? (delta / previous) * 100 : 0;
+  const trend = delta === 0 ? "flat" : delta > 0 ? "up" : "down";
+  const trendClasses =
+    trend === "up"
+      ? " text-[#46AE56]"
+      : trend === "down"
+        ? " text-rose-700"
+        : " text-neutral-500";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-3">
       {/* Metrics */}
-      <div className="flex items-center px-1 justify-between">
+      <div className="flex items-center gap-y-2 px-1 ">
         <div>
-          <p className="text-[14.5px] font-default text-neutral-500">Visitors</p>
-          <p className="text-xl font-semibold text-neutral-800">
-            {nFormatter(latest)}
+          <p className="text-[14px] font-medium font-default text-neutral-500">
+            Visitors
           </p>
+          <div className="flex items-end my-1">
+            <p className="text-3xl font-semibold text-neutral-800">
+              {nFormatter(totalVisitors)}
+            </p>
+            {/* <span
+              className={`rounded-full flex items-center font-display px-2 py-0.5 text-[15px] font-medium ${trendClasses}`}
+            >
+              {trend === "up" ? (
+                <ArrowUpRight />
+              ) : trend === "down" ? (
+                <ArrowDownRight />
+              ) : null}
+              {deltaPct.toFixed(1)}%
+            </span> */}
+          </div>
         </div>
-
-        <span
-          className={`rounded-full font-display px-2 py-0.5 text-[13px] font-medium ${
-            isPositive
-              ? " text-[#46AE56]"
-              : " text-rose-700"
-          }`}
-        >
-          {isPositive ? "+" : ""}
-          {deltaPct.toFixed(1)}%
-        </span>
       </div>
 
       {/* Chart */}
@@ -170,7 +180,6 @@ export default function DashboardGraph({
             numTicks={3}
             showGridLines
             tickFormat={nFormatter}
-            
           />
         </TimeSeriesChart>
       </div>

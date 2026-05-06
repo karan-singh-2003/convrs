@@ -4,10 +4,7 @@ import { getAnalytics } from "@/lib/analytics/get-analytics";
 
 export const GET = withWorkspace(
   async ({ searchParams, workspace, session }) => {
-    console.log(
-      "Received analytics query with params:",
-      searchParams.toString()
-    );
+   
     const parsedParams = analyticsQuerySchema.parse(searchParams);
 
     const data = await getAnalytics({

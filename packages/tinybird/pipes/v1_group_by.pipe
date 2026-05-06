@@ -1,39 +1,41 @@
+TAGS "Dub Endpoints"
+
 NODE group_by_clicks
 SQL >
 
 %
 SELECT
     multiIf(
-        {{ String(groupBy) }} = 'event_type', event_type,
-        {{ String(groupBy) }} = 'goals', event_name,
-        {{ String(groupBy) }} = 'top_urls', url,
+        {{ String(groupBy) }} = 'event_type',    event_type,
+        {{ String(groupBy) }} = 'goals',         event_name,
+        {{ String(groupBy) }} = 'top_urls',      url,
         {{ String(groupBy) }} = 'top_base_urls', arrayElement(splitByString('?', assumeNotNull(url)), 1),
-        {{ String(groupBy) }} = 'referers', referer,
-        {{ String(groupBy) }} = 'referer_urls', arrayElement(splitByString('?', assumeNotNull(referer_url)), 1),
-        {{ String(groupBy) }} = 'utm_sources', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_source')), '')),
-        {{ String(groupBy) }} = 'utm_mediums', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_medium')), '')),
+        {{ String(groupBy) }} = 'referers',      referer,
+        {{ String(groupBy) }} = 'referer_urls',  arrayElement(splitByString('?', assumeNotNull(referer_url)), 1),
+        {{ String(groupBy) }} = 'utm_sources',   toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_source')), '')),
+        {{ String(groupBy) }} = 'utm_mediums',   toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_medium')), '')),
         {{ String(groupBy) }} = 'utm_campaigns', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_campaign')), '')),
-        {{ String(groupBy) }} = 'utm_terms', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_term')), '')),
-        {{ String(groupBy) }} = 'utm_contents', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_content')), '')),
-        {{ String(groupBy) }} = 'ref', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'ref')), '')),
-        {{ String(groupBy) }} = 'countries', country,
-        {{ String(groupBy) }} = 'regions', CONCAT(country, '-', region),
-        {{ String(groupBy) }} = 'cities', city,
-        {{ String(groupBy) }} = 'continents', continent,
-        {{ String(groupBy) }} = 'devices', device,
-        {{ String(groupBy) }} = 'browsers', browser,
-        {{ String(groupBy) }} = 'os', os,
-        {{ String(groupBy) }} = 'hostname', hostname,
-        {{ String(groupBy) }} = 'page', page,
-        {{ String(groupBy) }} = 'entrypage', entrypage,
-        {{ String(groupBy) }} = 'exitlink', exitlink,
-        {{ String(groupBy) }} = 'triggers', trigger,
+        {{ String(groupBy) }} = 'utm_terms',     toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_term')), '')),
+        {{ String(groupBy) }} = 'utm_contents',  toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_content')), '')),
+        {{ String(groupBy) }} = 'ref',           toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'ref')), '')),
+        {{ String(groupBy) }} = 'countries',     country,
+        {{ String(groupBy) }} = 'regions',       CONCAT(country, '-', region),
+        {{ String(groupBy) }} = 'cities',        city,
+        {{ String(groupBy) }} = 'continents',    continent,
+        {{ String(groupBy) }} = 'devices',       device,
+        {{ String(groupBy) }} = 'browsers',      browser,
+        {{ String(groupBy) }} = 'os',            os,
+        {{ String(groupBy) }} = 'hostname',      hostname,
+        {{ String(groupBy) }} = 'page',          page,
+        {{ String(groupBy) }} = 'entrypage',     entrypage,
+        {{ String(groupBy) }} = 'exitlink',      exitlink,
+        {{ String(groupBy) }} = 'triggers',      trigger,
         ''
     ) AS groupByField,
-    {% if String(groupBy) == 'cities' %}country, CONCAT(country, '-', region) as region,{% end %}
-    {% if String(groupBy) == 'regions' %}country,{% end %}
-  
-    COUNT(*) AS clicks
+    {% if String(groupBy) == 'cities' %}   country, CONCAT(country, '-', region) as region, {% end %}
+    {% if String(groupBy) == 'regions' %}  country, {% end %}
+
+    COUNT(DISTINCT visitor_id) AS clicks
 
 FROM dub_click_events_mv
 WHERE
@@ -42,135 +44,201 @@ WHERE
             event_name != '' AND event_name != 'Unknown' AND event_type = 'goals'
         {% else %}
             multiIf(
-                {{ String(groupBy) }} = 'event_type', event_type,
-                {{ String(groupBy) }} = 'top_urls', url,
+                {{ String(groupBy) }} = 'event_type',    event_type,
+                {{ String(groupBy) }} = 'top_urls',      url,
                 {{ String(groupBy) }} = 'top_base_urls', arrayElement(splitByString('?', assumeNotNull(url)), 1),
-                {{ String(groupBy) }} = 'referers', referer,
-                {{ String(groupBy) }} = 'referer_urls', arrayElement(splitByString('?', assumeNotNull(referer_url)), 1),
-                {{ String(groupBy) }} = 'utm_sources', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_source')), '')),
-                {{ String(groupBy) }} = 'utm_mediums', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_medium')), '')),
+                {{ String(groupBy) }} = 'referers',      referer,
+                {{ String(groupBy) }} = 'referer_urls',  arrayElement(splitByString('?', assumeNotNull(referer_url)), 1),
+                {{ String(groupBy) }} = 'utm_sources',   toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_source')), '')),
+                {{ String(groupBy) }} = 'utm_mediums',   toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_medium')), '')),
                 {{ String(groupBy) }} = 'utm_campaigns', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_campaign')), '')),
-                {{ String(groupBy) }} = 'utm_terms', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_term')), '')),
-                {{ String(groupBy) }} = 'utm_contents', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_content')), '')),
-                {{ String(groupBy) }} = 'ref', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'ref')), '')),
-                {{ String(groupBy) }} = 'countries', country,
-                {{ String(groupBy) }} = 'regions', CONCAT(country, '-', region),
-                {{ String(groupBy) }} = 'cities', city,
-                {{ String(groupBy) }} = 'continents', continent,
-                {{ String(groupBy) }} = 'devices', device,
-                {{ String(groupBy) }} = 'browsers', browser,
-                {{ String(groupBy) }} = 'os', os,
-                {{ String(groupBy) }} = 'hostname', hostname,
-                {{ String(groupBy) }} = 'page', page,
-                {{ String(groupBy) }} = 'entrypage', entrypage,
-                {{ String(groupBy) }} = 'exitlink', exitlink,
-                {{ String(groupBy) }} = 'triggers', trigger,
+                {{ String(groupBy) }} = 'utm_terms',     toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_term')), '')),
+                {{ String(groupBy) }} = 'utm_contents',  toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_content')), '')),
+                {{ String(groupBy) }} = 'ref',           toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'ref')), '')),
+                {{ String(groupBy) }} = 'countries',     country,
+                {{ String(groupBy) }} = 'regions',       CONCAT(country, '-', region),
+                {{ String(groupBy) }} = 'cities',        city,
+                {{ String(groupBy) }} = 'continents',    continent,
+                {{ String(groupBy) }} = 'devices',       device,
+                {{ String(groupBy) }} = 'browsers',      browser,
+                {{ String(groupBy) }} = 'os',            os,
+                {{ String(groupBy) }} = 'hostname',      hostname,
+                {{ String(groupBy) }} = 'page',          page,
+                {{ String(groupBy) }} = 'entrypage',     entrypage,
+                {{ String(groupBy) }} = 'exitlink',      exitlink,
+                {{ String(groupBy) }} = 'triggers',      trigger,
                 ''
-            ) != '' AND multiIf(
-                {{ String(groupBy) }} = 'event_type', event_type,
-                {{ String(groupBy) }} = 'countries', country,
-                {{ String(groupBy) }} = 'devices', device,
-                {{ String(groupBy) }} = 'browsers', browser,
-                {{ String(groupBy) }} = 'os', os,
-                {{ String(groupBy) }} = 'cities', city,
-                {{ String(groupBy) }} = 'continents', continent,
-                {{ String(groupBy) }} = 'regions', CONCAT(country, '-', region),
+            ) != ''
+            AND multiIf(
+                {{ String(groupBy) }} = 'event_type',    event_type,
+                {{ String(groupBy) }} = 'countries',     country,
+                {{ String(groupBy) }} = 'devices',       device,
+                {{ String(groupBy) }} = 'browsers',      browser,
+                {{ String(groupBy) }} = 'os',            os,
+                {{ String(groupBy) }} = 'cities',        city,
+                {{ String(groupBy) }} = 'continents',    continent,
+                {{ String(groupBy) }} = 'regions',       CONCAT(country, '-', region),
                 'not_unknown'
             ) != 'Unknown'
         {% end %}
     )
-    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
-    {% if defined(continent) %} AND continent = {{ continent }} {% end %}
-    {% if defined(country) %} AND country = {{ country }} {% end %}
-    {% if defined(region) %} AND region = {{ region }} {% end %}
-    {% if defined(city) %} AND city = {{ city }} {% end %}
-    {% if defined(device) %} AND device = {{ device }} {% end %}
-    {% if defined(browser) %} AND browser = {{ browser }} {% end %}
-    {% if defined(os) %} AND os = {{ os }} {% end %}
-    {% if defined(trigger) %} AND trigger = {{ trigger }} {% end %}
-    {% if defined(referer) %} AND referer = {{ referer }} {% end %}
-    {% if defined(refererUrl) %} AND splitByString('?', referer_url)[1] = {{ refererUrl }} {% end %}
-    {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
-    {% if defined(page) %} AND page = {{ page }} {% end %}
-    {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
-    {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
-    {% if defined(utm_source) %} AND url LIKE concat('%utm_source=', encodeURLFormComponent({{ String(utm_source) }}), '%') {% end %}
-    {% if defined(utm_medium) %} AND url LIKE concat('%utm_medium=', encodeURLFormComponent({{ String(utm_medium) }}), '%') {% end %}
-    {% if defined(utm_campaign) %} AND url LIKE concat('%utm_campaign=', encodeURLFormComponent({{ String(utm_campaign) }}), '%') {% end %}
-    {% if defined(utm_term) %} AND url LIKE concat('%utm_term=', encodeURLFormComponent({{ String(utm_term) }}), '%') {% end %}
-    {% if defined(utm_content) %} AND url LIKE concat('%utm_content=', encodeURLFormComponent({{ String(utm_content) }}), '%') {% end %}
-    {% if defined(url) %} AND splitByString('?', url)[1] = {{ url }} {% end %}
-    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
-    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+    AND event_type != 'revenue'
+    {% if defined(workspaceId) %}    AND workspace_id = {{ workspaceId }}    {% end %}
+    {% if defined(continent) %}      AND continent = {{ continent }}          {% end %}
+    {% if defined(country) %}        AND country = {{ country }}              {% end %}
+    {% if defined(region) %}         AND region = {{ region }}                {% end %}
+    {% if defined(city) %}           AND city = {{ city }}                    {% end %}
+    {% if defined(device) %}         AND device = {{ device }}                {% end %}
+    {% if defined(browser) %}        AND browser = {{ browser }}              {% end %}
+    {% if defined(os) %}             AND os = {{ os }}                        {% end %}
+    {% if defined(trigger) %}        AND trigger = {{ trigger }}              {% end %}
+    {% if defined(referer) %}        AND referer = {{ referer }}              {% end %}
+    {% if defined(refererUrl) %}     AND splitByString('?', referer_url)[1] = {{ refererUrl }} {% end %}
+    {% if defined(hostname) %}       AND hostname = {{ hostname }}            {% end %}
+    {% if defined(page) %}           AND page = {{ page }}                    {% end %}
+    {% if defined(entrypage) %}      AND entrypage = {{ entrypage }}          {% end %}
+    {% if defined(exitlink) %}       AND exitlink = {{ exitlink }}            {% end %}
+    {% if defined(goal) %}           AND event_type = 'goals' AND event_name = {{ String(goal) }} {% end %}
+    {% if defined(utm_source) %}     AND url LIKE concat('%utm_source=',   encodeURLFormComponent({{ String(utm_source) }}),   '%') {% end %}
+    {% if defined(utm_medium) %}     AND url LIKE concat('%utm_medium=',   encodeURLFormComponent({{ String(utm_medium) }}),   '%') {% end %}
+    {% if defined(utm_campaign) %}   AND url LIKE concat('%utm_campaign=', encodeURLFormComponent({{ String(utm_campaign) }}), '%') {% end %}
+    {% if defined(utm_term) %}       AND url LIKE concat('%utm_term=',     encodeURLFormComponent({{ String(utm_term) }}),     '%') {% end %}
+    {% if defined(utm_content) %}    AND url LIKE concat('%utm_content=',  encodeURLFormComponent({{ String(utm_content) }}),  '%') {% end %}
+    {% if defined(url) %}            AND splitByString('?', url)[1] = {{ url }} {% end %}
+    {% if defined(start) %}          AND timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %}            AND timestamp <= {{ DateTime64(end) }}   {% end %}
     {% if defined(filters) %}
         {% for item in JSON(filters, '[]') %}
-            {% if item.get('operand', '').startswith('metadata.') %}
-                {% set metadataKey = item.get('operand', '').split('.')[1] %}
-                {% set operator = item.get('operator', 'equals') %}
-                {% set value = item.get('value', '') %}
-                {% if operator == 'equals' %} AND JSONExtractString(metadata, {{ metadataKey }}) = {{ value }}
-                {% elif operator == 'notEquals' %} AND JSONExtractString(metadata, {{ metadataKey }}) != {{ value }}
-                {% elif operator == 'greaterThan' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) > toFloat64OrNull({{ value }})
-                {% elif operator == 'lessThan' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) < toFloat64OrNull({{ value }})
-                {% elif operator == 'greaterThanOrEqual' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) >= toFloat64OrNull({{ value }})
-                {% elif operator == 'lessThanOrEqual' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) <= toFloat64OrNull({{ value }})
-                {% end %}
-            {% elif item.get('field', '') %}
+            {% if item.get('field', '') %}
                 {% set field = item.get('field', '') %}
                 {% set operator = item.get('operator', 'IN') %}
                 {% set values = item.get('values', []) %}
                 {% if field == 'country' %}
-                    {% if operator == 'IN' %} AND country IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND country IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND country NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'city' %}
-                    {% if operator == 'IN' %} AND city IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND city IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND city NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'device' %}
-                    {% if operator == 'IN' %} AND device IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND device IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND device NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'browser' %}
-                    {% if operator == 'IN' %} AND browser IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND browser IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'os' %}
-                    {% if operator == 'IN' %} AND os IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND os IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND os NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'trigger' %}
-                    {% if operator == 'IN' %} AND trigger IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND trigger IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND trigger NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'referer' %}
-                    {% if operator == 'IN' %} AND referer IN {{ Array(values, 'String') }}
+                    {% if operator == 'IN' %}     AND referer IN {{ Array(values, 'String') }}
                     {% elif operator == 'NOT IN' %} AND referer NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'utm_source' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_source=',   encodeURLFormComponent({{ String(val) }}), '%'){% end %})
                     {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
                 {% elif field == 'utm_medium' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=',   encodeURLFormComponent({{ String(val) }}), '%'){% end %})
                     {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
                 {% elif field == 'utm_campaign' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
                     {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
                 {% elif field == 'utm_term' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_term=',     encodeURLFormComponent({{ String(val) }}), '%'){% end %})
                     {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
                 {% elif field == 'utm_content' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_content=',  encodeURLFormComponent({{ String(val) }}), '%'){% end %})
                     {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                {% elif field == 'hostname' %}
+                    {% if operator == 'IN' %}     AND hostname IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND hostname NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'page' %}
+                    {% if operator == 'IN' %}     AND page IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND page NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'entrypage' %}
+                    {% if operator == 'IN' %}     AND entrypage IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND entrypage NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'exitlink' %}
+                    {% if operator == 'IN' %}     AND exitlink IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND exitlink NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'goal' %}
+                    {% if operator == 'IN' %}
+                        AND event_type = 'goals' AND event_name IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %}
+                        AND NOT (event_type = 'goals' AND event_name IN {{ Array(values, 'String') }})
+                    {% end %}
                 {% end %}
             {% end %}
         {% end %}
     {% end %}
 GROUP BY
     groupByField
-    {% if String(groupBy) == 'cities' %}, country, region
-    {% elif String(groupBy) == 'regions' %}, country
-    {% end %}
-ORDER BY
-    {% if defined(eventType) and String(eventType) == 'revenue' %} revenue
-    {% else %} clicks
-    {% end %} DESC
+    {% if String(groupBy) == 'cities' %},  country, region {% end %}
+    {% if String(groupBy) == 'regions' %}, country         {% end %}
+ORDER BY clicks DESC
 LIMIT 5000
 
+NODE enrich_sessions
+SQL >
+    SELECT
+        workspace_id,
+        session_id,
+        argMax(hostname,  timestamp) AS hostname,
+        argMax(page,      timestamp) AS page,
+        argMax(referer,   timestamp) AS referer,
+        argMax(referer_url, timestamp) AS referer_url,
+        argMax(country,   timestamp) AS country,
+        argMax(city,      timestamp) AS city,
+        argMax(region,    timestamp) AS region,
+        argMax(continent, timestamp) AS continent,
+        argMax(device,    timestamp) AS device,
+        argMax(browser,   timestamp) AS browser,
+        argMax(os,        timestamp) AS os,
+        argMax(trigger,   timestamp) AS trigger,
+        argMax(url,       timestamp) AS url,
+        argMax(utm_source,   timestamp) AS utm_source,
+        argMax(utm_medium,   timestamp) AS utm_medium,
+        argMax(utm_campaign, timestamp) AS utm_campaign,
+        argMax(utm_content,  timestamp) AS utm_content,
+        argMax(utm_term,     timestamp) AS utm_term,
+        argMax(entrypage,    timestamp) AS entrypage,
+        argMax(exitlink,     timestamp) AS exitlink
+    FROM dub_click_events   -- ← raw table, always current
+    WHERE event_type != 'revenue'
+      AND session_id IS NOT NULL
+      AND session_id != ''
+    GROUP BY workspace_id, session_id
 
+NODE enrich_visitors
+SQL >
+    SELECT
+        workspace_id,
+        visitor_id,
+        argMax(hostname,  timestamp) AS hostname,
+        argMax(page,      timestamp) AS page,
+        argMax(referer,   timestamp) AS referer,
+        argMax(referer_url, timestamp) AS referer_url,
+        argMax(country,   timestamp) AS country,
+        argMax(city,      timestamp) AS city,
+        argMax(region,    timestamp) AS region,
+        argMax(continent, timestamp) AS continent,
+        argMax(device,    timestamp) AS device,
+        argMax(browser,   timestamp) AS browser,
+        argMax(os,        timestamp) AS os,
+        argMax(trigger,   timestamp) AS trigger,
+        argMax(url,       timestamp) AS url,
+        argMax(utm_source,   timestamp) AS utm_source,
+        argMax(utm_medium,   timestamp) AS utm_medium,
+        argMax(utm_campaign, timestamp) AS utm_campaign,
+        argMax(utm_content,  timestamp) AS utm_content,
+        argMax(utm_term,     timestamp) AS utm_term,
+        argMax(entrypage,    timestamp) AS entrypage,
+        argMax(exitlink,     timestamp) AS exitlink
+    FROM dub_click_events   -- ← raw table, always current
+    WHERE event_type != 'revenue'
+      AND visitor_id IS NOT NULL
+      AND visitor_id != ''
+    GROUP BY workspace_id, visitor_id
 
 NODE group_by_sales
 SQL >
@@ -178,167 +246,122 @@ SQL >
 %
 SELECT
     multiIf(
-       
-        {{ String(groupBy) }} = 'top_urls', url,
-        {{ String(groupBy) }} = 'top_base_urls', arrayElement(splitByString('?', assumeNotNull(url)), 1),
-        {{ String(groupBy) }} = 'referers', referer,
-        {{ String(groupBy) }} = 'referer_urls', arrayElement(splitByString('?', assumeNotNull(referer_url)), 1),
-        {{ String(groupBy) }} = 'utm_sources', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_source')), '')),
-        {{ String(groupBy) }} = 'utm_mediums', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_medium')), '')),
-        {{ String(groupBy) }} = 'utm_campaigns', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_campaign')), '')),
-        {{ String(groupBy) }} = 'utm_terms', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_term')), '')),
-        {{ String(groupBy) }} = 'utm_contents', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_content')), '')),
-        {{ String(groupBy) }} = 'ref', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'ref')), '')),
-        {{ String(groupBy) }} = 'countries', country,
-        {{ String(groupBy) }} = 'regions', CONCAT(country, '-', region),
-        {{ String(groupBy) }} = 'cities', city,
-        {{ String(groupBy) }} = 'continents', continent,
-        {{ String(groupBy) }} = 'devices', device,
-        {{ String(groupBy) }} = 'browsers', browser,
-        {{ String(groupBy) }} = 'os', os,
-        {{ String(groupBy) }} = 'hostname', hostname,
-        {{ String(groupBy) }} = 'page', page,
-        {{ String(groupBy) }} = 'entrypage', entrypage,
-        {{ String(groupBy) }} = 'exitlink', exitlink,
-        {{ String(groupBy) }} = 'triggers', trigger,
+        {{ String(groupBy) }} = 'event_type',    r.event_type,
+        {{ String(groupBy) }} = 'goals',         r.event_name,
+        {{ String(groupBy) }} = 'top_urls',      coalesce(nullIf(sc.url, ''),      nullIf(vc.url, ''),      r.url),
+        {{ String(groupBy) }} = 'top_base_urls', arrayElement(splitByString('?', assumeNotNull(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url))), 1),
+        {{ String(groupBy) }} = 'referers',      coalesce(sc.referer,  vc.referer,  if(r.referer = r.hostname, '(direct)', r.referer)),
+        {{ String(groupBy) }} = 'referer_urls',  arrayElement(splitByString('?', assumeNotNull(coalesce(sc.referer_url, vc.referer_url, r.referer_url))), 1),
+        {{ String(groupBy) }} = 'utm_sources',   toString(coalesce(decodeURLFormComponent(extractURLParameter(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url), 'utm_source')),  '')),
+        {{ String(groupBy) }} = 'utm_mediums',   toString(coalesce(decodeURLFormComponent(extractURLParameter(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url), 'utm_medium')),  '')),
+        {{ String(groupBy) }} = 'utm_campaigns', toString(coalesce(decodeURLFormComponent(extractURLParameter(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url), 'utm_campaign')), '')),
+        {{ String(groupBy) }} = 'utm_terms',     toString(coalesce(decodeURLFormComponent(extractURLParameter(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url), 'utm_term')),    '')),
+        {{ String(groupBy) }} = 'utm_contents',  toString(coalesce(decodeURLFormComponent(extractURLParameter(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url), 'utm_content')), '')),
+        {{ String(groupBy) }} = 'ref',           toString(coalesce(decodeURLFormComponent(extractURLParameter(coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url), 'ref')),         '')),
+        -- Geo: show actual value including 'Unknown' — filter applied below only for explicit filter params
+        {{ String(groupBy) }} = 'countries',     coalesce(nullIf(sc.country,   'Unknown'), nullIf(vc.country,   'Unknown'), r.country),
+        {{ String(groupBy) }} = 'regions',       CONCAT(coalesce(nullIf(sc.country,'Unknown'), nullIf(vc.country,'Unknown'), r.country), '-', coalesce(sc.region, vc.region, r.region)),
+        {{ String(groupBy) }} = 'cities',        coalesce(nullIf(sc.city,      'Unknown'), nullIf(vc.city,      'Unknown'), r.city),
+        {{ String(groupBy) }} = 'continents',    coalesce(nullIf(sc.continent, 'Unknown'), nullIf(vc.continent, 'Unknown'), r.continent),
+        -- Device: always show real enriched values
+        {{ String(groupBy) }} = 'devices',       coalesce(nullIf(sc.device,  'Unknown'), nullIf(vc.device,  'Unknown'), r.device),
+        {{ String(groupBy) }} = 'browsers',      coalesce(nullIf(sc.browser, 'Unknown'), nullIf(vc.browser, 'Unknown'), r.browser),
+        {{ String(groupBy) }} = 'os',            coalesce(nullIf(sc.os,      'Unknown'), nullIf(vc.os,      'Unknown'), r.os),
+        -- Pages/hostname
+        {{ String(groupBy) }} = 'hostname',      coalesce(nullIf(sc.hostname, ''), nullIf(vc.hostname, ''), r.hostname),
+        {{ String(groupBy) }} = 'page',          coalesce(sc.page,      vc.page,      r.page),
+        {{ String(groupBy) }} = 'entrypage',     coalesce(sc.entrypage, vc.entrypage, r.entrypage),
+        {{ String(groupBy) }} = 'exitlink',      coalesce(sc.exitlink,  vc.exitlink,  r.exitlink),
+        {{ String(groupBy) }} = 'triggers',      coalesce(sc.trigger,   vc.trigger,   r.trigger),
         ''
     ) AS groupByField,
-    {% if String(groupBy) == 'cities' %}country, CONCAT(country, '-', region) as region,{% end %}
-    {% if String(groupBy) == 'regions' %}country,{% end %}
-  
-    SUM(coalesce(dse.revenue, 0)) AS revenue
 
-FROM dub_sales_events_mv AS dse
+    {% if String(groupBy) == 'cities' %}
+        coalesce(nullIf(sc.country,'Unknown'), nullIf(vc.country,'Unknown'), r.country) AS country,
+        CONCAT(coalesce(nullIf(sc.country,'Unknown'), nullIf(vc.country,'Unknown'), r.country), '-', coalesce(sc.region, vc.region, r.region)) AS region,
+    {% end %}
+    {% if String(groupBy) == 'regions' %}
+        coalesce(nullIf(sc.country,'Unknown'), nullIf(vc.country,'Unknown'), r.country) AS country,
+    {% end %}
+
+    SUM(coalesce(r.revenue, 0)) AS revenue
+
+FROM dub_click_events AS r
+LEFT JOIN enrich_sessions AS sc
+    ON  r.workspace_id = sc.workspace_id
+    AND r.session_id   = sc.session_id
+LEFT JOIN enrich_visitors AS vc
+    ON  r.workspace_id = vc.workspace_id
+    AND r.visitor_id   = vc.visitor_id
+
 WHERE
-    coalesce(dse.revenue, 0) > 0
-    AND (
-            multiIf(
-                {{ String(groupBy) }} = 'top_urls', url,
-                {{ String(groupBy) }} = 'top_base_urls', arrayElement(splitByString('?', assumeNotNull(url)), 1),
-                {{ String(groupBy) }} = 'referers', referer,
-                {{ String(groupBy) }} = 'referer_urls', arrayElement(splitByString('?', assumeNotNull(referer_url)), 1),
-                {{ String(groupBy) }} = 'utm_sources', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_source')), '')),
-                {{ String(groupBy) }} = 'utm_mediums', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_medium')), '')),
-                {{ String(groupBy) }} = 'utm_campaigns', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_campaign')), '')),
-                {{ String(groupBy) }} = 'utm_terms', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_term')), '')),
-                {{ String(groupBy) }} = 'utm_contents', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'utm_content')), '')),
-                {{ String(groupBy) }} = 'ref', toString(coalesce(decodeURLFormComponent(extractURLParameter(url, 'ref')), '')),
-                {{ String(groupBy) }} = 'countries', country,
-                {{ String(groupBy) }} = 'regions', CONCAT(country, '-', region),
-                {{ String(groupBy) }} = 'cities', city,
-                {{ String(groupBy) }} = 'continents', continent,
-                {{ String(groupBy) }} = 'devices', device,
-                {{ String(groupBy) }} = 'browsers', browser,
-                {{ String(groupBy) }} = 'os', os,
-                {{ String(groupBy) }} = 'hostname', hostname,
-                {{ String(groupBy) }} = 'page', page,
-                {{ String(groupBy) }} = 'entrypage', entrypage,
-                {{ String(groupBy) }} = 'exitlink', exitlink,
-                {{ String(groupBy) }} = 'triggers', trigger,
-                ''
-            ) != '' AND multiIf(
-                {{ String(groupBy) }} = 'event_type', event_type,
-                {{ String(groupBy) }} = 'countries', country,
-                {{ String(groupBy) }} = 'devices', device,
-                {{ String(groupBy) }} = 'browsers', browser,
-                {{ String(groupBy) }} = 'os', os,
-                {{ String(groupBy) }} = 'cities', city,
-                {{ String(groupBy) }} = 'continents', continent,
-                {{ String(groupBy) }} = 'regions', CONCAT(country, '-', region),
-                'not_unknown'
-            ) != 'Unknown'
-      
-    )
-    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
-    {% if defined(continent) %} AND continent = {{ continent }} {% end %}
-    {% if defined(country) %} AND country = {{ country }} {% end %}
-    {% if defined(region) %} AND region = {{ region }} {% end %}
-    {% if defined(city) %} AND city = {{ city }} {% end %}
-    {% if defined(device) %} AND device = {{ device }} {% end %}
-    {% if defined(browser) %} AND browser = {{ browser }} {% end %}
-    {% if defined(os) %} AND os = {{ os }} {% end %}
-    {% if defined(trigger) %} AND trigger = {{ trigger }} {% end %}
-    {% if defined(referer) %} AND referer = {{ referer }} {% end %}
-    {% if defined(refererUrl) %} AND splitByString('?', referer_url)[1] = {{ refererUrl }} {% end %}
-    {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
-    {% if defined(page) %} AND page = {{ page }} {% end %}
-    {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
-    {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
-    {% if defined(utm_source) %} AND url LIKE concat('%utm_source=', encodeURLFormComponent({{ String(utm_source) }}), '%') {% end %}
-    {% if defined(utm_medium) %} AND url LIKE concat('%utm_medium=', encodeURLFormComponent({{ String(utm_medium) }}), '%') {% end %}
-    {% if defined(utm_campaign) %} AND url LIKE concat('%utm_campaign=', encodeURLFormComponent({{ String(utm_campaign) }}), '%') {% end %}
-    {% if defined(utm_term) %} AND url LIKE concat('%utm_term=', encodeURLFormComponent({{ String(utm_term) }}), '%') {% end %}
-    {% if defined(utm_content) %} AND url LIKE concat('%utm_content=', encodeURLFormComponent({{ String(utm_content) }}), '%') {% end %}
-    {% if defined(url) %} AND splitByString('?', url)[1] = {{ url }} {% end %}
-    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
-    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+    r.event_type = 'revenue'
+    AND coalesce(r.revenue, 0) > 0
+    -- Only filter out rows where the groupBy field itself is empty string
+    -- NOT filtering out 'Unknown' geo — localhost has no geo and that's valid
+    AND multiIf(
+        {{ String(groupBy) }} = 'devices',   coalesce(nullIf(sc.device,  'Unknown'), nullIf(vc.device,  'Unknown'), r.device),
+        {{ String(groupBy) }} = 'browsers',  coalesce(nullIf(sc.browser, 'Unknown'), nullIf(vc.browser, 'Unknown'), r.browser),
+        {{ String(groupBy) }} = 'os',        coalesce(nullIf(sc.os,      'Unknown'), nullIf(vc.os,      'Unknown'), r.os),
+        {{ String(groupBy) }} = 'hostname',  coalesce(nullIf(sc.hostname, ''), nullIf(vc.hostname, ''), r.hostname),
+        {{ String(groupBy) }} = 'page',      coalesce(sc.page, vc.page, r.page),
+        {{ String(groupBy) }} = 'top_urls',  coalesce(nullIf(sc.url,''), nullIf(vc.url,''), r.url),
+        {{ String(groupBy) }} = 'referers',  coalesce(sc.referer, vc.referer, r.referer),
+        {{ String(groupBy) }} = 'triggers',  coalesce(sc.trigger, vc.trigger, r.trigger),
+        'show'  -- default: always show for geo/utm groupings even if Unknown
+    ) != ''
+    {% if defined(workspaceId) %}   AND r.workspace_id = {{ workspaceId }}   {% end %}
+    {% if defined(continent) %}     AND coalesce(sc.continent, vc.continent, r.continent) = {{ continent }} {% end %}
+    {% if defined(country) %}       AND coalesce(sc.country,   vc.country,   r.country)   = {{ country }}   {% end %}
+    {% if defined(region) %}        AND coalesce(sc.region,    vc.region,    r.region)    = {{ region }}    {% end %}
+    {% if defined(city) %}          AND coalesce(sc.city,      vc.city,      r.city)      = {{ city }}      {% end %}
+    {% if defined(device) %}        AND coalesce(sc.device,    vc.device,    r.device)    = {{ device }}    {% end %}
+    {% if defined(browser) %}       AND coalesce(sc.browser,   vc.browser,   r.browser)   = {{ browser }}   {% end %}
+    {% if defined(os) %}            AND coalesce(sc.os,        vc.os,        r.os)        = {{ os }}        {% end %}
+    {% if defined(trigger) %}       AND coalesce(sc.trigger,   vc.trigger,   r.trigger)   = {{ trigger }}   {% end %}
+    {% if defined(referer) %}       AND coalesce(sc.referer,   vc.referer,   r.referer)   = {{ referer }}   {% end %}
+    {% if defined(refererUrl) %}    AND splitByString('?', coalesce(sc.referer_url, vc.referer_url, r.referer_url))[1] = {{ refererUrl }} {% end %}
+    {% if defined(hostname) %}      AND coalesce(nullIf(sc.hostname,''), nullIf(vc.hostname,''), r.hostname) = {{ hostname }} {% end %}
+    {% if defined(page) %}          AND coalesce(sc.page,      vc.page,      r.page)      = {{ page }}      {% end %}
+    {% if defined(entrypage) %}     AND coalesce(sc.entrypage, vc.entrypage, r.entrypage) = {{ entrypage }} {% end %}
+    {% if defined(exitlink) %}      AND coalesce(sc.exitlink,  vc.exitlink,  r.exitlink)  = {{ exitlink }}  {% end %}
+    {% if defined(start) %}         AND r.timestamp >= {{ DateTime64(start) }}            {% end %}
+    {% if defined(end) %}           AND r.timestamp <= {{ DateTime64(end) }}              {% end %}
+    {% if defined(utm_source) %}    AND coalesce(sc.url, vc.url, r.url) LIKE concat('%utm_source=',   encodeURLFormComponent({{ String(utm_source) }}),   '%') {% end %}
+    {% if defined(utm_medium) %}    AND coalesce(sc.url, vc.url, r.url) LIKE concat('%utm_medium=',   encodeURLFormComponent({{ String(utm_medium) }}),   '%') {% end %}
+    {% if defined(utm_campaign) %}  AND coalesce(sc.url, vc.url, r.url) LIKE concat('%utm_campaign=', encodeURLFormComponent({{ String(utm_campaign) }}), '%') {% end %}
+    {% if defined(utm_term) %}      AND coalesce(sc.url, vc.url, r.url) LIKE concat('%utm_term=',     encodeURLFormComponent({{ String(utm_term) }}),     '%') {% end %}
+    {% if defined(utm_content) %}   AND coalesce(sc.url, vc.url, r.url) LIKE concat('%utm_content=',  encodeURLFormComponent({{ String(utm_content) }}),  '%') {% end %}
+    {% if defined(url) %}           AND splitByString('?', coalesce(sc.url, vc.url, r.url))[1] = {{ url }} {% end %}
     {% if defined(filters) %}
         {% for item in JSON(filters, '[]') %}
-            {% if item.get('operand', '').startswith('metadata.') %}
-                {% set metadataKey = item.get('operand', '').split('.')[1] %}
-                {% set operator = item.get('operator', 'equals') %}
-                {% set value = item.get('value', '') %}
-                {% if operator == 'equals' %} AND JSONExtractString(metadata, {{ metadataKey }}) = {{ value }}
-                {% elif operator == 'notEquals' %} AND JSONExtractString(metadata, {{ metadataKey }}) != {{ value }}
-                {% elif operator == 'greaterThan' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) > toFloat64OrNull({{ value }})
-                {% elif operator == 'lessThan' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) < toFloat64OrNull({{ value }})
-                {% elif operator == 'greaterThanOrEqual' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) >= toFloat64OrNull({{ value }})
-                {% elif operator == 'lessThanOrEqual' %} AND toFloat64OrNull(JSONExtractString(metadata, {{ metadataKey }})) <= toFloat64OrNull({{ value }})
-                {% end %}
-            {% elif item.get('field', '') %}
+            {% if item.get('field', '') %}
                 {% set field = item.get('field', '') %}
                 {% set operator = item.get('operator', 'IN') %}
                 {% set values = item.get('values', []) %}
                 {% if field == 'country' %}
-                    {% if operator == 'IN' %} AND country IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND country NOT IN {{ Array(values, 'String') }} {% end %}
-                {% elif field == 'city' %}
-                    {% if operator == 'IN' %} AND city IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND city NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% if operator == 'IN' %}     AND coalesce(sc.country,  vc.country,  r.country)  IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND coalesce(sc.country, vc.country, r.country) NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'device' %}
-                    {% if operator == 'IN' %} AND device IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND device NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% if operator == 'IN' %}     AND coalesce(sc.device,   vc.device,   r.device)   IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND coalesce(sc.device,  vc.device,  r.device)  NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'browser' %}
-                    {% if operator == 'IN' %} AND browser IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }} {% end %}
+                    {% if operator == 'IN' %}     AND coalesce(sc.browser,  vc.browser,  r.browser)  IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND coalesce(sc.browser, vc.browser, r.browser) NOT IN {{ Array(values, 'String') }} {% end %}
                 {% elif field == 'os' %}
-                    {% if operator == 'IN' %} AND os IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND os NOT IN {{ Array(values, 'String') }} {% end %}
-                {% elif field == 'trigger' %}
-                    {% if operator == 'IN' %} AND trigger IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND trigger NOT IN {{ Array(values, 'String') }} {% end %}
-                {% elif field == 'referer' %}
-                    {% if operator == 'IN' %} AND referer IN {{ Array(values, 'String') }}
-                    {% elif operator == 'NOT IN' %} AND referer NOT IN {{ Array(values, 'String') }} {% end %}
-                {% elif field == 'utm_source' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
-                {% elif field == 'utm_medium' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
-                {% elif field == 'utm_campaign' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
-                {% elif field == 'utm_term' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
-                {% elif field == 'utm_content' %}
-                    {% if operator == 'IN' %} AND (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                    {% if operator == 'IN' %}     AND coalesce(sc.os,       vc.os,       r.os)       IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND coalesce(sc.os,      vc.os,      r.os)      NOT IN {{ Array(values, 'String') }} {% end %}
                 {% end %}
             {% end %}
         {% end %}
     {% end %}
+
 GROUP BY
     groupByField
-    {% if String(groupBy) == 'cities' %}, country, region
-    {% elif String(groupBy) == 'regions' %}, country
-    {% end %}
-ORDER BY
-    revenue
-    DESC
+    {% if String(groupBy) == 'cities' %},  country, region {% end %}
+    {% if String(groupBy) == 'regions' %}, country         {% end %}
+ORDER BY revenue DESC
 LIMIT 5000
-
 
 
 
@@ -349,9 +372,8 @@ SQL >
 %
 SELECT *
 FROM
-    {% if eventType == 'clicks' %} group_by_clicks
-    {% elif eventType == 'composite' %} group_by_composite
-    {% elif eventType == 'goals' %} group_by_clicks
-    {% elif eventType == 'revenue' %} group_by_sales
-    {% else %} group_by_clicks
+    {% if eventType == 'revenue' %}   group_by_sales
+    {% elif eventType == 'goals' %}   group_by_clicks
+    {% elif eventType == 'composite' %} group_by_clicks
+    {% else %}                        group_by_clicks
     {% end %}

@@ -39,17 +39,17 @@ const NAV_AREAS = {
         items: [
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
-          { title: "Security", href: `/${slug}/settings/security` },
+          // { title: "Security", href: `/${slug}/settings/security` },
           { title: "Billing", href: `/${slug}/settings/billing` },
           { title: "Revenue", href: `/${slug}/settings/revenue` },
           { title: "Alerts", href: `/${slug}/settings/alerts` },
-          { title: "Reports", href: `/${slug}/settings/reports` },
+          // { title: "Reports", href: `/${slug}/settings/reports` },
         ],
       },
       {
         heading: "Developer",
         items: [
-          { title: "API keys", href: `/${slug}/settings/tokens` },
+          // { title: "API keys", href: `/${slug}/settings/tokens` },
           { title: "Script", href: `/${slug}/settings/script` },
           // { title: "Webhooks", href: `/${slug}/settings/webhooks` },
         ],
