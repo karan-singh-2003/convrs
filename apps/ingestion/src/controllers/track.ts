@@ -72,7 +72,7 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    if(workspace.subscriptionStatus === "canceled") {
+    if (workspace.subscriptionStatus === "canceled") {
       return res.status(403).json({
         success: false,
         error: "Subscription canceled",
@@ -87,7 +87,7 @@ export async function trackClickController(req: Request, res: Response) {
       workspace.blockedHostnames &&
       workspace.blockedHostnames.length > 0 &&
       workspace.blockedHostnames.some(
-        (h) => h && eventHostname === h.toLowerCase()
+        (h: string) => h && eventHostname === h.toLowerCase()
       )
     ) {
       return res.status(403).json({
@@ -103,7 +103,7 @@ export async function trackClickController(req: Request, res: Response) {
     ) {
       const ipRangeCheck = (await import("ip-range-check")).default;
       if (
-        workspace.blockedIpAddresses.some((blocked) =>
+        workspace.blockedIpAddresses.some((blocked: string) =>
           ipRangeCheck(ip, blocked)
         )
       ) {
@@ -119,7 +119,7 @@ export async function trackClickController(req: Request, res: Response) {
       workspace.blockedPages &&
       workspace.blockedPages.length > 0 &&
       workspace.blockedPages.some(
-        (p) => p && eventPage.startsWith(p.toLowerCase())
+        (p: string) => p && eventPage.startsWith(p.toLowerCase())
       )
     ) {
       return res.status(403).json({
