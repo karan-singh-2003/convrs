@@ -8,7 +8,11 @@ NODE parsed_steps
 SQL >
 
 %
-WITH
+SELECT
+    step_name,
+    toUInt64(step_pos) AS step_index
+FROM system.one
+ARRAY JOIN
     arrayFilter(
         x -> x != '',
         splitByChar(
@@ -22,35 +26,29 @@ WITH
                 )
             }}
         )
-    ) AS steps
-SELECT
-    tupleElement(step_tuple, 1) AS step_name,
-    toUInt64(tupleElement(step_tuple, 2)) AS step_index
-FROM
-    (
-        SELECT arrayJoin(arrayZip(steps, arrayEnumerate(steps))) AS step_tuple
-    )
+    ) AS step_name,
+    arrayEnumerate(
+        arrayFilter(
+            x -> x != '',
+            splitByChar(
+                ',',
+                {{
+                    String(
+                        steps,
+                        'signup,user_registered',
+                        description="Comma-separated ordered funnel step event names",
+                        required=True,
+                    )
+                }}
+            )
+        )
+    ) AS step_pos
 
 
 NODE per_visitor
 SQL >
 
 %
-WITH
-    arrayFilter(
-        x -> x != '',
-        splitByChar(
-            ',',
-            {{
-                String(
-                    steps,
-                    'signup,user_registered',
-                    description="Comma-separated ordered funnel step event names",
-                    required=True,
-                )
-            }}
-        )
-    ) AS steps
 SELECT
     e.visitor_id,
     arrayMap(
@@ -76,7 +74,23 @@ FROM
                         required=True,
                     )
                 }}
-            AND has(steps, ev.event_name)
+            AND has(
+                arrayFilter(
+                    x -> x != '',
+                    splitByChar(
+                        ',',
+                        {{
+                            String(
+                                steps,
+                                'signup,user_registered',
+                                description="Comma-separated ordered funnel step event names",
+                                required=True,
+                            )
+                        }}
+                    )
+                ),
+                ev.event_name
+            )
         GROUP BY ev.visitor_id, ps.step_index
     ) e
 GROUP BY e.visitor_id

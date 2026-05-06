@@ -48,8 +48,7 @@ const DashboardPage = () => {
               </div>
             </div>
           ) : (
-            // <Analytics mode="private" workspaceId={id} />
-            null
+            <Analytics mode="private" workspaceId={id} />
           )}
         </>
       </PageWidthWrapper>

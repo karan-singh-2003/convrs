@@ -59,7 +59,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Graph */}
-                  {/* <DashboardGraph workspaceId={workspace.id} /> */}
+                  <DashboardGraph workspaceId={workspace.id} />
                 </Link>
               ))}
               <div

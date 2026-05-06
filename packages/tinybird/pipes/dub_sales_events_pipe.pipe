@@ -72,7 +72,9 @@ SQL >
         FROM dub_click_events_mv
         WHERE event_type != 'revenue' AND session_id IS NOT NULL AND session_id != ''
         GROUP BY workspace_id, session_id
-    ) AS sc USING (workspace_id, session_id)
+    ) AS sc
+        ON r.workspace_id = sc.workspace_id
+        AND r.session_id = sc.session_id
     LEFT JOIN (
         SELECT
             workspace_id,
@@ -100,7 +102,9 @@ SQL >
         FROM dub_click_events_mv
         WHERE event_type != 'revenue' AND visitor_id IS NOT NULL AND visitor_id != ''
         GROUP BY workspace_id, visitor_id
-    ) AS vc USING (workspace_id, visitor_id)
+    ) AS vc
+        ON r.workspace_id = vc.workspace_id
+        AND r.visitor_id = vc.visitor_id
     WHERE r.event_type = 'revenue' AND coalesce(r.revenue, 0) > 0
 
 TYPE materialized
