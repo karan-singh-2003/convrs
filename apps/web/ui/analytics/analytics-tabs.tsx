@@ -98,7 +98,7 @@ export function AnalyticsTabs({
   return (
     <div className="w-full overflow-x-hidden">
       <NumberFlowGroup>
-        <div className="grid w-full grid-cols-2 gap-0 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid w-full grid-cols-3 gap-0 md:grid-cols-3 xl:grid-cols-6">
           {tabs.map(({ id, label, colorClassName }, idx) => {
             const isLiveVisitorsTab = id === "live_visitors";
             const isRevenueTab = label === "Revenue";
@@ -112,106 +112,101 @@ export function AnalyticsTabs({
               <div key={id} className="relative z-0 flex min-w-0 w-full">
                 <Link
                   className={cn(
-                    "relative flex h-full min-h-[134px] w-full flex-col justify-between px-4 py-3",
+                    "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2 sm:min-h-[134px] sm:px-4 sm:py-3",
                     "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
                     "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
                   )}
                   href={tabHref(id)}
                   aria-current
                 >
-                  {/* Active tab indicator */}
-                  {/* <div
-                  className={cn(
-                    "absolute bottom-0 left-0 h-0.5 w-full bg-black transition-transform duration-100",
-                    tab !== id && "translate-y-[3px]" // Translate an extra pixel to avoid sub-pixel issues
-                  )}
-                /> */}
-
-                  <div className="flex h-7 items-start gap-2.5 text-[14px] text-neutral-500 sm:h-5 sm:items-center">
+                  <div className="flex  items-start gap-2.5 text-[12px] text-neutral-500 sm:h-5 sm:items-center sm:text-[14px]">
                     <span className="font-default font-medium ">{label}</span>
                   </div>
 
-                  <div className=" flex h-12 items-center">
-                    {hasData ? (
-                      id === "avg_session_duration" ? (
-                        <div
-                          className={cn(
-                            "text-xl text-neutral-600 font-medium font-bricolageGrotesque sm:text-[26px]",
-                            showPaywall && "opacity-30"
-                          )}
-                        >
-                          {formatDuration(value)}
+                  <div className="flex items-start flex-col gap-y-1 justify-between">
+                    <div className=" flex md:h-12   items-center">
+                      {hasData ? (
+                        id === "avg_session_duration" ? (
+                          <div
+                            className={cn(
+                              "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                              showPaywall && "opacity-30"
+                            )}
+                          >
+                            {formatDuration(value)}
+                          </div>
+                        ) : (
+                          <NumberFlow
+                            value={value}
+                            format={
+                              isRevenueTab
+                                ? {
+                                    style: "currency",
+                                    currency: country === "US" ? "USD" : "USD",
+                                    currencyDisplay: "symbol", // ensures "$" instead of "US$"
+                                  }
+                                : undefined
+                            }
+                            locales="en-US"
+                            className={cn(
+                              "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                              showPaywall && "opacity-30"
+                            )}
+                          />
+                        )
+                      ) : requiresUpgrade ? (
+                        <div className="block rounded-full bg-neutral-100 p-2.5">
+                          <Lock className="h-4 w-4 text-neutral-500" />
                         </div>
                       ) : (
-                        <NumberFlow
-                          value={value}
-                          format={
-                            isRevenueTab
-                              ? {
-                                  style: "currency",
-                                  currency: country === "US" ? "USD" : "USD",
-                                  currencyDisplay: "symbol", // ensures "$" instead of "US$"
-                                }
-                              : undefined
-                          }
-                          locales="en-US"
-                          className={cn(
-                            "text-xl text-neutral-600 font-medium font-bricolageGrotesque sm:text-[26px]",
-                            showPaywall && "opacity-30"
-                          )}
-                        />
-                      )
-                    ) : requiresUpgrade ? (
-                      <div className="block rounded-full bg-neutral-100 p-2.5">
-                        <Lock className="h-4 w-4 text-neutral-500" />
-                      </div>
-                    ) : (
-                      <div className="h-9 w-16 animate-pulse rounded-none bg-neutral-200" />
-                    )}
-                  </div>
-                  {/* Percentage change badge */}
-                  <div className="min-h-5">
-                    {(() => {
-                      const change = percentageChanges?.[id];
-                      const hasChange = change !== undefined && change !== null;
-                      const hasDataForChange = isLiveVisitorsTab
-                        ? liveVisitorsCount !== undefined
-                        : totalEvents?.[id] !== undefined;
+                        <div className="h-9 w-16 animate-pulse rounded-none bg-neutral-200" />
+                      )}
+                    </div>
+                    {/* Percentage change badge */}
+                    <div className="min-h-5">
+                      {(() => {
+                        const change = percentageChanges?.[id];
+                        const hasChange =
+                          change !== undefined && change !== null;
+                        const hasDataForChange = isLiveVisitorsTab
+                          ? liveVisitorsCount !== undefined
+                          : totalEvents?.[id] !== undefined;
 
-                      if (!hasChange || !hasDataForChange) {
-                        return null;
-                      }
+                        if (!hasChange || !hasDataForChange) {
+                          return null;
+                        }
 
-                      const direction = getChangeDirection(change);
+                        const direction = getChangeDirection(change);
 
-                      // Determine colors based on direction
-                      let textColor: string;
-                      let icon: React.ReactNode;
+                        // Determine colors based on direction
+                        let textColor: string;
+                        let icon: React.ReactNode;
 
-                      if (direction === "up") {
-                        textColor = "text-[#46AE56]";
-                        icon = <ArrowUp className="h-3 w-3" />;
-                      } else if (direction === "down") {
-                        textColor = "text-[#ff3b30]";
-                        icon = <ArrowDown className="h-3 w-3" />;
-                      } else {
-                        // Neutral - orange/yellow shades
-                        textColor = "text-[#ff9500]";
-                        icon = <span className="text-[#ff9500]">−</span>;
-                      }
+                        if (direction === "up") {
+                          textColor = "text-[#46AE56]";
+                          icon = <ArrowUp className="h-3 w-3" />;
+                        } else if (direction === "down") {
+                          textColor = "text-[#ff3b30]";
+                          icon = <ArrowDown className="h-3 w-3" />;
+                        } else {
+                          // Neutral - orange/yellow shades
+                          textColor = "text-[#ff9500]";
+                          icon = <span className="text-[#ff9500]">−</span>;
+                        }
 
-                      return (
-                        <div
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full text-[13.5px] font-display",
-                            textColor
-                          )}
-                        >
-                          {icon}
-                          <span>{formatPercentageChange(change)}</span>
-                        </div>
-                      );
-                    })()}
+                        return (
+                          <div
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full text-[13.5px] font-display",
+                              textColor
+                            )}
+                          >
+                            {icon}
+                            <span>{formatPercentageChange(change)}</span>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </Link>
               </div>

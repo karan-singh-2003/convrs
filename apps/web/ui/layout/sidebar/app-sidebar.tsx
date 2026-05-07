@@ -18,9 +18,9 @@ const NAV_AREAS = {
     title: "",
     content: [
       { title: "Analytics", href: `/${slug}`, exact: true },
-      { title: "Settings", href: `/${slug}/settings` },
       { title: "Customers", href: `/${slug}/customers` },
       { title: "Realtime", href: `/${slug}/realtime` },
+      { title: "Settings", href: `/${slug}/settings` },
     ],
   }),
 

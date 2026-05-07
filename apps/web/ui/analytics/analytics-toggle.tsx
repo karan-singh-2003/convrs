@@ -70,7 +70,7 @@ export function AnalyticsToggle({
 
   const filterSelect = (
     <Filter.Select
-      className="h-9 w-9 p-0 justify-center rounded-full gap-0 px-0 [&>span]:hidden [&>svg:last-child]:hidden [&>div]:absolute [&>div]:-right-1 [&>div]:-top-1 [&>div]:size-5 [&>div]:border-2 [&>div]:border-white [&>div]:bg-black [&>div]:text-[10px]"
+      className="h-9 w-full justify-between gap-2 rounded-full px-3 sm:h-9 sm:w-9 sm:justify-center sm:gap-0 sm:p-0 sm:px-0 sm:[&>span]:hidden sm:[&>svg:last-child]:hidden [&>div]:absolute [&>div]:-right-1 [&>div]:-top-1 [&>div]:size-5 [&>div]:border-2 [&>div]:border-white [&>div]:bg-black [&>div]:text-[10px]"
       filters={filters}
       activeFilters={activeFilters}
       onSelect={onSelect}
@@ -79,13 +79,13 @@ export function AnalyticsToggle({
       isAdvancedFilter
       askAI
     >
-      {""}
+      {"Filter"}
     </Filter.Select>
   );
 
   const dateRangePicker = (
     <DateRangePicker
-      className="font-display  rounded-full"
+      className="h-auto w-full rounded-full font-display text-[13px] leading-snug py-2 sm:h-9 sm:w-auto sm:py-0 sm:text-sm sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap [&>span]:whitespace-normal sm:[&>span]:whitespace-nowrap sm:[&>span]:overflow-hidden sm:[&>span]:text-ellipsis"
       align={dashboardProps ? "end" : "center"}
       value={
         start && end
@@ -111,7 +111,6 @@ export function AnalyticsToggle({
           return;
         }
 
-        // Regular range
         if (!range || !range.from || !range.to) return;
 
         queryParams({
@@ -143,6 +142,7 @@ export function AnalyticsToggle({
             <UpgradeTooltip rangeLabel={display} plan={plan} />
           ) : undefined,
           shortcut,
+          mobileLabel: `Last ${display}`,
         };
       })}
     />
@@ -205,13 +205,13 @@ export function AnalyticsToggle({
               ))}
             <div
               className={cn(
-                "flex w-full items-center justify-between gap-2",
+                "flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
                 dashboardProps && "md:w-auto"
               )}
             >
               <div
                 className={cn(
-                  "flex w-full  grow items-center gap-2 md:w-auto",
+                  "flex w-full grow flex-col items-stretch  gap-2 sm:flex-row sm:items-center md:w-auto",
                   {
                     "grow-0": dashboardProps,
                   }
@@ -249,10 +249,10 @@ export function AnalyticsToggle({
                   // </div>
                   null}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="border border-neutral-200 rounded-full p-2">
+              <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
+                {/* <div className="rounded-full border border-neutral-200 p-2">
                   <RefreshCcw size={16} />
-                </div>
+                </div> */}
                 {filterSelect}
               </div>
             </div>
@@ -260,7 +260,7 @@ export function AnalyticsToggle({
         </div>
       </div>
 
-      <div className=" w-full ">
+      <div className="w-full">
         <Filter.List
           filters={filters}
           activeFilters={activeFiltersWithStreaming}
@@ -270,7 +270,7 @@ export function AnalyticsToggle({
           onRemoveAll={onRemoveAll}
           onToggleOperator={onToggleOperator}
           isAdvancedFilter
-          className="rounded-full"
+          className="w-full rounded-full"
         />
         <div
           className={cn(

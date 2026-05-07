@@ -188,7 +188,7 @@ export function FilterSelect({
             shouldFilter={
               !selectedFilter || selectedFilter.shouldFilter !== false
             }
-            className="w-[250px]"
+            className="w-full md:w-[250px]"
           >
             <div className="flex font-display items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
               <CommandInput

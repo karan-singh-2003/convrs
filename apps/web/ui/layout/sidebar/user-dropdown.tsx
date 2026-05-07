@@ -82,7 +82,7 @@ export function UserDropdown() {
               <BlurImage
                 src={session.user.image}
                 alt="User avatar"
-                className=" h-[25px] w-[25px] rounded-full object-cover"
+                className="h-[20px] w-[20px] md:h-[25px] md:w-[25px] rounded-full object-cover"
                 width={26}
                 height={26}
               />

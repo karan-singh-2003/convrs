@@ -82,10 +82,10 @@ export function MainNav({
               "fixed top-0 left-0 z-30 w-full",
               isRealtime
                 ? "bg-white/55 backdrop-blur-md supports-[backdrop-filter]:bg-white/45 "
-                : "bg-white"
+                : "bg-white border-b border-neutral-200"
             )}
           >
-            <div className=" flex h-12 w-full px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between gap-x-4  ">
+            <div className=" flex h-12 w-full  px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between gap-x-4  ">
               <div className="flex items-center justify-center gap-4 min-w-0">
                 <div className="w-full  flex items-center gap-4">
                   <div className="md:hidden">

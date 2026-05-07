@@ -81,7 +81,7 @@ const DateRangePickerInner = ({
         setOpenPopover={setOpen}
         popoverContentClassName="rounded-none"
         content={
-          <div className="w-[240px] p-2">
+          <div className="w-full md:w-[240px] p-2">
             {presets && presets.length > 0 && (
               <Presets
                 currentPresetId={preset?.id}

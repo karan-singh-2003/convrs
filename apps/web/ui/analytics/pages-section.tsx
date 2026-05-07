@@ -28,7 +28,6 @@ export function PagesSection() {
     { omitGroupByFilterKey: true }
   );
 
-
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
 
   useEffect(() => {
@@ -118,14 +117,14 @@ export function PagesSection() {
                 {...(limit && { limit })}
               />
             ) : (
-              <div className="flex h-[300px] items-center justify-center">
-                <p className="text-sm font-medium font-default text-neutral-500">
+              <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
+                <p className="text-xs text-neutral-500 sm:text-sm font-medium font-default">
                   No data available
                 </p>
               </div>
             )
           ) : (
-            <div className="absolute inset-0 flex h-[300px] w-full items-center justify-center bg-white/50">
+            <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
               <LoadingSpinner />
             </div>
           )}

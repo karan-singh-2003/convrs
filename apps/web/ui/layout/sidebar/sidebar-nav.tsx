@@ -41,7 +41,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
     <div
       className={cn(
         "flex  w-full flex-col gap-4",
-        currentArea === "default" ? "px-3  py-2" : "px-0 p-2"
+        currentArea === "default" ? "px-3  md:px-0 py-2" : "px-0 p-2"
       )}
     >
       <nav className="size-full">

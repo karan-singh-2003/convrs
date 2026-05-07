@@ -121,12 +121,12 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
                   showPaywall={showPaywall}
                 />
               ) : (
-                <div className="min-h-[134px]" />
+                <div className="md:min-h-[134px] min-h-[240px] bg-orange-50" />
               )}
             </div>
 
             {/* RIGHT → Toggle (floating) */}
-            <div className="absolute right-3 top-1  z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
+            <div className="absolute right-3 md:top-1 z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
               {mode === "private" && view === "funnel" && (
                 <button
                   className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"

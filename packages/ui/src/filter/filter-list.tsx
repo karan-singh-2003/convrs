@@ -145,7 +145,7 @@ export function FilterList({
                       {isReactNode(OptionIcon) ? (
                         OptionIcon
                       ) : (
-                        <OptionIcon className="h-4 w-4" />
+                        <OptionIcon className="md:h-4 md:w-4 h-3 w-3" />
                       )}
                     </span>
                   ) : null;
@@ -240,7 +240,7 @@ export function FilterList({
         {normalizedFilters.length !== 0 && (
           <button
             type="button"
-            className="group mt-px flex items-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-2 text-sm text-neutral-500 ring-inset ring-neutral-500 transition-colors hover:border-neutral-200 hover:bg-white hover:text-black focus:outline-none"
+            className="group mt-px flex items-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-2 text-[13px] md:text-sm text-neutral-500 ring-inset ring-neutral-500 transition-colors hover:border-neutral-200 hover:bg-white hover:text-black focus:outline-none"
             onClick={onRemoveAll}
           >
             Clear Filters
@@ -318,7 +318,7 @@ function OperatorFilterPill({
             {isReactNode(filter.icon) ? (
               filter.icon
             ) : (
-              <filter.icon className="h-4 w-4" />
+              <filter.icon className="md:h-4 md:w-4 h-3 w-3" />
             )}
           </span>
         )}
@@ -336,7 +336,7 @@ function OperatorFilterPill({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-neutral-100",
+                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] md:text-sm transition-colors hover:bg-neutral-100",
                   !operator.includes("NOT") && "bg-neutral-50"
                 )}
                 onClick={() => {
@@ -351,7 +351,7 @@ function OperatorFilterPill({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-neutral-100",
+                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] md:text-sm transition-colors hover:bg-neutral-100",
                   operator.includes("NOT") && "bg-neutral-50"
                 )}
                 onClick={() => {
@@ -446,7 +446,7 @@ function OperatorFilterPill({
                           <Command.Item
                             key={option.value}
                             className={cn(
-                              "flex cursor-pointer items-center gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-sm",
+                              "flex cursor-pointer items-center gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-[13px] md:text-sm",
                               "data-[selected=true]:bg-neutral-100"
                             )}
                             onSelect={() => {

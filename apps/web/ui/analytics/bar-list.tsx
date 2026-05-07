@@ -176,20 +176,22 @@ export function BarList({
   } else {
     return (
       <>
-        <div className="relative px-4 py-3">
-          <div className="pointer-events-none absolute inset-y-0 left-7 flex items-center">
-            <Search className="h-4 w-4 text-neutral-400" />
+        <div className="relative px-2 py-2 my-3 md:my-1 sm:px-4 sm:py-3">
+          <div className="pointer-events-none absolute inset-y-0 left-5 sm:left-7 flex items-center">
+            <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neutral-400" />
           </div>
           <input
             type="text"
             autoFocus={!isMobile}
-            className="w-full rounded-md border border-neutral-300 py-2 pl-10 text-black placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-4 focus:ring-neutral-200 sm:text-sm"
-            placeholder={`Search ${tab}...`}
+            className="w-full rounded-none border font-default border-neutral-300 py-2 md:py-2 pl-8 sm:pl-9 text-sm text-black placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-0 sm:text-[15px]"
+            placeholder={`Search ${tab}`}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="relative">
-          <div className="h-[50vh] overflow-auto pb-4 md:h-[40vh]">{bars}</div>
+        <div className="relative  ">
+          <div className="h-[45vh] overflow-auto pb-3 sm:pb-4 sm:h-[50vh] md:h-[40vh]">
+            {bars}
+          </div>
         </div>
       </>
     );
@@ -232,7 +234,7 @@ export function LineItem({
 
   const percentage = Math.round((value / totalSum) * 1000) / 10;
   const isModalView = !limit;
-  
+
   const lineItem = (
     <div className="z-10 flex items-center space-x-2  overflow-hidden ">
       {icon ? (
@@ -250,12 +252,12 @@ export function LineItem({
             onMouseLeave={() => setFilterButtonHovered(false)}
             aria-label={`${isSelected ? "Remove" : "Add"} filter: ${title}`}
             aria-pressed={isSelected}
-            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-neutral-100"
+            className="flex size-5 sm:size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-neutral-100"
           >
             {icon}
           </button>
         ) : (
-          <div className="flex size-6  shrink-0 items-center justify-center">
+          <div className="flex size-5 sm:size-6 shrink-0 items-center justify-center">
             {icon}
           </div>
         )
@@ -271,12 +273,12 @@ export function LineItem({
           contentClassName="max-w-lg"
           disabled={filterButtonHovered}
         >
-          <div className="truncate text-[16px] text-neutral-600">
+          <div className="truncate text-[13px] text-neutral-600 sm:text-[16px]">
             {getPrettyUrl(title)}
           </div>
         </Tooltip>
       ) : (
-        <div className="truncate text-[15px] text-neutral-600">
+        <div className="truncate text-[13px] text-neutral-600 sm:text-[15px]">
           {title}
         </div>
       )}
@@ -296,7 +298,7 @@ export function LineItem({
         }
       }}
       className={cn(
-        "group block min-w-0 border-l-2  border-transparent py-1 transition-all",
+        "group block min-w-0 border-l-2 border-transparent py-0.5 sm:py-1 transition-all",
         rowClickable && "cursor-pointer"
       )}
     >
@@ -312,15 +314,15 @@ export function LineItem({
             position: "absolute",
             inset: 0,
           }}
-          className="-z-10 h-full  origin-left rounded-none px-4 bg-neutral-100"
+          className="-z-10 h-full origin-left rounded-none px-2 sm:px-4 bg-neutral-100"
           transition={{ ease: "easeOut", duration: 0.3 }}
           initial={{ transform: "scaleX(0)" }}
           animate={{ transform: "scaleX(1)" }}
         />
-        <div className="relative z-10 flex h-8 px-4 w-full min-w-0 max-w-[calc(100%-2rem)] border-l-4 border-neutral-500 font-display items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
+        <div className="relative z-10 flex h-7 sm:h-8 px-2 sm:px-4 w-full min-w-0 max-w-[calc(100%-2rem)] border-l-4 border-neutral-500 font-display items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
           {lineItem}
         </div>
-        <div className="z-10 px-3 flex items-center">
+        <div className="z-10 px-2 sm:px-3 flex items-center">
           {/** Revenue and saleAmount should render with currency formatting on the value pill. */}
           <NumberFlow
             value={
@@ -329,7 +331,7 @@ export function LineItem({
                 : value
             }
             className={cn(
-              "z-10 px-2 text-sm font-display text-neutral-600 transition-transform duration-300",
+              "z-10 px-1 sm:px-2 text-xs sm:text-sm font-display text-neutral-600 transition-transform duration-300",
               isModalView ? "-translate-x-14" : "group-hover:-translate-x-14"
             )}
             style={{
@@ -352,7 +354,7 @@ export function LineItem({
           />
           <div
             className={cn(
-              "absolute right-0 font-display px-3 text-sm text-neutral-600/70 transition-all duration-300",
+              "absolute right-0 font-display px-2 sm:px-3 text-xs sm:text-sm text-neutral-600/70 transition-all duration-300",
               isModalView
                 ? "visible translate-x-0 opacity-100"
                 : "invisible translate-x-14 opacity-0 group-hover:visible group-hover:translate-x-0 group-hover:opacity-100"

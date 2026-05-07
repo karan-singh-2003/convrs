@@ -74,11 +74,8 @@ export function AnalyticsCard<T extends string>({
         setShowModal={setShowModal}
         className="max-w-lg px-0"
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
-          <h1 className="text-lg font-semibold">{selectedTab?.label}</h1>
-          <div className="flex items-center gap-1 text-neutral-500">
-            <p className="text-xs uppercase">{event}</p>
-          </div>
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-2">
+          <h1 className=" text-[15px] text-neutral-700 font-medium md:text-lg font-display md:font-semibold">{selectedTab?.label}</h1>
         </div>
         {subTabs && selectedSubTabId && onSelectSubTab && (
           <SubTabs
@@ -91,11 +88,11 @@ export function AnalyticsCard<T extends string>({
       </Modal>
       <div
         className={cn(
-          "group relative z-0 h-[450px] overflow-hidden rounded-lg border border-neutral-200 bg-white sm:rounded-xl",
+          "group relative z-0 h-[400px] overflow-hidden rounded-lg border border-neutral-200 bg-white sm:h-[450px] sm:rounded-xl",
           className
         )}
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-4">
+        <div className="flex items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
           {/* Main tabs */}
           {isMobile ? (
             <Popover
@@ -125,7 +122,7 @@ export function AnalyticsCard<T extends string>({
             >
               <Button
                 type="button"
-                className="my-2 h-8 w-fit whitespace-nowrap px-2"
+                className="my-2 h-6 text-neutral-700 text-sm md:h-8 w-fit whitespace-nowrap px-2"
                 variant="outline"
                 icon={SelectedTabIcon && <SelectedTabIcon className="size-4" />}
                 text={selectedTab.label}
@@ -142,7 +139,7 @@ export function AnalyticsCard<T extends string>({
               options={tabs}
               selected={selectedTabId}
               onSelect={onSelectTab}
-              className="font-display  text-[15px]"
+              className="font-display text-sm md:text-[15px]"
             />
           )}
 
@@ -162,26 +159,24 @@ export function AnalyticsCard<T extends string>({
             />
           )}
         </AnimatedSizeContainer>
-        <div className="py-4">
+        <div className="py-3 sm:py-4">
           {children({
             limit: effectiveExpandLimit,
             event,
             setShowModal,
           })}
         </div>
-        {showViewAll && (
-          <div className="absolute bottom-0 left-0 z-10 flex w-full items-end">
-            <div className="pointer-events-none absolute bottom-0 left-0 h-48 w-full bg-gradient-to-t from-white" />
-            <div className="relative flex w-full items-center justify-center gap-2 py-4">
-              <button
-                onClick={() => setShowModal(true)}
-                className="h-8 w-fit rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 transition-colors hover:bg-neutral-100 active:border-neutral-300"
-              >
-                View All
-              </button>
-            </div>
+        <div className="absolute bottom-0 left-0 z-10 flex w-full items-end">
+          <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-white sm:h-48" />
+          <div className="relative flex w-full items-center justify-center gap-2 py-3 px-2 sm:py-4">
+            <button
+              onClick={() => setShowModal(true)}
+              className="h-8 w-full rounded-none font-default font-medium border-neutral-200 bg-white px-3 text-[12.5px] text-neutral-600 transition-colors hover:bg-neutral-100 active:border-neutral-300 sm:w-fit sm:text-sm"
+            >
+              View All
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </>
   );
@@ -205,8 +200,8 @@ function SubTabs({
       }))}
       selected={selectedTab}
       selectAction={(period) => onSelectTab(period)}
-      className="flex w-full font-display  flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-6 py-2 sm:flex-nowrap"
-      optionClassName="text-[15px] px-2.5 text-neutral-500 font-medium hover:text-neutral-700"
+      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-3 py-2 sm:flex-nowrap sm:px-5"
+      optionClassName="text-[13px] px-2 text-neutral-500 font-medium hover:text-neutral-700 sm:text-[15px] sm:px-2.5"
       indicatorClassName="border-0 bg-transparent rounded-md"
     />
   );

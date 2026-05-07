@@ -84,14 +84,14 @@ export function LocationSection() {
       ?.map((d) => ({
         icon:
           tab === "continents" ? (
-            <h1 className="size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
+            <h1 className="size-3 sm:size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
               {CONTINENTS[d.continent]?.[0] || "🌍"}
             </h1>
           ) : (
             <img
               alt={d.country}
               src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
-              className="size-4 shrink-0"
+              className="size-3 sm:size-4 shrink-0"
             />
           ),
 
@@ -99,10 +99,10 @@ export function LocationSection() {
           tab === "continents"
             ? CONTINENTS[d.continent]
             : tab === "countries"
-            ? COUNTRIES[d.country]
-            : `${tab === "cities" ? `${d.city}, ` : ""}${
-                REGIONS[d.region] || d.region?.split("-")[1]
-              }`,
+              ? COUNTRIES[d.country]
+              : `${tab === "cities" ? `${d.city}, ` : ""}${
+                  REGIONS[d.region] || d.region?.split("-")[1]
+                }`,
 
         filterValue: d[singularTabName],
         value: d[dataKey] || 0,
@@ -133,9 +133,7 @@ export function LocationSection() {
               allData={mapData(allData || [])}
               unit={selectedTab}
               maxValue={
-                Math.max(
-                  ...mapData(data).map((d) => d.value ?? 0)
-                ) || 0
+                Math.max(...mapData(data).map((d) => d.value ?? 0)) || 0
               }
               barBackground="bg-blue-100"
               hoverBackground="hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent hover:border-blue-500"
@@ -152,14 +150,14 @@ export function LocationSection() {
               {...(limit && { limit })}
             />
           ) : (
-            <div className="flex h-[300px] items-center justify-center">
-              <p className="text-sm font-medium text-neutral-500">
+            <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
+              <p className="text-xs text-neutral-500 sm:text-sm font-medium">
                 No data available
               </p>
             </div>
           )
         ) : (
-          <div className="absolute inset-0 flex h-[300px] w-full items-center justify-center bg-white/50">
+          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
             <LoadingSpinner />
           </div>
         )

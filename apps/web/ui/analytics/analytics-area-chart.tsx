@@ -161,7 +161,7 @@ export function AnalyticsAreaChart({
           tooltipContent={(d) => {
             return (
               <div className="w-[130px] py-3   space-y-2">
-                <p className="text-[13px] font-poppins font-medium text-neutral-500">
+                <p className="md:text-[13px] text-[12px] font-poppins font-medium text-neutral-500">
                   {lowercaseAmPm(
                     formatDateTooltip(d.date, {
                       interval: demo ? "day" : interval,
@@ -174,10 +174,10 @@ export function AnalyticsAreaChart({
                 <div className=" text-sm">
                   <Fragment key={resource}>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-display font-medium text-[18px] text-neutral-600">
+                      <p className="font-display font-medium  text-sm md:text-[16px] text-neutral-600">
                         {tooltipLabel}
                       </p>
-                      <h1 className="font-display text-[18px] font-medium text-neutral-600">
+                      <h1 className="font-display text-sm md:text-[16px] font-medium text-neutral-600">
                         {resource === "revenue"
                           ? formatRevenueDollars(
                               activeSeries?.valueAccessor(d) ?? d.values.revenue
