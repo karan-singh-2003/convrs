@@ -174,14 +174,12 @@ export default function DashboardGraph({
                 day: "numeric",
               })
             }
-            tickLabelClassName="text-[10px] sm:text-[11px]"
           />
           <YAxis
             tickValues={yTickValues}
             numTicks={3}
             showGridLines
             tickFormat={nFormatter}
-            tickLabelClassName="text-[10px] sm:text-[11px]"
           />
         </TimeSeriesChart>
       </div>
