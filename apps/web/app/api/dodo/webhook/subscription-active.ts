@@ -24,8 +24,10 @@ import { NextResponse } from "next/server";
 import type { User } from "@repo/db/client";
 import type { WorkspaceProps } from "@/lib/types";
 import type { DodoSubscriptionPayload } from "@/lib/dodo/types";
+import { SubscriptionStatus, WorkspacePlan } from "@prisma/client";
 
 export async function subscriptionActive(data: DodoSubscriptionPayload) {
+  console.log("[dodo/subscription-active] Received payload:", data);
   const workspaceId = data.metadata?.workspaceId;
 
   if (!workspaceId) {
@@ -52,10 +54,10 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
     interval === "yearly"
       ? "year"
       : interval === "monthly"
-      ? "month"
-      : data.payment_frequency_interval === "Year"
-      ? "year"
-      : "month";
+        ? "month"
+        : data.payment_frequency_interval === "Year"
+          ? "year"
+          : "month";
 
   // ── currentPeriodEnd ───────────────────────────────────────────────────────
   const currentPeriodEnd = data.next_billing_date
@@ -64,8 +66,8 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
 
   // ── Trial-awareness (mirrors your Stripe handler exactly) ─────────────────
   const existingWorkspace = await prisma.workspace.findUnique({
-    where:  { id: workspaceId },
-    select: { freeTrialEndDate: true },
+    where: { id: workspaceId },
+    select: { freeTrialEndDate: true, dodoCustomerId: true },
   });
 
   if (!existingWorkspace) {
@@ -78,26 +80,39 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
     existingWorkspace.freeTrialEndDate > now &&
     data.status === "active";
 
-  // Only apply the new plan limits once the trial has ended
-  const canApplyPlanLimits = !isTrialActive && data.status === "active";
+  // ── Idempotency & conflict check ───────────────────────────────────────────
+  // If this workspace already has this customer ID assigned, just update subscription details.
+  // If a different workspace has this customer ID, that's a data conflict (shouldn't happen).
+  if (
+    existingWorkspace.dodoCustomerId &&
+    existingWorkspace.dodoCustomerId !== data.customer.customer_id
+  ) {
+    // Customer ID mismatch: log and abort
+    console.warn(
+      `[dodo/subscription-active] Customer ID mismatch for workspace ${workspaceId}: ` +
+        `existing=${existingWorkspace.dodoCustomerId}, incoming=${data.customer.customer_id}`
+    );
+    return NextResponse.json({ received: true });
+  }
 
   // ── Write to DB ────────────────────────────────────────────────────────────
   const workspace = await prisma.workspace.update({
     where: { id: workspaceId },
     data: {
-      // ← was stripeCustomerId / stripeSubscriptionId
-      stripeCustomerId:     data.customer.customer_id,
-      stripeSubscriptionId: data.subscription_id,
+      // Only set dodoCustomerId if not already set (idempotent).
+      // This prevents unique constraint violations on re-webhooks.
+      ...(existingWorkspace.dodoCustomerId === null && {
+        dodoCustomerId: data.customer.customer_id,
+      }),
+      dodoSubscriptionId: data.subscription_id,
 
-      subscriptionStatus: data.status,       // "active"
+      subscriptionStatus: data.status, // "active"
       billingInterval,
       currentPeriodEnd,
 
-      ...(canApplyPlanLimits && {
-        plan:       plan.name.toLowerCase(),
-        tierEvents: plan.limits.events,
-        usageLimit: plan.limits.events,
-      }),
+      plan: plan.name.toLowerCase().replace(/\s+/g, "_") as WorkspacePlan,
+      tierEvents: plan.limits.events,
+      usageLimit: plan.limits.events,
     },
     select: {
       users: {
@@ -109,30 +124,28 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
   });
 
   const users = workspace.users.map(({ user }) => ({
-    id:    user.id,
+    id: user.id,
     email: user.email,
-    name:  user.name,
+    name: user.name,
   }));
 
   const asyncTasks: Promise<unknown>[] = [
     completeOnboarding({ workspaceId, users }),
   ];
 
-  if (canApplyPlanLimits) {
-    asyncTasks.push(
-      sendBatchEmail(
-        users.map((user) => ({
-          to:      user.email!,
-          subject: "Your workspace has been upgraded!",
-          react:   UpgradeEmail({
-            name:  user.name!,
-            plan:  plan.name,
-            email: user.email!,
-          }),
-        }))
-      )
-    );
-  }
+  asyncTasks.push(
+    sendBatchEmail(
+      users.map((user) => ({
+        to: user.email!,
+        subject: "Your workspace has been upgraded!",
+        react: UpgradeEmail({
+          name: user.name!,
+          plan: plan.name,
+          email: user.email!,
+        }),
+      }))
+    )
+  );
 
   await Promise.allSettled(asyncTasks);
   return NextResponse.json({ received: true });
@@ -148,7 +161,7 @@ async function completeOnboarding({
   users: Pick<User, "id">[];
 }) {
   const workspace = (await prisma.workspace.findUnique({
-    where:   { id: workspaceId },
+    where: { id: workspaceId },
     include: { users: true },
   })) as unknown as WorkspaceProps | null;
 
@@ -157,7 +170,7 @@ async function completeOnboarding({
   await Promise.allSettled([
     onboardingStepCache.mset({
       userIds: users.map(({ id }) => id),
-      step:    "completed",
+      step: "completed",
     }),
   ]);
 }

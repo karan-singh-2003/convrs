@@ -18,15 +18,15 @@ import { NextResponse } from "next/server";
 
 export const GET = withWorkspace(
   async ({ workspace }) => {
-    const { stripeSubscriptionId } = workspace;
+    const { dodoSubscriptionId } = workspace;
 
     let billingCycle: "monthly" | "yearly" | null = null;
     let billingPeriodStart: number | null = null;
 
-    if (stripeSubscriptionId) {
+    if (dodoSubscriptionId) {
       try {
         const subscription = await dodo.subscriptions.retrieve(
-          stripeSubscriptionId
+          dodoSubscriptionId
         );
 
         if (subscription) {

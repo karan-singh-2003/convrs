@@ -54,7 +54,7 @@ export const ForgotPasswordForm = () => {
         <div className="flex flex-col gap-2">
           <Label
             htmlFor="email"
-            className="font-display text-sm sm:text-[14.5px] text-neutral-600"
+            className="text-sm sm:text-[14px] font-poppins text-neutral-600"
           >
             Email Address
           </Label>

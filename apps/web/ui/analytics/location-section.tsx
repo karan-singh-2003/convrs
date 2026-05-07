@@ -151,7 +151,7 @@ export function LocationSection() {
             />
           ) : (
             <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
-              <p className="text-xs text-neutral-500 sm:text-sm font-medium">
+              <p className="text-xs font-poppins text-neutral-500 sm:text-[13px] font-medium">
                 No data available
               </p>
             </div>

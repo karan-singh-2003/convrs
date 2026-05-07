@@ -122,7 +122,7 @@ export const EmailSignIn = ({ next }: { next?: string }) => {
         <div className="flex flex-col gap-y-1.5">
           <Label
             htmlFor="email"
-            className="text-sm font-medium font-display text-muted-foreground"
+            className="text-sm font-medium font-poppins text-neutral-600 text-muted-foreground"
           >
             Email
           </Label>

@@ -7,7 +7,7 @@ import { cancelSubscription } from "../../stripe/cancel-subscription";
 import { qstash } from "@/lib/cron";
 
 export async function deleteWorkspace(
-  workspace: Pick<WorkspaceProps, "id" | "slug" | "logo" | "stripeCustomerId">
+  workspace: Pick<WorkspaceProps, "id" | "slug" | "logo" | "dodoCustomerId">
 ) {
   await Promise.all([
     // Remove the users
@@ -20,15 +20,13 @@ export async function deleteWorkspace(
     // Remove the default workspace
     prisma.user.updateMany({
       where: {
-        defaultWorkspace: workspace.slug,
+        defaultWorkspaceId: workspace.id,
       },
       data: {
-        defaultWorkspace: null,
+        defaultWorkspaceId: null,
       },
     }),
-  ]).then((results) => {
-  
-  });
+  ]);
 
   waitUntil(
     Promise.allSettled([
@@ -39,9 +37,8 @@ export async function deleteWorkspace(
         },
       }),
 
-      // Cancel the workspace's Stripe subscription if exists
-      workspace.stripeCustomerId &&
-        cancelSubscription(workspace.stripeCustomerId),
+      // Cancel the workspace's subscription if it exists
+      workspace.dodoCustomerId && cancelSubscription(workspace.dodoCustomerId),
 
       // Delete workspace logo if it's a custom logo stored in R2
       workspace.logo &&
@@ -55,8 +52,6 @@ export async function deleteWorkspace(
           workspaceId: workspace.id,
         },
       }),
-    ]).then((results) => {
-      
-    })
+    ])
   );
 }

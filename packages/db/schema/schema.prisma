@@ -7,23 +7,28 @@ datasource db {
 }
 
 model User {
-  id                     String            @id @default(cuid())
+  id                     String    @id @default(cuid())
   name                   String?
-  email                  String?           @unique
+  email                  String?   @unique
   emailVerified          DateTime?
   image                  String?
   passwordHash           String?
-  createdAt              DateTime          @default(now())
-  defaultWorkspace       String?
+  createdAt              DateTime  @default(now())
+  defaultWorkspaceId     String?
   twoFactorConfirmedAt   DateTime?
   twoFactorRecoveryCodes String?
-  twoFactorSecret        String?           @unique
+  twoFactorSecret        String?   @unique
   source                 String?
-  accounts               Account[]
-  restrictedTokens       RestrictedToken[]
-  sessions               Session[]
-  tokens                 Token[]
-  workspaceUsers         WorkspaceUsers[]
+
+  freeTrialUsedAt DateTime?
+
+  updatedAt DateTime @updatedAt @default(now())
+
+  accounts         Account[]
+  restrictedTokens RestrictedToken[]
+  sessions         Session[]
+  tokens           Token[]
+  workspaceUsers   WorkspaceUsers[]
 }
 
 model Account {

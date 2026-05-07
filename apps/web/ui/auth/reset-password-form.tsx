@@ -56,8 +56,8 @@ export const ResetPasswordForm = () => {
       <form className="space-y-4" onSubmit={onSubmit}>
         <Input type="hidden" value={token} {...register("token")} />
 
-        <div>
-          <Label htmlFor="password">New Password</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="password" className="font-poppins text-neutral-600">New Password</Label>
           <Input
             id="password"
             type="password"
@@ -67,8 +67,10 @@ export const ResetPasswordForm = () => {
           />
         </div>
 
-        <div>
-          <Label htmlFor="confirmPassword">Confirm New Password</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="confirmPassword" className="font-poppins text-neutral-600">
+            Confirm New Password
+            </Label>
           <Input
             id="confirmPassword"
             type="password"

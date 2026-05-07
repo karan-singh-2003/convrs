@@ -12,7 +12,7 @@ export async function AppMiddleware(req: NextRequest) {
   if (path.startsWith("/shared/")) {
 
     return NextResponse.rewrite(
-      new URL(`/app.boilercode.dev${path}${searchParamsString}`, req.url)
+      new URL(`/app.convrs.dev${path}${searchParamsString}`, req.url)
     );
   }
   const user = await getUserViaToken(req);
@@ -101,6 +101,6 @@ export async function AppMiddleware(req: NextRequest) {
 
   // otherwise, rewrite the path to /app
   return NextResponse.rewrite(
-    new URL(`/app.boilercode.dev${fullPath}`, req.url)
+    new URL(`/app.convrs.dev${fullPath}`, req.url)
   );
 }

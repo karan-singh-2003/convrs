@@ -6,7 +6,7 @@ export function ApiMiddleware(req: NextRequest) {
 
   // redirect to dub.co for /metatags
   if (fullPath.startsWith("/metatags")) {
-    return NextResponse.redirect("https://boilercode.dev", {
+    return NextResponse.redirect("https://convrs.dev", {
       status: 301,
     });
   }

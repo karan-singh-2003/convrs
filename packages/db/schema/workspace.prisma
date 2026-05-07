@@ -1,48 +1,93 @@
-model Workspace {
-  id                   String            @id @default(cuid())
-  name                 String
-  slug                 String            @unique
-  logo                 String?
-  inviteCode           String?           @unique
-  ssoEmailDomain       String?           @unique
-  ssoEnforcedAt        DateTime?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  usageLastChecked     DateTime          @default(now())
-  invoicePrefix        String?           @unique
-  paymentFailedAt      DateTime?
-  userLimit            Int               @default(1)
-  webhookEnabled       Boolean           @default(false)
-  billingInterval      String?
-  currentPeriodEnd     DateTime?
-  freeTrialEndDate     DateTime?
-  projectToken         String?           @unique
-  stripeCustomerId     String?           @unique
-  stripeSubscriptionId String?           @unique
-  subscriptionStatus   String?
-  tierEvents           Int?
-  usage                Int               @default(0)
-  usageLimit           Int               @default(10000)
-  domain               String?
-  blockedHostnames     String[]          @default([])
-  blockedIpAddresses   String[]          @default([])
-  blockedPages         String[]          @default([])
-  plan                 String?
-  isPublic             Boolean           @default(false)
-  publicId             String?           @unique
+enum BillingInterval {
+  month
+  year
+}
 
-  invoices             Invoice[]
-  restrictedTokens     RestrictedToken[]
-  sentEmails           SentEmail[]
-  webhooks             Webhook[]
-  invites              WorkspaceInvite[]
-  users                WorkspaceUsers[]
-  funnels              Funnel[]
-  alerts               Alert[]
-  customers            Customer[]
-  stripeIntegration    StripeIntegration?
+enum SubscriptionStatus {
+  inactive
+  trialing
+  active
+  past_due
+  canceling
+  canceled
+  expired
+}
+
+enum WorkspacePlan {
+  free
+  starter
+  basic
+  pro
+  growth
+  business
+  scale
+  pro_plus
+  enterprise
+  ultimate
+}
+
+model Workspace {
+  id String @id @default(cuid())
+
+  name   String
+  slug   String  @unique
+  logo   String?
+  domain String?
+
+  inviteCode String? @unique
+  isPublic   Boolean @default(false)
+  publicId   String? @unique
+
+  ssoEmailDomain String?   @unique
+  ssoEnforcedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usage            Int      @default(0)
+  tierEvents       Int      @default(0)
+  usageLimit       Int      @default(0)
+  usageLastChecked DateTime @default(now())
+
+  invoicePrefix   String?   @unique
+  paymentFailedAt DateTime?
+
+  webhookEnabled Boolean @default(false)
+
+  projectToken String? @unique
+
+  dodoCustomerId     String?            @unique
+  dodoSubscriptionId String?            @unique
+  subscriptionStatus SubscriptionStatus @default(inactive)
+  billingInterval    BillingInterval?
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  freeTrialEndDate   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+
+  blockedHostnames   String[]      @default([])
+  blockedIpAddresses String[]      @default([])
+  blockedPages       String[]      @default([])
+  plan               WorkspacePlan @default(free)
+
+  stripeIntegration StripeIntegration?
+
+  invoices         Invoice[]
+  restrictedTokens RestrictedToken[]
+  sentEmails       SentEmail[]
+  webhooks         Webhook[]
+  invites          WorkspaceInvite[]
+  users            WorkspaceUsers[]
+  funnels          Funnel[]
+  alerts           Alert[]
+  customers        Customer[]
 
   @@index([usageLastChecked])
+  @@index([dodoSubscriptionId])
+  @@index([dodoCustomerId])
+  @@index([subscriptionStatus])
+  @@index([plan])
 }
 
 model WorkspaceInvite {
@@ -89,13 +134,13 @@ enum FunnelStepType {
 }
 
 model Funnel {
-  id          String     @id @default(cuid())
+  id          String   @id @default(cuid())
   workspaceId String
   name        String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   steps     FunnelStep[]
 
   @@index([workspaceId])
@@ -113,8 +158,8 @@ model FunnelStep {
 
   funnel Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
 
-  @@index([funnelId])
   @@unique([funnelId, order])
+  @@index([funnelId])
 }
 
 enum WorkspaceRole {

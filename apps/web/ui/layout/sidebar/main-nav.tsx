@@ -47,7 +47,7 @@ export function MainNav({
   return (
     <div
       className={cn(
-        "w-full flex flex-col",
+        "min-h-screen w-full mx-auto py-1 bg-white flex flex-col",
         isRealtime && "h-dvh overflow-hidden"
       )}
     >
@@ -82,7 +82,7 @@ export function MainNav({
               "fixed top-0 left-0 z-30 w-full",
               isRealtime
                 ? "bg-white/55 backdrop-blur-md supports-[backdrop-filter]:bg-white/45 "
-                : "bg-white border-b border-neutral-200"
+                : "bg-white border-b border-neutral-200 md:border-none"
             )}
           >
             <div className=" flex h-12 w-full  px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between gap-x-4  ">

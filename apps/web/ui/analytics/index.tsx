@@ -1,3 +1,5 @@
+"use client";
+
 import AnalyticsProvider, { AnalyticsContext } from "./analytics-providers";
 import { AnalyticsToggle } from "./analytics-toggle";
 import { ChartSection } from "./chart-section";

@@ -64,50 +64,154 @@ export const POST = withSession(async ({ req, session }) => {
         }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
     }
 
-    return new Response(JSON.stringify({ error: "Invalid request body" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Invalid request body",
+      }),
+      {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 
-  const userExists = await checkIfUserExists(session.user.id);
+  // ─────────────────────────────────────────────
+  // Get authenticated user
+  // ─────────────────────────────────────────────
 
-  if (!userExists) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+  const user = await prisma.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+    select: {
+      id: true,
+      freeTrialUsedAt: true,
+    },
+  });
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+      }),
+      {
+        status: 401,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
+
   try {
-    const starterPlanEvents = Starter_Plan?.limits.events ?? 10_000;
-    const trialEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    const hasUsedTrial = !!user.freeTrialUsedAt;
+
+    const trialUsageLimit = 10_000;
+
+    const now = new Date();
+
+    const trialEndDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
     const workspace = await prisma.$transaction(
       async (tx) => {
+        // ───────────────────────────────────────
+        // User eligible for free trial
+        // ───────────────────────────────────────
+
+        if (!hasUsedTrial) {
+          // Mark trial as consumed globally
+          await tx.user.update({
+            where: {
+              id: user.id,
+            },
+            data: {
+              freeTrialUsedAt: now,
+            },
+          });
+
+          return tx.workspace.create({
+            data: {
+              name,
+              slug,
+              domain,
+
+              // Billing
+              subscriptionStatus: "trialing",
+              billingInterval: "month",
+
+              currentPeriodStart: now,
+              currentPeriodEnd: trialEndDate,
+              freeTrialEndDate: trialEndDate,
+
+              // Limits
+              tierEvents: trialUsageLimit,
+              usageLimit: trialUsageLimit,
+
+              // Tokens
+              projectToken: nanoid(32),
+              inviteCode: nanoid(24),
+
+              // Owner
+              users: {
+                create: {
+                  userId: session.user.id,
+                  role: "owner",
+                },
+              },
+            },
+
+            include: {
+              users: {
+                where: {
+                  userId: session.user.id,
+                },
+                select: {
+                  role: true,
+                },
+              },
+            },
+          });
+        }
+
+        // ───────────────────────────────────────
+        // Trial already consumed
+        // ───────────────────────────────────────
+
         return tx.workspace.create({
           data: {
             name,
             slug,
             domain,
-            plan: "starter",
-            billingInterval: "month",
-            subscriptionStatus: "trialing",
-            freeTrialEndDate: trialEndDate,
-            tierEvents: starterPlanEvents,
-            usageLimit: starterPlanEvents,
+
+            // Billing
+            subscriptionStatus: "inactive",
+
+            // Limits
+            tierEvents: 0,
+            usageLimit: 0,
+
+            // Tokens
             projectToken: nanoid(32),
+            inviteCode: nanoid(24),
+
+            // Owner
             users: {
               create: {
                 userId: session.user.id,
                 role: "owner",
               },
             },
-            inviteCode: nanoid(24),
           },
+
           include: {
             users: {
               where: {
@@ -139,17 +243,30 @@ export const POST = withSession(async ({ req, session }) => {
       error.code === "P2002"
     ) {
       return new Response(
-        JSON.stringify({ error: "Workspace slug is already taken" }),
+        JSON.stringify({
+          error: "Workspace slug is already taken",
+        }),
         {
           status: 409,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
     }
 
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("[workspace/create]", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal Server Error",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 });

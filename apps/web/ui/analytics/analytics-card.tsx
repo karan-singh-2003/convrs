@@ -171,7 +171,7 @@ export function AnalyticsCard<T extends string>({
           <div className="relative flex w-full items-center justify-center gap-2 py-3 px-2 sm:py-4">
             <button
               onClick={() => setShowModal(true)}
-              className="h-8 w-full rounded-none font-default font-medium border-neutral-200 bg-white px-3 text-[12.5px] text-neutral-600 transition-colors hover:bg-neutral-100 active:border-neutral-300 sm:w-fit sm:text-sm"
+              className="h-8 w-full rounded-none font-poppins font-medium border-neutral-200 bg-white px-3 text-[12.5px] text-neutral-600 transition-colors hover:bg-neutral-100 active:border-neutral-300 sm:w-fit sm:text-[13px]"
             >
               View All
             </button>

@@ -8,7 +8,7 @@ export async function getDefaultWorkspace(user: UserProps) {
     const refreshUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
-        defaultWorkspace: true,
+        defaultWorkspaceId: true,
         workspaceUsers: {
           select: {
             workspace: {
@@ -22,7 +22,7 @@ export async function getDefaultWorkspace(user: UserProps) {
     });
 
     defaultWorkspace =
-      refreshUser?.defaultWorkspace ||
+      refreshUser?.defaultWorkspaceId ||
       refreshUser?.workspaceUsers[0]?.workspace?.slug ||
       undefined;
   }

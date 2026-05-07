@@ -13,7 +13,7 @@ export async function getDefaultWorkspace(user: UserProps) {
 
   const rows = await sql`
   SELECT
-    u."defaultWorkspace",
+    u."defaultWorkspaceId",
     w.slug AS workspace_slug
   FROM "User" u
   LEFT JOIN "WorkspaceUsers" wu

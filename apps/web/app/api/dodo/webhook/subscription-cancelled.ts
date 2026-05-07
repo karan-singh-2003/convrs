@@ -8,7 +8,7 @@ import type { DodoSubscriptionPayload } from "@/lib/dodo/types";
 
 export async function subscriptionCancelled(data: DodoSubscriptionPayload) {
   const workspace = await prisma.workspace.findFirst({
-    where: { stripeSubscriptionId: data.subscription_id },
+    where: { dodoSubscriptionId: data.subscription_id },
     select: {
       id: true,
       currentPeriodEnd: true,
@@ -46,7 +46,7 @@ export async function subscriptionCancelled(data: DodoSubscriptionPayload) {
   await prisma.workspace.update({
     where: { id: workspace.id },
     data: {
-      stripeSubscriptionId: null,
+      dodoSubscriptionId: null,
       subscriptionStatus: "canceled",
       billingInterval: null,
       currentPeriodEnd: null,

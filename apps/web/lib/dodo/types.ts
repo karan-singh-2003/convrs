@@ -10,6 +10,8 @@
  * `data` is discriminated by `type`.
  */
 
+import { SubscriptionStatus } from "@prisma/client";
+
 // ─── Shared sub-types ─────────────────────────────────────────────────────────
 
 export interface DodoCustomer {
@@ -35,14 +37,7 @@ export interface DodoSubscriptionPayload {
   subscription_id: string;
   customer: DodoCustomer;
   product_id: string;
-  status:
-    | "active"
-    | "on_hold"
-    | "cancelled"
-    | "expired"
-    | "failed"
-    | "paused";
-
+  status: SubscriptionStatus
   /** ISO-8601 — end of the current billing period (replaces Stripe's current_period_end) */
   next_billing_date: string;
   created_at: string;

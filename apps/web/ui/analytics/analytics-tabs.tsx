@@ -69,7 +69,7 @@ export function AnalyticsTabs({
         },
         {
           id: "conversion_rate",
-          label: "Conversion Rate",
+          label: "Conversion",
           colorClassName: "text-purple-500/50",
           conversions: true,
         },

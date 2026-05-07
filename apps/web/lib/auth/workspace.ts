@@ -39,7 +39,7 @@ export const withWorkspace = (
     context: { params: Promise<Record<string, string>> }
   ): Promise<Response> => {
     const params = (await context.params) || {};
-    const searchParams = getSearchParams(req.url);
+    const searchParams = getSearchParams(req.url) as Record<string, string>;
 
     try {
       let workspace: WorkspaceProps | null;
@@ -85,8 +85,6 @@ export const withWorkspace = (
           },
         },
       })) as WorkspaceProps | null;
-
-   
 
       // workspace does not exists
       if (!workspace || !workspace.users || workspace.users.length === 0) {

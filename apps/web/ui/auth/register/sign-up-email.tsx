@@ -62,7 +62,7 @@ export const SignUpEmail = () => {
       <div className="flex flex-col gap-y-1.5">
         <Label
           htmlFor="email"
-          className="text-sm font-medium font-display text-muted-foreground"
+          className="text-sm font-medium font-poppins text-neutral-600 text-muted-foreground"
         >
           Email
         </Label>
@@ -76,10 +76,10 @@ export const SignUpEmail = () => {
         ></Input>
       </div>
 
-      <div>
+      <div className="flex flex-col gap-y-1.5">
         <Label
           htmlFor="password"
-          className="text-sm font-medium font-display text-muted-foreground"
+          className="text-sm font-medium font-poppins text-neutral-600 text-muted-foreground"
         >
           Password
         </Label>

@@ -68,7 +68,7 @@ function DeleteWorkspaceModal({
       </div>
 
       <div className="md:px-5 md:py-4">
-        <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500">
+        <p className="text-[13px] md:text-[14.5px] font-display text-neutral-600">
           Warning: This will permanently delete your workspace, custom domains,
           and all associated links and their respective analytics.
         </p>
@@ -89,16 +89,16 @@ function DeleteWorkspaceModal({
             <BlurImage
               src={logo || `https://api.dicebear.com/9.x/glass/svg?seed=${id}`}
               alt="Workspace logo"
-              className="size-8 md:size-10 rounded-full"
-              width={24}
-              height={24}
+              className="size-8 md:size-9 rounded-full"
+              width={10}
+              height={10}
             />
 
             <div className="flex flex-1 flex-col gap-0.5">
               <h3 className="line-clamp-1 text-[13px] md:text-sm font-display font-medium text-neutral-600">
                 {name || slug}
               </h3>
-              <p className="text-[12px] md:text-sm font-display text-neutral-500">
+              <p className="text-[13px] md:text-sm font-display text-neutral-600">
                 app.{process.env.NEXT_PUBLIC_APP_DOMAIN}/{slug}
               </p>
             </div>
@@ -111,7 +111,7 @@ function DeleteWorkspaceModal({
               className="block font-display text-[13px] md:text-[14.5px] text-neutral-600"
             >
               Enter the workspace slug{" "}
-              <span className="font-medium">{slug}</span> to continue:
+              <span className="font-semibold">{slug}</span> to continue:
             </label>
 
             <div className="relative mt-1">
@@ -137,7 +137,7 @@ function DeleteWorkspaceModal({
               className="block font-display text-[13px] md:text-[14.5px] text-neutral-600"
             >
               To verify, type{" "}
-              <span className="font-medium">{confirmationText}</span> below
+              <span className="font-semibold">{confirmationText}</span> below
             </label>
 
             <div className="relative mt-1">

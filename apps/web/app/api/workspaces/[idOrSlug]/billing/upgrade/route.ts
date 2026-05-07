@@ -58,7 +58,7 @@ export const POST = withWorkspace(
 
     // ── CASE 1: Active subscriber → Change Plan ────────────────────────────
     if (
-      workspace.stripeSubscriptionId &&
+      workspace.dodoSubscriptionId &&
       ["active", "on_hold"].includes(workspace.subscriptionStatus ?? "")
     ) {
       // Prevent no-op: same plan + same billing interval
@@ -89,7 +89,7 @@ export const POST = withWorkspace(
         // on_payment_failure "prevent_change" keeps the subscription on the
         // current plan if the proration charge fails, rather than switching
         // the plan anyway and leaving an unpaid balance.
-        await dodo.subscriptions.changePlan(workspace.stripeSubscriptionId, {
+        await dodo.subscriptions.changePlan(workspace.dodoSubscriptionId, {
           product_id: productId,
           quantity: 1,
           proration_billing_mode: isDowngrade
@@ -106,7 +106,7 @@ export const POST = withWorkspace(
         console.error("[billing/upgrade] Dodo changePlan failed:", {
           status,
           message,
-          subscriptionId: workspace.stripeSubscriptionId,
+          subscriptionId: workspace.dodoSubscriptionId,
         });
 
         return NextResponse.json({ error: userMessage }, { status: 400 });
