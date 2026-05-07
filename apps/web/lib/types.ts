@@ -1,4 +1,4 @@
-import { Workspace, WorkspaceRole } from "@repo/db/client";
+import { Workspace, WorkspaceRole, WorkspacePlan } from "@repo/db/client";
 import { DirectorySyncProviders } from "@boxyhq/saml-jackson";
 import { keyof, z } from "zod";
 import { workspaceUserSchema } from "@/lib/zod/schemas/workspaces";
@@ -18,7 +18,7 @@ export interface UserProps {
   email: string;
   image?: string;
   createdAt: Date;
-  defaultWorkspace?: string;
+  defaultWorkspaceId?: string;
   hasPassword?: boolean;
   provider: string | null;
   twoFactorConfirmedAt?: Date | null;
@@ -34,18 +34,10 @@ export const ONBOARDING_STEPS = [
   "members",
 ] as const;
 
-export const plans = [
-  "free",
-  "pro",
-  "business",
-  "advanced",
-  "enterprise",
-] as const;
-
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
-export type PlanProps = (typeof plans)[number];
+
 export interface WorkspaceProps extends Workspace {
-  plan: PlanProps;
+  plan: WorkspacePlan;
   users: {
     role: WorkspaceRole;
   }[];

@@ -3,7 +3,7 @@ import { prisma } from "@repo/db";
 import { UserProps } from "../types";
 
 export async function getDefaultWorkspace(user: UserProps) {
-  let defaultWorkspace = user?.defaultWorkspace;
+  let defaultWorkspace = user?.defaultWorkspaceId;
   if (!defaultWorkspace) {
     const refreshUser = await prisma.user.findUnique({
       where: { id: user.id },

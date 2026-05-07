@@ -94,7 +94,7 @@ async function VerifyInvite({ code }: { code: string }) {
         id: session.user.id,
       },
       data: {
-        defaultWorkspace: workspace.slug,
+        defaultWorkspaceId: workspace.slug,
       },
     });
   }

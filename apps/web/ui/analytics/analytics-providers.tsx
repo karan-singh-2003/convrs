@@ -17,7 +17,7 @@ import { calculatePercentageChange } from "@/lib/analytics/utils/calculate-perce
 import { getPlanCapabilities } from "@/lib/plan-capabilities";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { UpgradeRequiredToast } from "@/ui/shared/upgrade-required-toast";
-import { PlanProps } from "@/lib/types";
+import { } from "@/lib/types";
 import { useLocalStorage } from "@repo/ui";
 import { fetcher } from "@repo/utils";
 import { useParams, useSearchParams } from "next/navigation";
@@ -33,10 +33,11 @@ import useSWR from "swr";
 import { defaultConfig } from "swr/_internal";
 import { useAnalyticsQuery } from "./use-analytics-query";
 import { subDays, differenceInDays } from "date-fns";
+import { WorkspacePlan } from "@prisma/client";
 
 export type AnalyticsDashboardProps = {
   showConversions?: boolean;
-  workspacePlan?: PlanProps;
+  workspacePlan?: WorkspacePlan;
 } & (
   | {
       domain: string;

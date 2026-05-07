@@ -7,8 +7,8 @@ type DefaultWorkspaceRow = {
 };
 
 export async function getDefaultWorkspace(user: UserProps) {
-  if (user.defaultWorkspace) {
-    return user.defaultWorkspace;
+  if (user.defaultWorkspaceId) {
+    return user.defaultWorkspaceId;
   }
 
   const rows = await sql`

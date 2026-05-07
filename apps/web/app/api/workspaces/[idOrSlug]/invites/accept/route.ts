@@ -81,7 +81,7 @@ export const POST = withSession(async ({ session, params }) => {
         id: session.user.id,
       },
       data: {
-        defaultWorkspace: workspace.id,
+        defaultWorkspaceId: workspace.id,
       },
     });
   }

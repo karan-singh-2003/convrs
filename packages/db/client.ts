@@ -6,6 +6,7 @@ export {
 } from "@prisma/client";
 export type {
   Workspace,
+  WorkspacePlan,
   User,
   WorkspaceInvite,
   VerificationToken,

@@ -26,10 +26,10 @@ const addPaymentMethodSchema = z.object({
 // POST /api/workspaces/[idOrSlug]/billing/payment-methods – add a payment method
 export const POST = withWorkspace(
   async ({ req, workspace }) => {
-    if (!workspace.stripeCustomerId) {
+    if (!workspace.dodoCustomerId) {
       return NextResponse.json(
         {
-          error: "No Stripe customer found. Please subscribe to a plan first.",
+          error: "No Dodo customer found. Please subscribe to a plan first.",
         },
         { status: 400 }
       );
@@ -56,11 +56,11 @@ export const POST = withWorkspace(
 
       // Attach to customer
       await stripe.paymentMethods.attach(paymentMethod.id, {
-        customer: workspace.stripeCustomerId,
+        customer: workspace.dodoCustomerId,
       });
 
       // Set as default payment method
-      await stripe.customers.update(workspace.stripeCustomerId, {
+      await stripe.customers.update(workspace.dodoCustomerId, {
         invoice_settings: {
           default_payment_method: paymentMethod.id,
         },
@@ -91,9 +91,9 @@ export const POST = withWorkspace(
 // DELETE /api/workspaces/[idOrSlug]/billing/payment-methods – remove a payment method
 export const DELETE = withWorkspace(
   async ({ req, workspace }) => {
-    if (!workspace.stripeCustomerId) {
+    if (!workspace.dodoCustomerId) {
       return NextResponse.json(
-        { error: "No Stripe customer found" },
+        { error: "No Dodo customer found" },
         { status: 400 }
       );
     }

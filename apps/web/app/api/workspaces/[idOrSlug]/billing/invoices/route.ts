@@ -4,12 +4,12 @@ import { stripe } from "@/lib/stripe";
 
 export const GET = withWorkspace(
   async ({ workspace }) => {
-    if (!workspace.stripeCustomerId) {
+    if (!workspace.dodoCustomerId) {
       return NextResponse.json([]);
     }
     try {
       const invoices = await stripe.invoices.list({
-        customer: workspace.stripeCustomerId,
+        customer: workspace.dodoCustomerId,
         limit: 100,
       });
       return NextResponse.json(

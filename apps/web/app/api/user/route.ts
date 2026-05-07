@@ -20,7 +20,7 @@ export const GET = withSession(async ({ session }) => {
         name: true,
         email: true,
         image: true,
-        defaultWorkspace: true,
+        defaultWorkspaceId: true,
         passwordHash: true,
         createdAt: true,
         twoFactorConfirmedAt: true,

@@ -43,8 +43,7 @@ export function UpgradePlanButton({
 
   // ── Derive button state ───────────────────────────────────────────────────
   const isCurrentPlan =
-    currentPlanName?.toLowerCase() === plan.toLowerCase() &&
-    currentInterval === period;
+    currentPlanName?.toLowerCase() === plan.toLowerCase() ;
 
   const isDowngrade =
     !isCurrentPlan &&

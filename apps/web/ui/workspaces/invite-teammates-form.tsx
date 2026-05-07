@@ -103,7 +103,7 @@ export const InviteTeammatesForm = ({
   className?: string;
 }) => {
   const { isMobile } = useMediaQuery();
-  const { id, slug, loading, userLimit } = useWorkspace();
+  const { id, slug, loading } = useWorkspace();
 
   const {
     control,
@@ -204,7 +204,6 @@ export const InviteTeammatesForm = ({
           type="button"
           className="font-display w-full h-9 text-[13px] text-neutral-500 font-medium bg-white hover:bg-neutral-50 transition rounded-none disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => append({ email: "", role: "member" })}
-          disabled={fields.length >= (userLimit ?? Infinity)}
         >
           Add more members
         </button>
