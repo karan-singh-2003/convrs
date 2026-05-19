@@ -14,7 +14,7 @@ export type FunnelData = {
 };
 
 export function AnalyticsFunnelChart({
-  demo = true,
+  demo ,
   selectedFunnel,
 }: {
   demo?: boolean;
@@ -63,6 +63,8 @@ export function AnalyticsFunnelChart({
       revalidateOnFocus: false,
     }
   );
+
+  console.log("funnelApiResponse:", funnelApiResponse);
 
   const usersByStep = useMemo(
     () =>

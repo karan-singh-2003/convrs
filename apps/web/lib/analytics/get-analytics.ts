@@ -24,7 +24,6 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     dataAvailableFrom,
   } = params;
 
-
   if (event === "funnel") {
     const funnelPipe = tb.buildPipe({
       pipe: "v1_funnel",
@@ -132,7 +131,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
   };
 
   const response = await pipe(tinybirdParams);
- 
+
   // Return parsed response
   const schema = analyticsResponse[groupBy!];
 

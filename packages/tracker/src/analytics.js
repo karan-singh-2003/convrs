@@ -85,7 +85,7 @@
   }
 
   var _defaultEndpoint = isCDN
-    ? "http://localhost:3000/api/track"
+    ? "http://ingest.convrs.dev/api/track"
     : new URL("/api/track", window.location.origin).href;
   var _rawApi = attr("data-api");
   var _sanitizedApi = normalizeApiEndpoint(_rawApi);
@@ -620,10 +620,9 @@
   // Pauses when tab is hidden to save bandwidth.
 
   var _heartbeatInterval = null;
-  var _liveEndpoint =
-    (isCDN
-      ? "http://localhost:8888/api/live/heartbeat"
-      : new URL("/api/live/heartbeat", window.location.origin).href);
+  var _liveEndpoint = isCDN
+    ? "http://localhost:8888/api/live/heartbeat"
+    : new URL("/api/live/heartbeat", window.location.origin).href;
 
   function sendHeartbeat() {
     if (!_enabled || isOptedOut()) return;
@@ -684,21 +683,21 @@
     identify: identify,
   };
 
-  // ─── window.datafast ALIAS ─────────────────────────────────────────────────
-  // Mirrors the datafast calling convention exactly:
+  // ─── window.convrs ALIAS ──────────────────────────────────────────────────
+  // Mirrors the convrs calling convention exactly:
   //
-  //   window.datafast("initiate_checkout", { plan: "pro", email: "a@b.com" })
-  //   window.datafast("identify", { user_id: "u_123", name: "Jane" })
-  //   window.datafast("pageview")
+  //   window.convrs("initiate_checkout", { plan: "pro", email: "a@b.com" })
+  //   window.convrs("identify", { user_id: "u_123", name: "Jane" })
+  //   window.convrs("pageview")
   //
   // Special event names:
   //   "pageview"          → trackPageview()
   //   "identify"          → identify(props)   requires props.user_id
   //   anything else       → trackEvent(name, props)
 
-  function datafast(eventName, props) {
+  function convrs(eventName, props) {
     if (!eventName || typeof eventName !== "string") {
-      log("warn", "window.datafast: first argument must be a non-empty string");
+      log("warn", "window.convrs: first argument must be a non-empty string");
       return;
     }
 
@@ -709,7 +708,7 @@
 
     if (eventName === "identify") {
       if (!props || !props.user_id) {
-        log("warn", "window.datafast: identify requires props.user_id");
+        log("warn", "window.convrs: identify requires props.user_id");
         return;
       }
       identify(props);
@@ -720,26 +719,22 @@
     trackEvent(eventName, props);
   }
 
-  // Drain any pre-init queue: window.datafast = { q: [] } pattern
+  // Drain any pre-init queue: window.convrs = { q: [] } pattern
   // Usage before script loads:
-  //   window.datafast = window.datafast || { q: [] };
-  //   window.datafast.q.push(["initiate_checkout", { plan: "pro" }]);
-  if (
-    window.datafast &&
-    window.datafast.q &&
-    Array.isArray(window.datafast.q)
-  ) {
-    var _datafastQueue = window.datafast.q.slice();
-    window.datafast = datafast;
-    for (var _i = 0; _i < _datafastQueue.length; _i++) {
-      var _call = _datafastQueue[_i];
+  //   window.convrs = window.convrs || { q: [] };
+  //   window.convrs.q.push(["initiate_checkout", { plan: "pro" }]);
+  if (window.convrs && window.convrs.q && Array.isArray(window.convrs.q)) {
+    var _convrsQueue = window.convrs.q.slice();
+    window.convrs = convrs;
+    for (var _i = 0; _i < _convrsQueue.length; _i++) {
+      var _call = _convrsQueue[_i];
       if (Array.isArray(_call) && _call.length) {
         try {
-          datafast.apply(null, _call);
+          convrs.apply(null, _call);
         } catch (_) {}
       }
     }
   } else {
-    window.datafast = datafast;
+    window.convrs = convrs;
   }
 })();

@@ -3,15 +3,24 @@ import { Metadata } from "next";
 export function constructMetadata({
   title,
   fullTitle,
-  description = "Visitors - Fast and reliable visitor analytics for your SaaS. Get insights on user behavior, traffic sources, and more to grow your business.",
-  image = "https://boilercode.dev/og-image.png",
+  description = "Convrs — Build conversations, forms, and user interactions with a fast and modern developer experience.",
+  image = "https://convrs.dev/og-image.png",
   video,
   icons = {
     icon: [
       { url: "/favicons/favicon.ico" },
-      { url: "/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      {
+        url: "/favicons/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
     ],
-    apple: [{ url: "/favicons/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [
+      {
+        url: "/favicons/apple-touch-icon.png",
+        sizes: "180x180",
+      },
+    ],
   },
   url,
   canonicalUrl,
@@ -33,13 +42,17 @@ export function constructMetadata({
     title:
       fullTitle ||
       (title
-        ? `${title} | Visitors`
-        : "Visitors — Fast and reliable visitor analytics"),
+        ? `${title} | Convrs`
+        : "Convrs — Modern conversation infrastructure"),
 
     description,
 
     openGraph: {
-      title,
+      title:
+        fullTitle ||
+        (title
+          ? `${title} | Convrs`
+          : "Convrs — Modern conversation infrastructure"),
       description,
       ...(image && {
         images: image,
@@ -48,12 +61,16 @@ export function constructMetadata({
       ...(video && {
         videos: video,
       }),
-      siteName: "Visitors",
+      siteName: "Convrs",
       type: "website",
     },
 
     twitter: {
-      title,
+      title:
+        fullTitle ||
+        (title
+          ? `${title} | Convrs`
+          : "Convrs — Modern conversation infrastructure"),
       description,
       ...(image && {
         card: "summary_large_image",
@@ -63,7 +80,7 @@ export function constructMetadata({
 
     icons,
 
-    metadataBase: new URL("https://visitors.dev"),
+    metadataBase: new URL("https://convrs.dev"),
 
     ...((url || canonicalUrl) && {
       alternates: {

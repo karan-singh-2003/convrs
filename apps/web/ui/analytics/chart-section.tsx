@@ -127,34 +127,24 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
 
             {/* RIGHT → Toggle (floating) */}
             <div className="absolute right-3 md:top-1 z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
-              {mode === "private" && view === "funnel" && (
-                <button
-                  className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
-                  onClick={() =>
-                    funnels.length === 0
-                      ? openCreateFunnelModal()
-                      : openFunnelListModal()
-                  }
-                >
-                  {funnels.length === 0
-                    ? "Create funnel"
-                    : selectedFunnel?.name || "Choose funnel"}
-                </button>
-              )}
+              {mode === "private" &&
+                view === "funnel" &&
+                funnels.length > 0 && (
+                  <button
+                    className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
+                    onClick={() => openFunnelListModal()}
+                  >
+                    {selectedFunnel?.name || "Choose funnel"}
+                  </button>
+                )}
 
               <ChartViewSwitcher />
             </div>
           </div>
         </div>
-        {/* chart */}
+
         <div className="relative">
-          <div
-            className={cn(
-              "relative overflow-hidden sm:rounded-b-xl",
-              showPaywall &&
-                "pointer-events-none [mask-image:linear-gradient(#0006,#0006_25%,transparent_40%)]"
-            )}
-          >
+          <div className={cn("relative overflow-hidden sm:rounded-b-xl")}>
             {view === "timeseries" && (
               <div className="h-[444px] w-full sm:h-[464px]">
                 <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
@@ -162,67 +152,32 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
             )}
 
             {view === "funnel" && (
-              <div className="h-[444px] w-full sm:h-[464px]">
-                <AnalyticsFunnelChart
-                  demo={showPaywall}
-                  selectedFunnel={selectedFunnel}
-                />
+              <div className="relative h-[444px] w-full sm:h-[464px]">
+                <div
+                  className={`h-full w-full transition-opacity ${
+                    mode === "private" && funnels.length === 0
+                      ? "opacity-20"
+                      : "opacity-100"
+                  }`}
+                >
+                  <AnalyticsFunnelChart selectedFunnel={selectedFunnel} demo={funnels.length === 0} />
+                </div>
+
+                {mode === "private" && funnels.length === 0 && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                    <button
+                      className="pointer-events-auto bg-black text-white text-sm font-medium font-poppins px-4 py-1.5 rounded-full hover:bg-gray-800 transition shadow-sm"
+                      onClick={() => openCreateFunnelModal()}
+                    >
+                      Create funnel
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
-
-          {showPaywall && <ConversionTrackingPaywall />}
         </div>
       </div>
     </>
-  );
-}
-
-function ConversionTrackingPaywall() {
-  const { slug } = useWorkspace();
-
-  return (
-    <div className="animate-slide-up-fade pointer-events-none absolute inset-0 flex items-center justify-center pt-24">
-      <div className="pointer-events-auto flex flex-col items-center">
-        <Link
-          href="https://d.to/conversions"
-          target="_blank"
-          className="group relative flex aspect-video w-full max-w-80 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100"
-        >
-          <BlurImage
-            src="https://assets.dub.co/blog/conversion-analytics.png"
-            alt="thumbnail"
-            fill
-            className="object-cover"
-          />
-          <div className="relative flex size-10 items-center justify-center rounded-full bg-neutral-900 ring-[6px] ring-black/5 transition-all duration-75 group-hover:ring-[8px] group-active:ring-[7px]">
-            <Play className="size-4 fill-current text-white" />
-          </div>
-        </Link>
-        <h2 className="mt-7 text-base font-semibold text-neutral-700">
-          Conversion Tracking
-        </h2>
-        <p className="mt-4 max-w-sm text-center text-sm text-neutral-500">
-          Want to see how your clicks are converting to revenue? Upgrade to our
-          Business Plan and start tracking conversion events with Dub.{" "}
-          <Link
-            href="https://d.to/conversions"
-            target="_blank"
-            className="underline transition-colors duration-75 hover:text-neutral-700"
-          >
-            Learn more
-          </Link>
-        </p>
-        <Link
-          href={`/${slug}/upgrade`}
-          className={cn(
-            buttonVariants({ variant: "primary" }),
-            "mt-4 flex h-8 items-center justify-center whitespace-nowrap rounded-lg border px-3 text-sm"
-          )}
-        >
-          Upgrade to Business
-        </Link>
-      </div>
-    </div>
   );
 }
