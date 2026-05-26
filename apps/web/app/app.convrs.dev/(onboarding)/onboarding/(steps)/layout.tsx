@@ -5,7 +5,7 @@ export default async function Layout({ children }: PropsWithChildren) {
   return (
     <>
       <SignedInHint></SignedInHint>
-      {children}
+      <div className="p-5">{children}</div>
     </>
   );
 }

@@ -146,20 +146,22 @@ export default function CustomerDetailsPage() {
     if (ev.event_type === "revenue") return <RevenueIcon />;
     if (ev.event_type === "pageview")
       return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="size-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-          />
-        </svg>
+        <div className="size-5 -ml-0.5 flex items-center justify-center rounded-full bg-neutral-100">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+          </svg>
+        </div>
       );
     if (ev.event_name === "identify") return <LogIn size={16} />;
     if (ev.event_type === "goals")

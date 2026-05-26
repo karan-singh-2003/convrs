@@ -281,10 +281,10 @@ export default function Dashboard() {
   );
 
   const summaryContent = (
-    <div className="space-y-4 px-4 py-4">
+    <div className="space-y-4 px-4 py-2.5">
    
       {hasLiveData && (
-        <div className="flex items-center justify-between border-b border-neutral-200 pb-3 text-neutral-600">
+        <div className="flex items-center justify-between pb-1 text-neutral-600">
           <p className="text-[15px] font-medium">
             •{" "}
             <span className="font-bricolageGrotesque">

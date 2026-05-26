@@ -125,9 +125,9 @@ export default function RevenueSettingsPage() {
                       ></path>
                     </svg>
                     <span>Dodo Payments</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-display bg-neutral-200 text-neutral-600">
+                    {/* <span className="text-[10px] px-2 py-0.5 rounded-full font-display bg-neutral-200 text-neutral-600">
                       Coming Soon
-                    </span>
+                    </span> */}
                   </span>
                 ),
               },
@@ -168,7 +168,7 @@ export default function RevenueSettingsPage() {
                     available soon.
                   </p>
 
-                  <div className="mt-4 px-4 py-2 rounded-full bg-neutral-100 text-neutral-600 text-sm">
+                  <div className="mt-4 px-4 py-2 rounded-full bg-neutral-100 text-neutral-600 text-sm font-medium">
                     Coming Soon
                   </div>
                 </div>

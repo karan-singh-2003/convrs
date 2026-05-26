@@ -11,7 +11,7 @@ import {
 import { cn } from "@repo/utils";
 import { Play } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { AnalyticsAreaChart } from "./analytics-area-chart";
 import { AnalyticsFunnelChart } from "./analytics-funnel-chart";
 import { AnalyticsContext } from "./analytics-providers";
@@ -21,6 +21,11 @@ import { useCreateFunnelModal } from "../modals/create-funnel-modal";
 import useFunnels from "@/lib/swr/use-funnels";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 
+type ChartSectionProps = {
+  mode: "private" | "public";
+  workspaceId?: string;
+};
+
 type Tab = {
   id: "clicks" | "revenue";
   label: string;
@@ -28,7 +33,7 @@ type Tab = {
   conversions: boolean;
 };
 
-export function ChartSection({ mode }: { mode: "private" | "public" }) {
+export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
   const {
     totalEvents,
     percentageChanges,
@@ -38,9 +43,12 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
     saleUnit,
     view,
   } = useContext(AnalyticsContext);
+  console.log("workspaceiD", workspaceId);
   const { plan, projectToken, id } = useWorkspace();
   const { queryParams } = useRouterStuff();
-  const { funnels } = useFunnels();
+  const { funnels } = useFunnels({
+    workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
+  });
   const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null);
   const handleSelectFunnel = useCallback((funnel: { id: string }) => {
     setSelectedFunnelId(funnel.id);
@@ -52,6 +60,8 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
     }
     return funnels[0] ?? null;
   }, [funnels, selectedFunnelId]);
+
+  const hasFunnels = funnels.length > 0;
 
   const {
     openCreateFunnelModal,
@@ -89,6 +99,18 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
     (tab.conversions || view === "funnel") &&
     (plan === "free" || plan === "pro");
 
+  const canShowFunnelView = mode === "private" || hasFunnels;
+
+  const safeView =
+    view === "funnel" && !canShowFunnelView ? "timeseries" : view;
+
+  useEffect(() => {
+    if (view === "funnel" && !canShowFunnelView) {
+      queryParams({ set: { view: "timeseries" } });
+    }
+  }, [canShowFunnelView, queryParams, view]);
+
+ 
   return (
     <>
       <CreateFunnelEditorModal />
@@ -98,7 +120,7 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
           <div className="w-full relative  py-2">
             {/* CENTER → Tabs */}
             <div className="max-w-screen-lg mx-auto flex justify-center ">
-              {view === "timeseries" ? (
+              {safeView === "timeseries" ? (
                 <AnalyticsTabs
                   showConversions={showConversions}
                   totalEvents={totalEvents}
@@ -127,31 +149,31 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
 
             {/* RIGHT → Toggle (floating) */}
             <div className="absolute right-3 md:top-1 z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
-              {mode === "private" &&
-                view === "funnel" &&
-                funnels.length > 0 && (
-                  <button
-                    className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
-                    onClick={() => openFunnelListModal()}
-                  >
-                    {selectedFunnel?.name || "Choose funnel"}
-                  </button>
-                )}
+              {safeView === "funnel" && hasFunnels && (
+                <button
+                  className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
+                  onClick={() => openFunnelListModal()}
+                >
+                  {selectedFunnel?.name || "Choose funnel"}
+                </button>
+              )}
 
-              <ChartViewSwitcher />
+              {canShowFunnelView && (
+                <ChartViewSwitcher showFunnel={canShowFunnelView} />
+              )}
             </div>
           </div>
         </div>
 
         <div className="relative">
           <div className={cn("relative overflow-hidden sm:rounded-b-xl")}>
-            {view === "timeseries" && (
+            {safeView === "timeseries" && (
               <div className="h-[444px] w-full sm:h-[464px]">
                 <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
               </div>
             )}
 
-            {view === "funnel" && (
+            {safeView === "funnel" && (
               <div className="relative h-[444px] w-full sm:h-[464px]">
                 <div
                   className={`h-full w-full transition-opacity ${
@@ -160,7 +182,10 @@ export function ChartSection({ mode }: { mode: "private" | "public" }) {
                       : "opacity-100"
                   }`}
                 >
-                  <AnalyticsFunnelChart selectedFunnel={selectedFunnel} demo={funnels.length === 0} />
+                  <AnalyticsFunnelChart
+                    selectedFunnel={selectedFunnel}
+                    demo={funnels.length === 0}
+                  />
                 </div>
 
                 {mode === "private" && funnels.length === 0 && (

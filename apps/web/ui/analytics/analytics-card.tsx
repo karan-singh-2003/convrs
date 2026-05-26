@@ -75,7 +75,9 @@ export function AnalyticsCard<T extends string>({
         className="max-w-lg px-0"
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-2">
-          <h1 className=" text-[15px] text-neutral-700 font-medium md:text-lg font-display md:font-semibold">{selectedTab?.label}</h1>
+          <h1 className=" text-[15px] text-neutral-700 font-medium md:text-lg font-display md:font-semibold">
+            {selectedTab?.label}
+          </h1>
         </div>
         {subTabs && selectedSubTabId && onSelectSubTab && (
           <SubTabs
@@ -166,17 +168,19 @@ export function AnalyticsCard<T extends string>({
             setShowModal,
           })}
         </div>
-        <div className="absolute bottom-0 left-0 z-10 flex w-full items-end">
-          <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-white sm:h-48" />
-          <div className="relative flex w-full items-center justify-center gap-2 py-3 px-2 sm:py-4">
-            <button
-              onClick={() => setShowModal(true)}
-              className="h-8 w-full rounded-none font-poppins font-medium border-neutral-200 bg-white px-3 text-[12.5px] text-neutral-600 transition-colors hover:bg-neutral-100 active:border-neutral-300 sm:w-fit sm:text-[13px]"
-            >
-              View All
-            </button>
+        {showViewAll && (
+          <div className="absolute bottom-0 left-0 z-10 flex w-full items-end">
+            <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-white sm:h-48" />
+            <div className="relative flex w-full items-center justify-center gap-2 py-3 px-2 sm:py-4">
+              <button
+                onClick={() => setShowModal(true)}
+                className="h-8 w-full rounded-none font-poppins font-medium border-neutral-200 bg-white px-3 text-[12.5px] text-neutral-600 transition-colors hover:bg-neutral-100 active:border-neutral-300 sm:w-fit sm:text-[13px]"
+              >
+                View All
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

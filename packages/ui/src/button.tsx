@@ -104,6 +104,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={forwardedRef}
         // if onClick is passed, it's a "button" type, otherwise it's being used in a form, hence "submit"
         type={props.onClick ? "button" : "submit"}
+        suppressHydrationWarning
         className={cn(
           "group flex h-10 w-full items-center focus:outline-none focus-visible:ring-4 focus-visible:ring-border-subtle  justify-center gap-2 whitespace-nowrap rounded-none px-4 text-[15px]",
           props.disabled || loading
@@ -117,7 +118,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <div className="flex items-center justify-center gap-2">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
-            <span className="text-sm font-display text-neutral-500">{text}</span>
+            <span className="text-sm font-display text-neutral-500">
+              {text}
+            </span>
           </div>
         ) : (
           <>

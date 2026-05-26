@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { codeToHtml } from "shiki";
-import { Check, Copy } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@repo/ui";
 import { useOnboardingProgress } from "../../use-onboarding-progress";
 
@@ -12,14 +12,24 @@ type ScriptConfig = {
   projectToken: string | null;
 };
 
-const buildScriptSnippet = ({ domain, projectToken }: ScriptConfig) => `<script 
+const buildScriptSnippet = ({
+  domain,
+  projectToken,
+  loading,
+}: ScriptConfig & { loading?: boolean }) => `<script 
   defer
-  src="https://www.dubcdn.com/analytics/script.js"
-  data-domain="${domain || "yourdomain.com"}"
-  data-website-token="${projectToken || "your-project-token"}"
+  src="https://cdn.convrs.dev/script.js"
+  data-domain="${
+    loading && !domain ? "████████████████" : domain || "yourdomain.com"
+  }"
+  data-website-token="${
+    loading && !projectToken
+      ? "████████████████████"
+      : projectToken || "your-project-token"
+  }"
 ></script>`;
 
-function CodeSnippet({ code }: { code: string }) {
+function CodeSnippet({ code, loading }: { code: string; loading?: boolean }) {
   const [html, setHtml] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
@@ -27,8 +37,22 @@ function CodeSnippet({ code }: { code: string }) {
     codeToHtml(code, {
       lang: "html",
       theme: "catppuccin-mocha",
-    }).then(setHtml);
-  }, [code]);
+    }).then((result) => {
+      const highlighted = loading
+        ? result
+            .replaceAll(
+              "████████████████████",
+              `<span class="inline-block animate-pulse rounded bg-white/10 text-transparent select-none">████████████████████</span>`
+            )
+            .replaceAll(
+              "████████████████",
+              `<span class="inline-block animate-pulse rounded bg-white/10 text-transparent select-none">████████████████</span>`
+            )
+        : result;
+
+      setHtml(highlighted);
+    });
+  }, [code, loading]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -68,13 +92,17 @@ function CodeSnippet({ code }: { code: string }) {
           </button>
         </div>
 
-        <div
-          className="text-sm overflow-x-auto [&>pre]:m-0   [&>pre]:px-4 [&_.line::before]:hidden [&_.line::before]:content-none"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <div className="px-4 pb-2">
+          <pre className="overflow-x-auto text-sm text-white [&_.line::before]:hidden [&_.line::before]:content-none">
+            <code
+              className="space-y-1 font-mono"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </pre>
+        </div>
       </div>
       <Button
-      variant="secondary"
+        variant="secondary"
         text="I have installed the script"
         className="text-neutral-600 font-display w-fit mx-auto px-10"
         onClick={() => finish()}
@@ -87,13 +115,19 @@ export default function ScriptSettingsPage() {
   const searchParams = useSearchParams();
   const workspace = searchParams.get("workspace");
 
+  const [loading, setLoading] = useState(true);
   const [scriptConfig, setScriptConfig] = useState<ScriptConfig>({
     domain: null,
     projectToken: null,
   });
 
   useEffect(() => {
-    if (!workspace) return;
+    if (!workspace) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
 
     fetch(`/api/workspaces/${workspace}/script-config`)
       .then(async (res) => {
@@ -105,10 +139,19 @@ export default function ScriptSettingsPage() {
       })
       .catch(() => {
         setScriptConfig({ domain: null, projectToken: null });
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [workspace]);
 
-  
-
-  return <CodeSnippet code={buildScriptSnippet(scriptConfig)} />;
+  return (
+    <CodeSnippet
+      loading={loading}
+      code={buildScriptSnippet({
+        ...scriptConfig,
+        loading,
+      })}
+    />
+  );
 }

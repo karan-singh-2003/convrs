@@ -6,16 +6,18 @@ import { useParams } from "next/navigation";
 import useSWR, { SWRConfiguration } from "swr";
 
 export default function useFunnels({
+  workspaceId,
   swrOpts,
-}: { swrOpts?: SWRConfiguration } = {}) {
+}: { workspaceId?: string; swrOpts?: SWRConfiguration } = {}) {
   const { slug } = useParams() as { slug?: string };
+  const workspaceKey = workspaceId ?? slug;
 
   const {
     data: response,
     error,
     mutate,
   } = useSWR<{ data: FunnelProps[] }>(
-    slug ? `/api/workspaces/${slug}/funnels` : null,
+    workspaceKey ? `/api/workspaces/${workspaceKey}/funnels` : null,
     fetcher,
     {
       dedupingInterval: 30000,
@@ -27,6 +29,6 @@ export default function useFunnels({
     funnels: response?.data ?? [],
     error,
     mutate,
-    loading: Boolean(slug && !response && !error),
+    loading: Boolean(workspaceKey && !response && !error),
   };
 }

@@ -71,7 +71,7 @@ export function UserDropdown() {
       <button
         onClick={() => setOpenPopover(!openPopover)}
         className={cn(
-          "group relative  flex  items-center justify-center rounded-none transition-all",
+          "group relative  flex pr-1  items-center justify-center rounded-none transition-all",
           "hover:bg-bg-inverted/5 active:bg-bg-inverted/10 data-[state=open]:bg-bg-inverted/10 transition-colors duration-150",
           "outline-none focus-visible:ring-2 focus-visible:ring-black/50 "
         )}
@@ -82,7 +82,7 @@ export function UserDropdown() {
               <BlurImage
                 src={session.user.image}
                 alt="User avatar"
-                className="h-[20px] w-[20px] md:h-[25px] md:w-[25px] rounded-full object-cover"
+                className="h-[22px] w-[22px] md:h-[25px] md:w-[25px] rounded-full object-cover"
                 width={26}
                 height={26}
               />

@@ -52,7 +52,7 @@ export async function trackClickController(req: Request, res: Response) {
     }
 
     const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
+      where: { projectToken: workspaceId },
       select: {
         name: true,
         slug: true,

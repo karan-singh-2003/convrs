@@ -85,7 +85,7 @@ export function MainNav({
                 : "bg-white border-b border-neutral-200 md:border-none"
             )}
           >
-            <div className=" flex h-12 w-full  px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between gap-x-4  ">
+            <div className=" flex h-12 w-full px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between  ">
               <div className="flex items-center justify-center gap-4 min-w-0">
                 <div className="w-full  flex items-center gap-4">
                   <div className="md:hidden">

@@ -39,8 +39,40 @@ const buildScriptSnippet = ({
   return lines.join("\n");
 };
 
-const buildNpmInitSnippet = ({ projectToken }: ScriptConfig) =>
-  `import { initDataFast } from '@karanbuilds/analytics-sdk';\n\nlet analyticsPromise: ReturnType<typeof initDataFast> | null = null;\n\nexport function getAnalytics() {\n  const hasCrossDomainParams =\n    typeof window !== 'undefined' &&\n    (window.location.search.includes('_df_vid') ||\n     window.location.search.includes('_df_sid'));\n\n  if (!analyticsPromise || hasCrossDomainParams) {\n    analyticsPromise = initDataFast({\n      websiteId: \"${projectToken || "your-project-token"}\",\n      domain: typeof window !== \"undefined\" ? window.location.host : \"localhost\",\n      autoCapturePageviews: true,\n      apiUrl: \"http://localhost:3000/api/track\",\n      allowLocalhost: true,\n      debug: true,\n    });\n  }\n  return analyticsPromise;\n}`;
+const buildNpmInitSnippet = ({
+  projectToken,
+  allowLocalhostDebugging,
+}: ScriptSnippetConfig) =>
+  `import { initConvrs } from '@convrs/sdk';
+
+let analyticsPromise: ReturnType<typeof initConvrs> | null = null;
+
+export function getAnalytics() {
+  const hasCrossDomainParams =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('_cv_vid') ||
+      window.location.search.includes('_cv_sid'));
+
+  if (!analyticsPromise || hasCrossDomainParams) {
+    analyticsPromise = initConvrs({
+      websiteId: "${projectToken || "your-project-token"}",
+      domain:
+        typeof window !== "undefined"
+          ? window.location.host
+          : "localhost",
+      autoCapturePageviews: true,${
+        allowLocalhostDebugging
+          ? `
+      apiUrl: "http://localhost:3000/api/track",
+      allowLocalhost: true,
+      debug: true,`
+          : ""
+      }
+    });
+  }
+
+  return analyticsPromise;
+}`;
 
 export default function ScriptInstallationCard({
   scriptConfig,
@@ -57,8 +89,12 @@ export default function ScriptInstallationCard({
   );
 
   const npmInitSnippet = useMemo(
-    () => buildNpmInitSnippet(scriptConfig),
-    [scriptConfig]
+    () =>
+      buildNpmInitSnippet({
+        ...scriptConfig,
+        allowLocalhostDebugging,
+      }),
+    [scriptConfig, allowLocalhostDebugging]
   );
 
   return (
@@ -141,12 +177,41 @@ export default function ScriptInstallationCard({
             If you need to customize the script tag, you can learn more about
             the available options in our documentation.
           </p>
-          <CodeSnippet
-            code={scriptSnippet}
-            lang="html"
-            ariaLabel="Copy script snippet"
-          />
+          {!scriptConfig.projectToken ? (
+            <div className="space-y-2">
+              {/* <div className="h-4 w-3/4 animate-pulse rounded-md bg-neutral-200" /> */}
+              <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+                <div className="h-3 w-full animate-pulse rounded-none bg-neutral-200" />
+                <div className="h-3 w-5/6 animate-pulse rounded-none bg-neutral-200" />
+                <div className="h-3 w-4/6 animate-pulse rounded-none bg-neutral-200" />
+                <div className="h-3 w-2/3 animate-pulse rounded-none bg-neutral-200" />
+              </div>
+            </div>
+          ) : (
+            <CodeSnippet
+              code={scriptSnippet}
+              lang="html"
+              ariaLabel="Copy script snippet"
+            />
+          )}
         </>
+      ) : !scriptConfig.projectToken ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {/* <div className="h-4 w-40 animate-pulse rounded bg-neutral-200" /> */}
+            <div className="h-10 w-full animate-pulse rounded-xl bg-neutral-200" />
+          </div>
+
+          <div className="space-y-2">
+            {/* <div className="h-4 w-56 animate-pulse rounded bg-neutral-200" /> */}
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+              <div className="h-3 w-full animate-pulse rounded-none bg-neutral-200" />
+              <div className="h-3 w-5/6 animate-pulse rounded-none bg-neutral-200" />
+              <div className="h-3 w-4/6 animate-pulse rounded-none bg-neutral-200" />
+              <div className="h-3 w-3/6 animate-pulse rounded-none bg-neutral-200" />
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
           <div>
@@ -162,7 +227,7 @@ export default function ScriptInstallationCard({
               1. Install the package
             </p>
             <CodeSnippet
-              code="npm i @karanbuilds/analytics-sdk"
+              code="npm i @convrs/sdk"
               lang="bash"
               ariaLabel="Copy npm install command"
             />

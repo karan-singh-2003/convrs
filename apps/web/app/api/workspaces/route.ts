@@ -4,8 +4,7 @@ import {
   WorkspaceSchema,
 } from "@/lib/zod/schemas/workspaces";
 import { prisma } from "@repo/db";
-import { checkIfUserExists } from "@/lib/actions/auth/check-if-user-exists";
-import { nanoid, Starter_Plan } from "@repo/utils";
+import { nanoid } from "@repo/utils";
 import { NextResponse } from "next/server";
 import { prefixWorkspaceId } from "@/lib/api/workspaces/workspace-id";
 import { Prisma } from "@repo/db/client";
@@ -84,152 +83,46 @@ export const POST = withSession(async ({ req, session }) => {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // Get authenticated user
-  // ─────────────────────────────────────────────
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session.user.id,
-    },
-    select: {
-      id: true,
-      freeTrialUsedAt: true,
-    },
-  });
-
-  if (!user) {
-    return new Response(
-      JSON.stringify({
-        error: "Unauthorized",
-      }),
-      {
-        status: 401,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  }
-
   try {
-    const hasUsedTrial = !!user.freeTrialUsedAt;
+    const workspace = await prisma.workspace.create({
+      data: {
+        name,
+        slug,
+        domain,
 
-    const trialUsageLimit = 10_000;
+        // Billing
+        subscriptionStatus: "inactive",
+        plan: "free",
+        billingInterval: "month",
 
-    const now = new Date();
+        // Limits
+        tierEvents: 0,
+        usageLimit: 0,
 
-    const trialEndDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        // Tokens
+        projectToken: nanoid(32),
+        inviteCode: nanoid(24),
 
-    const workspace = await prisma.$transaction(
-      async (tx) => {
-        // ───────────────────────────────────────
-        // User eligible for free trial
-        // ───────────────────────────────────────
-
-        if (!hasUsedTrial) {
-          // Mark trial as consumed globally
-          await tx.user.update({
-            where: {
-              id: user.id,
-            },
-            data: {
-              freeTrialUsedAt: now,
-            },
-          });
-
-          return tx.workspace.create({
-            data: {
-              name,
-              slug,
-              domain,
-
-              // Billing
-              subscriptionStatus: "trialing",
-              billingInterval: "month",
-
-              currentPeriodStart: now,
-              currentPeriodEnd: trialEndDate,
-              freeTrialEndDate: trialEndDate,
-
-              // Limits
-              tierEvents: trialUsageLimit,
-              usageLimit: trialUsageLimit,
-
-              // Tokens
-              projectToken: nanoid(32),
-              inviteCode: nanoid(24),
-
-              // Owner
-              users: {
-                create: {
-                  userId: session.user.id,
-                  role: "owner",
-                },
-              },
-            },
-
-            include: {
-              users: {
-                where: {
-                  userId: session.user.id,
-                },
-                select: {
-                  role: true,
-                },
-              },
-            },
-          });
-        }
-
-        // ───────────────────────────────────────
-        // Trial already consumed
-        // ───────────────────────────────────────
-
-        return tx.workspace.create({
-          data: {
-            name,
-            slug,
-            domain,
-
-            // Billing
-            subscriptionStatus: "inactive",
-
-            // Limits
-            tierEvents: 0,
-            usageLimit: 0,
-
-            // Tokens
-            projectToken: nanoid(32),
-            inviteCode: nanoid(24),
-
-            // Owner
-            users: {
-              create: {
-                userId: session.user.id,
-                role: "owner",
-              },
-            },
+        // Owner
+        users: {
+          create: {
+            userId: session.user.id,
+            role: "owner",
           },
-
-          include: {
-            users: {
-              where: {
-                userId: session.user.id,
-              },
-              select: {
-                role: true,
-              },
-            },
-          },
-        });
+        },
       },
-      {
-        maxWait: 5000,
-        timeout: 5000,
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      }
-    );
+
+      include: {
+        users: {
+          where: {
+            userId: session.user.id,
+          },
+          select: {
+            role: true,
+          },
+        },
+      },
+    });
 
     return NextResponse.json(
       WorkspaceSchema.parse({

@@ -94,11 +94,12 @@ const Presets = <TPreset extends Preset, TValue>({
               title={preset.label}
               value={preset.id}
               className={cn(
-                "group relative flex w-full cursor-pointer font-default items-center justify-between rounded-none ",
-                "px-3 py-2 text-left text-[13px] text-neutral-500 shadow-sm outline-none sm:border-none sm:text-sm sm:shadow-none",
+                "group relative flex w-full cursor-pointer items-center justify-between rounded-none",
+                "px-3 py-2 font-display text-[14.5px] font-medium md:text-sm text-neutral-500 outline-none transition-colors",
                 "whitespace-normal break-words sm:whitespace-nowrap sm:break-normal",
+                "hover:bg-neutral-100",
+                "data-[selected=true]:bg-neutral-100",
                 "disabled:pointer-events-none disabled:opacity-50",
-                "sm:data-[selected=true]:bg-neutral-100",
                 matchesCurrent(preset) && "font-medium text-neutral-600"
               )}
             >

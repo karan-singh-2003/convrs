@@ -46,7 +46,7 @@ function AnalyticsContent({
         </div>
 
         <div className="space-y-[6rem]">
-          <ChartSection mode={mode} />
+          <ChartSection mode={mode} workspaceId={workspaceId} />
           <StatsGrid />
         </div>
 
