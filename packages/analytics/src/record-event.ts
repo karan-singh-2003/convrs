@@ -26,8 +26,8 @@ export async function recordEvent({
 
   // ── Guard: only website_id and visitor_id are required
   // session_id is optional — revenue events from Stripe webhooks may not have it
-  if (!website_id || !visitor_id) {
-    logger.warn("[recordEvent] Missing website_id or visitor_id — skipping");
+  if (!website_id || !visitor_id || !workspace_id) {
+    logger.warn("[recordEvent] Missing website_id or visitor_id or workspace_id — skipping");
     return null;
   }
 

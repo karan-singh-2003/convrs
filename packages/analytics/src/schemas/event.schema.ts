@@ -1,11 +1,11 @@
 // packages/analytics/src/schemas/event.schema.ts
 import { z } from "zod";
 
-export const AnalyticsEventSchema = z
+export const AnalyticsRawEventSchema = z
   .object({
     // ── Base (always present) ─────────────────────────────────────────────────
     website_id: z.string().min(1).max(64),
-    workspace_id: z.string().min(1).max(64),
+    workspace_id: z.string().min(1).max(64).optional(),
     visitor_id: z.string().min(1).max(128),
     customer_id: z.string().min(1).max(128).optional(),
     session_id: z.string().min(1).max(128),

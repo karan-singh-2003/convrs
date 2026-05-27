@@ -17,7 +17,7 @@ export async function trackClickController(req: Request, res: Response) {
     const rawBody = req.body ?? {};
     console.log("[Track Controller] Raw body:", rawBody);
 
-    const normalized = normalizeTrackPayload(rawBody);
+    const normalized = normalizeTrackPayload(rawBody );
     console.log("[Track Controller] Normalized:", normalized);
 
     const parsed = AnalyticsEventSchema.safeParse(normalized);
@@ -43,16 +43,16 @@ export async function trackClickController(req: Request, res: Response) {
       "";
 
     // ── ENFORCE TRACKING FILTERS ─────────────────────────────────────────────
-    const workspaceId = parsed.data.website_id;
-    if (!workspaceId) {
+    const websiteId = parsed.data.website_id;
+    if (!websiteId) {
       return res.status(400).json({
         success: false,
-        error: "Missing workspace ID in payload",
+        error: "Missing website ID in payload",
       });
     }
 
     const workspace = await prisma.workspace.findUnique({
-      where: { projectToken: workspaceId },
+      where: { projectToken: websiteId },
       select: {
         id: true,
         name: true,
@@ -287,6 +287,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
   } catch {}
 
   const normalized: Record<string, any> = {
+ 
     website_id: websiteId,
     visitor_id: visitorId,
     session_id: sessionId,
