@@ -1,7 +1,7 @@
 // packages/analytics/src/schemas/event.schema.ts
 import { z } from "zod";
 
-export const AnalyticsRawEventSchema = z
+export const AnalyticsEventSchema = z
   .object({
     // ── Base (always present) ─────────────────────────────────────────────────
     website_id: z.string().min(1).max(64),
