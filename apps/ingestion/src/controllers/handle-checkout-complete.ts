@@ -24,6 +24,7 @@ export async function handleCheckoutCompleted(
   await recordEvent({
     req: new Request("http://internal/stripe-webhook"),
     payload: {
+      workspace_id: workspaceId,
       website_id:  workspaceId,
       visitor_id:  visitorId,
       session_id:  sessionId! ,    // ensure string type
