@@ -21,7 +21,7 @@ export async function recordEvent({
   payload: AnalyticsEvent;
   logger: FastifyBaseLogger;
 }) {
-  const { website_id, visitor_id } = payload;
+  const { website_id, visitor_id, workspace_id } = payload;
 
   // ── Guard: only website_id and visitor_id are required
   // session_id is optional — revenue events from Stripe webhooks may not have it
@@ -110,7 +110,7 @@ export async function recordEvent({
           : payload.type,
     event_name: payload.event_name ?? null,
 
-    workspace_id: website_id,
+    workspace_id: workspace_id,
     visitor_id: visitor_id,
     session_id: payload.session_id ?? null,
     identity_hash: identityHash ?? null,

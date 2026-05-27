@@ -169,6 +169,7 @@ export async function trackClickController(req: Request, res: Response) {
     const enrichedPayload = {
       ...parsed.data,
 
+  
       // Identity
       customer_id: customer?.id ?? null,
 
@@ -214,7 +215,7 @@ export async function trackClickController(req: Request, res: Response) {
 
     const recordedEvent = await recordEvent({
       req: nativeReq,
-      payload: { ...enrichedPayload, customer_id: customer?.id ?? "" },
+      payload: { ...enrichedPayload, customer_id: customer?.id ?? "", workspace_id: workspace.id },
       logger: console as any,
     });
 

@@ -5,6 +5,7 @@ export const AnalyticsEventSchema = z
   .object({
     // ── Base (always present) ─────────────────────────────────────────────────
     website_id: z.string().min(1).max(64),
+    workspace_id: z.string().min(1).max(64),
     visitor_id: z.string().min(1).max(128),
     customer_id: z.string().min(1).max(128).optional(),
     session_id: z.string().min(1).max(128),
