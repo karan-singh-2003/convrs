@@ -54,6 +54,7 @@ export async function trackClickController(req: Request, res: Response) {
     const workspace = await prisma.workspace.findUnique({
       where: { projectToken: workspaceId },
       select: {
+        id: true,
         name: true,
         slug: true,
         blockedHostnames: true,
@@ -143,7 +144,7 @@ export async function trackClickController(req: Request, res: Response) {
 
     if (parsed.data.type === "identify") {
       customer = await upsertCustomer({
-        workspaceId: parsed.data.website_id,
+        workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
         visitorId: parsed.data.visitor_id ?? undefined, // ← pass so it can upgrade anon record
       });
@@ -152,7 +153,7 @@ export async function trackClickController(req: Request, res: Response) {
     // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
     else if (parsed.data.type === "pageview" && parsed.data.visitor_id) {
       customer = await upsertAnonymousCustomer({
-        workspaceId: parsed.data.website_id,
+        workspaceId: workspace.id,
         visitorId: parsed.data.visitor_id,
       });
     }
@@ -219,13 +220,13 @@ export async function trackClickController(req: Request, res: Response) {
 
     if (recordedEvent) {
       const updatedWorkspace = await prisma.workspace.update({
-        where: { id: workspaceId },
+        where: { id: workspace.id },
         data: { usage: { increment: 1 } },
         select: { usage: true, usageLimit: true, slug: true },
       });
 
       void maybeSendUsageLimitWarning({
-        workspaceId,
+        workspaceId: workspace.id,
         workspaceName: workspace.name,
         workspaceSlug: updatedWorkspace.slug ?? workspace.slug,
         usageBefore: usage,
@@ -236,7 +237,7 @@ export async function trackClickController(req: Request, res: Response) {
       });
 
       void sendAlertsForEvent({
-        workspaceId,
+        workspaceId: workspace.id,
         eventName: parsed.data.event_name ?? parsed.data.type ?? "event",
         event: {
           ...recordedEvent,
