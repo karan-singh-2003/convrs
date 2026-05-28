@@ -46,6 +46,8 @@ export async function recordEvent({
   const continent = getContinent(req);
   const ua = parseUserAgent(uaString);
 
+  console.log("geo:", geo, "region:", region, "vercelRegion:", vercelRegion, "continent:", continent);
+
   if (ua.isBot) {
     logger.info("[recordEvent] Bot UA detected — skipping");
     return null;
