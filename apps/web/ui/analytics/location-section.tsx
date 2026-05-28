@@ -115,7 +115,7 @@ export function LocationSection() {
         { id: "countries", label: "Countries" },
         { id: "cities", label: "Cities" },
         { id: "regions", label: "Regions" },
-        { id: "continents", label: "Continents" },
+        // { id: "continents", label: "Continents" },
       ]}
       selectedTabId={tab}
       onSelectTab={setTab}

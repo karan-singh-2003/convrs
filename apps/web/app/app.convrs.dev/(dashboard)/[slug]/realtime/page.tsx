@@ -14,6 +14,7 @@ import Globe, { type GlobeDataPoint } from "./globe";
 import { BarList } from "@/ui/analytics/bar-list";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
+import { COUNTRIES } from "@repo/utils";
 
 type DashboardData = {
   total: number;
@@ -24,17 +25,6 @@ type DashboardData = {
 };
 
 type SectionKey = "referrers" | "countries" | "pages";
-
-function getFlagStyle(code: string): string {
-  const styles: Record<string, string> = {
-    DE: "linear-gradient(to bottom, #000 0 33.33%, #dd0000 33.33% 66.66%, #ffce00 66.66% 100%)",
-    IN: "linear-gradient(to bottom, #ff9933 0 33.33%, #fff 33.33% 66.66%, #138808 66.66% 100%)",
-    US: "linear-gradient(to bottom, #b22234 0 50%, #fff 50% 100%)",
-  };
-  return (
-    styles[code.toUpperCase()] ?? "linear-gradient(to bottom, #e5e7eb, #d1d5db)"
-  );
-}
 
 // ─── Slide Panel ─────────────────────────────────────────────────────────────
 // visible=true  → in place (opacity-100, translate-x-0)
@@ -120,12 +110,31 @@ function DetailView({
 }: {
   title: string;
   onBack: () => void;
-  barData: { label: string; value: number }[];
+  barData: {
+    label: string;
+    value: number;
+    code?: string;
+  }[];
   maxValue: number;
 }) {
   const mappedBarData = useMemo(
-    () => barData.map((item) => ({ title: item.label, value: item.value })),
-    [barData]
+    () =>
+      barData.map((item) => ({
+        title: item.label,
+        value: item.value,
+
+        ...(title.toLowerCase() === "countries" &&
+          item.code && {
+            icon: (
+              <img
+                alt={item.label}
+                src={`https://hatscripts.github.io/circle-flags/flags/${item.code.toLowerCase()}.svg`}
+                className="size-3 sm:size-4 shrink-0 rounded-full"
+              />
+            ),
+          }),
+      })),
+    [barData, title]
   );
 
   return (
@@ -267,6 +276,7 @@ export default function Dashboard() {
       dashboardData.countries.map((item) => ({
         label: item.country,
         value: item.count,
+        code: item.code,
       })),
     [dashboardData.countries]
   );
@@ -326,16 +336,28 @@ export default function Dashboard() {
             label="Countries"
             count={dashboardData.countries[0].count}
             onExpand={() => handleExpand("countries")}
-            renderValue={() => (
-              <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
-                <img
-                  alt={dashboardData.countries[0].country || "Unknown"}
-                  src={`https://hatscripts.github.io/circle-flags/flags/${dashboardData.countries[0].code}.svg`}
-                  className="size-5 shrink-0"
-                />
-                <span>{dashboardData.countries[0].country}</span>
-              </div>
-            )}
+            renderValue={() => {
+              const country = dashboardData.countries[0].country || "Unknown";
+
+              const countryCode =
+                Object.entries(COUNTRIES)
+                  .find(([, name]) => name === country)?.[0]
+                  ?.toLowerCase() || "unknown";
+
+              return (
+                <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
+                  {countryCode !== "unknown" && (
+                    <img
+                      alt={country}
+                      src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
+                      className="size-5 shrink-0 rounded-full"
+                    />
+                  )}
+
+                  <span>{country}</span>
+                </div>
+              );
+            }}
           />
 
           <SummaryRow
