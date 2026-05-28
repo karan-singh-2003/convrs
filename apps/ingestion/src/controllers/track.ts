@@ -17,6 +17,7 @@ import {
   getVercelRegion,
   getContinent,
 } from "./get-geo-data.js";
+import { COUNTRIES } from "@repo/utils";
 
 export async function trackClickController(req: Request, res: Response) {
   try {
@@ -165,8 +166,9 @@ export async function trackClickController(req: Request, res: Response) {
       customer = await upsertCustomer({
         workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
-        visitorId: parsed.data.visitor_id ?? undefined, // ← pass so it can upgrade anon record
-        geo: geo.country,
+        visitorId: parsed.data.visitor_id ?? undefined,
+
+        geo: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
       });
     }
 
@@ -175,7 +177,8 @@ export async function trackClickController(req: Request, res: Response) {
       customer = await upsertAnonymousCustomer({
         workspaceId: workspace.id,
         visitorId: parsed.data.visitor_id,
-        country: geo.country,
+
+        country: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
       });
     }
 
