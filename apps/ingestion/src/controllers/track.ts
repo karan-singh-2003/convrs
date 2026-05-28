@@ -11,7 +11,7 @@ import email from "@repo/email";
 import UsageLimitWarningEmailModule from "@repo/email/templates/usage-limit-warning";
 import * as UAParserLib from "ua-parser-js";
 import React from "react";
-import { getGeoData, getGeoRegion, getVercelRegion, getContinent } from "./get-geo-data";
+import { getGeoData, getGeoRegion, getVercelRegion, getContinent } from "./get-geo-data.js";
 
 export async function trackClickController(req: Request, res: Response) {
   try {
