@@ -29,14 +29,6 @@ const nextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/track",
-        destination: "https://ingest.convrs.dev/api/track",
-      },
-    ];
-  },
 
   transpilePackages: [
     "prettier",
