@@ -3,6 +3,12 @@ import { fetchWithRetry, capitalize, getDomainWithoutWWW } from "@repo/utils";
 import type { RequestContext } from "./types";
 import { detectBot } from "./utils/detect-bot";
 import { parseUserAgent } from "./utils/parse-user-agent";
+import {
+  getGeoData,
+  getGeoRegion,
+  getVercelRegion,
+  getContinent,
+} from "./utils/get-geo-data";
 import type { AnalyticsEvent } from "./schemas/event.schema";
 import type { FastifyBaseLogger } from "fastify";
 
@@ -15,13 +21,31 @@ export async function recordEvent({
   payload: AnalyticsEvent;
   logger: FastifyBaseLogger;
 }) {
-  const { website_id, visitor_id, workspace_id , country, city, latitude, longitude, region, continent, vercelRegion } = payload;
-  console.log("Recording event:", { website_id, visitor_id, workspace_id, type: payload.type });
+  const {
+    website_id,
+    visitor_id,
+    workspace_id,
+    country,
+    city,
+    latitude,
+    longitude,
+    region,
+    continent,
+    vercelRegion,
+  } = payload;
+  console.log("Recording event:", {
+    website_id,
+    visitor_id,
+    workspace_id,
+    type: payload.type,
+  });
 
   // ── Guard: only website_id and visitor_id are required
   // session_id is optional — revenue events from Stripe webhooks may not have it
   if (!website_id || !visitor_id || !workspace_id) {
-    logger.warn("[recordEvent] Missing website_id or visitor_id or workspace_id — skipping");
+    logger.warn(
+      "[recordEvent] Missing website_id or visitor_id or workspace_id — skipping"
+    );
     return null;
   }
 
@@ -33,7 +57,6 @@ export async function recordEvent({
     logger.info("[recordEvent] Bot detected — skipping");
     return null;
   }
-
 
   const ua = parseUserAgent(uaString);
 
@@ -59,6 +82,11 @@ export async function recordEvent({
   const forwardedFor = req.headers.get("x-forwarded-for");
   const forwardedIp = forwardedFor ? forwardedFor.split(",")[0]?.trim() : null;
 
+  const geoFromReq = getGeoData(req);
+  const regionFromReq = getGeoRegion(req);
+  const vercelRegionFromReq = getVercelRegion();
+  const continentFromReq = getContinent(req);
+
   const ctx: RequestContext = {
     url: req.url,
     method: req.method,
@@ -69,13 +97,13 @@ export async function recordEvent({
       "unknown",
     userAgent: ua,
     geo: {
-      country: country ?? "Unknown",
-      city: city ?? "Unknown",
-      latitude: latitude ?? "Unknown",
-      longitude: longitude ?? "Unknown",
-      region: region ?? "Unknown",
-      continent: continent ?? "Unknown",
-      vercelRegion: vercelRegion ?? "Unknown",
+      country: country ?? geoFromReq.country ?? "Unknown",
+      city: city ?? geoFromReq.city ?? "Unknown",
+      latitude: latitude ?? geoFromReq.latitude ?? "Unknown",
+      longitude: longitude ?? geoFromReq.longitude ?? "Unknown",
+      region: region ?? regionFromReq ?? "Unknown",
+      continent: continent ?? continentFromReq ?? "Unknown",
+      vercelRegion: vercelRegion ?? vercelRegionFromReq ?? "Unknown",
     },
     referer: cleanReferer,
     headers: {

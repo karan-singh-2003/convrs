@@ -11,7 +11,12 @@ import email from "@repo/email";
 import UsageLimitWarningEmailModule from "@repo/email/templates/usage-limit-warning";
 import * as UAParserLib from "ua-parser-js";
 import React from "react";
-import { getGeoData, getGeoRegion, getVercelRegion, getContinent } from "./get-geo-data.js";
+import {
+  getGeoData,
+  getGeoRegion,
+  getVercelRegion,
+  getContinent,
+} from "./get-geo-data.js";
 
 export async function trackClickController(req: Request, res: Response) {
   try {
@@ -140,6 +145,19 @@ export async function trackClickController(req: Request, res: Response) {
         code: "exceeded_limit",
       });
     }
+    const nativeReq = toNativeRequest(req);
+    const geo = getGeoData(nativeReq);
+    const region = getGeoRegion(nativeReq);
+    const vercelRegion = getVercelRegion();
+    const continent = getContinent(nativeReq);
+
+    console.log("[Track Controller] Geo data:", {
+      geo,
+      region,
+      continent,
+      vercelRegion,
+    });
+
     // ── IDENTIFY ─────────────────────────────────────────────────────────────
     let customer = null;
 
@@ -148,6 +166,7 @@ export async function trackClickController(req: Request, res: Response) {
         workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
         visitorId: parsed.data.visitor_id ?? undefined, // ← pass so it can upgrade anon record
+        geo: geo.country,
       });
     }
 
@@ -156,20 +175,13 @@ export async function trackClickController(req: Request, res: Response) {
       customer = await upsertAnonymousCustomer({
         workspaceId: workspace.id,
         visitorId: parsed.data.visitor_id,
+        country: geo.country,
       });
     }
 
     // ── UA PARSING ───────────────────────────────────────────────────────────
     const ua = (req.headers["user-agent"] as string) || "";
     const parsedUA = new UAParserLib.UAParser(ua).getResult();
-
-    const nativeReq = toNativeRequest(req);
-    const geo = getGeoData(nativeReq);
-    const region = getGeoRegion(nativeReq);
-    const vercelRegion = getVercelRegion();
-    const continent = getContinent(nativeReq);
-
-    console.log("[Track Controller] Geo data:", { geo, region, continent, vercelRegion });
 
     // helper → NEVER send undefined/null to Tinybird for String fields
     const safe = (v: any) => (v === undefined || v === null ? "" : String(v));

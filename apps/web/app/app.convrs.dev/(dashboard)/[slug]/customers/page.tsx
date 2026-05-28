@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTable, Table } from "@repo/ui";
 import useCustomers, { type CustomerItem } from "@/lib/swr/use-customers";
 import { COUNTRIES } from "@repo/utils";
@@ -161,7 +161,6 @@ export default function CustomersPage() {
     error: undefined,
     onRowClick: (row) => {
       const customer = row.original;
-
       router.push(
         `/${slug}/customers/details?customerId=${encodeURIComponent(
           customer.id
@@ -169,6 +168,10 @@ export default function CustomersPage() {
       );
     },
   });
+
+  useEffect(() => {
+    table.setPageSize(Math.max(customers.length, 5));
+  }, [customers.length, table]);
 
   return (
     <div className="space-y-6 max-w-screen-lg mx-auto  sm:px-0">

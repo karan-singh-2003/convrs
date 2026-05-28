@@ -14,13 +14,14 @@ type BaseTableProps<T> = {
   error?: string;
   emptyState?: ReactNode;
   className?: string;
-  getRowId?: (row: T) => string
+  getRowId?: (row: T) => string;
   onRowClick?: (row: Row<T>, e: MouseEvent) => void;
 };
 
 export type UseTableProps<T> = BaseTableProps<T> & {
   pagination?: PaginationState;
   onPaginationChange?: Dispatch<SetStateAction<PaginationState>>;
+  pageSize?: number;
 };
 
 export type TableProps<T> = BaseTableProps<T> &

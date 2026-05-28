@@ -195,12 +195,12 @@ function SummaryRow({
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<SectionKey | null>(null);
-  const { id: workspaceId } = useWorkspace();
+  const { id: workspaceId, projectToken } = useWorkspace();
   const {
     count: liveCount,
     pages: livePages,
     points: livePoints,
-  } = useLiveVisitors(workspaceId ?? null);
+  } = useLiveVisitors(projectToken ?? null);
 
   const globeDataPoints = useMemo<GlobeDataPoint[]>(
     () =>

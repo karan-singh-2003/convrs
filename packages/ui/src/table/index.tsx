@@ -9,13 +9,13 @@ import { TableProps, UseTableProps } from "./types";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@repo/utils";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Button } from "../button";
 
 export function useTable<T>(
   props: UseTableProps<T>
 ): TableProps<T> & { table: TableType<T> } {
-  const { data, columns, getRowId } = props;
+  const { data, columns, getRowId, pageSize } = props;
 
   const table = useReactTable({
     data,
@@ -23,13 +23,19 @@ export function useTable<T>(
     initialState: {
       pagination: {
         pageIndex: 0,
-        pageSize: 5,
+        pageSize: pageSize ?? 5,
       },
     },
     getRowId,
     getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),
   });
+
+  useEffect(() => {
+    if (typeof pageSize === "number" && Number.isFinite(pageSize)) {
+      table.setPageSize(pageSize);
+    }
+  }, [pageSize, table]);
 
   return {
     ...props,
