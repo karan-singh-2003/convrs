@@ -11,13 +11,19 @@ import email from "@repo/email";
 import UsageLimitWarningEmailModule from "@repo/email/templates/usage-limit-warning";
 import * as UAParserLib from "ua-parser-js";
 import React from "react";
+import {
+  getContinent,
+  getGeoData,
+  getGeoRegion,
+  getVercelRegion,
+} from "../../../../packages/analytics/src/utils/get-geo-data";
 
 export async function trackClickController(req: Request, res: Response) {
   try {
     const rawBody = req.body ?? {};
     console.log("[Track Controller] Raw body:", rawBody);
 
-    const normalized = normalizeTrackPayload(rawBody );
+    const normalized = normalizeTrackPayload(rawBody);
     console.log("[Track Controller] Normalized:", normalized);
 
     const parsed = AnalyticsEventSchema.safeParse(normalized);
@@ -162,6 +168,14 @@ export async function trackClickController(req: Request, res: Response) {
     const ua = (req.headers["user-agent"] as string) || "";
     const parsedUA = new UAParserLib.UAParser(ua).getResult();
 
+    const nativeReq = toNativeRequest(req);
+    const geo = getGeoData(nativeReq);
+    const region = getGeoRegion(nativeReq);
+    const vercelRegion = getVercelRegion();
+    const continent = getContinent(nativeReq);
+
+    console.log("[Track Controller] Geo data:", { geo, region, continent, vercelRegion });
+
     // helper → NEVER send undefined/null to Tinybird for String fields
     const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
 
@@ -209,15 +223,25 @@ export async function trackClickController(req: Request, res: Response) {
 
       //  ensure bot is UInt8
       bot: 0,
-    };
 
-    const nativeReq = toNativeRequest(req);
+      country: geo.country ?? "Unknown",
+      city: geo.city ?? "Unknown",
+      latitude: geo.latitude ?? "Unknown",
+      longitude: geo.longitude ?? "Unknown",
+      region: region ?? "Unknown",
+      continent: continent ?? "Unknown",
+      vercelRegion: vercelRegion ?? "Unknown",
+    };
 
     console.log("[Track Controller] Enriched payload:", enrichedPayload);
 
     const recordedEvent = await recordEvent({
       req: nativeReq,
-      payload: { ...enrichedPayload, customer_id: customer?.id ?? "", workspace_id: workspace.id },
+      payload: {
+        ...enrichedPayload,
+        customer_id: customer?.id ?? "",
+        workspace_id: workspace.id,
+      },
       logger: console as any,
     });
 
@@ -287,7 +311,6 @@ function normalizeTrackPayload(raw: Record<string, any>) {
   } catch {}
 
   const normalized: Record<string, any> = {
- 
     website_id: websiteId,
     visitor_id: visitorId,
     session_id: sessionId,

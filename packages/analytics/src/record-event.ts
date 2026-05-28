@@ -21,7 +21,7 @@ export async function recordEvent({
   payload: AnalyticsEvent;
   logger: FastifyBaseLogger;
 }) {
-  const { website_id, visitor_id, workspace_id } = payload;
+  const { website_id, visitor_id, workspace_id , country, city, latitude, longitude, region, continent, vercelRegion } = payload;
   console.log("Recording event:", { website_id, visitor_id, workspace_id, type: payload.type });
 
   // ── Guard: only website_id and visitor_id are required
@@ -40,13 +40,8 @@ export async function recordEvent({
     return null;
   }
 
-  const geo = getGeoData(req);
-  const region = getGeoRegion(req);
-  const vercelRegion = getVercelRegion();
-  const continent = getContinent(req);
-  const ua = parseUserAgent(uaString);
 
-  console.log("geo:", geo, "region:", region, "vercelRegion:", vercelRegion, "continent:", continent);
+  const ua = parseUserAgent(uaString);
 
   if (ua.isBot) {
     logger.info("[recordEvent] Bot UA detected — skipping");
@@ -80,13 +75,13 @@ export async function recordEvent({
       "unknown",
     userAgent: ua,
     geo: {
-      country: geo.country ?? "Unknown",
-      city: geo.city ?? "Unknown",
-      latitude: geo.latitude ?? "Unknown",
-      longitude: geo.longitude ?? "Unknown",
+      country: country ?? "Unknown",
+      city: city ?? "Unknown",
+      latitude: latitude ?? "Unknown",
+      longitude: longitude ?? "Unknown",
       region: region ?? "Unknown",
       continent: continent ?? "Unknown",
-      vercelRegion: vercelRegion,
+      vercelRegion: vercelRegion ?? "Unknown",
     },
     referer: cleanReferer,
     headers: {

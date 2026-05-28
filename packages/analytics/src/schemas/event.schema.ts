@@ -22,6 +22,15 @@ export const AnalyticsEventSchema = z
     viewport_w: z.number().int().min(0).optional(),
     viewport_h: z.number().int().min(0).optional(),
 
+    // ── Geo (optional, enriched upstream) ───────────────────────────────────
+    country: z.string().optional(),
+    city: z.string().optional(),
+    latitude: z.string().optional(),
+    longitude: z.string().optional(),
+    region: z.string().optional(),
+    continent: z.string().optional(),
+    vercelRegion: z.string().optional(),
+
     // ── type = "event" ────────────────────────────────────────────────────────
     event_name: z.string().min(1).max(64).optional(),
     props: z.record(z.string(), z.unknown()).optional(),
