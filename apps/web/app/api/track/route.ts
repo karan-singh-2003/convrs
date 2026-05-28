@@ -15,26 +15,26 @@ export async function POST(req: Request) {
 
         // Forward geo headers
         "x-vercel-ip-country":
-          h.get("x-vercel-ip-country") || "",
+          (await h).get("x-vercel-ip-country") || "",
 
         "x-vercel-ip-city":
-          h.get("x-vercel-ip-city") || "",
+          (await h).get("x-vercel-ip-city") || "",
 
         "x-vercel-ip-country-region":
-          h.get("x-vercel-ip-country-region") || "",
+          (await h).get("x-vercel-ip-country-region") || "",
 
         "x-vercel-ip-continent":
-          h.get("x-vercel-ip-continent") || "",
+          (await h).get("x-vercel-ip-continent") || "",
 
         "x-vercel-ip-latitude":
-          h.get("x-vercel-ip-latitude") || "",
+          (await h).get("x-vercel-ip-latitude") || "",
 
         "x-vercel-ip-longitude":
-          h.get("x-vercel-ip-longitude") || "",
+          (await h).get("x-vercel-ip-longitude") || "",
 
         // Forward original IP too
         "x-forwarded-for":
-          h.get("x-forwarded-for") || "",
+          (await h).get("x-forwarded-for") || "",
       },
 
       body,
