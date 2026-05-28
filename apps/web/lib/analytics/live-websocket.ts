@@ -116,7 +116,6 @@ export function initWebSocketServer(server: Server): WebSocketServer {
 
   wss.on("close", () => clearInterval(pingInterval));
 
-
   return wss;
 }
 

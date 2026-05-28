@@ -292,9 +292,10 @@ export default function Dashboard() {
     [pageBarData]
   );
 
+  console.log("Dashboard data:", dashboardData);
+
   const summaryContent = (
     <div className="space-y-4 px-4 py-2.5">
-   
       {hasLiveData && (
         <div className="flex items-center justify-between pb-1 text-neutral-600">
           <p className="text-[15px] font-medium">
@@ -327,11 +328,10 @@ export default function Dashboard() {
             onExpand={() => handleExpand("countries")}
             renderValue={() => (
               <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
-                <span
-                  className="h-5 w-5 rounded-full border border-neutral-300 shrink-0"
-                  style={{
-                    background: getFlagStyle(dashboardData.countries[0].code),
-                  }}
+                <img
+                  alt={dashboardData.countries[0].country || "Unknown"}
+                  src={`https://hatscripts.github.io/circle-flags/flags/${dashboardData.countries[0].code}.svg`}
+                  className="size-5 shrink-0"
                 />
                 <span>{dashboardData.countries[0].country}</span>
               </div>
