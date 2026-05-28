@@ -3,12 +3,6 @@ import { fetchWithRetry, capitalize, getDomainWithoutWWW } from "@repo/utils";
 import type { RequestContext } from "./types";
 import { detectBot } from "./utils/detect-bot";
 import { parseUserAgent } from "./utils/parse-user-agent";
-import {
-  getGeoData,
-  getGeoRegion,
-  getVercelRegion,
-  getContinent,
-} from "./utils/get-geo-data";
 import type { AnalyticsEvent } from "./schemas/event.schema";
 import type { FastifyBaseLogger } from "fastify";
 
