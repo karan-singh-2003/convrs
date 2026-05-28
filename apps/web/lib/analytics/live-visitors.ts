@@ -36,12 +36,15 @@ export interface HeartbeatPayload {
   latitude?: number;
   longitude?: number;
   country?: string;
+  referrer?: string;
 }
 
 export interface LiveStats {
   count: number; // total active visitors right now
   pages: PageStat[]; // breakdown by page
   points: LivePoint[]; // live geo points for realtime globe
+  referrers: ReferrerStat[]; // breakdown by referrer
+  countries: CountryStat[]; // breakdown by country
 }
 
 export interface PageStat {
@@ -56,6 +59,17 @@ export interface LivePoint {
   value: number;
 }
 
+export interface ReferrerStat {
+  source: string;
+  count: number;
+}
+
+export interface CountryStat {
+  country: string;
+  code: string;
+  count: number;
+}
+
 // ─── Core functions ───────────────────────────────────────────────────────────
 
 /**
@@ -65,18 +79,26 @@ export interface LivePoint {
 export async function recordHeartbeat(
   payload: HeartbeatPayload
 ): Promise<LiveStats> {
-  const { workspaceId, visitorId, page, latitude, longitude, country } =
-    payload;
+  const {
+    workspaceId,
+    visitorId,
+    page,
+    latitude,
+    longitude,
+    country,
+    referrer,
+  } = payload;
   const normalizedWorkspaceId = normalizeWorkspaceId(workspaceId);
 
   const key = `live:${normalizedWorkspaceId}`;
-  // Member format: visitorId|page|latitude|longitude|country
+  // Member format: visitorId|page|latitude|longitude|country|referrer
   const member = [
     visitorId,
     page,
     latitude ?? "",
     longitude ?? "",
-    country ?? "",
+    encodeURIComponent(country ?? ""),
+    encodeURIComponent(referrer ?? ""),
   ].join("|");
   const now = Date.now();
   const cutoff = now - VISITOR_TTL_MS;
@@ -113,18 +135,42 @@ export async function getLiveStats(projectToken: string): Promise<LiveStats> {
   });
 
   if (!members || members.length === 0) {
-    return { count: 0, pages: [], points: [] };
+    return { count: 0, pages: [], points: [], referrers: [], countries: [] };
   }
 
   // Group by page and coordinates.
   const pageCounts = new Map<string, number>();
   const pointCounts = new Map<string, LivePoint>();
+  const referrerCounts = new Map<string, number>();
+  const countryCounts = new Map<string, number>();
 
   for (const member of members) {
-    const [visitorId = "", page = "/", latRaw = "", lonRaw = ""] =
-      member.split("|");
+    const [
+      visitorId = "",
+      page = "/",
+      latRaw = "",
+      lonRaw = "",
+      countryRaw = "",
+      referrerRaw = "",
+    ] = member.split("|");
 
     pageCounts.set(page, (pageCounts.get(page) ?? 0) + 1);
+
+    const decodedCountry = decodeURIComponent(countryRaw || "").trim();
+    if (decodedCountry) {
+      countryCounts.set(
+        decodedCountry,
+        (countryCounts.get(decodedCountry) ?? 0) + 1
+      );
+    }
+
+    const decodedReferrer = decodeURIComponent(referrerRaw || "").trim();
+    if (decodedReferrer) {
+      referrerCounts.set(
+        decodedReferrer,
+        (referrerCounts.get(decodedReferrer) ?? 0) + 1
+      );
+    }
 
     const latitude = Number(latRaw);
     const longitude = Number(lonRaw);
@@ -148,10 +194,24 @@ export async function getLiveStats(projectToken: string): Promise<LiveStats> {
     .map(([page, count]) => ({ page, count }))
     .sort((a, b) => b.count - a.count);
 
+  const countries: CountryStat[] = Array.from(countryCounts.entries())
+    .map(([country, count]) => ({
+      country,
+      code: country.toUpperCase(),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const referrers: ReferrerStat[] = Array.from(referrerCounts.entries())
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count);
+
   return {
     count: members.length,
     pages,
     points: Array.from(pointCounts.values()).sort((a, b) => b.value - a.value),
+    referrers,
+    countries,
   };
 }
 

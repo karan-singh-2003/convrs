@@ -29,6 +29,8 @@ interface LiveState {
   count: number;
   pages: PageStat[];
   points: LivePoint[];
+  referrers: { source: string; count: number }[];
+  countries: { country: string; code: string; count: number }[];
   connected: boolean;
 }
 
@@ -45,6 +47,8 @@ export function useLiveVisitors(projectToken: string | null): LiveState {
     count: 0,
     pages: [],
     points: [],
+    referrers: [],
+    countries: [],
     connected: false,
   });
 
@@ -76,6 +80,8 @@ export function useLiveVisitors(projectToken: string | null): LiveState {
         count: payload.count ?? 0,
         pages: payload.pages ?? [],
         points: payload.points ?? [],
+        referrers: payload.referrers ?? [],
+        countries: payload.countries ?? [],
       }));
     } catch {
       // Ignore transient polling failures; websocket or next poll will recover.
@@ -117,6 +123,8 @@ export function useLiveVisitors(projectToken: string | null): LiveState {
             count: msg.count ?? 0,
             pages: msg.pages ?? [],
             points: msg.points ?? [],
+            referrers: msg.referrers ?? [],
+            countries: msg.countries ?? [],
             connected: true,
           });
         }

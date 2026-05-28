@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     const latitudeHeader = req.headers.get("x-vercel-ip-latitude");
     const longitudeHeader = req.headers.get("x-vercel-ip-longitude");
     const countryHeader = req.headers.get("x-vercel-ip-country") ?? undefined;
+    const referrerHeader = req.headers.get("referer") ?? undefined;
 
     const latitude = latitudeHeader ? Number(latitudeHeader) : undefined;
     const longitude = longitudeHeader ? Number(longitudeHeader) : undefined;
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
       latitude: Number.isFinite(latitude) ? latitude : undefined,
       longitude: Number.isFinite(longitude) ? longitude : undefined,
       country: countryHeader,
+      referrer: referrerHeader,
     });
     return NextResponse.json(
       { ok: true },

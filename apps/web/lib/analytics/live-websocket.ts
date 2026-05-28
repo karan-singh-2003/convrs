@@ -6,7 +6,7 @@
  *
  * Protocol:
  *   Client → Server:  { type: "subscribe", workspaceId: "ws_xxx" }
- *   Server → Client:  { type: "live_count", count: 5, pages: [...] }
+ *   Server → Client:  { type: "live_count", count: 5, pages: [...], referrers: [...], countries: [...] }
  *   Server → Client:  { type: "ping" }  (keepalive every 30s)
  */
 
@@ -69,6 +69,8 @@ export function initWebSocketServer(server: Server): WebSocketServer {
             count: stats.count,
             pages: stats.pages,
             points: stats.points,
+            referrers: stats.referrers,
+            countries: stats.countries,
           });
         }
 

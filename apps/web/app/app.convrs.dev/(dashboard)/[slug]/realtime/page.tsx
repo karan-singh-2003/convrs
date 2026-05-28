@@ -200,6 +200,8 @@ export default function Dashboard() {
     count: liveCount,
     pages: livePages,
     points: livePoints,
+    referrers: liveReferrers,
+    countries: liveCountries,
   } = useLiveVisitors(projectToken ?? null);
 
   const globeDataPoints = useMemo<GlobeDataPoint[]>(
@@ -225,14 +227,24 @@ export default function Dashboard() {
       count: item.count,
     }));
 
+    const referrers =
+      liveReferrers.length > 0
+        ? liveReferrers
+        : [{ source: "No data", count: 0 }];
+
+    const countries =
+      liveCountries.length > 0
+        ? liveCountries
+        : [{ country: "No data", code: "US", count: 0 }];
+
     return {
       total: liveCount,
-      referrers: [{ source: "No data", count: 0 }],
-      countries: [{ country: "No data", code: "US", count: 0 }],
+      referrers,
+      countries,
       pages,
       globe: globeDataPoints,
     };
-  }, [liveCount, livePages, globeDataPoints]);
+  }, [liveCount, livePages, liveReferrers, liveCountries, globeDataPoints]);
 
   const hasLiveData = liveCount > 0 || livePages.length > 0;
 
