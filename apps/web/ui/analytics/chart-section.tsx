@@ -72,7 +72,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     onSelectFunnel: handleSelectFunnel,
   });
 
-  const { count: liveVisitorsCount } = useLiveVisitors(id ?? null);
+  const { count: liveVisitorsCount } = useLiveVisitors(projectToken ?? null);
 
   const tabs = useMemo(
     () =>

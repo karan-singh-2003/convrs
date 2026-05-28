@@ -102,8 +102,8 @@ export async function recordHeartbeat(
 /**
  * Get current live visitor count and page breakdown for a workspace.
  */
-export async function getLiveStats(workspaceId: string): Promise<LiveStats> {
-  const normalizedWorkspaceId = normalizeWorkspaceId(workspaceId);
+export async function getLiveStats(projectToken: string): Promise<LiveStats> {
+  const normalizedWorkspaceId = normalizeWorkspaceId(projectToken);
   const key = `live:${normalizedWorkspaceId}`;
   const cutoff = Date.now() - VISITOR_TTL_MS;
 

@@ -40,7 +40,7 @@ const BASE_DELAY_MS = 1_000;
 const POLL_INTERVAL_MS = 10_000;
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
-export function useLiveVisitors(workspaceId: string | null): LiveState {
+export function useLiveVisitors(projectToken: string | null): LiveState {
   const [state, setState] = useState<LiveState>({
     count: 0,
     pages: [],
@@ -55,11 +55,11 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
   const unmounted = useRef(false);
 
   const fetchLiveCount = useCallback(async () => {
-    if (!workspaceId || unmounted.current) return;
+    if (!projectToken || unmounted.current) return;
 
     try {
       const response = await fetch(
-        `${LIVE_COUNT_API}?workspaceId=${encodeURIComponent(workspaceId)}`,
+        `${LIVE_COUNT_API}?projectToken=${encodeURIComponent(projectToken)}`,
         {
           method: "GET",
           cache: "no-store",
@@ -80,10 +80,10 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
     } catch {
       // Ignore transient polling failures; websocket or next poll will recover.
     }
-  }, [workspaceId]);
+  }, [projectToken]);
 
   const connect = useCallback(() => {
-    if (!workspaceId || unmounted.current) return;
+    if (!projectToken || unmounted.current) return;
 
     const shouldUseWebSocket = Boolean(process.env.NEXT_PUBLIC_WS_URL);
     if (!shouldUseWebSocket) {
@@ -105,7 +105,7 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
       setState((s) => ({ ...s, connected: true }));
 
       // Subscribe to this workspace's live feed
-      ws.send(JSON.stringify({ type: "subscribe", workspaceId }));
+      ws.send(JSON.stringify({ type: "subscribe", projectToken }));
     };
 
     ws.onmessage = (event) => {
@@ -145,7 +145,7 @@ export function useLiveVisitors(workspaceId: string | null): LiveState {
     ws.onerror = () => {
       ws.close(); // triggers onclose which handles reconnect
     };
-  }, [workspaceId]);
+  }, [projectToken]);
 
   useEffect(() => {
     unmounted.current = false;

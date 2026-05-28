@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getLiveStats } from "@/lib/analytics/live-visitors";
 
 export async function GET(req: NextRequest) {
-  const workspaceId = req.nextUrl.searchParams.get("workspaceId");
+  const projectToken = req.nextUrl.searchParams.get("projectToken");
 
-  if (!workspaceId) {
+  if (!projectToken) {
     return NextResponse.json(
-      { ok: false, error: "workspaceId required" },
+      { ok: false, error: "projectToken required" },
       { status: 400 }
     );
   }
 
   try {
-    const stats = await getLiveStats(workspaceId);
+    const stats = await getLiveStats(projectToken);
     return NextResponse.json({ ok: true, ...stats }, { status: 200 });
   } catch (error) {
     console.error("[api/live/count] Error:", error);
