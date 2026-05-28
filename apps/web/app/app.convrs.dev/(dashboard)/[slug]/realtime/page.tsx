@@ -337,24 +337,36 @@ export default function Dashboard() {
             count={dashboardData.countries[0].count}
             onExpand={() => handleExpand("countries")}
             renderValue={() => {
-              const country = dashboardData.countries[0].country || "Unknown";
+              const rawCountry =
+                dashboardData.countries[0].country || "Unknown";
+              const rawCode = dashboardData.countries[0].code || "";
 
-              const countryCode =
-                Object.entries(COUNTRIES)
-                  .find(([, name]) => name === country)?.[0]
-                  ?.toLowerCase() || "unknown";
+              const countryCode = (
+                rawCode.length === 2
+                  ? rawCode
+                  : Object.entries(COUNTRIES).find(
+                      ([, name]) => name === rawCountry
+                    )?.[0] || "unknown"
+              ).toLowerCase();
+
+              const countryName =
+                rawCode.length === 2
+                  ? COUNTRIES[
+                      rawCode.toUpperCase() as keyof typeof COUNTRIES
+                    ] || rawCountry
+                  : rawCountry;
 
               return (
                 <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
                   {countryCode !== "unknown" && (
                     <img
-                      alt={country}
+                      alt={countryName}
                       src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
                       className="size-5 shrink-0 rounded-full"
                     />
                   )}
 
-                  <span>{country}</span>
+                  <span>{countryName}</span>
                 </div>
               );
             }}
