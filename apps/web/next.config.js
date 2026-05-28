@@ -24,8 +24,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/analytics.js",
-        destination: "/api/analytics.js",
+        source: "/script.js",
+        destination: "https://ingest.convrs.dev/api/track",
       },
     ];
   },
@@ -33,7 +33,7 @@ const nextConfig = {
     return [
       {
         source: "/api/track",
-        destination: "https://ingest.karanbuilds.me/api/:path*",
+        destination: "https://ingest.convrs.dev/api/track",
       },
     ];
   },

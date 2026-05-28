@@ -55,7 +55,7 @@
 
   // Get script src safely
   var _src = (_script && _script.src) || "";
-  var isCDN = _src.includes("cdn.karanbuilds.me");
+  // var isCDN = _src.includes("cdn.karanbuilds.me");
 
   function normalizeApiEndpoint(value) {
     if (value == null) return null;
@@ -84,9 +84,12 @@
     }
   }
 
-  var _defaultEndpoint = isCDN
-    ? "http://ingest.convrs.dev/api/track"
-    : new URL("/api/track", window.location.origin).href;
+  // var _defaultEndpoint = isCDN
+  //   ? "http://ingest.convrs.dev/api/track"
+  //   : new URL("/api/track", window.location.origin).href;
+  var _defaultEndpoint = _src
+    ? new URL("/api/track", _src).href
+    : "http://localhost:3000/api/track";
   var _rawApi = attr("data-api");
   var _sanitizedApi = normalizeApiEndpoint(_rawApi);
   var _invalidApiValue = _rawApi && !_sanitizedApi ? _rawApi : null;
@@ -620,9 +623,12 @@
   // Pauses when tab is hidden to save bandwidth.
 
   var _heartbeatInterval = null;
-  var _liveEndpoint = isCDN
-    ? "http://localhost:8888/api/live/heartbeat"
-    : new URL("/api/live/heartbeat", window.location.origin).href;
+  // var _liveEndpoint = isCDN
+  //   ? "http://localhost:8888/api/live/heartbeat"
+  //   : new URL("/api/live/heartbeat", window.location.origin).href;
+  var _liveEndpoint = _src
+    ? new URL("/api/live/heartbeat", _src).href
+    : "http://localhost:3000/api/live/heartbeat";
 
   function sendHeartbeat() {
     if (!_enabled || isOptedOut()) return;
