@@ -6,7 +6,6 @@ import { SCIM } from "./scim";
 import { PageContent } from "@/ui/layout/page-content";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
-import { TrackingFilters } from "../script/tracking-filters";
 import { Switch } from "@repo/ui";
 
 const page = () => {
@@ -40,7 +39,7 @@ const page = () => {
         }
       >
         <div className="flex justify-between items-center w-full">
-         
+
         </div>
       </SettingsChildrenLayout>
     </PageWidthWrapper>

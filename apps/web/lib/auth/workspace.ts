@@ -93,6 +93,24 @@ export const withWorkspace = (
           headers: { "Content-Type": "application/json" },
         });
       }
+      //  workspace exits but trail expired
+      if (
+        workspace &&
+        workspace.subscriptionStatus === "trialing" &&
+        workspace.freeTrialEndDate &&
+        workspace.freeTrialEndDate <= new Date()
+      ) {
+        await prisma.workspace.update({
+          where: {
+            id: workspace.id,
+          },
+          data: {
+            subscriptionStatus: "inactive",
+          },
+        });
+
+        workspace.subscriptionStatus = "inactive";
+      }
 
       // workspace exits but user is not a member
       if (workspace.users.length === 0) {

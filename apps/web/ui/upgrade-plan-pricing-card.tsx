@@ -3,6 +3,8 @@
 import { PLANS } from "@repo/utils";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { UpgradePlanButton } from "@/ui/upgrade-plan";
+import useWorkspace from "@/lib/swr/use-workspace";
+import { Loader2 } from "lucide-react";
 
 const EVENT_TIERS = PLANS.map((plan) => ({
   label:
@@ -16,6 +18,22 @@ const EVENT_TIERS = PLANS.map((plan) => ({
 }));
 
 export function UpgradePlanPricingCard() {
+  const { freeTrialEndDate, loading, error } = useWorkspace()
+  if (loading) {
+    return (
+      <div className="flex h-[425px] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    )
+  }
+  if (error || !freeTrialEndDate) {
+    return (
+      <div>
+        {error}
+      </div>
+    )
+  }
+  const freeTrailEnabled = freeTrialEndDate > new Date();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly"
   );
@@ -42,8 +60,7 @@ export function UpgradePlanPricingCard() {
 
   const ariaLabel = useMemo(
     () =>
-      `Select ${selectedTier.label} events for $${selectedPrice}/${
-        billingCycle === "yearly" ? "yr" : "mo"
+      `Select ${selectedTier.label} events for $${selectedPrice}/${billingCycle === "yearly" ? "yr" : "mo"
       } on ${billingCycle} billing`,
     [selectedTier.label, selectedPrice, billingCycle]
   );
@@ -131,11 +148,10 @@ export function UpgradePlanPricingCard() {
               type="button"
               onClick={() => setBillingCycle("monthly")}
               aria-pressed={billingCycle === "monthly"}
-              className={`flex h-28 flex-col gap-y-2 rounded-[16px] border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${
-                billingCycle === "monthly"
-                  ? "border-neutral-700 bg-neutral-100 text-neutral-900"
-                  : "border-neutral-200 bg-white text-neutral-500"
-              }`}
+              className={`flex h-28 flex-col gap-y-2 rounded-[16px] border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${billingCycle === "monthly"
+                ? "border-neutral-700 bg-neutral-100 text-neutral-900"
+                : "border-neutral-200 bg-white text-neutral-500"
+                }`}
             >
               <div className="text-[12px] font-medium font-display tracking-wide text-neutral-500 sm:text-[13px] md:text-[14px]">
                 Monthly
@@ -149,14 +165,13 @@ export function UpgradePlanPricingCard() {
               type="button"
               onClick={() => setBillingCycle("yearly")}
               aria-pressed={billingCycle === "yearly"}
-              className={`flex h-28 flex-col gap-y-2 rounded-[16px] border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${
-                billingCycle === "yearly"
-                  ? "border-neutral-700 bg-neutral-100 text-neutral-900"
-                  : "border-neutral-200 bg-white text-neutral-500"
-              }`}
+              className={`flex h-28 flex-col gap-y-2 rounded-[16px] border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${billingCycle === "yearly"
+                ? "border-neutral-700 bg-neutral-100 text-neutral-900"
+                : "border-neutral-200 bg-white text-neutral-500"
+                }`}
             >
               <div className="text-[12px] font-medium font-display tracking-wide text-neutral-500 sm:text-[13px] md:text-[14px]">
-               Yearly
+                Yearly
               </div>
               <div className="mt-2 font-bricolageGrotesque text-[22px] font-semibold text-neutral-900 sm:text-[26px] md:text-[28px]">
                 ${Math.round(yearlyPrice)}
@@ -187,6 +202,7 @@ export function UpgradePlanPricingCard() {
               </div>
             </div>
             <UpgradePlanButton
+              showTrialLabel={freeTrailEnabled}
               plan={selectedTier.name.toLowerCase()}
               period={billingCycle}
               className="h-10 w-full rounded-full border-0 bg-black text-[15px] font-medium font-display text-white hover:bg-neutral-900 md:w-[240px]"

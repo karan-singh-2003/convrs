@@ -38,6 +38,10 @@ export function LocationSection() {
     );
   }, []);
 
+  useEffect(() => {
+    console.log("selectedItems", selectedItems);
+  }, [selectedItems]);
+
   const onApplyFilterValues = useCallback(
     (values: string[]) => {
       if (values.length === 0) {
@@ -100,9 +104,8 @@ export function LocationSection() {
             ? CONTINENTS[d.continent]
             : tab === "countries"
               ? COUNTRIES[d.country]
-              : `${tab === "cities" ? `${d.city}, ` : ""}${
-                  REGIONS[d.region] || d.region?.split("-")[1]
-                }`,
+              : `${tab === "cities" ? `${d.city}, ` : ""}${REGIONS[d.region] || d.region?.split("-")[1]
+              }`,
 
         filterValue: d[singularTabName],
         value: d[dataKey] || 0,
@@ -128,6 +131,7 @@ export function LocationSection() {
         data ? (
           mapData(data).length > 0 ? (
             <BarList
+              placeholder={`${tab}`}
               tab={singularTabName}
               data={mapData(data)}
               allData={mapData(allData || [])}
@@ -147,6 +151,7 @@ export function LocationSection() {
               onClearFilter={onClearFilter}
               onClearSelection={() => setSelectedItems([])}
               onApplyFilterValues={onApplyFilterValues}
+              onRowFilterItem={(val) => onApplyFilterValues([val])}
               {...(limit && { limit })}
             />
           ) : (

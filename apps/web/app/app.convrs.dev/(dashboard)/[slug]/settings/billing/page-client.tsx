@@ -205,6 +205,7 @@ const BillingClient = () => {
     freeTrialEndDate,
     subscriptionStatus,
     usageLimit,
+    usage
   } = useWorkspace();
 
   const { setShowUpgradePlanModal, UpgradePlanModal } =
@@ -303,11 +304,10 @@ const BillingClient = () => {
               </h3>
               <p className="text-[13.5px] font-display text-neutral-500">
                 {subscriptionStatus === "trialing"
-                  ? `14 days Free Trial (${
-                      freeTrialEndDate
-                        ? `ends on ${new Date(freeTrialEndDate).toLocaleDateString()}`
-                        : "loading..."
-                    })`
+                  ? `14 days Free Trial (${freeTrialEndDate
+                    ? `ends on ${new Date(freeTrialEndDate).toLocaleDateString()}`
+                    : "loading..."
+                  })`
                   : isLoading
                     ? "Loading..."
                     : billingStart && billingEnd
@@ -339,6 +339,21 @@ const BillingClient = () => {
               )}
             </div>
           </div>
+
+
+
+        </SettingsChildrenLayout>
+        <SettingsChildrenLayout
+          title="Usage"
+          description="See Your Monthly Used Events"
+          className="px-3 lg:px-8">
+          {usageLimit !== undefined && (
+            <div className="px-1 space-y-1">
+              <p className="text-[14px] font-medium font-display text-neutral-500">
+                You have used {formatCompactNumber(usage)} of {formatCompactNumber(usageLimit)} monthly events.
+              </p>
+            </div>
+          )}
         </SettingsChildrenLayout>
       </div>
     </>

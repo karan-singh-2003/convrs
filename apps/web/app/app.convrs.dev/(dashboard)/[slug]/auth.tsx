@@ -8,7 +8,9 @@ import { ReactNode } from "react";
 
 export default function WorkspaceAuth({ children }: { children: ReactNode }) {
   const { slug } = useParams();
-  const { loading, error } = useWorkspace();
+  const { loading, error, } = useWorkspace();
+
+ 
 
   if (loading) {
     return <LayoutLoader />;

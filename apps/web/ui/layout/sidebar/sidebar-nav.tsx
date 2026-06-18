@@ -8,6 +8,7 @@ import { Button } from "@repo/ui";
 import { WorkspaceDropdown } from "./workspace-dropdown";
 import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { FreeTrialBanner } from "./free-trial-banner";
 
 export type NavItemType = {
   title: string;
@@ -44,6 +45,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
         currentArea === "default" ? "px-3  md:px-0 py-2" : "px-0 p-2"
       )}
     >
+     
       <nav className="size-full">
         <div className="size-full overflow-visible md:overflow-hidden rounded-none">
           <div className="scrollbar-hide relative flex h-full overflow-y-auto overflow-x-visible md:overflow-x-hidden">
@@ -83,7 +85,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                           {area !== "default" && backHref && (
                             <Link href={`/${slug}`} className="px-3 py-1 text-[13.5px] flex items-center gap-x-2 md:hidden  mb-3 text-neutral-600 font-default font-medium">
                               <ArrowLeft size={14} />
-                             
+
                               {title === "Settings"
                                 ? "Workspaces"
                                 : "Dashboard"}

@@ -14,11 +14,13 @@ type Props = {
   variant?: "primary" | "secondary";
   className?: string;
   disabled?: boolean;
+  showTrialLabel?:boolean
 };
 
 export function UpgradePlanButton({
   plan,
   period,
+  showTrialLabel,
   text,
   variant = "primary",
   className,
@@ -55,8 +57,7 @@ export function UpgradePlanButton({
 
   const isTrialing = subscriptionStatus === "trialing";
 
-  const showTrialLabel =
-    plan.toLowerCase() === "starter" && period === "monthly";
+
 
   const buttonLabel =
     text ??

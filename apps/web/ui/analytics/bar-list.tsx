@@ -37,7 +37,10 @@ export function BarList({
   onClearFilter,
   onClearSelection,
   onApplyFilterValues,
+  placeholder,
+  onRowFilterItem,
 }: {
+  placeholder?: string;
   tab: string;
   unit: string;
   data: {
@@ -70,6 +73,7 @@ export function BarList({
   onToggleFilter?: (val: string) => void;
   onClearFilter?: () => void;
   onClearSelection?: () => void;
+  onRowFilterItem?: (val: string) => void;
   onApplyFilterValues?: (values: string[]) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -99,23 +103,25 @@ export function BarList({
 
   const sourceData = !limit && allData ? allData : data;
 
-  // Calculate total sum for percentage calculations
   const totalSum = useMemo(
-    () => sourceData.reduce((sum, item) => item.value, 0),
+    () => sourceData.reduce((sum, item) => sum + item.value, 0),
     [sourceData]
   );
+  const [inputValue, setInputValue] = useState("");
 
   // TODO: mock pagination for better perf in React
   const filteredData = useMemo(() => {
     if (limit) {
       return data.slice(0, limit);
-    } else {
-      return search
-        ? sourceData.filter((d) =>
-            d.title.toLowerCase().includes(search.toLowerCase())
-          )
-        : sourceData;
     }
+
+    const searchLower = search.toLowerCase();
+
+    return search
+      ? sourceData.filter((d) =>
+        (d.title ?? d.filterValue ?? "").toLowerCase().includes(searchLower)
+      )
+      : sourceData;
   }, [data, sourceData, limit, search]);
 
   const { isMobile } = useMediaQuery();
@@ -141,6 +147,15 @@ export function BarList({
           ? () => onToggleFilter(data.filterValue!)
           : undefined
       : undefined,
+    onRowClick:
+      data.filterValue && onRowFilterItem
+        ? !limit
+          ? () => {
+            onRowFilterItem(data.filterValue!);
+            setShowModal(false);
+          }
+          : () => onRowFilterItem(data.filterValue!)
+        : undefined,
   }));
 
   // Removed filterButtons: No Filter/Clear buttons when clicking a bar
@@ -176,20 +191,27 @@ export function BarList({
   } else {
     return (
       <>
-        <div className="relative px-2 py-2 my-3 md:my-1 sm:px-4 sm:py-3">
-          <div className="pointer-events-none absolute inset-y-0 left-5 sm:left-7 flex items-center">
-            <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-neutral-400" />
+        <div className="px-2 py-2 border-b border-neutral-200 sm:px-4 sm:py-3">
+          <div className="flex overflow-hidden focus:border-1 border-neutral-200 rounded-full w-full bg-neutral-100">
+            <input
+              type="text"
+              placeholder={`Search ${placeholder}`}
+              autoFocus={!isMobile}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { setSearch(inputValue); } }}
+              className="w-full border-0 focus:border-0 bg-neutral-100 rounded-full font-default border-neutral-300 py-2 md:py-2.5 text-sm text-black placeholder:text-neutral-400 px-5 focus:border-neutral-500 focus:outline-none focus:ring-0 sm:text-[15px]"
+            />
+            <button
+              type="button"
+              onClick={() => setSearch(inputValue)}
+              className="flex items-center justify-center pr-4 pl-3 bg-neutral-700 text-white hover:bg-neutral-700 transition-colors"
+            >
+              <Search className="h-4 w-4" />
+            </button>
           </div>
-          <input
-            type="text"
-            autoFocus={!isMobile}
-            className="w-full rounded-none border font-default border-neutral-300 py-2 md:py-2 pl-8 sm:pl-9 text-sm text-black placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-0 sm:text-[15px]"
-            placeholder={`Search ${tab}`}
-            onChange={(e) => setSearch(e.target.value)}
-          />
         </div>
-        <div className="relative  ">
-          <div className="h-[45vh] overflow-auto pb-3 sm:pb-4 sm:h-[50vh] md:h-[40vh]">
+        <div className="relative my-2  ">
+          <div className="h-[45vh] overflow-auto scrollbar pb-3 sm:pb-4 sm:h-[50vh] md:h-[40vh]">
             {bars}
           </div>
         </div>
@@ -210,6 +232,7 @@ export function LineItem({
   linkData,
   limit,
   isSelected,
+  onRowClick,
   onFilterClick,
   href,
 }: {
@@ -226,6 +249,7 @@ export function LineItem({
   isSelected?: boolean;
   onFilterClick?: () => void;
   href?: string;
+  onRowClick?: () => void;
 }) {
   const [filterButtonHovered, setFilterButtonHovered] = useState(false);
   const [tooltipResetKey, setTooltipResetKey] = useState(0);
@@ -234,7 +258,7 @@ export function LineItem({
 
   const percentage = Math.round((value / totalSum) * 1000) / 10;
   const isModalView = !limit;
-
+  console.log("total sum", totalSum, "value", value, "percentage", percentage);
   const lineItem = (
     <div className="z-10 flex items-center space-x-2  overflow-hidden ">
       {icon ? (
@@ -289,16 +313,25 @@ export function LineItem({
 
   return (
     <div
+      // onClick={() => {
+      //   if (onFilterClick) {
+      //     // this shoudl filter 
+      //     onFilterClick();
+      //   } else if (href && !onFilterClick) {
+      //     router.push(href);
+      //     setShowModal(false);
+      //   }
+      // }}
       onClick={() => {
-        if (onFilterClick) {
-          onFilterClick();
-        } else if (href && !onFilterClick) {
+        if (onRowClick) {
+          onRowClick();
+        } else if (href) {
           router.push(href);
           setShowModal(false);
         }
       }}
       className={cn(
-        "group block min-w-0 border-l-2 border-transparent py-0.5 sm:py-1 transition-all",
+        "group block min-w-0 p-0 border-l-0 border-transparent py-0.5 sm:py-1 transition-all",
         rowClickable && "cursor-pointer"
       )}
     >
@@ -341,15 +374,15 @@ export function LineItem({
             locales="en-US"
             format={
               (unit === "sales" && saleUnit === "saleAmount") ||
-              unit === "revenue"
+                unit === "revenue"
                 ? {
-                    style: "currency",
-                    currency: "USD",
-                    currencyDisplay: "symbol", // ensures "$" instead of "US$"
-                  }
+                  style: "currency",
+                  currency: "USD",
+                  currencyDisplay: "symbol", // ensures "$" instead of "US$"
+                }
                 : {
-                    notation: value > 999999 ? "compact" : "standard",
-                  }
+                  notation: value > 999999 ? "compact" : "standard",
+                }
             }
           />
           <div

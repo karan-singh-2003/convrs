@@ -80,10 +80,10 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    if (workspace.subscriptionStatus === "canceled") {
+    if (workspace.subscriptionStatus === "inactive") {
       return res.status(403).json({
         success: false,
-        error: "Subscription canceled",
+        error: "Subscription inactive",
       });
     }
 

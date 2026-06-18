@@ -22,7 +22,7 @@ type TimeseriesResponse = {
 };
 
 function getNiceUpperBound(value: number): number {
-  if (value <= 0) return 100;
+  if (value <= 0) return 0;
 
   const magnitude = 10 ** Math.floor(Math.log10(value));
   const normalized = value / magnitude;
@@ -176,10 +176,7 @@ export default function DashboardGraph({
             }
           />
           <YAxis
-            tickValues={yTickValues}
-            numTicks={3}
-            showGridLines
-            tickFormat={nFormatter}
+          
           />
         </TimeSeriesChart>
       </div>

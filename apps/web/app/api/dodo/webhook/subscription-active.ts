@@ -81,13 +81,12 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
     data.status === "active";
 
   // ── Idempotency & conflict check ───────────────────────────────────────────
-  // If this workspace already has this customer ID assigned, just update subscription details.
-  // If a different workspace has this customer ID, that's a data conflict (shouldn't happen).
+  // Case 1: this workspace already has a *different* dodoCustomerId assigned.
+  // That's a hard conflict (shouldn't happen) — log and abort.
   if (
     existingWorkspace.dodoCustomerId &&
     existingWorkspace.dodoCustomerId !== data.customer.customer_id
   ) {
-    // Customer ID mismatch: log and abort
     console.warn(
       `[dodo/subscription-active] Customer ID mismatch for workspace ${workspaceId}: ` +
         `existing=${existingWorkspace.dodoCustomerId}, incoming=${data.customer.customer_id}`
@@ -95,33 +94,91 @@ export async function subscriptionActive(data: DodoSubscriptionPayload) {
     return NextResponse.json({ received: true });
   }
 
+  // Case 2: this workspace has no dodoCustomerId yet, but the incoming
+  // customer_id might already be attached to a DIFFERENT workspace (e.g. the
+  // same billing email was used to start a subscription for another
+  // workspace previously). Since dodoCustomerId is @unique on Workspace,
+  // writing it here would violate that constraint — this is what was
+  // throwing P2002. Check ahead of time so we can skip the field gracefully
+  // instead of crashing the write.
+  let shouldSetCustomerId = existingWorkspace.dodoCustomerId === null;
+
+  if (shouldSetCustomerId) {
+    const ownerOfCustomerId = await prisma.workspace.findUnique({
+      where: { dodoCustomerId: data.customer.customer_id },
+      select: { id: true },
+    });
+
+    if (ownerOfCustomerId && ownerOfCustomerId.id !== workspaceId) {
+      console.warn(
+        `[dodo/subscription-active] customer_id ${data.customer.customer_id} is already ` +
+          `attached to workspace ${ownerOfCustomerId.id}, not ${workspaceId}. ` +
+          `Skipping dodoCustomerId assignment to avoid unique constraint violation.`
+      );
+      shouldSetCustomerId = false;
+    }
+  }
+
   // ── Write to DB ────────────────────────────────────────────────────────────
-  const workspace = await prisma.workspace.update({
-    where: { id: workspaceId },
-    data: {
-      // Only set dodoCustomerId if not already set (idempotent).
-      // This prevents unique constraint violations on re-webhooks.
-      ...(existingWorkspace.dodoCustomerId === null && {
-        dodoCustomerId: data.customer.customer_id,
-      }),
-      dodoSubscriptionId: data.subscription_id,
+  let workspace;
+  try {
+    workspace = await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: {
+        // Only set dodoCustomerId if it's unset AND not already owned by
+        // another workspace (checked above).
+        ...(shouldSetCustomerId && {
+          dodoCustomerId: data.customer.customer_id,
+        }),
+        dodoSubscriptionId: data.subscription_id,
 
-      subscriptionStatus: data.status, // "active"
-      billingInterval,
-      currentPeriodEnd,
+        subscriptionStatus: data.status, // "active"
+        billingInterval,
+        currentPeriodEnd,
 
-      plan: plan.name.toLowerCase().replace(/\s+/g, "_") as WorkspacePlan,
-      tierEvents: plan.limits.events,
-      usageLimit: plan.limits.events,
-    },
-    select: {
-      users: {
-        select: {
-          user: { select: { id: true, name: true, email: true } },
+        plan: plan.name.toLowerCase().replace(/\s+/g, "_") as WorkspacePlan,
+        tierEvents: plan.limits.events,
+        usageLimit: plan.limits.events,
+      },
+      select: {
+        users: {
+          select: {
+            user: { select: { id: true, name: true, email: true } },
+          },
         },
       },
-    },
-  });
+    });
+  } catch (err: any) {
+    // Defensive fallback for the race window between the check above and
+    // this write (e.g. two webhooks for the same customer arriving at once).
+    // If it's the dodoCustomerId unique constraint, retry once without it.
+    if (err?.code === "P2002" && shouldSetCustomerId) {
+      console.warn(
+        `[dodo/subscription-active] dodoCustomerId race detected for workspace ${workspaceId}, retrying without it`
+      );
+      workspace = await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: {
+          dodoSubscriptionId: data.subscription_id,
+          subscriptionStatus: data.status,
+          billingInterval,
+          currentPeriodEnd,
+          plan: plan.name.toLowerCase().replace(/\s+/g, "_") as WorkspacePlan,
+          tierEvents: plan.limits.events,
+          usageLimit: plan.limits.events,
+        },
+        select: {
+          users: {
+            select: {
+              user: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
+      });
+    } else {
+      throw err;
+    }
+  }
 
   const users = workspace.users.map(({ user }) => ({
     id: user.id,

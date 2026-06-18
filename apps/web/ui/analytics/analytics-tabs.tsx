@@ -107,108 +107,123 @@ export function AnalyticsTabs({
               : (totalEvents?.[id] ?? 0);
             const hasData =
               isLiveVisitorsTab || totalEvents?.[id] !== undefined;
+            const isClickable = id === "clicks" || id === "revenue";
 
-            return (
-              <div key={id} className="relative z-0 flex min-w-0 w-full">
-                <Link
-                  className={cn(
-                    "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2 sm:min-h-[134px] sm:px-4 sm:py-3",
-                    "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
-                    "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
-                  )}
-                  href={tabHref(id)}
-                  aria-current
-                >
-                  <div className="flex  items-start gap-2.5 text-[12px] text-neutral-500 sm:h-5 sm:items-center sm:text-[14px]">
-                    <span className="font-default font-medium ">{label}</span>
-                  </div>
+            const cardContent = (
+              <>
+                <div className="flex items-start gap-2.5 text-[12px] text-neutral-500 sm:h-5 sm:items-center sm:text-[14px]">
+                  <span className="font-default font-medium">{label}</span>
+                </div>
 
-                  <div className="flex items-start flex-col gap-y-1 justify-between">
-                    <div className=" flex md:h-12   items-center">
-                      {hasData ? (
-                        id === "avg_session_duration" ? (
-                          <div
-                            className={cn(
-                              "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
-                              showPaywall && "opacity-30"
-                            )}
-                          >
-                            {formatDuration(value)}
-                          </div>
-                        ) : (
-                          <NumberFlow
-                            value={value}
-                            format={
-                              isRevenueTab
-                                ? {
-                                    style: "currency",
-                                    currency: country === "US" ? "USD" : "USD",
-                                    currencyDisplay: "symbol", // ensures "$" instead of "US$"
-                                  }
-                                : undefined
-                            }
-                            locales="en-US"
-                            className={cn(
-                              "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
-                              showPaywall && "opacity-30"
-                            )}
-                          />
-                        )
-                      ) : requiresUpgrade ? (
-                        <div className="block rounded-full bg-neutral-100 p-2.5">
-                          <Lock className="h-4 w-4 text-neutral-500" />
+                <div className="flex items-start flex-col gap-y-1 justify-between">
+                  <div className="flex md:h-12 items-center">
+                    {hasData ? (
+                      id === "avg_session_duration" ? (
+                        <div
+                          className={cn(
+                            "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                            showPaywall && "opacity-30"
+                          )}
+                        >
+                          {formatDuration(value)}
                         </div>
                       ) : (
-                        <div className="h-9 w-16 animate-pulse rounded-none bg-neutral-200" />
-                      )}
-                    </div>
-                    {/* Percentage change badge */}
-                    <div className="min-h-5">
-                      {(() => {
-                        const change = percentageChanges?.[id];
-                        const hasChange =
-                          change !== undefined && change !== null;
-                        const hasDataForChange = isLiveVisitorsTab
-                          ? liveVisitorsCount !== undefined
-                          : totalEvents?.[id] !== undefined;
-
-                        if (!hasChange || !hasDataForChange) {
-                          return null;
-                        }
-
-                        const direction = getChangeDirection(change);
-
-                        // Determine colors based on direction
-                        let textColor: string;
-                        let icon: React.ReactNode;
-
-                        if (direction === "up") {
-                          textColor = "text-[#46AE56]";
-                          icon = <ArrowUp className="h-3 w-3" />;
-                        } else if (direction === "down") {
-                          textColor = "text-[#ff3b30]";
-                          icon = <ArrowDown className="h-3 w-3" />;
-                        } else {
-                          // Neutral - orange/yellow shades
-                          textColor = "text-[#ff9500]";
-                          icon = <span className="text-[#ff9500]">−</span>;
-                        }
-
-                        return (
-                          <div
-                            className={cn(
-                              "inline-flex items-center gap-1 rounded-full text-[13.5px] font-display",
-                              textColor
-                            )}
-                          >
-                            {icon}
-                            <span>{formatPercentageChange(change)}</span>
-                          </div>
-                        );
-                      })()}
-                    </div>
+                        <NumberFlow
+                          value={value}
+                          format={
+                            isRevenueTab
+                              ? {
+                                style: "currency",
+                                currency: country === "US" ? "USD" : "USD",
+                                currencyDisplay: "symbol",
+                              }
+                              : undefined
+                          }
+                          locales="en-US"
+                          className={cn(
+                            "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                            showPaywall && "opacity-30"
+                          )}
+                        />
+                      )
+                    ) : requiresUpgrade ? (
+                      <div className="block rounded-full bg-neutral-100 p-2.5">
+                        <Lock className="h-4 w-4 text-neutral-500" />
+                      </div>
+                    ) : (
+                      <div className="h-9 w-16 animate-pulse rounded-none bg-neutral-200" />
+                    )}
                   </div>
-                </Link>
+
+                  <div className="min-h-5">
+                    {(() => {
+                      const change = percentageChanges?.[id];
+                      const hasChange =
+                        change !== undefined && change !== null;
+                      const hasDataForChange = isLiveVisitorsTab
+                        ? liveVisitorsCount !== undefined
+                        : totalEvents?.[id] !== undefined;
+
+                      if (!hasChange || !hasDataForChange) {
+                        return null;
+                      }
+
+                      const direction = getChangeDirection(change);
+
+                      let textColor: string;
+                      let icon: React.ReactNode;
+
+                      if (direction === "up") {
+                        textColor = "text-[#46AE56]";
+                        icon = <ArrowUp className="h-3 w-3" />;
+                      } else if (direction === "down") {
+                        textColor = "text-[#ff3b30]";
+                        icon = <ArrowDown className="h-3 w-3" />;
+                      } else {
+                        textColor = "text-[#ff9500]";
+                        icon = <span className="text-[#ff9500]">−</span>;
+                      }
+
+                      return (
+                        <div
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full text-[13.5px] font-display",
+                            textColor
+                          )}
+                        >
+                          {icon}
+                          <span>{formatPercentageChange(change)}</span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </>
+            );
+            return (
+              <div key={id} className="relative z-0 flex min-w-0 w-full">
+                {isClickable ? (
+                  <Link
+                    href={tabHref(id)}
+                    aria-current
+                    className={cn(
+                      "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2 sm:min-h-[134px] sm:px-4 sm:py-3",
+                      "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
+                      "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
+                    )}
+                  >
+                    {cardContent}
+                  </Link>
+                ) : (
+                  <div
+                    className={cn(
+                      "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2 sm:min-h-[134px] sm:px-4 sm:py-3",
+                      "ring-inset ring-neutral-500 sm:first:rounded-tl-xl"
+                    )}
+                  >
+                    {cardContent}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -249,3 +264,5 @@ export function formatDuration(seconds: number): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 }
+
+

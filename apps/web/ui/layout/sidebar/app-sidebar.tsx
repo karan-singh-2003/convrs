@@ -4,16 +4,19 @@ import { useSession } from "next-auth/react";
 import useWorkspaces from "@/lib/swr/use-workspaces";
 import { useEffect, useMemo } from "react";
 import { SidebarNav } from "./sidebar-nav";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 const NAV_AREAS = {
   default: ({
     slug,
     pathname,
     queryString,
+    premiumAccess,
   }: {
     slug?: string;
     pathname: string;
     queryString?: string;
+    premiumAccess: boolean;
   }) => ({
     title: "",
     content: [
@@ -26,10 +29,12 @@ const NAV_AREAS = {
 
   workspaceSettings: ({
     slug,
+    premiumAccess,
   }: {
     slug?: string;
     pathname: string;
     queryString?: string;
+    premiumAccess: boolean;
   }) => ({
     title: "Back to Workspace",
     backHref: `/${slug}`,
@@ -39,19 +44,21 @@ const NAV_AREAS = {
         items: [
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
-          // { title: "Security", href: `/${slug}/settings/security` },
           { title: "Billing", href: `/${slug}/settings/billing` },
-          { title: "Revenue", href: `/${slug}/settings/revenue` },
-          { title: "Alerts", href: `/${slug}/settings/alerts` },
-          // { title: "Reports", href: `/${slug}/settings/reports` },
+          ...(premiumAccess
+            ? [
+                { title: "Revenue", href: `/${slug}/settings/revenue` },
+                { title: "Alerts", href: `/${slug}/settings/alerts` },
+              ]
+            : []),
         ],
       },
       {
         heading: "Developer",
         items: [
-          // { title: "API keys", href: `/${slug}/settings/tokens` },
-          { title: "Script", href: `/${slug}/settings/script` },
-          // { title: "Webhooks", href: `/${slug}/settings/webhooks` },
+          ...(premiumAccess
+            ? [{ title: "Script", href: `/${slug}/settings/script` }]
+            : []),
         ],
       },
     ],
@@ -63,6 +70,7 @@ const NAV_AREAS = {
     slug?: string;
     pathname: string;
     queryString?: string;
+    premiumAccess: boolean;
   }) => ({
     title: "Account Settings",
     backHref: `/${slug}`,
@@ -82,16 +90,19 @@ export function AppSidebar({
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const { workspaces } = useWorkspaces();
+  const { subscriptionStatus } = useWorkspace();
 
-  // Store the current workspace slug in session storage so we can remmeber it on account settings page
+  const hasPremiumAccess =
+    subscriptionStatus === "active" || subscriptionStatus === "trialing";
 
+  // Store the current workspace slug in session storage so we can remember it on the account settings page
   useEffect(() => {
     if (paramsSlug) {
       sessionStorage.setItem("boilercode_last_workspace_slug", paramsSlug);
     }
   }, [paramsSlug]);
 
-  // Validata and clear session storage if user is not authorized for the workspace
+  // Validate and clear session storage if user is not authorized for the workspace
   useEffect(() => {
     if (status === "unauthenticated") {
       sessionStorage.removeItem("boilercode_last_workspace_slug");
@@ -144,6 +155,7 @@ export function AppSidebar({
         slug,
         pathname,
         queryString: "",
+        premiumAccess: hasPremiumAccess,
       }}
     />
   );

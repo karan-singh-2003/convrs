@@ -123,6 +123,7 @@ export function BillingForm() {
               <UpgradePlanButton
                 plan={plan.name.toLowerCase()}
                 period={billingCycle}
+                
                 text="Get Started"
                 className="my-4 text-sm rounded-sm bg-neutral-800 h-fit py-1.5"
               />

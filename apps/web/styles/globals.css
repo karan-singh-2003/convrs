@@ -4,6 +4,44 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .scrollbar {
+    overflow-y: auto;
+
+    @media (min-width: 768px) {
+      &::-webkit-scrollbar {
+        height: 12px;
+        width: 12px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 6px;
+      }
+
+      &:hover::-webkit-scrollbar-thumb {
+        border: 3px solid transparent;
+        background-clip: content-box;
+        /* @apply bg-black/20 hover:bg-black/[0.25] dark:bg-white/20 dark:hover:bg-white/[0.25]; */
+      }
+
+      &::-webkit-scrollbar-track-piece,
+      &::-webkit-scrollbar-corner,
+      &::-webkit-scrollbar-resizer {
+        background-color: transparent;
+      }
+
+      &::-webkit-scrollbar-button:start:increment,
+      &::-webkit-scrollbar-button:end:decrement,
+      &::-webkit-scrollbar-button:increment,
+      &::-webkit-scrollbar-button:decrement,
+      &::-webkit-scrollbar-track {
+        display: none;
+      }
+    }
+  }
+}
+
 /* @layer base {
   :root {
     --background: 0 0% 100%;
@@ -107,7 +145,6 @@ input[type="number"]::-webkit-outer-spin-button {
 [data-sonner-toast] {
   border-radius: 10px !important;
 }
-
 
 .scrollbar-hide {
   -ms-overflow-style: none;

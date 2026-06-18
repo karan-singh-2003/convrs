@@ -74,11 +74,11 @@ export function AnalyticsCard<T extends string>({
         setShowModal={setShowModal}
         className="max-w-lg px-0"
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-2">
+        {/* <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-2">
           <h1 className=" text-[15px] text-neutral-700 font-medium md:text-lg font-display md:font-semibold">
             {selectedTab?.label}
           </h1>
-        </div>
+        </div> */}
         {subTabs && selectedSubTabId && onSelectSubTab && (
           <SubTabs
             subTabs={subTabs}

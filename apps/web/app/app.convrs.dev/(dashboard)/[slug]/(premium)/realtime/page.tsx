@@ -186,7 +186,7 @@ function SummaryRow({
 }) {
   return (
     <div className="grid grid-cols-[90px_1fr_auto] items-center gap-2">
-      <span className="text-[15px] font-display text-neutral-500">{label}</span>
+      <span className="text-[13.5px] font-display text-neutral-500">{label}</span>
       {renderValue()}
       <button
         type="button"

@@ -6,9 +6,11 @@ import DashboardGraph from "./graph";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useCreateWorkspaceModal } from "@/ui/modals/create-workspace-modal";
+import { cn } from "@repo/utils";
 
 export default function DashboardPage() {
   const { workspaces, loading, error } = UseWorkspaces();
+  console.log("workspaces", workspaces)
   const { setShowCreateWorkspaceModal, CreateWorkspaceModal } =
     useCreateWorkspaceModal();
   return (
@@ -56,6 +58,28 @@ export default function DashboardPage() {
                     <h2 className="truncate font-default text-sm font-medium text-neutral-600 sm:text-[14.5px]">
                       {workspace.name}
                     </h2>
+
+                    <span
+                      className={cn(
+                        "inline-flex font-poppins items-center rounded-full px-2.5 py-1 text-xs font-medium capitalize",
+                        workspace.subscriptionStatus === "active" &&
+                        "bg-emerald-50 text-emerald-700  ring-emerald-200",
+                        workspace.subscriptionStatus === "trialing" &&
+                        "bg-amber-50 text-amber-700  ring-amber-200",
+                        workspace.subscriptionStatus === "inactive" &&
+                        "bg-neutral-100 text-neutral-600  ring-neutral-200",
+                        workspace.subscriptionStatus === "past_due" &&
+                        "bg-red-50 text-red-700  ring-red-200",
+                        workspace.subscriptionStatus === "canceling" &&
+                        "bg-orange-50 text-orange-700  ring-orange-200",
+                        workspace.subscriptionStatus === "canceled" &&
+                        "bg-neutral-100 text-neutral-500 ring-neutral-200",
+                        workspace.subscriptionStatus === "expired" &&
+                        "bg-red-50 text-red-700  ring-red-200"
+                      )}
+                    >
+                      {workspace.subscriptionStatus.replace("_", " ")}
+                    </span>
                   </div>
 
                   {/* Graph */}

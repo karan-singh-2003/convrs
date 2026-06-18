@@ -114,6 +114,7 @@ export function PagesSection() {
                 onClearFilter={onClearFilter}
                 onClearSelection={() => setSelectedItems([])}
                 onApplyFilterValues={onApplyFilterValues}
+                onRowFilterItem={(val) => onApplyFilterValues([val])}
                 {...(limit && { limit })}
               />
             ) : (

@@ -119,6 +119,7 @@ export function LowerGrid() {
               onToggleFilter={onToggleFilter}
               onClearFilter={onClearFilter}
               onClearSelection={() => setSelectedItems([])}
+              onRowFilterItem={(val) => onApplyFilterValues([val])}
               onApplyFilterValues={onApplyFilterValues}
               {...(limit && { limit })}
             />

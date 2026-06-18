@@ -68,6 +68,12 @@ export function AnalyticsToggle({
     activeFiltersWithStreaming,
   } = useAnalyticsFilters();
 
+  console.log("AnalyticsToggle render", {
+    filters,
+    activeFilters,
+    streaming,
+  });
+
   const filterSelect = (
     <Filter.Select
       className="h-9 w-full justify-between gap-2 rounded-full px-3 sm:h-9 sm:w-9 sm:justify-center sm:gap-0 sm:p-0 sm:px-0 sm:[&>span]:hidden sm:[&>svg:last-child]:hidden [&>div]:absolute [&>div]:-right-1 [&>div]:-top-1 [&>div]:size-5 [&>div]:border-2 [&>div]:border-white [&>div]:bg-black [&>div]:text-[10px]"
