@@ -30,6 +30,9 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       parameters: z.object({
         workspaceId: z.string().min(1),
         steps: z.string().optional(),
+        filters: z.string().optional(), // ← add this
+        start: z.string().optional(),   // ← add
+        end: z.string().optional(),     // ← add
       }),
       data: z.object({
         step: z.string(),
@@ -58,13 +61,41 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
 
     const normalizedSteps =
       normalizedFromArray.length > 0 ? normalizedFromArray : normalizedFromCsv;
+    // ← add: build filters the same way the other pipes do
+    // compute dates exactly like other pipes do
+    const { startDate, endDate } = getStartEndDates({
+      interval,
+      start,
+      end,
+      dataAvailableFrom,
+      timezone,
+    });
+
+    console.log("start and end date", startDate, endDate)
+
+    const { triggerForPipe, countryForPipe } = prepareFiltersForPipe({
+      trigger,
+      country,
+      region, // region isn't a filter field in the funnel pipe SQL, just skipped
+    });
+
+    const advancedFilters = buildAdvancedFilters({
+      ...params,
+      country: countryForPipe,
+      trigger: triggerForPipe,
+    });
 
     const funnelResponse = await funnelPipe({
       workspaceId: workspaceId as string,
-      ...(normalizedSteps.length > 0
-        ? { steps: normalizedSteps.join(",") }
+      start: formatUTCDateTimeClickhouse(startDate), 
+      end: formatUTCDateTimeClickhouse(endDate),
+      ...(normalizedSteps.length > 0 ? { steps: normalizedSteps.join(",") } : {}),
+      // ← add this
+      ...(advancedFilters.length > 0
+        ? { filters: JSON.stringify(advancedFilters) }
         : {}),
     });
+
 
     return funnelResponse.data;
   }

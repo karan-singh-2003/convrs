@@ -8,11 +8,7 @@ NODE parsed_steps
 SQL >
 
 %
-SELECT
-    step_name,
-    toUInt64(step_pos) AS step_index
-FROM system.one
-ARRAY JOIN
+WITH
     arrayFilter(
         x -> x != '',
         splitByChar(
@@ -26,29 +22,35 @@ ARRAY JOIN
                 )
             }}
         )
-    ) AS step_name,
-    arrayEnumerate(
-        arrayFilter(
-            x -> x != '',
-            splitByChar(
-                ',',
-                {{
-                    String(
-                        steps,
-                        'signup,user_registered',
-                        description="Comma-separated ordered funnel step event names",
-                        required=True,
-                    )
-                }}
-            )
-        )
-    ) AS step_pos
+    ) AS steps
+SELECT
+    tupleElement(step_tuple, 1) AS step_name,
+    toUInt64(tupleElement(step_tuple, 2)) AS step_index
+FROM
+    (
+        SELECT arrayJoin(arrayZip(steps, arrayEnumerate(steps))) AS step_tuple
+    )
 
 
 NODE per_visitor
 SQL >
 
 %
+WITH
+    arrayFilter(
+        x -> x != '',
+        splitByChar(
+            ',',
+            {{
+                String(
+                    steps,
+                    'signup,user_registered',
+                    description="Comma-separated ordered funnel step event names",
+                    required=True,
+                )
+            }}
+        )
+    ) AS steps
 SELECT
     e.visitor_id,
     arrayMap(
@@ -74,23 +76,73 @@ FROM
                         required=True,
                     )
                 }}
-            AND has(
-                arrayFilter(
-                    x -> x != '',
-                    splitByChar(
-                        ',',
-                        {{
-                            String(
-                                steps,
-                                'signup,user_registered',
-                                description="Comma-separated ordered funnel step event names",
-                                required=True,
-                            )
-                        }}
-                    )
-                ),
-                ev.event_name
-            )
+            AND has(steps, ev.event_name)
+             AND ev.timestamp >= {{ DateTime(start, '2024-01-01 00:00:00', description="Start datetime UTC") }}
+            AND ev.timestamp <  {{ DateTime(end,   '2099-01-01 00:00:00', description="End datetime UTC") }}
+                {% if defined(filters) %}
+        {% for item in JSON(filters, '[]') %}
+            {% if item.get('field', '') %}
+                {% set field = item.get('field', '') %}
+                {% set operator = item.get('operator', 'IN') %}
+                {% set values = item.get('values', []) %}
+                {% if field == 'country' %}
+                    {% if operator == 'IN' %}     AND country IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND country NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'city' %}
+                    {% if operator == 'IN' %}     AND city IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND city NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'continent' %}
+                    {% if operator == 'IN' %}     AND continent IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND continent NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'device' %}
+                    {% if operator == 'IN' %}     AND device IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND device NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'browser' %}
+                    {% if operator == 'IN' %}     AND browser IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'os' %}
+                    {% if operator == 'IN' %}     AND os IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND os NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'trigger' %}
+                    {% if operator == 'IN' %}     AND trigger IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND trigger NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'referer' %}
+                    {% if operator == 'IN' %}     AND referer IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND referer NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'utm_source' %}
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_source=',   encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                {% elif field == 'utm_medium' %}
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=',   encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                {% elif field == 'utm_campaign' %}
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                {% elif field == 'utm_term' %}
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_term=',     encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                {% elif field == 'utm_content' %}
+                    {% if operator == 'IN' %}     AND (0{% for val in values %} OR url LIKE concat('%', 'utm_content=',  encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                    {% elif operator == 'NOT IN' %} AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %}) {% end %}
+                {% elif field == 'hostname' %}
+                    {% if operator == 'IN' %}     AND hostname IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND hostname NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'page' %}
+                    {% if operator == 'IN' %}     AND page IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND page NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'entrypage' %}
+                    {% if operator == 'IN' %}     AND entrypage IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND entrypage NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'exitlink' %}
+                    {% if operator == 'IN' %}     AND exitlink IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND exitlink NOT IN {{ Array(values, 'String') }} {% end %}
+                {% elif field == 'goal' %}
+                    {% if operator == 'IN' %}     AND event_name IN {{ Array(values, 'String') }}
+                    {% elif operator == 'NOT IN' %} AND event_name NOT IN {{ Array(values, 'String') }} {% end %}
+                {% end %}
+            {% end %}
+        {% end %}
+    {% end %}
         GROUP BY ev.visitor_id, ps.step_index
     ) e
 GROUP BY e.visitor_id
@@ -109,9 +161,8 @@ SELECT
                 isNotNull(pv.step_times[i])
                 AND if(
                     i = 1,
-                    1,
-                    isNotNull(pv.step_times[i - 1])
-                    AND pv.step_times[i] > pv.step_times[i - 1]
+                    isNotNull(pv.step_times[i]),
+                    isNotNull(pv.step_times[i - 1]) AND pv.step_times[i] > pv.step_times[i - 1]
                 ),
             range(1, ps.step_index + 1)
         )

@@ -43,6 +43,7 @@ export function AnalyticsFunnelChart({
     ].slice(0, 8);
   }, [selectedFunnel]);
 
+console.log("raw steps",rawSteps)
   const stepsCsv = useMemo(
     () => rawSteps.map((step) => step.goal).join(","),
     [rawSteps]
@@ -55,13 +56,11 @@ export function AnalyticsFunnelChart({
     })}`;
   }, [baseApiPath, queryString, stepsCsv]);
 
+  console.log("currentQueryUrl for funnels",currentQueryUrl)
+
   const { data: funnelApiResponse } = useSWR<{ data: FunnelData[] }>(
     currentQueryUrl,
     fetcher,
-    {
-      keepPreviousData: true,
-      revalidateOnFocus: false,
-    }
   );
 
   console.log("funnelApiResponse:", funnelApiResponse);
