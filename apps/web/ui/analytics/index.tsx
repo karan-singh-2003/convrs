@@ -41,7 +41,7 @@ function AnalyticsContent({
   return (
     <>
       <div className="my-2 space-y-4">
-        <div className="max-w-screen-lg mx-auto rounded-md py-3 text-sm">
+        <div className="max-w-screen-lg mx-auto overflow-hidden rounded-md py-3 text-sm">
           <AnalyticsToggle />
         </div>
 
@@ -50,7 +50,6 @@ function AnalyticsContent({
           <StatsGrid />
         </div>
 
-        {/*  Hide for revenue */}
         {selectedTab !== "revenue" && (
           <div className="max-w-screen-lg mx-auto">
             <LowerGrid />

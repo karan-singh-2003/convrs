@@ -324,9 +324,10 @@ export function FilterSelect({
           {children ?? "Filter"}
         </span>
         {activeFilters?.length ? (
-          <div className="flex size-4 shrink-0 items-center justify-center rounded-full bg-black text-[0.625rem] text-white">
-            {activeFilters.length}
-          </div>
+          // <div className="flex size-4 shrink-0 items-center justify-center rounded-full bg-black text-[0.625rem] text-white">
+          //   {activeFilters.length}
+          // </div>
+          null
         ) : (
           <ChevronDown
             className={`size-4 shrink-0 text-neutral-400 transition-transform duration-75 group-data-[state=open]:rotate-180`}

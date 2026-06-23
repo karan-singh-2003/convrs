@@ -62,7 +62,7 @@ export function FilterList({
   return (
     <AnimatedSizeContainer
       height
-      className="w-full"
+      className="w-full overflow-x-hidden"
       transition={{ type: "tween", duration: 0.3 }}
     >
       <div
@@ -98,21 +98,21 @@ export function FilterList({
 
               const displayLabel = isSingleValue
                 ? (() => {
-                    const value = values[0];
-                    const option = filter.options?.find((o) =>
-                      typeof o.value === "string" && typeof value === "string"
-                        ? o.value.toLowerCase() === value.toLowerCase()
-                        : o.value === value
-                    );
-                    return (
-                      option?.label ??
-                      filter.getOptionLabel?.(value, {
-                        key: filter.key,
-                        option,
-                      }) ??
-                      String(value)
-                    );
-                  })()
+                  const value = values[0];
+                  const option = filter.options?.find((o) =>
+                    typeof o.value === "string" && typeof value === "string"
+                      ? o.value.toLowerCase() === value.toLowerCase()
+                      : o.value === value
+                  );
+                  return (
+                    option?.label ??
+                    filter.getOptionLabel?.(value, {
+                      key: filter.key,
+                      option,
+                    }) ??
+                    String(value)
+                  );
+                })()
                 : `${values.length} ${filter.labelPlural ?? pluralize(filter.label, values.length)}`;
 
               const OptionDisplay = ({ className }: { className?: string }) => {
@@ -155,7 +155,7 @@ export function FilterList({
                       {displayValues.map((value, idx) => {
                         const option = filter.options?.find((o) =>
                           typeof o.value === "string" &&
-                          typeof value === "string"
+                            typeof value === "string"
                             ? o.value.toLowerCase() === value.toLowerCase()
                             : o.value === value
                         );
@@ -326,8 +326,8 @@ function OperatorFilterPill({
       </div>
 
       {(isAdvancedFilter || filter.multiple) &&
-      !filter.singleSelect &&
-      !filter.hideOperator ? (
+        !filter.singleSelect &&
+        !filter.hideOperator ? (
         <Popover
           openPopover={operatorDropdownOpen}
           setOpenPopover={setOperatorDropdownOpen}
@@ -400,7 +400,7 @@ function OperatorFilterPill({
                     autoCapitalize="none"
                   />
                 </div>
-                <div className="scrollbar-hide max-h-[50vh] w-screen overflow-y-scroll sm:w-auto">
+                <div className="scrollbar-hide max-h-[50vh] overflow-y-scroll">
                   <Command.List className="flex w-full min-w-[180px] flex-col gap-1 p-1">
                     {(() => {
                       const filteredOptions =
@@ -486,7 +486,7 @@ function OperatorFilterPill({
                             </span>
                             <div className="ml-1 flex shrink-0 justify-end text-neutral-500">
                               {(isAdvancedFilter || filter.multiple) &&
-                              !filter.singleSelect ? (
+                                !filter.singleSelect ? (
                                 option.right
                               ) : isSelected ? (
                                 <Check className="h-4 w-4" />

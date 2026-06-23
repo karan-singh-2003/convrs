@@ -167,13 +167,13 @@ export function AnalyticsToggle({
         })}
       >
         <div
-          className={cn("mx-auto flex w-full max-w-screen-xl flex-col ", {
+          className={cn("mx-auto flex w-full overflow-hidden max-w-screen-xl flex-col ", {
             "md:h-10": key,
           })}
         >
           <div
             className={cn(
-              "flex w-full flex-col items-center justify-between gap-2 md:flex-row",
+              "flex w-full overflow-hidden flex-col items-center justify-between gap-2 md:flex-row",
               {
                 "flex-col md:flex-row": !key,
                 "items-center": key,
@@ -266,7 +266,7 @@ export function AnalyticsToggle({
         </div>
       </div>
 
-      <div className="w-full">
+    <div className="w-full overflow-x-hidden">
         <Filter.List
           filters={filters}
           activeFilters={activeFiltersWithStreaming}
@@ -276,14 +276,14 @@ export function AnalyticsToggle({
           onRemoveAll={onRemoveAll}
           onToggleOperator={onToggleOperator}
           isAdvancedFilter
-          className="w-full rounded-full"
+          className="w-full overflow-x-hidden rounded-full"
         />
-        <div
+        {/* <div
           className={cn(
             "transition-[height] duration-[300ms]",
             streaming || activeFilters.length ? "h-3" : "h-0"
           )}
-        />
+        /> */}
       </div>
     </div>
   );
