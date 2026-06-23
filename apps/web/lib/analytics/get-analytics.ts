@@ -42,18 +42,18 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
 
     const normalizedFromArray = Array.isArray(rawSteps)
       ? rawSteps
-          .map((step) => String(step).trim())
-          .filter(Boolean)
-          .slice(0, 8)
+        .map((step) => String(step).trim())
+        .filter(Boolean)
+        .slice(0, 8)
       : [];
 
     const normalizedFromCsv =
       typeof rawStepsCsv === "string" && rawStepsCsv.trim().length > 0
         ? rawStepsCsv
-            .split(",")
-            .map((step) => step.trim())
-            .filter(Boolean)
-            .slice(0, 8)
+          .split(",")
+          .map((step) => step.trim())
+          .filter(Boolean)
+          .slice(0, 8)
         : [];
 
     const normalizedSteps =
@@ -93,6 +93,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
   const eventTypeForPipe =
     selectedPipe === "v1_count" && event === "composite" ? undefined : event;
 
+
   // Create a Tinybird pipe
   const pipe = tb.buildPipe({
     pipe: selectedPipe,
@@ -129,6 +130,8 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     filters:
       advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
   };
+
+
 
   const response = await pipe(tinybirdParams);
 

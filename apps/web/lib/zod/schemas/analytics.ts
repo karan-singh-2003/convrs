@@ -67,8 +67,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The domain to filter analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `dub.co`, `dub.co,google.com`, `-spam.com`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `dub.co`, `dub.co,google.com`, `-spam.com`."
     )
     .meta({ example: "dub.co" }),
   key: z
@@ -83,8 +83,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The unique ID of the link to retrieve analytics for." +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `link_123`, `link_123,link_456`, `-link_789`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `link_123`, `link_123,link_456`, `-link_789`."
     ),
   externalId: z
     .string()
@@ -98,8 +98,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The ID of the tenant that created the link inside your system. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `tenant_123`, `tenant_123,tenant_456`, `-tenant_789`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `tenant_123`, `tenant_123,tenant_456`, `-tenant_789`."
     ),
   tagId: z
     .string()
@@ -107,8 +107,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The tag ID to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `tag_123`, `tag_123,tag_456`, `-tag_789`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `tag_123`, `tag_123,tag_456`, `-tag_789`."
     ),
   folderId: z
     .string()
@@ -116,9 +116,9 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The folder ID to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `folder_123`, `folder_123,folder_456`, `-folder_789`. " +
-        "If not provided, return analytics for all links."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `folder_123`, `folder_123,folder_456`, `-folder_789`. " +
+      "If not provided, return analytics for all links."
     ),
   groupId: z
     .string()
@@ -126,8 +126,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The group ID to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `grp_123`, `grp_123,grp_456`, `-grp_789`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `grp_123`, `grp_123,grp_456`, `-grp_789`."
     ),
   partnerId: z
     .string()
@@ -135,8 +135,17 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The ID of the partner to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `pn_123`, `pn_123,pn_456`, `-pn_789`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `pn_123`, `pn_123,pn_456`, `-pn_789`."
+    ),
+  goal: z
+    .string()
+    .optional()
+    .transform(parseFilterValue)
+    .describe(
+      "The goal ID to retrieve analytics for. " +
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `goal_123`, `goal_123,goal_456`, `-goal_789`."
     ),
   customerId: z
     .string()
@@ -175,8 +184,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The country to retrieve analytics for. Must be passed as a 2-letter ISO 3166-1 country code (see https://d.to/geo). " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `US`, `US,BR,FR`, `-US`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `US`, `US,BR,FR`, `-US`."
     ),
   city: z
     .string()
@@ -184,16 +193,16 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The city to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `New York`, `New York,London`, `-New York`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `New York`, `New York,London`, `-New York`."
     ),
   region: z
     .string()
     .optional()
     .describe(
       "The ISO 3166-2 region code to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `NY`, `NY,CA`, `-NY`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `NY`, `NY,CA`, `-NY`."
     ),
   continent: z
     .string()
@@ -201,8 +210,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The continent to retrieve analytics for. Valid values: AF, AN, AS, EU, NA, OC, SA. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `NA`, `NA,EU`, `-AS`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `NA`, `NA,EU`, `-AS`."
     ),
   device: z
     .string()
@@ -221,8 +230,8 @@ export const analyticsQuerySchema = z.object({
     })
     .describe(
       "The device to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `Desktop`, `Mobile,Tablet`, `-Mobile`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `Desktop`, `Mobile,Tablet`, `-Mobile`."
     ),
   browser: z
     .string()
@@ -240,8 +249,8 @@ export const analyticsQuerySchema = z.object({
     })
     .describe(
       "The browser to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `Chrome`, `Chrome,Firefox,Safari`, `-IE`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `Chrome`, `Chrome,Firefox,Safari`, `-IE`."
     ),
   os: z
     .string()
@@ -259,8 +268,8 @@ export const analyticsQuerySchema = z.object({
     })
     .describe(
       "The OS to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `Windows`, `Mac,Windows,Linux`, `-Windows`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `Windows`, `Mac,Windows,Linux`, `-Windows`."
     ),
   trigger: z
     .string()
@@ -268,9 +277,9 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The trigger to retrieve analytics for. Valid values: qr, link, pageview. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `qr`, `qr,link`, `-qr`. " +
-        "If undefined, returns all trigger types."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `qr`, `qr,link`, `-qr`. " +
+      "If undefined, returns all trigger types."
     ),
   referer: z
     .string()
@@ -278,8 +287,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The referer hostname to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `google.com`, `google.com,twitter.com`, `-facebook.com`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `google.com`, `google.com,twitter.com`, `-facebook.com`."
     ),
   refererUrl: z
     .string()
@@ -287,8 +296,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The full referer URL to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `https://google.com`, `https://google.com,https://twitter.com`, `-https://spam.com`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `https://google.com`, `https://google.com,https://twitter.com`, `-https://spam.com`."
     ),
   url: z
     .string()
@@ -296,8 +305,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The destination URL to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `https://example.com`, `https://example.com,https://other.com`, `-https://spam.com`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `https://example.com`, `https://example.com,https://other.com`, `-https://spam.com`."
     ),
   utm_source: z
     .string()
@@ -305,8 +314,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The UTM source to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `google`, `google,twitter`, `-spam`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `google`, `google,twitter`, `-spam`."
     ),
   utm_medium: z
     .string()
@@ -314,8 +323,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The UTM medium to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `cpc`, `cpc,social`, `-email`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `cpc`, `cpc,social`, `-email`."
     ),
   utm_campaign: z
     .string()
@@ -323,8 +332,8 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The UTM campaign to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
-        "Examples: `summer_sale`, `summer_sale,winter_sale`, `-old_campaign`."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `summer_sale`, `summer_sale,winter_sale`, `-old_campaign`."
     ),
   utm_term: z
     .string()
@@ -332,7 +341,7 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The UTM term to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
     ),
   utm_content: z
     .string()
@@ -340,7 +349,7 @@ export const analyticsQuerySchema = z.object({
     .transform(parseFilterValue)
     .describe(
       "The UTM content to retrieve analytics for. " +
-        "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
     ),
   root: booleanQuerySchema
     .optional()
@@ -359,7 +368,7 @@ export const analyticsQuerySchema = z.object({
     .optional()
     .describe(
       "Search the events by a custom metadata value. Only available for lead and sale events. " +
-        "Examples: `metadata['key']:'value'`"
+      "Examples: `metadata['key']:'value'`"
     ),
   // deprecated fields
   programId: z

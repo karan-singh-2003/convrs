@@ -144,6 +144,7 @@ const SUPPORTED_FIELDS = [
   "referer",
   "refererUrl",
   "url",
+  "goal",
   "trigger",
   "utm_source",
   "utm_medium",

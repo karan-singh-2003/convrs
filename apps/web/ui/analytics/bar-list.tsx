@@ -26,6 +26,7 @@ export function BarList({
   tab,
   unit,
   data,
+  totalVisitors,
   allData,
   hoverBackground,
   maxValue,
@@ -43,6 +44,7 @@ export function BarList({
   placeholder?: string;
   tab: string;
   unit: string;
+  totalVisitors?: number
   data: {
     icon?: ReactNode;
     title: string;
@@ -132,6 +134,7 @@ export function BarList({
     ...data,
     maxValue,
     totalSum,
+    totalVisitors,
     tab,
     unit,
     setShowModal,
@@ -226,6 +229,7 @@ export function LineItem({
   value,
   totalSum,
   tab,
+  totalVisitors,
   unit,
   setShowModal,
   hoverBackground,
@@ -239,6 +243,7 @@ export function LineItem({
   icon?: ReactNode;
   title: string;
   value: number;
+  totalVisitors?: number
   totalSum: number;
   tab: string;
   unit: string;
@@ -256,9 +261,14 @@ export function LineItem({
   const { saleUnit } = useContext(AnalyticsContext);
   const router = useRouter();
 
-  const percentage = Math.round((value / totalSum) * 1000) / 10;
+  const percentage =
+    tab === "goal"
+      ? Math.round((value / (totalVisitors || 1)) * 1000) / 10
+      : Math.round((value / totalSum) * 1000) / 10;
+
+      
   const isModalView = !limit;
-  console.log("total sum", totalSum, "value", value, "percentage", percentage);
+
   const lineItem = (
     <div className="z-10 flex items-center space-x-2  overflow-hidden ">
       {icon ? (
