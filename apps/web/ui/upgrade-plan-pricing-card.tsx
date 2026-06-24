@@ -26,14 +26,14 @@ export function UpgradePlanPricingCard() {
       </div>
     )
   }
-  if (error || !freeTrialEndDate) {
+  if (error) {
     return (
       <div>
         {error}
       </div>
     )
   }
-  const freeTrailEnabled = freeTrialEndDate > new Date();
+  const freeTrailEnabled = freeTrialEndDate ? freeTrialEndDate > new Date() : false;
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly"
   );

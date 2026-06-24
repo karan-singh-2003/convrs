@@ -339,9 +339,6 @@ const BillingClient = () => {
               )}
             </div>
           </div>
-
-
-
         </SettingsChildrenLayout>
         <SettingsChildrenLayout
           title="Usage"
