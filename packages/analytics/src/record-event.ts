@@ -24,7 +24,7 @@ export async function recordEvent({
   const {
     website_id,
     visitor_id,
-    
+
     workspace_id,
     country,
     city,
@@ -153,8 +153,8 @@ export async function recordEvent({
     url: payload.url ?? "",
     hostname: payload.hostname ?? safeHostname(payload.url ?? ""),
     page: safePath(payload.url ?? ""),
-    entrypage: null,
-    exitlink: null,
+    entrypage: payload.entrypage ?? null,
+    exitlink: payload.exitlink ?? null,
 
     // Referer — (direct) if no referrer or self-referrer
     referer: cleanReferer
