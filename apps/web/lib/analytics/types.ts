@@ -55,8 +55,8 @@ export type AnalyticsFilters = Partial<
   start?: Date | null;
   end?: Date | null;
   // Accept plain string (from partner-profile/cron routes) or ParsedFilter (from API schema)
-  partnerId?: string | ParsedFilter;
-  linkId?: string | ParsedFilter;
+  // partnerId?: string | ParsedFilter;
+  // linkId?: string | ParsedFilter;
 };
 
 // Structural fields from eventsQuerySchema that should remain required
