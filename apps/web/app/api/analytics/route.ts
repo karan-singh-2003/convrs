@@ -31,7 +31,7 @@ export const GET = async (req: Request) => {
 
   const session = await getServerSession(authOptions);
 
-
+console.log("session", session)
 
   const workspace = await prisma.workspace.findUnique({
     where: isPrefixedWorkspaceId

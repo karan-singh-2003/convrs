@@ -3,6 +3,7 @@ export {
   Prisma,
   InvoiceStatus,
   PaymentMethod,
+  AttributionStatus,
 } from "@prisma/client";
 export type {
   Workspace,

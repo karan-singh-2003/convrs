@@ -29,6 +29,7 @@ export * from "./utm_builder";
 export * from "./data-picker";
 export * from "./combobox"
 export * from "./wordmark"
+export * from "./progress"
 
 // hooks
 export * from "./hooks";

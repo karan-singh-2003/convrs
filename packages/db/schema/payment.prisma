@@ -1,0 +1,34 @@
+model Payment {
+  id                  String            @id @default(cuid())
+  workspaceId         String
+  customerId          String
+  stripeSessionId     String?           @unique
+  stripeEventId       String?           @unique
+  stripePaymentIntent String?
+  amount              Int               // in cents
+  currency            String
+  customerEmail       String?
+
+  // Attribution
+  attributionStatus   AttributionStatus @default(pending)
+  attributedAt        DateTime?
+  lastAttributionAttempt DateTime?
+  visitorId           String?           // visitor_id used for attribution
+  sessionId           String?           // session_id used for attribution
+
+  // Tinybird sync
+  tinybirdEventId     String?           // event_id sent to Tinybird
+  sentToTinybird      Boolean           @default(false)
+  sentToTinybirdAt    DateTime?
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  workspace           Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customer            Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([customerId])
+  @@index([visitorId])
+  @@index([attributionStatus])
+}

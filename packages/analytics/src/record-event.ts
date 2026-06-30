@@ -24,6 +24,7 @@ export async function recordEvent({
   const {
     website_id,
     visitor_id,
+    
     workspace_id,
     country,
     city,
@@ -134,10 +135,12 @@ export async function recordEvent({
     visitor_id: visitor_id,
     session_id: payload.session_id ?? null,
     identity_hash: identityHash ?? null,
+    user_id: payload.user_id ?? null,
 
     // Revenue — always send 0 for non-revenue events (Float64 is non-nullable)
     revenue: payload.revenue?.amount ?? 0,
     currency: payload.revenue?.currency ?? "",
+
 
     // UTM
     utm_source: null,

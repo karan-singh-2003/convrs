@@ -10,6 +10,7 @@ import {
   ArrowUp,
   ChevronRight,
   Lock,
+  Minus,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import {
   formatPercentageChange,
   getChangeDirection,
 } from "@/lib/analytics/utils/calculate-percentage-change";
+import useStripeIntegration from "@/lib/swr/use-stripe-integration";
 
 type Tab = {
   id: AnalyticsResponseOptions;
@@ -36,6 +38,7 @@ export function AnalyticsTabs({
   tabHref,
   saleUnit,
   setSaleUnit,
+  hasRevenueProvider,
   requiresUpgrade,
   showPaywall,
   country = "US",
@@ -51,6 +54,7 @@ export function AnalyticsTabs({
   requiresUpgrade?: boolean;
   showPaywall?: boolean;
   country?: string;
+  hasRevenueProvider?: boolean
 }) {
   const tabs = useMemo(
     () =>
@@ -127,7 +131,12 @@ export function AnalyticsTabs({
                         >
                           {formatDuration(value)}
                         </div>
-                      ) : (
+                      ) : isRevenueTab && !hasRevenueProvider ? (
+                        // ── No payment provider connected ─────────────────────────
+                        <div className="flex items-center leading-tight justify-center">
+                          <Minus className="h-4 w-4 text-neutral-400" />
+                          <Minus className="h-4 w-4 text-neutral-400" />
+                        </div>) : (
                         <NumberFlow
                           value={value}
                           format={
@@ -164,9 +173,12 @@ export function AnalyticsTabs({
                         ? liveVisitorsCount !== undefined
                         : totalEvents?.[id] !== undefined;
 
-                      if (!hasChange || !hasDataForChange) {
-                        return null;
-                      }
+                      // Don't show change indicator for revenue if no provider connected
+                      const shouldShowChange = hasChange &&
+                        hasDataForChange &&
+                        !(isRevenueTab && !hasRevenueProvider);   // ← add this guard
+
+                      if (!shouldShowChange) return null;
 
                       const direction = getChangeDirection(change);
 

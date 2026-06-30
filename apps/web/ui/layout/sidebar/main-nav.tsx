@@ -7,6 +7,8 @@ import React, { createContext, Dispatch, useEffect, useState } from "react";
 import { UserDropdown } from "./user-dropdown";
 import Link from "next/link";
 import { NavButton } from "../page-content/nav-button";
+import { FreeTrialBanner } from "./free-trial-banner";
+import useWorkspace from "@/lib/swr/use-workspace";
 type SideNavContext = {
   isOpen: boolean;
   setIsOpen: Dispatch<React.SetStateAction<boolean>>;
@@ -14,7 +16,7 @@ type SideNavContext = {
 
 export const SideNavContent = createContext<SideNavContext>({
   isOpen: false,
-  setIsOpen: () => {},
+  setIsOpen: () => { },
 });
 
 export function MainNav({
@@ -29,6 +31,13 @@ export function MainNav({
   const pathname = usePathname();
   const { isMobile } = useMediaQuery();
   const [isOpen, setIsOpen] = useState(false);
+
+  const { freeTrialEndDate ,subscriptionStatus} = useWorkspace();
+
+  const hasBanner =
+    subscriptionStatus === "trialing" ||
+    subscriptionStatus === "inactive" ||
+    subscriptionStatus === "expired";
 
   // Prevent body scroll when side nav is open on mobile
   useEffect(() => {
@@ -52,34 +61,41 @@ export function MainNav({
       )}
     >
       <SideNavContent.Provider value={{ isOpen, setIsOpen }}>
-        <div
-          className={cn(
-            "fixed inset-0 z-50 md:hidden transition-[background-color,backdrop-filter]",
-            isOpen
-              ? "bg-black/20 backdrop-blur-sm"
-              : "pointer-events-none bg-transparent"
-          )}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              e.stopPropagation();
-              setIsOpen(false);
-            }
-          }}
-        >
+        <>
+          {/* show this banner on top of page above all */}
+          <FreeTrialBanner />
           <div
             className={cn(
-              "absolute left-0 top-0 h-full w-[248px] max-w-[85vw] border-r border-[#EBEBEB] bg-[#fafafa] transition-transform",
-              isOpen ? "translate-x-0" : "-translate-x-full"
+              "fixed inset-x-0 bottom-0 z-50 md:hidden transition-[background-color,backdrop-filter]",
+              hasBanner ? "top-11" : "top-0",
+              isOpen
+                ? "bg-black/20 backdrop-blur-sm"
+                : "pointer-events-none bg-transparent"
             )}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                e.stopPropagation();
+                setIsOpen(false);
+              }
+            }}
           >
-            <Sidebar />
+
+            <div
+              className={cn(
+                "absolute left-0 top-0 h-full w-[248px] max-w-[85vw] border-r border-[#EBEBEB] bg-[#fafafa] transition-transform",
+                isOpen ? "translate-x-0" : "-translate-x-full"
+              )}
+            >
+              <Sidebar />
+            </div>
           </div>
-        </div>
+        </>
 
         {!isDashboard ? (
           <div
             className={cn(
-              "fixed top-0 left-0 z-30 w-full",
+              "fixed left-0 z-30 w-full transition-[top] duration-300",
+              hasBanner ? "top-11" : "top-0",
               isRealtime
                 ? "bg-white/55 backdrop-blur-md supports-[backdrop-filter]:bg-white/45 "
                 : "bg-white border-b border-neutral-200 md:border-none"
@@ -100,7 +116,7 @@ export function MainNav({
             </div>
           </div>
         ) : (
-          <div className=" py-2 flex h-full w-full mx-auto  max-w-screen-md items-center justify-between gap-4 px-4 md:px-0">
+          <div className=" py-2 flex h-full w-full mx-auto  max-w-screen-lg items-center justify-between gap-4 px-4 md:px-0">
             <nav className="flex items-center w-full justify-between gap-x-2">
               <div className="flex items-center gap-2.5 font-display text-sm font-medium text-neutral-600">
                 <h1 className="font-semibold font-display text-[14.5px]">
@@ -115,7 +131,7 @@ export function MainNav({
         <div
           className={cn(
             "flex-1 min-h-0",
-            isRealtime ? "p-0 " : !isDashboard ? "pt-10 md:pt-16 pb-4" : "py-4"
+            isRealtime ? "p-0 " : !isDashboard ? (hasBanner ? "pt-[84px] md:pt-[108px] pb-4" : "pt-10 md:pt-16 pb-4") : "py-4"
           )}
         >
           {isSettings ? (

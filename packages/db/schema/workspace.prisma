@@ -82,6 +82,7 @@ model Workspace {
   funnels          Funnel[]
   alerts           Alert[]
   customers        Customer[]
+  payments Payment[]
 
   @@index([usageLastChecked])
   @@index([dodoSubscriptionId])

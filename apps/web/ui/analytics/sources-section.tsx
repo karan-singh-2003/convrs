@@ -150,7 +150,10 @@ export function SourcesSection() {
                 data={
                   data
                     ?.map((d) => ({
-                      title: d[singularTabName],
+                      title:
+                        subtab === "referers"
+                          ? getReferrerDisplayName(d[singularTabName])
+                          : d[singularTabName],
                       filterValue: d[singularTabName],
                       value: d[dataKey] || 0,
                     }))
@@ -196,4 +199,35 @@ export function SourcesSection() {
       )}
     </AnalyticsCard>
   );
+}
+
+
+const REFERRER_MAP: Record<string, string> = {
+  "t.co": "X",
+  "x.com": "X",
+  "twitter.com": "X",
+
+  "google.com": "Google",
+  "bing.com": "Bing",
+  "duckduckgo.com": "DuckDuckGo",
+
+  "facebook.com": "Facebook",
+  "m.facebook.com": "Facebook",
+  "l.facebook.com": "Facebook",
+
+  "instagram.com": "Instagram",
+
+  "linkedin.com": "LinkedIn",
+  "lnkd.in": "LinkedIn",
+
+  "reddit.com": "Reddit",
+
+  "news.ycombinator.com": "Hacker News",
+
+  "github.com": "GitHub",
+};
+
+export function getReferrerDisplayName(referrer?: string | null) {
+  if (!referrer) return "(direct)";
+  return REFERRER_MAP[referrer] ?? referrer;
 }

@@ -1,0 +1,23 @@
+NODE last_24_hours_visitors_node
+SQL >
+
+%
+SELECT
+    uniq(visitor_id) AS visitors,
+    uniq(session_id) AS sessions,
+    countIf(event_name = 'pageview') AS pageviews,
+    countIf(event_name = 'click') AS clicks,
+    count() AS events,
+    ifNull(sum(revenue), 0) AS revenue
+FROM dub_click_events
+WHERE
+    user_id = {{ String(user_id, description="User ID", required=True) }}
+    AND bot = 0
+    AND timestamp >= now() - INTERVAL 24 HOUR
+    
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT * FROM last_24_hours_visitors_node

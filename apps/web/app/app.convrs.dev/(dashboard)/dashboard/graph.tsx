@@ -42,12 +42,14 @@ function getYAxisTickValues(data: GraphPoint[]): number[] {
   const paddedMax = maxVisitors * 1.08;
   const upperBound = getNiceUpperBound(paddedMax);
 
-  return [0, upperBound]; // ✅ only two values
+  return [0, upperBound]; //  only two values
 }
 
 export default function DashboardGraph({
+  lastDayData,
   workspaceId,
 }: {
+  lastDayData?: TimeseriesResponse;
   workspaceId: string;
 }) {
   const baseApiPath = `/api/workspaces/${workspaceId}/analytics`;
@@ -77,6 +79,8 @@ export default function DashboardGraph({
     }
   );
 
+  console.log("responses",response)
+
   const chartData = useMemo(
     () =>
       response?.data?.map(({ start, clicks }) => ({
@@ -85,6 +89,8 @@ export default function DashboardGraph({
       })) ?? [],
     [response]
   );
+
+  
 
   const yTickValues = useMemo(() => getYAxisTickValues(chartData), [chartData]);
 

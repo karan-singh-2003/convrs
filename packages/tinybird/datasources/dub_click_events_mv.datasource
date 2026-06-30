@@ -10,7 +10,7 @@ SCHEMA >
 
 --  Identity & correlation
 `workspace_id` Nullable(String) `json:$.workspace_id`,
-`user_id` Nullable(Int64) `json:$.user_id`,
+`user_id` Nullable(String)  `json:$.user_id`,
 `visitor_id` Nullable(String) `json:$.visitor_id`,
 `session_id` Nullable(String) `json:$.session_id`,
 `identity_hash` Nullable(String) `json:$.identity_hash`,

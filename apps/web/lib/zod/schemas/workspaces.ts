@@ -104,6 +104,7 @@ export const WorkspaceSchema = z
     createdAt: z
       .date()
       .describe("The date and time when the workspace was created."),
+    
     users: z
       .array(
         z.object({

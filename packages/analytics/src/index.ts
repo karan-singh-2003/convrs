@@ -1,4 +1,5 @@
 export { recordEvent } from "./record-event";
+export { processPayment } from "./payment";
 export { AnalyticsEventSchema } from "./schemas/event.schema";
 export { detectBot } from "./utils/detect-bot";
 export { getIdentityHash } from "./utils/get-identity-hash";

@@ -1,35 +1,37 @@
+enum AttributionStatus {
+  pending
+  attributed
+  unattributed
+}
+
 model Customer {
-  id                     String    @id @default(cuid())
+  id                     String            @id @default(cuid())
   name                   String?
   email                  String?
-  avatar                 String?   @db.Text
+  avatar                 String?           @db.Text
   externalId             String?
-  stripeCustomerId       String?   @unique
-  linkId                 String?
-  clickId                String?
-  clickedAt              DateTime?
+  stripeCustomerId       String?           @unique
   country                String?
-  sales                  Int       @default(0)
-  saleAmount             BigInt    @default(0)
+  sales                  Int               @default(0)
+  saleAmount             BigInt            @default(0)
   firstSaleAt            DateTime?
   subscriptionCanceledAt DateTime?
   workspaceId            String
-  projectConnectId       String?
-  programId              String?
-  partnerId              String?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
-  workspace              Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  // Attribution tracking
+  attributionStatus      AttributionStatus @default(pending)
+  attributedAt           DateTime?
+  lastAttributionAttempt DateTime?
+  visitorId              String?           // the analytics visitor_id that attributed
+
+  workspace              Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  payments               Payment[]
 
   @@unique([workspaceId, externalId])
-  @@unique([projectConnectId, externalId])
   @@index([workspaceId, email])
   @@index([workspaceId, createdAt])
   @@index([workspaceId, saleAmount])
-  @@index([workspaceId, firstSaleAt])
-  @@index([workspaceId, subscriptionCanceledAt])
-  @@index([programId, partnerId])
-  @@index([partnerId])
-  @@index([linkId])
-  @@index([country])
+  @@index([workspaceId, attributionStatus])
 }

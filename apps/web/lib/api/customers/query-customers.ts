@@ -65,12 +65,7 @@ export async function listWorkspaceCustomers(
 
   const customers = await customerDelegate.findMany({
     where: {
-      OR: [
-        { workspaceId: workspace.id },
-        ...(workspace.projectToken
-          ? [{ projectConnectId: workspace.projectToken }]
-          : []),
-      ],
+      workspaceId: workspace.id,
     },
     orderBy: [{ createdAt: "desc" }],
     take: Math.max(1, Math.min(limit, 500)),
@@ -92,12 +87,7 @@ export async function getWorkspaceCustomerById(
   const customer = await customerDelegate.findFirst({
     where: {
       id: customerId,
-      OR: [
-        { workspaceId: workspace.id },
-        ...(workspace.projectToken
-          ? [{ projectConnectId: workspace.projectToken }]
-          : []),
-      ],
+      workspaceId: workspace.id,
     },
   });
 

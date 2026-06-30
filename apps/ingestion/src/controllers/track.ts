@@ -73,6 +73,13 @@ export async function trackClickController(req: Request, res: Response) {
       },
     });
 
+    const workspaceOwner = await prisma.workspaceUsers.findFirst({
+      where: { workspaceId: workspace?.id, role: "owner" },
+      select: { user: { select: { id: true } } },
+    });
+
+    const userId = workspaceOwner?.user?.id ?? null;
+
     if (!workspace) {
       return res.status(404).json({
         success: false,
@@ -161,8 +168,10 @@ export async function trackClickController(req: Request, res: Response) {
 
     // ── IDENTIFY ─────────────────────────────────────────────────────────────
     let customer = null;
+    console.log("parsed data type", parsed.data.type)
 
     if (parsed.data.type === "identify") {
+      console.log("adding customer")
       customer = await upsertCustomer({
         workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
@@ -172,8 +181,11 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
+
+
     // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
     else if (parsed.data.type === "pageview" && parsed.data.visitor_id) {
+      console.log("inserting anonymous customer")
       customer = await upsertAnonymousCustomer({
         workspaceId: workspace.id,
         visitorId: parsed.data.visitor_id,
@@ -194,6 +206,7 @@ export async function trackClickController(req: Request, res: Response) {
       ...parsed.data,
 
       workspace_id: workspace.id,
+      user_id: userId || "",
       // Identity
       customer_id: customer?.id ?? null,
 
@@ -318,7 +331,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
       utm_content: urlObj.searchParams.get("utm_content"),
       utm_term: urlObj.searchParams.get("utm_term"),
     };
-  } catch {}
+  } catch { }
 
   const normalized: Record<string, any> = {
     website_id: websiteId,
