@@ -25,6 +25,10 @@ const nextConfig = {
     return [
       {
         source: "/script.js",
+        destination: "https://cdn.convrs.dev/script.js",
+      },
+      {
+        source: "/api/track",
         destination: "https://ingest.convrs.dev/api/track",
       },
     ];
