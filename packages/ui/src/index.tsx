@@ -30,6 +30,7 @@ export * from "./data-picker";
 export * from "./combobox"
 export * from "./wordmark"
 export * from "./progress"
+export * from "./skeleton"
 
 // hooks
 export * from "./hooks";

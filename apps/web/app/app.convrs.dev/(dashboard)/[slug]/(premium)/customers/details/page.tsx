@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Activity, ChevronDown } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import useCustomer from "@/lib/swr/use-customer";
@@ -9,8 +9,8 @@ import useCustomerActivity, {
 } from "@/lib/swr/use-customer-activity";
 import { LogIn } from "lucide-react";
 import useWorkspace from "@/lib/swr/use-workspace";
-import { LoadingSpinner } from "@repo/ui";
-import { COUNTRIES } from "@repo/utils";
+import { LoadingSpinner} from "@repo/ui";
+import { cn, COUNTRIES } from "@repo/utils";
 
 type CustomerDetails = {
   id: string;
@@ -28,29 +28,30 @@ type CustomerDetails = {
   updatedAt: string | null;
 };
 
+const DEFAULT_TIMEZONE = "UTC";
+
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   maximumFractionDigits: 2,
 });
 
-const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const shortTimeFormatter = new Intl.DateTimeFormat("en-US", {
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
-const formatDate = (value: string | null) => {
+const formatDate = (
+  value: string | null,
+  formatter: Intl.DateTimeFormat
+) => {
   if (!value) return "-";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime())
-    ? "-"
-    : fullDateFormatter.format(parsed);
+  return Number.isNaN(parsed.getTime()) ? "-" : formatter.format(parsed);
+};
+
+const formatTime = (
+  value: string | null,
+  formatter: Intl.DateTimeFormat
+) => {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "-" : formatter.format(parsed);
 };
 
 const formatRelativeDays = (value: string | null) => {
@@ -64,14 +65,6 @@ const formatRelativeDays = (value: string | null) => {
 
 const formatAmount = (value: number) =>
   currencyFormatter.format((value || 0) / 100);
-
-const formatTime = (value: string | null) => {
-  if (!value) return "-";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime())
-    ? "-"
-    : shortTimeFormatter.format(parsed);
-};
 
 const getTimeToSale = (customer: CustomerDetails | null) => {
   if (!customer?.createdAt || !customer.firstSaleAt) return "-";
@@ -101,7 +94,31 @@ export default function CustomerDetailsPage() {
     }));
   };
 
-  const { id: workspaceId } = useWorkspace();
+  const { id: workspaceId, timezone } = useWorkspace();
+  const tz = timezone || DEFAULT_TIMEZONE;
+
+  // Workspace-aware formatters — re-created only when timezone changes
+  const fullDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: tz,
+      }),
+    [tz]
+  );
+
+  const shortTimeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: tz,
+      }),
+    [tz]
+  );
+
   const { activity, isLoading: activityLoading } = useCustomerActivity(
     customerId,
     workspaceId || null
@@ -217,13 +234,16 @@ export default function CustomerDetailsPage() {
   const metrics = [
     {
       label: "First Sale date",
-      value: formatDate(customer?.firstSaleAt ?? null),
+      value: formatDate(customer?.firstSaleAt ?? null, fullDateFormatter),
     },
     { label: "Time to sale", value: getTimeToSale(customer) },
     { label: "Lifetime Value", value: formatAmount(customer?.saleAmount ?? 0) },
     {
       label: "Subscription Cancelled",
-      value: formatDate(customer?.subscriptionCanceledAt ?? null),
+      value: formatDate(
+        customer?.subscriptionCanceledAt ?? null,
+        fullDateFormatter
+      ),
     },
   ];
 
@@ -297,9 +317,10 @@ export default function CustomerDetailsPage() {
           </h2>
 
           {activityLoading ? (
-            <p className="text-sm font-display text-neutral-400">
-              Loading activity...
-            </p>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-28" />
+            </div>
           ) : activity.length === 0 ? (
             <p className="text-sm font-display text-neutral-400">
               No activity recorded yet.
@@ -317,9 +338,8 @@ export default function CustomerDetailsPage() {
                   {group.date}
                   <ChevronDown
                     size={16}
-                    className={`transition-transform ${
-                      openGroups[group.date] ? "rotate-180" : ""
-                    }`}
+                    className={`transition-transform ${openGroups[group.date] ? "rotate-180" : ""
+                      }`}
                   />
                 </p>
 
@@ -334,11 +354,10 @@ export default function CustomerDetailsPage() {
                           {eventIcon(item)}
                           <div>
                             <p
-                              className={`font-display font-medium text-[14px] ${
-                                item.event_type === "revenue"
+                              className={`font-display font-medium text-[14px] ${item.event_type === "revenue"
                                   ? "text-emerald-600"
                                   : "text-neutral-600"
-                              }`}
+                                }`}
                             >
                               {eventTitle(item)}
                             </p>
@@ -359,7 +378,7 @@ export default function CustomerDetailsPage() {
                           </div>
                         </div>
                         <span className="text-xs text-neutral-400 whitespace-nowrap">
-                          {formatTime(item.timestamp)}
+                          {formatTime(item.timestamp, shortTimeFormatter)}
                         </span>
                       </div>
                     ))}
@@ -456,4 +475,16 @@ export default function CustomerDetailsPage() {
       </div>
     </div>
   );
+}
+
+export function Skeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-none bg-neutral-100", className)}
+      {...props}
+    />
+  )
 }

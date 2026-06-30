@@ -12,6 +12,10 @@ export const WorkspaceSchema = z
     id: z.string().describe("The unique ID of the workspace."),
     name: z.string().describe("The name of the workspace."),
     slug: z.string().describe("The slug of the workspace."),
+    timezone: z
+      .string()
+      .default("UTC")
+      .describe("The IANA timezone identifier for the workspace, e.g. 'UTC', 'Asia/Kolkata', 'America/New_York'."),
     domain: z
       .string()
       .nullable()
@@ -92,7 +96,7 @@ export const WorkspaceSchema = z
       .nullable()
       .optional()
       .describe("The analytics project token for the workspace."),
-      isPublic: z
+    isPublic: z
       .boolean()
       .optional()
       .describe("Whether the workspace is public or not."),
@@ -104,7 +108,7 @@ export const WorkspaceSchema = z
     createdAt: z
       .date()
       .describe("The date and time when the workspace was created."),
-    
+
     users: z
       .array(
         z.object({
@@ -133,6 +137,7 @@ export const createWorkspaceSchema = z.object({
         message: "Cannot use reserved slugs",
       }
     ),
+  timezone: z.string(),
   domain: z
     .string()
     .min(3, "Domain is required")

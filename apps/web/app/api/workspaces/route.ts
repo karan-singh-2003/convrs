@@ -27,7 +27,7 @@ export const GET = withSession(async ({ session }) => {
         },
         select: {
           role: true,
-          
+
         },
       },
     },
@@ -85,6 +85,8 @@ export const POST = withSession(async ({ req, session }) => {
   }
 
   try {
+    const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "Asia/Kolkata"
+
     const workspace = await prisma.workspace.create({
       data: {
         name,
@@ -99,7 +101,8 @@ export const POST = withSession(async ({ req, session }) => {
         // Limits
         tierEvents: 0,
         usageLimit: 0,
-
+        //  timezone
+        timezone:detectedTimezone,
         // Tokens
         projectToken: nanoid(32),
         inviteCode: nanoid(24),

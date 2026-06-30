@@ -40,7 +40,7 @@ export const GET = withWorkspace(
 // PATCH /api/workspaces/[idOrSlug] - update a specific workspace by id or slug
 export const PATCH = withWorkspace(
   async ({ req, workspace }) => {
-    const { name, slug, enforceSAML, isPublic } =
+    const { name, slug, enforceSAML, isPublic, timezone } =
       await updateWorkspaceSchema.parseAsync(await req.json());
 
     if (enforceSAML) {
@@ -66,6 +66,7 @@ export const PATCH = withWorkspace(
       data: {
         ...(name && { name }),
         ...(slug && { slug }),
+        ...(timezone && { timezone }),
         ...(enforceSAML !== undefined && {
           ssoEnforcedAt: enforceSAML ? new Date() : null,
         }),

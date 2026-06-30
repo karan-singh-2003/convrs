@@ -70,6 +70,7 @@ model Workspace {
   blockedIpAddresses String[]      @default([])
   blockedPages       String[]      @default([])
   plan               WorkspacePlan @default(free)
+  timezone           String        @default("UTC")
 
   stripeIntegration StripeIntegration?
 
@@ -82,7 +83,7 @@ model Workspace {
   funnels          Funnel[]
   alerts           Alert[]
   customers        Customer[]
-  payments Payment[]
+  payments         Payment[]
 
   @@index([usageLastChecked])
   @@index([dodoSubscriptionId])
