@@ -1,14 +1,22 @@
-// API route: /api/workspaces/[idOrSlug]/attribution-status
 import { prisma } from "@repo/db";
 
-export async function GET(req, { params }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ idOrSlug: string }> }
+) {
+  const { idOrSlug } = await params;
+
   const attributed = await prisma.customer.findFirst({
     where: {
-      workspaceId: params.idOrSlug,
+      workspaceId: idOrSlug,
       attributionStatus: "attributed",
     },
-    select: { id: true },
+    select: {
+      id: true,
+    },
   });
 
-  return Response.json({ hasAttributedPayment: !!attributed });
+  return Response.json({
+    attributed: !!attributed,
+  });
 }
