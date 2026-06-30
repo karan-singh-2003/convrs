@@ -9,7 +9,7 @@ import useCustomerActivity, {
 } from "@/lib/swr/use-customer-activity";
 import { LogIn } from "lucide-react";
 import useWorkspace from "@/lib/swr/use-workspace";
-import { LoadingSpinner} from "@repo/ui";
+import { LoadingSpinner } from "@repo/ui";
 import { cn, COUNTRIES } from "@repo/utils";
 
 type CustomerDetails = {
@@ -35,23 +35,34 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 2,
 });
-
+/**
+ * Parses a "YYYY-MM-DD HH:mm:ss.SSS" string (no timezone) as UTC,
+ * since that's how timestamps are stored/sent from the backend.
+ */
+function parseAsUTC(value: string | null): Date | null {
+  if (!value) return null;
+  // If it already has a timezone indicator, trust it.
+  const hasTzInfo = /Z$|[+-]\d{2}:?\d{2}$/.test(value.trim());
+  const isoLike = hasTzInfo
+    ? value
+    : `${value.trim().replace(" ", "T")}Z`;
+  const parsed = new Date(isoLike);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 const formatDate = (
   value: string | null,
   formatter: Intl.DateTimeFormat
 ) => {
-  if (!value) return "-";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "-" : formatter.format(parsed);
+  const parsed = parseAsUTC(value);
+  return parsed ? formatter.format(parsed) : "-";
 };
 
 const formatTime = (
   value: string | null,
   formatter: Intl.DateTimeFormat
 ) => {
-  if (!value) return "-";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "-" : formatter.format(parsed);
+  const parsed = parseAsUTC(value);
+  return parsed ? formatter.format(parsed) : "-";
 };
 
 const formatRelativeDays = (value: string | null) => {
@@ -96,7 +107,7 @@ export default function CustomerDetailsPage() {
 
   const { id: workspaceId, timezone } = useWorkspace();
   const tz = timezone || DEFAULT_TIMEZONE;
-  console.log("timezone",timezone)
+  console.log("timezone", timezone)
 
   // Workspace-aware formatters — re-created only when timezone changes
   const fullDateFormatter = useMemo(
@@ -125,7 +136,7 @@ export default function CustomerDetailsPage() {
     workspaceId || null
   );
 
-  console.log("customer activity",activity)
+  console.log("customer activity", activity)
 
   function RevenueIcon() {
     return (
@@ -358,8 +369,8 @@ export default function CustomerDetailsPage() {
                           <div>
                             <p
                               className={`font-display font-medium text-[14px] ${item.event_type === "revenue"
-                                  ? "text-emerald-600"
-                                  : "text-neutral-600"
+                                ? "text-emerald-600"
+                                : "text-neutral-600"
                                 }`}
                             >
                               {eventTitle(item)}
