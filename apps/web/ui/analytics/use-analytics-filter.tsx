@@ -84,17 +84,17 @@ export function useAnalyticsFilters({
       operator: FilterOperator;
       values: any[];
     }> = [
-      // Legacy: show one link chip when domain+key are present (no linkId)
-      ...(domain && key && !params.linkId
-        ? [
+        // Legacy: show one link chip when domain+key are present (no linkId)
+        ...(domain && key && !params.linkId
+          ? [
             {
               key: "linkId",
               operator: "IS" as FilterOperator,
               values: [`${domain}/${key}`],
             },
           ]
-        : []),
-    ];
+          : []),
+      ];
 
     // Handle all filters dynamically (including domain, tagId, folderId, root)
     VALID_ANALYTICS_FILTERS.forEach((filter) => {
@@ -262,9 +262,9 @@ export function useAnalyticsFilters({
 
           return (
             <img
+              src={`https://flagcdn.com/w20/${value.toLowerCase()}.svg`}
               alt={value}
-              src={`https://hatscripts.github.io/circle-flags/flags/${value.toLowerCase()}.svg`}
-              className="size-4 shrink-0"
+              width={20}
             />
           );
         },
@@ -286,9 +286,9 @@ export function useAnalyticsFilters({
             label: city,
             icon: (
               <img
+                src={`https://flagcdn.com/w20/${country.toLowerCase()}.svg`}
                 alt={country}
-                src={`https://hatscripts.github.io/circle-flags/flags/${country.toLowerCase()}.svg`}
-                className="size-4 shrink-0"
+                width={20}
               />
             ),
             right: getFilterOptionTotal(rest),
@@ -304,9 +304,9 @@ export function useAnalyticsFilters({
             label: REGIONS[region] || region.split("-")[1],
             icon: (
               <img
+                src={`https://flagcdn.com/w20/${country.toLowerCase()}.svg`}
                 alt={country}
-                src={`https://hatscripts.github.io/circle-flags/flags/${country.toLowerCase()}.svg`}
-                className="size-4 shrink-0"
+                width={20}
               />
             ),
             right: getFilterOptionTotal(rest),
@@ -461,34 +461,34 @@ export function useAnalyticsFilters({
       ...(programPage
         ? []
         : [
-            {
-              key: "refererUrl",
+          {
+            key: "refererUrl",
 
-              label: "Referrer URL",
+            label: "Referrer URL",
+
+            options:
+              refererUrls?.map(({ refererUrl, ...rest }) => ({
+                value: refererUrl,
+                label: refererUrl,
+                right: getFilterOptionTotal(rest),
+              })) ?? null,
+          },
+
+          ...UTM_PARAMETERS.filter(({ key }) => key !== "ref").map(
+            ({ key, label }) => ({
+              key,
+
+              label: `UTM ${label}`,
 
               options:
-                refererUrls?.map(({ refererUrl, ...rest }) => ({
-                  value: refererUrl,
-                  label: refererUrl,
-                  right: getFilterOptionTotal(rest),
+                utmData[key]?.map((dt) => ({
+                  value: dt[key],
+                  label: dt[key],
+                  right: nFormatter(dt.count, { full: true }),
                 })) ?? null,
-            },
-
-            ...UTM_PARAMETERS.filter(({ key }) => key !== "ref").map(
-              ({ key, label }) => ({
-                key,
-
-                label: `UTM ${label}`,
-
-                options:
-                  utmData[key]?.map((dt) => ({
-                    value: dt[key],
-                    label: dt[key],
-                    right: nFormatter(dt.count, { full: true }),
-                  })) ?? null,
-              })
-            ),
-          ]),
+            })
+          ),
+        ]),
       // additional fields that are hidden in filter dropdown
     ],
     [
@@ -643,10 +643,10 @@ export function useAnalyticsFilters({
       ...activeFilters,
       ...(streaming && !activeFilters.length
         ? Array.from({ length: 2 }, (_, i) => i).map((i) => ({
-            key: "loader",
-            values: [String(i)],
-            operator: "IS" as const,
-          }))
+          key: "loader",
+          values: [String(i)],
+          operator: "IS" as const,
+        }))
         : []),
     ];
   }, [activeFilters, streaming]);

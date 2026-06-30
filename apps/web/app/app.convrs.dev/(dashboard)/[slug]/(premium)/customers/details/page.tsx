@@ -107,7 +107,7 @@ export default function CustomerDetailsPage() {
 
   const { id: workspaceId, timezone } = useWorkspace();
   const tz = timezone || DEFAULT_TIMEZONE;
-  console.log("timezone", timezone)
+ 
 
   // Workspace-aware formatters — re-created only when timezone changes
   const fullDateFormatter = useMemo(
@@ -136,7 +136,7 @@ export default function CustomerDetailsPage() {
     workspaceId || null
   );
 
-  console.log("customer activity", activity)
+ 
 
   function RevenueIcon() {
     return (
@@ -446,8 +446,8 @@ export default function CustomerDetailsPage() {
                 <div className="flex items-center gap-2">
                   <img
                     alt={customer.country}
-                    src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
-                    className="size-5 shrink-0"
+                    src={`https://flagcdn.com/w20/${countryCode}.png`}
+                    width="20"
                   />
                   <span className="font-default font-medium text-neutral-600">
                     {customer.country || "-"}

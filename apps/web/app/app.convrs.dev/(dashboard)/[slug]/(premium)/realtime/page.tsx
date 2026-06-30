@@ -127,9 +127,9 @@ function DetailView({
           item.code && {
             icon: (
               <img
+                src={`https://flagcdn.com/w20/${item.label.toLowerCase()}.png`}
                 alt={item.label}
-                src={`https://hatscripts.github.io/circle-flags/flags/${item.code.toLowerCase()}.svg`}
-                className="size-3 sm:size-4 shrink-0 rounded-full"
+                width="20"
               />
             ),
           }),

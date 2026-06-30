@@ -99,10 +99,16 @@ export default function CustomersPage() {
 
           return (
             <div className="flex items-center gap-2">
-              <img
+              {/* <img
                 alt={country || "Unknown"}
                 src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
                 className="size-5 shrink-0"
+              /> */}
+              <img
+                src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
+                alt={countryCode}
+                width="20"
+
               />
               <span className="text-sm font-display font-medium text-neutral-500">
                 {country || "-"}

@@ -92,10 +92,15 @@ export function LocationSection() {
               {CONTINENTS[d.continent]?.[0] || "🌍"}
             </h1>
           ) : (
+            // <img
+            //   alt={d.country}
+            //   src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
+            //   className="size-3 sm:size-4 shrink-0"
+            // />
             <img
-              alt={d.country}
-              src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
-              className="size-3 sm:size-4 shrink-0"
+              src={`https://flagcdn.com/w20/${d.country.toLowerCase()}.png`}
+              alt={d.countryCode}
+              width="20"
             />
           ),
 
