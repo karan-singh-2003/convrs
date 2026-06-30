@@ -1,4 +1,5 @@
 import { getDaysDifference } from "@repo/utils";
+import { isToday } from "date-fns";
 
 export const formatDateTooltip = (
   date: Date,
@@ -29,11 +30,14 @@ export const formatDateTooltip = (
   if (start && end) {
     const daysDifference = getDaysDifference(start, end);
 
-    if (daysDifference <= 2)
-      return targetDate.toLocaleTimeString("en-US", {
+    if (daysDifference <= 2) {
+      const time = targetDate.toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "numeric",
       });
+
+      return isToday(targetDate) ? `Today, ${time}` : time;
+    }
     else if (daysDifference > 180)
       return targetDate.toLocaleDateString("en-US", {
         month: "short",
@@ -41,11 +45,14 @@ export const formatDateTooltip = (
       });
   } else if (interval) {
     switch (interval) {
-      case "24h":
-        return targetDate.toLocaleTimeString("en-US", {
+      case "24h": {
+        const time = targetDate.toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "numeric",
         });
+
+        return isToday(targetDate) ? `Today, ${time}` : time;
+      }
       case "ytd":
       case "1y":
       case "all":

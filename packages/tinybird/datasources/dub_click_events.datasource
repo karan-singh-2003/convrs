@@ -72,7 +72,7 @@ SELECT
     event_name,
 
     workspace_id,
-    user_id,
+    CAST(user_id, 'Nullable(String)') AS user_id,
     visitor_id,
     session_id,
     identity_hash,
