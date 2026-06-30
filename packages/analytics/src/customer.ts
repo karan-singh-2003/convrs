@@ -5,10 +5,14 @@ export async function upsertAnonymousCustomer({
   workspaceId,
   visitorId,
   country,
+  device,
+  browser,
 }: {
   workspaceId: string;
   visitorId: string;
   country?: string;
+  device?: string;
+  browser?: string;
 }) {
   // Use findFirst + create instead of upsert to avoid the
   // @@unique([workspaceId, externalId]) constraint needing externalId non-null
@@ -16,7 +20,18 @@ export async function upsertAnonymousCustomer({
     where: { workspaceId, externalId: visitorId },
   });
 
-  if (existing) return existing; // already seen this visitor, no-op
+  if (existing) {
+    if ((device && !existing.device) || (browser && !existing.browser)) {
+      return prisma.customer.update({
+        where: { id: existing.id },
+        data: {
+          device: device || existing.device,
+          browser: browser || existing.browser,
+        },
+      });
+    }
+    return existing; // already seen this visitor, no-op
+  }
 
   return prisma.customer.create({
     data: {
@@ -24,6 +39,8 @@ export async function upsertAnonymousCustomer({
       externalId: visitorId, // visitor_id is the stable anonymous key
       name: generateAnonymousName(visitorId),
       country: country || null,
+      device: device || null,
+      browser: browser || null,
     },
   });
 }
@@ -33,11 +50,15 @@ export async function upsertCustomer({
   traits,
   geo,
   visitorId,
+  device,
+  browser,
 }: {
   workspaceId: string;
   traits: Record<string, any>;
   geo?: string;
   visitorId?: string;
+  device?: string;
+  browser?: string;
 }) {
   const externalId = traits.user_id ?? traits.userId ?? traits.email ?? null;
 
@@ -46,6 +67,8 @@ export async function upsertCustomer({
     email: traits.email ?? undefined,
     avatar: traits.image ?? undefined,
     country: geo || undefined,
+    device: device || undefined,
+    browser: browser || undefined,
     updatedAt: new Date(),
   };
 

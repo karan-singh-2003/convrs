@@ -19,6 +19,8 @@ model Customer {
   workspaceId            String
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
+  device                 String?
+  browser                String?
 
   // Attribution tracking
   attributionStatus      AttributionStatus @default(pending)

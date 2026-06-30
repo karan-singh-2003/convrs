@@ -18,6 +18,8 @@ export type CustomerItem = {
   subscriptionCanceledAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  device: string | null;
+  browser: string | null;
 };
 
 export default function useCustomers({

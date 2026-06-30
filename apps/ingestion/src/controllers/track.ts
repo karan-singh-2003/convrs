@@ -166,6 +166,16 @@ export async function trackClickController(req: Request, res: Response) {
       vercelRegion,
     });
 
+    // ── UA PARSING ───────────────────────────────────────────────────────────
+    const ua = (req.headers["user-agent"] as string) || "";
+    const parsedUA = new UAParserLib.UAParser(ua).getResult();
+
+    // helper → NEVER send undefined/null to Tinybird for String fields
+    const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
+
+    const deviceName = safe(parsedUA.device.type || "desktop");
+    const browserName = safe(parsedUA.browser.name);
+
     // ── IDENTIFY ─────────────────────────────────────────────────────────────
     let customer = null;
     console.log("parsed data type", parsed.data.type)
@@ -176,12 +186,11 @@ export async function trackClickController(req: Request, res: Response) {
         workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
         visitorId: parsed.data.visitor_id ?? undefined,
-
         geo: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
+        device: deviceName,
+        browser: browserName,
       });
     }
-
-
 
     // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
     else if (parsed.data.type === "pageview" && parsed.data.visitor_id) {
@@ -189,17 +198,11 @@ export async function trackClickController(req: Request, res: Response) {
       customer = await upsertAnonymousCustomer({
         workspaceId: workspace.id,
         visitorId: parsed.data.visitor_id,
-
         country: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
+        device: deviceName,
+        browser: browserName,
       });
     }
-
-    // ── UA PARSING ───────────────────────────────────────────────────────────
-    const ua = (req.headers["user-agent"] as string) || "";
-    const parsedUA = new UAParserLib.UAParser(ua).getResult();
-
-    // helper → NEVER send undefined/null to Tinybird for String fields
-    const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
 
     // ── ENRICH PAYLOAD ───────────────────────────────────────────────────────
     const enrichedPayload = {
@@ -219,12 +222,12 @@ export async function trackClickController(req: Request, res: Response) {
       ua,
 
       // Device
-      device: safe(parsedUA.device.type || "desktop"),
+      device: deviceName,
       device_model: safe(parsedUA.device.model),
       device_vendor: safe(parsedUA.device.vendor),
 
       // Browser
-      browser: safe(parsedUA.browser.name),
+      browser: browserName,
       browser_version: safe(parsedUA.browser.version),
 
       // OS
@@ -307,7 +310,6 @@ export async function trackClickController(req: Request, res: Response) {
 }
 
 function normalizeTrackPayload(raw: Record<string, any>) {
-  console.log("NORMALIZER VERSION: v2");
   const websiteId = raw.website_id || raw.websiteId;
   const visitorId = raw.visitor_id || raw.visitorId;
   const sessionId = raw.session_id || raw.sessionId;
@@ -339,6 +341,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     session_id: sessionId,
     url: href,
     hostname,
+    entrypage: raw.entrypage ?? null,
     page: safePath(href),
     referrer: raw.referrer ?? null,
     language: raw.language ?? "",
@@ -383,6 +386,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     normalized.event_name = customEventName;
     normalized.props = customProps;
     normalized.trigger = "goal";
+    normalized.entrypage = raw.entrypage ?? null;
   }
 
   // ── Identify ──────────────────────────────────────────────────────────────
@@ -393,6 +397,17 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     normalized.traits = raw.traits ?? {};
     normalized.props = {};
     normalized.trigger = null;
+  }
+
+  // exit link event
+  else if (raw.type === "exitlink") {
+    normalized.type = "exitlink";
+    normalized.event_type = "pageview"; // or a dedicated "exitlink" event_type if you want it filterable separately
+    normalized.event_name = "exitlink";
+    normalized.exitlink = raw.exitlink ?? null;
+    normalized.entrypage = raw.entrypage ?? null;
+    normalized.props = {};
+    normalized.trigger = "exitlink";
   }
 
   // ── Generic event ─────────────────────────────────────────────────────────

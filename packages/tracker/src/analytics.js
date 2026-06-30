@@ -211,6 +211,15 @@
   var VISITOR_KEY = "_atk_vid";
   var SESSION_SECS = 30 * 60; // 30 min sliding
   var VISITOR_SECS = 365 * 24 * 3600; // 1 year
+  var ENTRY_KEY = "_atk_entry";
+
+  function getEntryPage() {
+    var existing = getCookie(ENTRY_KEY);
+    if (existing) return existing;
+    var page = window.location.pathname;
+    setCookie(ENTRY_KEY, page, SESSION_SECS);
+    return page;
+  }
 
   function getCookie(name) {
     var match = document.cookie.match(
@@ -269,7 +278,7 @@
 
     try {
       localStorage.setItem(VISITOR_KEY, vid);
-    } catch (_) {}
+    } catch (_) { }
     setCookie(VISITOR_KEY, vid, VISITOR_SECS);
     return vid;
   }
@@ -299,6 +308,7 @@
       domain: _domain || hostname,
       href: href,
       language: language,
+      entrypage: getEntryPage(),
       referrer: referrer,
       screenWidth: screenWidth,
       screenHeight: screenHeight,
@@ -308,6 +318,48 @@
       },
       sessionId: sessionId,
     };
+  }
+
+  function isInternalHost(hostname) {
+    if (!hostname) return true;
+    var h = hostname.toLowerCase();
+    var current = window.location.hostname.toLowerCase();
+    var root = (_domain || current).toLowerCase().replace(/^\./, "");
+    return (
+      h === current ||
+      h === root ||
+      h.endsWith("." + root) ||
+      h.endsWith("." + current)
+    );
+  }
+
+  function isTrackableOutbound(url) {
+    if (!url) return false;
+    var lower = url.trim().toLowerCase();
+    if (
+      lower.indexOf("mailto:") === 0 ||
+      lower.indexOf("tel:") === 0 ||
+      lower.indexOf("javascript:") === 0 ||
+      lower.indexOf("#") === 0
+    ) {
+      return false;
+    }
+    try {
+      var parsed = new URL(url, window.location.href);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false;
+      return !isInternalHost(parsed.hostname);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function trackExitLink(url, callback) {
+    if (!_enabled || isOptedOut()) return;
+    var payload = buildBase();
+    payload.type = "exitlink";
+    payload.exitlink = url;
+    send(payload);
+    if (typeof callback === "function") callback({ status: 200 });
   }
 
   // ─── PROPS VALIDATION ──────────────────────────────────────────────────────
@@ -327,8 +379,8 @@
         log(
           "warn",
           'Invalid prop key "' +
-            key +
-            '" — skipped (use letters, numbers, _ or -)'
+          key +
+          '" — skipped (use letters, numbers, _ or -)'
         );
         continue;
       }
@@ -377,8 +429,8 @@
         body: body,
         keepalive: true,
         credentials: "omit", // ← this is the key fix
-      }).catch(function () {});
-    } catch (_) {}
+      }).catch(function () { });
+    } catch (_) { }
   }
 
   // ─── CORE API ──────────────────────────────────────────────────────────────
@@ -573,8 +625,18 @@
 
   // ─── CLICK / KEYBOARD DELEGATION ──────────────────────────────────────────
   function onActivation(e) {
-    var el = e.target && e.target.closest("[data-goal]");
-    if (el) fireGoal(el);
+    var goalEl = e.target && e.target.closest("[data-goal]");
+    if (goalEl) fireGoal(goalEl);
+
+    var anchor = e.target && e.target.closest("a[href]");
+    if (anchor) {
+      var href = anchor.getAttribute("href");
+      if (isTrackableOutbound(href)) {
+        try {
+          trackExitLink(new URL(href, window.location.href).href);
+        } catch (_) { }
+      }
+    }
   }
 
   document.addEventListener("click", onActivation, true);
@@ -662,8 +724,8 @@
         body: body,
         keepalive: true,
         credentials: "omit",
-      }).catch(function () {});
-    } catch (_) {}
+      }).catch(function () { });
+    } catch (_) { }
   }
 
   function startHeartbeat() {
@@ -737,7 +799,7 @@
       if (Array.isArray(_call) && _call.length) {
         try {
           convrs.apply(null, _call);
-        } catch (_) {}
+        } catch (_) { }
       }
     }
   } else {

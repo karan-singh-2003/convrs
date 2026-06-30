@@ -15,6 +15,8 @@ export type CustomerRow = {
   subscriptionCanceledAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  device: string | null;
+  browser: string | null;
 };
 
 const toNumber = (value: unknown): number => {
@@ -50,6 +52,8 @@ function mapCustomer(customer: any): CustomerRow {
     subscriptionCanceledAt: toIsoString(customer.subscriptionCanceledAt),
     createdAt: toIsoString(customer.createdAt),
     updatedAt: toIsoString(customer.updatedAt),
+    device: customer.device ?? null,
+    browser: customer.browser ?? null,
   };
 }
 

@@ -11,6 +11,7 @@ import { LogIn } from "lucide-react";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { LoadingSpinner } from "@repo/ui";
 import { cn, COUNTRIES } from "@repo/utils";
+import { DeviceIcon } from "@/ui/analytics/device-icon";
 
 type CustomerDetails = {
   id: string;
@@ -26,6 +27,8 @@ type CustomerDetails = {
   subscriptionCanceledAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  device: string | null;
+  browser: string | null;
 };
 
 const DEFAULT_TIMEZONE = "UTC";
@@ -107,7 +110,7 @@ export default function CustomerDetailsPage() {
 
   const { id: workspaceId, timezone } = useWorkspace();
   const tz = timezone || DEFAULT_TIMEZONE;
- 
+
 
   // Workspace-aware formatters — re-created only when timezone changes
   const fullDateFormatter = useMemo(
@@ -135,8 +138,6 @@ export default function CustomerDetailsPage() {
     customerId,
     workspaceId || null
   );
-
- 
 
   function RevenueIcon() {
     return (
@@ -331,9 +332,13 @@ export default function CustomerDetailsPage() {
           </h2>
 
           {activityLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-28" />
+            <div className="space-y-3">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="space-y-0.5">
+                  <Skeleton className="h-9 w-70" />
+                  {/* <Skeleton className="h-4 w-48" /> */}
+                </div>
+              ))}
             </div>
           ) : activity.length === 0 ? (
             <p className="text-sm font-display text-neutral-400">
@@ -452,6 +457,27 @@ export default function CustomerDetailsPage() {
                   <span className="font-default font-medium text-neutral-600">
                     {customer.country || "-"}
                   </span>
+                </div>
+              )}
+
+              {customer.browser && (
+                <div className="flex font-medium font-default items-center gap-2">
+                  <DeviceIcon
+                    display={customer.browser}
+                    tab={"browsers"}
+                    className="h-3 w-3 sm:h-[18px] sm:w-[18px]"
+                  />
+                  {customer.browser}
+                </div>
+              )}
+              {customer.device && (
+                <div className="flex font-medium font-default items-center gap-2">
+                  <DeviceIcon
+                    display={customer.device || ""}
+                    tab={"devices"}
+                    className="h-3 w-3 sm:h-[18px] sm:w-[18px]"
+                  />
+                  {customer.device || "-"}
                 </div>
               )}
 
