@@ -96,6 +96,7 @@ export default function CustomerDetailsPage() {
 
   const { id: workspaceId, timezone } = useWorkspace();
   const tz = timezone || DEFAULT_TIMEZONE;
+  console.log("timezone",timezone)
 
   // Workspace-aware formatters — re-created only when timezone changes
   const fullDateFormatter = useMemo(
@@ -123,6 +124,8 @@ export default function CustomerDetailsPage() {
     customerId,
     workspaceId || null
   );
+
+  console.log("customer activity",activity)
 
   function RevenueIcon() {
     return (
