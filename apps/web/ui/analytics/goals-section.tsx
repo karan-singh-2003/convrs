@@ -14,10 +14,12 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
+import { useGoalPropertiesModal } from "../modals/goal-property-modal";
 
 export function LowerGrid() {
   const { queryParams, searchParams } = useRouterStuff();
-  const { selectedTab,totalEvents } = useContext(AnalyticsContext);
+  const { selectedTab, totalEvents } = useContext(AnalyticsContext);
+  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"goals">("goals");
 
@@ -89,58 +91,64 @@ export function LowerGrid() {
         .sort((a, b) => b.value - a.value) ?? [],
     [allData, singularTabName, dataKey]
   );
-  console.log("data",data)
-  console.log("a;;data",allData)
+  console.log("data", data)
+  console.log("data", allData)
 
-
+  const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();
   return (
-    <AnalyticsCard
-      tabs={[{ id: "goals", label: "Goals" }]}
-      selectedTabId={tab}
-      onSelectTab={setTab}
-      expandLimit={8}
-      dataLength={data?.length}
-      isFilterActive={isFilterActive}
-      onClearFilter={onClearFilter}
-    >
-      {({ limit, setShowModal }) =>
-        data ? (
-          data.length > 0 ? (
-            <BarList
-              tab={singularTabName}
-              data={transformedData}
-              allData={transformedAllData}
-              totalVisitors={totalEvents?.clicks}
-              unit={selectedTab}
-              maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
-              barBackground="bg-purple-100"
-              hoverBackground="hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:border-purple-500"
-              filterSelectedBackground="bg-purple-600"
-              filterSelectedHoverBackground="hover:bg-purple-700"
-              filterHoverClass="bg-white border border-purple-200"
-              setShowModal={setShowModal}
-              selectedFilterValues={selectedItems}
-              activeFilterValues={activeFilterValues}
-              onToggleFilter={onToggleFilter}
-              onClearFilter={onClearFilter}
-              onClearSelection={() => setSelectedItems([])}
-              onRowFilterItem={(val) => onApplyFilterValues([val])}
-              onApplyFilterValues={onApplyFilterValues}
-              {...(limit && { limit })}
-            />
+    <>
+
+      <GoalPropertiesModal />
+
+      <AnalyticsCard
+        tabs={[{ id: "goals", label: "Goals" }]}
+        selectedTabId={tab}
+        onSelectTab={setTab}
+        expandLimit={8}
+        dataLength={data?.length}
+        isFilterActive={isFilterActive}
+        onClearFilter={onClearFilter}
+      >
+        {({ limit, setShowModal }) =>
+          data ? (
+            data.length > 0 ? (
+              <BarList
+                tab={singularTabName}
+                data={transformedData}
+                allData={transformedAllData}
+                totalVisitors={totalEvents?.clicks}
+                unit={selectedTab}
+                maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
+                barBackground="bg-purple-100"
+                hoverBackground="hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:border-purple-500"
+                filterSelectedBackground="bg-purple-600"
+                filterSelectedHoverBackground="hover:bg-purple-700"
+                filterHoverClass="bg-white border border-purple-200"
+                setShowModal={setShowModal}
+                selectedFilterValues={selectedItems}
+                activeFilterValues={activeFilterValues}
+                onToggleFilter={onToggleFilter}
+                onClearFilter={onClearFilter}
+                onClearSelection={() => setSelectedItems([])}
+                onRowFilterItem={(val) => onApplyFilterValues([val])}
+                onApplyFilterValues={onApplyFilterValues}
+                onExpandRow={(filterValue) => openGoalPropertiesModal(filterValue)}
+                {...(limit && { limit })}
+              />
+            ) : (
+              <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
+                <p className="text-xs font-poppins text-neutral-500 sm:text-[13px] font-medium">
+                  No data available
+                </p>
+              </div>
+            )
           ) : (
-            <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
-              <p className="text-xs font-poppins text-neutral-500 sm:text-[13px] font-medium">
-                No data available
-              </p>
+            <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
+              <LoadingSpinner />
             </div>
           )
-        ) : (
-          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
-            <LoadingSpinner />
-          </div>
-        )
-      }
-    </AnalyticsCard>
+        }
+      </AnalyticsCard>
+    </>
   );
 }

@@ -84,7 +84,7 @@ const DashboardPage = () => {
               <div className="relative">
 
 
-                <div className="fixed bottom-5 px-5 py-3.5 left-5 z-50 w-[430px] rounded-xl border border-neutral-200 bg-neutral-50  shadow-xl font-display">
+                <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-neutral-200 bg-neutral-50  shadow-xl font-display">
 
                   <div className="flex items-center justify-between">
                     <div>

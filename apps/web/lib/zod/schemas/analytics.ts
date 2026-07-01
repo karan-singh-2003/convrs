@@ -55,6 +55,7 @@ export const analyticsPathParamsSchema = z.object({
 export const analyticsQuerySchema = z.object({
   event: analyticsEvents,
   groupBy: analyticsGroupBy,
+
   stepsCsv: z
     .string()
     .optional()
@@ -138,6 +139,7 @@ export const analyticsQuerySchema = z.object({
       "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
       "Examples: `pn_123`, `pn_123,pn_456`, `-pn_789`."
     ),
+  goalName: z.string().optional(),  // ← add if missing
   goal: z
     .string()
     .optional()
@@ -419,6 +421,7 @@ export function parseEventsQuery(searchParams: Record<string, string>) {
 
 // Analytics filter params for Tinybird endpoints
 export const analyticsFilterTB = z.object({
+  goalName: z.string().optional(),  // ← add
   eventType: analyticsEvents,
   workspaceId: z.string().optional(),
   groupBy: analyticsGroupBy,

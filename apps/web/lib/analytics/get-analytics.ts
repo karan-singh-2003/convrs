@@ -22,6 +22,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     country,
     timezone = "UTC",
     dataAvailableFrom,
+    goalName
   } = params;
 
   if (event === "funnel") {
@@ -87,7 +88,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
 
     const funnelResponse = await funnelPipe({
       workspaceId: workspaceId as string,
-      start: formatUTCDateTimeClickhouse(startDate), 
+      start: formatUTCDateTimeClickhouse(startDate),
       end: formatUTCDateTimeClickhouse(endDate),
       ...(normalizedSteps.length > 0 ? { steps: normalizedSteps.join(",") } : {}),
       // ← add this
@@ -130,6 +131,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     pipe: selectedPipe,
     parameters: analyticsFilterTB,
     data: z.object({
+      prop_key: z.string().optional(),
       groupByField: z.string().optional(),
       clicks: z.number().nullable().default(0),
       bounce_rate: z.number().nullable().default(0),
@@ -160,11 +162,12 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     region: typeof regionForPipe === "string" ? regionForPipe : undefined,
     filters:
       advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
+    ...(goalName && { goalName }),  // ← add
   };
 
-
-
+  // console.log("tinybird params", tinybirdParams)
   const response = await pipe(tinybirdParams);
+  console.log("response from pipe", JSON.stringify(response, null, 2));
 
   // Return parsed response
   const schema = analyticsResponse[groupBy!];

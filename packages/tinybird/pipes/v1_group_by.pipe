@@ -181,6 +181,33 @@ ORDER BY clicks DESC
 LIMIT 5000
 
 
+NODE group_by_goal_properties
+SQL >
+
+%
+SELECT
+    concat(prop_key, '::', prop_value) AS groupByField,
+    prop_key,
+    COUNT(DISTINCT visitor_id)         AS clicks
+FROM (
+    SELECT
+        visitor_id,
+        arrayJoin(JSONExtractKeys(assumeNotNull(event_properties))) AS prop_key,
+        JSONExtractString(assumeNotNull(event_properties), prop_key) AS prop_value
+    FROM dub_click_events_mv
+    WHERE
+        event_type = 'goals'
+        AND event_properties != '{}'
+        AND event_properties != ''
+        {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(goalName) %}    AND event_name  = {{ String(goalName) }} {% end %}
+        {% if defined(start) %}       AND timestamp  >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %}         AND timestamp  <= {{ DateTime64(end) }}   {% end %}
+)
+GROUP BY groupByField, prop_key
+ORDER BY prop_key ASC, clicks DESC
+LIMIT 1000
+
 
 
 NODE group_by_sales
@@ -348,8 +375,10 @@ SQL >
 %
 SELECT *
 FROM
-    {% if eventType == 'revenue' %}     group_by_sales
-    {% elif eventType == 'goals' %}     group_by_clicks
-    {% elif eventType == 'composite' %} group_by_clicks
-    {% else %}                          group_by_clicks
+
+    {% if String(groupBy) == 'goal_properties' %}  group_by_goal_properties
+    {% elif eventType == 'revenue' %}      group_by_sales
+    {% elif eventType == 'goals' %}        group_by_clicks
+    {% elif eventType == 'composite' %}    group_by_clicks
+    {% else %}                             group_by_clicks
     {% end %}

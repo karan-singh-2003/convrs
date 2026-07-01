@@ -61,6 +61,11 @@ export const analyticsResponse = {
     goal: z.string(),
     clicks: z.number().default(0),
   }),
+  goal_properties: z.object({
+    goal_property: z.string().optional(),
+    prop_key: z.string().optional(),
+    clicks: z.number().default(0),
+  }),
   timeseries: z.object({
     start: z.string().describe("The starting timestamp of the interval"),
     clicks: z

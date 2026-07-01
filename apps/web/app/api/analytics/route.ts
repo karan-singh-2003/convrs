@@ -40,9 +40,9 @@ export const GET = async (req: Request) => {
     include: {
       users: session?.user?.id
         ? {
-            where: { userId: session.user.id },
-            select: { role: true },
-          }
+          where: { userId: session.user.id },
+          select: { role: true },
+        }
         : false,
     },
   });
@@ -73,10 +73,11 @@ export const GET = async (req: Request) => {
       });
     }
   }
-
+  const goalName = searchParams.goalName ?? undefined;
   const data = await getAnalytics({
     ...parsedParams,
     workspaceId: workspace.id,
+    goalName,  // ← add
   });
 
   return NextResponse.json({ data });

@@ -3,7 +3,7 @@
 import { Button, Tooltip, useMediaQuery } from "@repo/ui";
 import { cn, getPrettyUrl } from "@repo/utils";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
-import { Search } from "lucide-react";
+import { Maximize2, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -40,6 +40,7 @@ export function BarList({
   onApplyFilterValues,
   placeholder,
   onRowFilterItem,
+  onExpandRow
 }: {
   placeholder?: string;
   tab: string;
@@ -77,6 +78,7 @@ export function BarList({
   onClearSelection?: () => void;
   onRowFilterItem?: (val: string) => void;
   onApplyFilterValues?: (values: string[]) => void;
+  onExpandRow?: (filterValue: string) => void;
 }) {
   const [search, setSearch] = useState("");
   const [modalSelectedValues, setModalSelectedValues] = useState<string[]>(
@@ -150,6 +152,7 @@ export function BarList({
           ? () => onToggleFilter(data.filterValue!)
           : undefined
       : undefined,
+
     onRowClick:
       data.filterValue && onRowFilterItem
         ? !limit
@@ -158,6 +161,10 @@ export function BarList({
             setShowModal(false);
           }
           : () => onRowFilterItem(data.filterValue!)
+        : undefined,
+    onExpandRow:
+      data.filterValue && onExpandRow
+        ? () => onExpandRow(data.filterValue!)
         : undefined,
   }));
 
@@ -239,6 +246,7 @@ export function LineItem({
   onRowClick,
   onFilterClick,
   href,
+  onExpandRow
 }: {
   icon?: ReactNode;
   title: string;
@@ -255,6 +263,7 @@ export function LineItem({
   onFilterClick?: () => void;
   href?: string;
   onRowClick?: () => void;
+  onExpandRow?: () => void;  // ← add
 }) {
   const [filterButtonHovered, setFilterButtonHovered] = useState(false);
   const [tooltipResetKey, setTooltipResetKey] = useState(0);
@@ -266,7 +275,7 @@ export function LineItem({
       ? Math.round((value / (totalVisitors || 1)) * 1000) / 10
       : Math.round((value / totalSum) * 1000) / 10;
 
-      
+
   const isModalView = !limit;
 
   const lineItem = (
@@ -352,47 +361,62 @@ export function LineItem({
         )}
       >
         <motion.div
-          style={{
-            width: `${percentage}%`,
-            position: "absolute",
-            inset: 0,
-          }}
+          style={{ width: `${percentage}%`, position: "absolute", inset: 0 }}
           className="-z-10 h-full origin-left rounded-none px-2 sm:px-4 bg-neutral-100"
           transition={{ ease: "easeOut", duration: 0.3 }}
           initial={{ transform: "scaleX(0)" }}
           animate={{ transform: "scaleX(1)" }}
         />
-        <div className="relative z-10 flex h-7 sm:h-8 px-2 sm:px-4 w-full min-w-0 max-w-[calc(100%-2rem)] border-l-4 border-neutral-500 font-display items-center transition-[max-width] duration-300 ease-in-out group-hover:max-w-[calc(100%-5rem)]">
-          {lineItem}
+
+        <div
+          className={cn(
+            "relative z-10 flex h-7 sm:h-8 w-full min-w-0 items-center border-l-4 border-neutral-500 px-2 sm:px-4 font-display",
+            "max-w-[calc(100%-2rem)] transition-[max-width] duration-300 ease-in-out",
+            "group-hover:max-w-[calc(100%-5rem)]"
+          )}
+        >
+
+          <div className="min-w-0 flex-1">
+            {lineItem}
+          </div>
+          {onExpandRow && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onExpandRow();
+              }}
+              aria-label={`Expand ${title}`}
+              className={cn(
+                "mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                "opacity-0 -translate-x-1 pointer-events-none",
+                "transition-all duration-200 ease-out",
+                "group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100",
+                "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
+              )}
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+
         </div>
+
         <div className="z-10 px-2 sm:px-3 flex items-center">
-          {/** Revenue and saleAmount should render with currency formatting on the value pill. */}
           <NumberFlow
             value={
-              unit === "sales" && saleUnit === "saleAmount"
-                ? value / 100
-                : value
+              unit === "sales" && saleUnit === "saleAmount" ? value / 100 : value
             }
             className={cn(
               "z-10 px-1 sm:px-2 text-xs sm:text-sm font-display text-neutral-600 transition-transform duration-300",
               isModalView ? "-translate-x-14" : "group-hover:-translate-x-14"
             )}
-            style={{
-              // Adds translateZ(0) to fix transition jitter
-              transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)`,
-            }}
+            style={{ transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)` }}
             locales="en-US"
             format={
-              (unit === "sales" && saleUnit === "saleAmount") ||
-                unit === "revenue"
-                ? {
-                  style: "currency",
-                  currency: "USD",
-                  currencyDisplay: "symbol", // ensures "$" instead of "US$"
-                }
-                : {
-                  notation: value > 999999 ? "compact" : "standard",
-                }
+              (unit === "sales" && saleUnit === "saleAmount") || unit === "revenue"
+                ? { style: "currency", currency: "USD", currencyDisplay: "symbol" }
+                : { notation: value > 999999 ? "compact" : "standard" }
             }
           />
           <div
@@ -402,10 +426,7 @@ export function LineItem({
                 ? "visible translate-x-0 opacity-100"
                 : "invisible translate-x-14 opacity-0 group-hover:visible group-hover:translate-x-0 group-hover:opacity-100"
             )}
-            style={{
-              // Adds translateZ(0) to fix transition jitter
-              transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)`,
-            }}
+            style={{ transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)` }}
           >
             {percentage > 0 ? `${percentage}%` : "0%"}
           </div>

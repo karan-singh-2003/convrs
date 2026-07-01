@@ -54,6 +54,7 @@ export type AnalyticsFilters = Partial<
   isDeprecatedClicksEndpoint?: boolean;
   start?: Date | null;
   end?: Date | null;
+  goalName?: string;  // ← add
   // Accept plain string (from partner-profile/cron routes) or ParsedFilter (from API schema)
   // partnerId?: string | ParsedFilter;
   // linkId?: string | ParsedFilter;

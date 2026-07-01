@@ -65,6 +65,7 @@ export const VALID_ANALYTICS_ENDPOINTS = [
   "exitlink",
 
   "goals",
+  "goal_properties",
   "event_type",
 ] as const;
 
@@ -101,12 +102,13 @@ export const SINGULAR_ANALYTICS_ENDPOINTS = {
   exitlink: "exitlink",
 
   // goal fields
-  goals:"goal",
+  goals: "goal",
   revenue: "revenue",
+  goal_properties: "goal_property",
 };
 
 export const VALID_ANALYTICS_FILTERS = [
- 
+
   "interval",
   "start",
   "end",
@@ -165,7 +167,7 @@ export const DIMENSIONAL_ANALYTICS_FILTERS = [
 
 export const TRIGGER_TYPES = ["pageview"] as const;
 
-export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration","goals","funnel","revenue"] as const;
+export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration", "goals", "funnel", "revenue"] as const;
 
 export const ANALYTICS_VIEWS = ["timeseries", "funnel"] as const;
 
