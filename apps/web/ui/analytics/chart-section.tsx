@@ -2,6 +2,7 @@
 
 import { EventType } from "@/lib/analytics/types";
 import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
 import {
   BlurImage,
   buttonVariants,
@@ -43,8 +44,11 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     saleUnit,
     view,
   } = useContext(AnalyticsContext);
-  console.log("workspaceiD", workspaceId);
+
   const { plan, projectToken, id } = useWorkspace();
+  const { integrations } = useIntegrations();
+  const hasRevenueProvider = integrations.length > 0;
+
   const { queryParams } = useRouterStuff();
   const { funnels } = useFunnels({
     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
@@ -110,7 +114,6 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     }
   }, [canShowFunnelView, queryParams, view]);
 
- 
   return (
     <>
       <CreateFunnelEditorModal />
@@ -118,7 +121,6 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
       <div>
         <div className="w-full bg-neutral-50 border-b">
           <div className="w-full relative  py-2">
-            {/* CENTER → Tabs */}
             <div className="max-w-screen-lg mx-auto flex justify-center ">
               {safeView === "timeseries" ? (
                 <AnalyticsTabs
@@ -139,6 +141,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
                       set: { saleUnit: option },
                     })
                   }
+                  hasRevenueProvider={hasRevenueProvider}
                   requiresUpgrade={requiresUpgrade}
                   showPaywall={showPaywall}
                 />
@@ -147,7 +150,6 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
               )}
             </div>
 
-            {/* RIGHT → Toggle (floating) */}
             <div className="absolute right-3 md:top-1 z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
               {safeView === "funnel" && hasFunnels && (
                 <button
