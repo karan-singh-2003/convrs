@@ -68,7 +68,7 @@ export async function attemptAttribution({
     });
 
     const response = await fetch(
-      `${tinybirdApiUrl}/v0/pipes/customer_events.json?${params}`,
+      `${tinybirdApiUrl}/v0/pipes/v1_customer_attribution.json?${params}`,
       {
         headers: { Authorization: `Bearer ${tinybirdApiKey}` },
       }
