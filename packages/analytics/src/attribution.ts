@@ -52,68 +52,73 @@ export async function attemptAttribution({
 
   const tinybirdApiUrl = process.env.TINYBIRDS_API_URL;
   const tinybirdApiKey = process.env.TINYBIRDS_API_KEY;
-
   if (!tinybirdApiUrl || !tinybirdApiKey) {
-    console.warn("[attribution] Missing Tinybird credentials — cannot verify visitor");
+    console.warn("[attribution] Missing Tinybird credentials");
     return { attributed: false, visitorId, enrichedContext: null };
   }
 
-  try {
-    // Query Tinybird for the visitor's most recent session context.
-    // We use the customer_events endpoint which filters by workspaceId + visitorId.
-    const params = new URLSearchParams({
-      workspaceId,
-      visitorId,
-      limit: "1",
-    });
+  const params = new URLSearchParams({ workspaceId, visitorId, limit: "1" });
+  const url = `${tinybirdApiUrl}/v0/pipes/v1_customer_attribution.json?${params}`;
 
-    const response = await fetch(
-      `${tinybirdApiUrl}/v0/pipes/v1_customer_attribution.json?${params}`,
-      {
+  // Stripe fires before the browser pageview reaches Tinybird.
+  // Retry with increasing delays to give the pageview time to land.
+  const delays = [3000, 5000, 8000, 12000, 15000];
+
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    if (attempt > 0) {
+      const delay = delays[attempt - 1];
+      console.log(`[attribution] Retry ${attempt}/${delays.length} in ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+
+    try {
+      const response = await fetch(url, {
         headers: { Authorization: `Bearer ${tinybirdApiKey}` },
+      });
+
+      if (!response.ok) {
+        console.error("[attribution] Tinybird query failed", response.status);
+        return { attributed: false, visitorId, enrichedContext: null };
       }
-    );
 
-    if (!response.ok) {
-      console.error("[attribution] Tinybird query failed", response.status);
+      const data = await response.json();
+      const rows: any[] = data?.data ?? [];
+
+      if (rows.length > 0) {
+        const row = rows[0];
+        console.log(`[attribution] Attributed on attempt ${attempt + 1} for visitor ${visitorId}`);
+        return {
+          attributed: true,
+          visitorId,
+          sessionId,
+          enrichedContext: {
+            country:      row.country      ?? "Unknown",
+            city:         row.city         ?? "Unknown",
+            region:       row.region       ?? "Unknown",
+            continent:    row.continent    ?? "Unknown",
+            device:       row.device       ?? "Unknown",
+            browser:      row.browser      ?? "Unknown",
+            os:           row.os           ?? "Unknown",
+            referer:      row.referer      ?? "(direct)",
+            referer_url:  row.referer_url  ?? "(direct)",
+            utm_source:   row.utm_source   ?? null,
+            utm_medium:   row.utm_medium   ?? null,
+            utm_campaign: row.utm_campaign ?? null,
+            utm_content:  row.utm_content  ?? null,
+            utm_term:     row.utm_term     ?? null,
+            url:          row.url          ?? "",
+            page:         row.page         ?? null,
+          },
+        };
+      }
+
+      console.log(`[attribution] No rows on attempt ${attempt + 1} for visitor ${visitorId}`);
+    } catch (err) {
+      console.error("[attribution] Unexpected error", err);
       return { attributed: false, visitorId, enrichedContext: null };
     }
-
-    const data = await response.json();
-    const rows: any[] = data?.data ?? [];
-
-    if (rows.length === 0) {
-      // Visitor exists in metadata but has no recorded events — unattributed
-      return { attributed: false, visitorId, enrichedContext: null };
-    }
-
-    const row = rows[0];
-
-    return {
-      attributed: true,
-      visitorId,
-      sessionId,
-      enrichedContext: {
-        country: row.country ?? "Unknown",
-        city: row.city ?? "Unknown",
-        region: row.region ?? "Unknown",
-        continent: row.continent ?? "Unknown",
-        device: row.device ?? "Unknown",
-        browser: row.browser ?? "Unknown",
-        os: row.os ?? "Unknown",
-        referer: row.referer ?? "(direct)",
-        referer_url: row.referer_url ?? "(direct)",
-        utm_source: row.utm_source ?? null,
-        utm_medium: row.utm_medium ?? null,
-        utm_campaign: row.utm_campaign ?? null,
-        utm_content: row.utm_content ?? null,
-        utm_term: row.utm_term ?? null,
-        url: row.url ?? "",
-        page: row.page ?? null,
-      },
-    };
-  } catch (err) {
-    console.error("[attribution] Unexpected error", err);
-    return { attributed: false, visitorId, enrichedContext: null };
   }
+
+  console.warn(`[attribution] All retries exhausted for visitor ${visitorId} — unattributed`);
+  return { attributed: false, visitorId, enrichedContext: null };
 }
