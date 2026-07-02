@@ -116,11 +116,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  //  Step 3 — Create webhook
+const ingestionServerURL = "https://ingest.convrs.dev"
+  // Step 3 — Create webhook
   let webhook: Stripe.WebhookEndpoint;
   try {
     webhook = await stripe.webhookEndpoints.create({
-      url: `${appBaseUrl}/api/stripe/webhook/${workspace.id}`,
+      url: `${ingestionServerURL}/api/stripe/webhook/${workspace.id}`,
       enabled_events: [
         "checkout.session.completed",
         "invoice.paid",
