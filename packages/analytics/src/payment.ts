@@ -34,6 +34,7 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
   } = opts;
 
   // ── 1. Idempotency guard ────────────────────────────────────────────────────
+  // Use upsert so concurrent retries don't race — second call is a no-op
   const existingPayment = await prisma.payment.findUnique({
     where: { stripeEventId },
   });
@@ -42,28 +43,30 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
     return;
   }
 
-  // ── 2. Find or create Customer ──────────────────────────────────────────────
-  // visitorId is the stable anonymous key written by your tracker script.
-  let customer = visitorId
-    ? await prisma.customer.findFirst({
-        where: { workspaceId, externalId: visitorId },
-      })
-    : null;
-
-  if (!customer) {
-    customer = await prisma.customer.create({
-      data: {
+  // ── 2. Find or create Customer (race-safe) ──────────────────────────────────
+  const customer = await prisma.customer.upsert({
+    where: {
+      workspaceId_externalId: {
         workspaceId,
-        externalId: visitorId ?? null,
-        email: customerEmail ?? null,
-        attributionStatus: AttributionStatus.pending,
+        externalId: visitorId ?? "",
       },
-    });
-  }
+    },
+    create: {
+      workspaceId,
+      externalId: visitorId ?? null,
+      email: customerEmail ?? null,
+      attributionStatus: AttributionStatus.pending,
+    },
+    update: {
+      // fill in email if we now have it and didn't before
+      ...(customerEmail ? { email: customerEmail } : {}),
+    },
+  });
 
-  // ── 3. Persist Payment (always — even before attribution) ──────────────────
-  const payment = await prisma.payment.create({
-    data: {
+  // ── 3. Persist Payment (race-safe) ─────────────────────────────────────────
+  const payment = await prisma.payment.upsert({
+    where: { stripeEventId },
+    create: {
       workspaceId,
       customerId: customer.id,
       stripeSessionId,
@@ -76,8 +79,8 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
       sessionId: sessionId ?? null,
       attributionStatus: AttributionStatus.pending,
     },
+    update: {}, // no-op on duplicate — idempotent
   });
-
   // ── 4. Attempt attribution ──────────────────────────────────────────────────
   const attribution = await attemptAttribution({
     workspaceId,
