@@ -1,8 +1,8 @@
+
 "use client";
 
 import { EventType } from "@/lib/analytics/types";
 import useWorkspace from "@/lib/swr/use-workspace";
-import useIntegrations from "@/lib/swr/use-integration";
 import {
   BlurImage,
   buttonVariants,
@@ -21,6 +21,7 @@ import { ChartViewSwitcher } from "./chart-view-switcher";
 import { useCreateFunnelModal } from "../modals/create-funnel-modal";
 import useFunnels from "@/lib/swr/use-funnels";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
+import useStripeIntegration from "@/lib/swr/use-stripe-integration";
 
 type ChartSectionProps = {
   mode: "private" | "public";
@@ -44,11 +45,8 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     saleUnit,
     view,
   } = useContext(AnalyticsContext);
-
+  const { connected: hasRevenueProvider } = useStripeIntegration();
   const { plan, projectToken, id } = useWorkspace();
-  const { integrations } = useIntegrations();
-  const hasRevenueProvider = integrations.length > 0;
-
   const { queryParams } = useRouterStuff();
   const { funnels } = useFunnels({
     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
@@ -114,6 +112,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     }
   }, [canShowFunnelView, queryParams, view]);
 
+
   return (
     <>
       <CreateFunnelEditorModal />
@@ -121,6 +120,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
       <div>
         <div className="w-full bg-neutral-50 border-b">
           <div className="w-full relative  py-2">
+            {/* CENTER → Tabs */}
             <div className="max-w-screen-lg mx-auto flex justify-center ">
               {safeView === "timeseries" ? (
                 <AnalyticsTabs
@@ -135,13 +135,13 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
                       getNewPath: true,
                     }) as string
                   }
+                  hasRevenueProvider={hasRevenueProvider}
                   saleUnit={saleUnit}
                   setSaleUnit={(option) =>
                     queryParams({
                       set: { saleUnit: option },
                     })
                   }
-                  hasRevenueProvider={hasRevenueProvider}
                   requiresUpgrade={requiresUpgrade}
                   showPaywall={showPaywall}
                 />
@@ -150,6 +150,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
               )}
             </div>
 
+            {/* RIGHT → Toggle (floating) */}
             <div className="absolute right-3 md:top-1 z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
               {safeView === "funnel" && hasFunnels && (
                 <button
@@ -178,11 +179,10 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
             {safeView === "funnel" && (
               <div className="relative h-[444px] w-full sm:h-[464px]">
                 <div
-                  className={`h-full w-full transition-opacity ${
-                    mode === "private" && funnels.length === 0
-                      ? "opacity-20"
-                      : "opacity-100"
-                  }`}
+                  className={`h-full w-full transition-opacity ${mode === "private" && funnels.length === 0
+                    ? "opacity-20"
+                    : "opacity-100"
+                    }`}
                 >
                   <AnalyticsFunnelChart
                     selectedFunnel={selectedFunnel}
