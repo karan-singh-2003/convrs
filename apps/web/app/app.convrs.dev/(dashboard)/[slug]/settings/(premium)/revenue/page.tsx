@@ -241,7 +241,7 @@ export default function RevenueSettingsPage() {
 
 export const STRIPE_CONNECT_URL =
   "https://dashboard.stripe.com/apikeys/create" +
-  "?name=Analytics" +
+  "?name=Convrs" +
   "&permissions[]=rak_account_read" +
   "&permissions[]=rak_charge_read" +
   "&permissions[]=rak_subscription_read" +
