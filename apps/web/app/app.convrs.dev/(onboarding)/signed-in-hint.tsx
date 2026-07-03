@@ -5,6 +5,8 @@ import { Button } from "@repo/ui";
 import { signOut, useSession } from "next-auth/react";
 import { Check } from "lucide-react";
 import { cn } from "@repo/utils";
+import { usePathname } from "next/navigation";
+import { ONBOARDING_STEPS, type OnboardingStep } from "@/lib/types";
 
 const steps = [
   {
@@ -21,10 +23,17 @@ type SignedInHintProps = {
   currentStep?: number;
 };
 
-const SignedInHint = ({ currentStep = 1 }: SignedInHintProps) => {
+const SignedInHint = () => {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = React.useState(false);
+  const pathname = usePathname();
 
+  const currentRoute = pathname.split("/").pop() as OnboardingStep;
+
+  const currentStep = Math.max(
+    ONBOARDING_STEPS.indexOf(currentRoute) + 1,
+    1
+  );
   return (
     <div className="fixed left-0 top-0 z-50 w-full border-b border-neutral-200 bg-white">
       <div className="mx-auto grid h-14 w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 px-4 sm:px-6">
@@ -50,14 +59,14 @@ const SignedInHint = ({ currentStep = 1 }: SignedInHintProps) => {
                       className={cn(
                         "flex h-6 w-6 font-display  items-center justify-center rounded-full text-[12px] font-medium transition-colors",
                         isActive && "bg-neutral-800 text-white",
-                        isCompleted && "bg-neutral-800 text-white",
+                        isCompleted && "bg-neutral-400 text-white",
                         !isActive &&
-                          !isCompleted &&
-                          "bg-neutral-100 text-neutral-500"
+                        !isCompleted &&
+                        "bg-neutral-100 text-neutral-500"
                       )}
                     >
                       {isCompleted ? (
-                        <Check className="h-3.5 w-3.5" />
+                        <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
                       ) : (
                         step.id
                       )}

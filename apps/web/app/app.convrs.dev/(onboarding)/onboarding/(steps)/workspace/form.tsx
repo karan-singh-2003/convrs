@@ -8,6 +8,7 @@ export function Form() {
   return (
     <CreateWorkspaceForm
       onSuccess={({ slug }) => {
+        console.log("Workspace created successfully", slug);
         continueTo("script", { slug });
       }}
     />

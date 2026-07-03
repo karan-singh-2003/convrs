@@ -23,7 +23,7 @@ const buildScriptSnippet = ({
   const lines = [
     "<Script",
     `  data-website-id=\"${projectToken || "your-project-token"}\"`,
-    '  src="https://cdn.karanbuilds.me/analytics.js"',
+    '  src="https://convrs.dev/script.js"',
     `  data-domain=\"${snippetDomain}\"`,
   ];
 

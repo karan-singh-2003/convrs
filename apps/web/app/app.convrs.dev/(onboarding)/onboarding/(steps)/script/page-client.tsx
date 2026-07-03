@@ -18,11 +18,11 @@ const buildScriptSnippet = ({
   loading,
 }: ScriptConfig & { loading?: boolean }) => `<script 
   defer
-  src="https://cdn.convrs.dev/script.js"
+  src="https://convrs.dev/script.js"
   data-domain="${
     loading && !domain ? "████████████████" : domain || "yourdomain.com"
   }"
-  data-website-token="${
+  data-website-id="${
     loading && !projectToken
       ? "████████████████████"
       : projectToken || "your-project-token"

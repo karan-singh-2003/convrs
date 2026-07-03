@@ -28,10 +28,10 @@ export const ONBOARDING_STEPS = [
   "workspace",
   "script",
   "completed",
-  "invite ",
-  "billing",
-  "source",
-  "members",
+  // "invite ",
+  // "billing",
+  // "source",
+  // "members",
 ] as const;
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];

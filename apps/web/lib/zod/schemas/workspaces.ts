@@ -137,7 +137,7 @@ export const createWorkspaceSchema = z.object({
         message: "Cannot use reserved slugs",
       }
     ),
-  timezone: z.string(),
+  timezone: z.string().optional(),
   domain: z
     .string()
     .min(3, "Domain is required")

@@ -86,6 +86,7 @@ export function CreateWorkspaceForm({
   }
 
   async function onSubmit(data: FormData) {
+    console.log("submitted", data);
     let workspace: { id: string; slug: string } | null = null;
 
     try {
@@ -107,7 +108,7 @@ export function CreateWorkspaceForm({
 
     try {
       const startFreeTrialPromise = startFreeTrial(workspace.id);
-  
+
       toast.promise(startFreeTrialPromise, {
         loading: "Starting your free trial...",
         success: (result) => {
@@ -138,7 +139,12 @@ export function CreateWorkspaceForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
+    <form
+      onSubmit={(e) => {
+        console.log("form submit");
+        handleSubmit(onSubmit)(e);
+      }} className="w-full space-y-4"
+    >
       {/* Project Name */}
       <div className="flex flex-col gap-y-2.5">
         <Label className="font-display text-neutral-600">Project Name</Label>
@@ -158,7 +164,7 @@ export function CreateWorkspaceForm({
 
             if (!generated) return;
 
-            // 🔥 check availability
+            //  check availability
             const res = await fetch(
               `/api/workspaces/check-workspace-slug?slug=${generated}`
             );
@@ -203,9 +209,11 @@ export function CreateWorkspaceForm({
       </div>
 
       <Button
+        type="submit"
         loading={isSubmitting || isSubmitSuccessful}
         text="Create workspace"
         className="text-white font-display"
+
       />
     </form>
   );
