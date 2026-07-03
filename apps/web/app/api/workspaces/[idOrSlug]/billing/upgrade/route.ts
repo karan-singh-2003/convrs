@@ -153,6 +153,14 @@ export const POST = withWorkspace(
       const userMessage = mapDodoError(status, message);
 
 
+      console.error("[billing/upgrade] Dodo checkoutSessions.create failed:", {
+        status,
+        message,
+        productId,
+        plan,
+        period,
+        raw: err?.error ?? err,
+      });
 
       return NextResponse.json({ error: userMessage }, { status: 400 });
     }
