@@ -6,7 +6,7 @@ import { SignUpOAuth } from "./sign-up-oauth";
 import { AnimatedSizeContainer } from "@repo/ui";
 
 export const SignUpForm = ({
-  methods = ["email", "google", "github"],
+  methods = ["email", "google"],
 }: {
   methods?: ("email" | "google" | "github")[];
 }) => {

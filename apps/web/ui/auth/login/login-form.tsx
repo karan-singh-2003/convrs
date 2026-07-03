@@ -131,10 +131,10 @@ export default function LoginForm({ next }: { next?: string }) {
             <GoogleButton next={next} />
 
             {/* GitHub */}
-            <GitHubButton />
+            {/* <GitHubButton /> */}
 
             {/* Passkey */}
-            <Passkey next={next} />
+            {/* <Passkey next={next} /> */}
 
             {/* SSO */}
             {/* <SSOSignIn /> */}

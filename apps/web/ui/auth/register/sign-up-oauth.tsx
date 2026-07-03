@@ -38,7 +38,7 @@ export const SignUpOAuth = ({
           loading={clickedGoogle}
         />
       )}
-      {methods.includes("github") && (
+      {/* {methods.includes("github") && (
         <Button
           text="Continue with GitHub"
           onClick={() => {
@@ -50,7 +50,7 @@ export const SignUpOAuth = ({
           className="font-display text-base text-neutral-600 hover:text-neutral-700 bg-neutral-50  "
           loading={clickedGithub}
         />
-      )}
+      )} */}
     </>
   );
 };
