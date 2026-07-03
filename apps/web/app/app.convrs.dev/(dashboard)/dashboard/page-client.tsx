@@ -19,7 +19,7 @@ type TDashboardResponseData = {
 
 export default function DashboardPageClient() {
   const { workspaces, loading, error } = UseWorkspaces();
-  console.log("workspaces", workspaces)
+
   const { setShowCreateWorkspaceModal, CreateWorkspaceModal } =
     useCreateWorkspaceModal();
   const { data, isLoading, error: dashboardError } = useSWR<TDashboardResponseData>(
@@ -30,7 +30,7 @@ export default function DashboardPageClient() {
       shouldRetryOnError: false,
     }
   );
-  console.log("data for last 24 hours", data)
+ 
   return (
     <>
       <CreateWorkspaceModal />

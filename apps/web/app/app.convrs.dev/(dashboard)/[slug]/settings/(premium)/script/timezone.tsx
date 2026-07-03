@@ -215,7 +215,7 @@ export function Timezone() {
     }
   };
 
-  console.log("options",options)
+
 
   return (
     <div className="overflow-hidden rounded-xl space-y-3 border border-neutral-200 px-4 py-3 bg-white">

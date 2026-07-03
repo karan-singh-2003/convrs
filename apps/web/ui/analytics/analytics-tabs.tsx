@@ -112,7 +112,7 @@ export function AnalyticsTabs({
             const hasData =
               isLiveVisitorsTab || totalEvents?.[id] !== undefined;
             const isClickable = id === "clicks" || (id === "revenue" && hasRevenueProvider);
-            console.log("hasrevenueProvider", hasRevenueProvider)
+     
 
             const cardContent = (
               <>

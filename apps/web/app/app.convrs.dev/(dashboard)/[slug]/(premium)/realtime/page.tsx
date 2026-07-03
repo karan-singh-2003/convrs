@@ -302,7 +302,7 @@ export default function Dashboard() {
     [pageBarData]
   );
 
-  console.log("Dashboard data:", dashboardData);
+
 
   const summaryContent = (
     <div className="space-y-4 px-4 py-2.5">

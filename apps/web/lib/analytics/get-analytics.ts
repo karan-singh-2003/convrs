@@ -72,7 +72,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       timezone,
     });
 
-    console.log("start and end date", startDate, endDate)
+  
 
     const { triggerForPipe, countryForPipe } = prepareFiltersForPipe({
       trigger,

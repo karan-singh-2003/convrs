@@ -39,7 +39,7 @@ export function LocationSection() {
   }, []);
 
   useEffect(() => {
-    console.log("selectedItems", selectedItems);
+  
   }, [selectedItems]);
 
   const onApplyFilterValues = useCallback(

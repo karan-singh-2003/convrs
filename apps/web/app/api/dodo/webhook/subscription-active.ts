@@ -27,7 +27,7 @@ import type { DodoSubscriptionPayload } from "@/lib/dodo/types";
 import { SubscriptionStatus, WorkspacePlan } from "@prisma/client";
 
 export async function subscriptionActive(data: DodoSubscriptionPayload) {
-  console.log("[dodo/subscription-active] Received payload:", data);
+
   const workspaceId = data.metadata?.workspaceId;
 
   if (!workspaceId) {

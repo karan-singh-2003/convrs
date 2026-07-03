@@ -86,7 +86,7 @@ export function CreateWorkspaceForm({
   }
 
   async function onSubmit(data: FormData) {
-    console.log("submitted", data);
+
     let workspace: { id: string; slug: string } | null = null;
 
     try {
@@ -141,7 +141,7 @@ export function CreateWorkspaceForm({
   return (
     <form
       onSubmit={(e) => {
-        console.log("form submit");
+      
         handleSubmit(onSubmit)(e);
       }} className="w-full space-y-4"
     >

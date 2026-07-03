@@ -45,7 +45,7 @@ export function LowerGrid() {
 
   const onApplyFilterValues = useCallback(
     (values: string[]) => {
-      console.log("singular tab and values", singularTabName, values)
+ 
       if (values.length === 0) {
         queryParams({ del: singularTabName });
       } else {
@@ -91,8 +91,6 @@ export function LowerGrid() {
         .sort((a, b) => b.value - a.value) ?? [],
     [allData, singularTabName, dataKey]
   );
-  console.log("data", data)
-  console.log("data", allData)
 
   const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();
   return (

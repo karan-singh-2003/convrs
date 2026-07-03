@@ -79,7 +79,7 @@ export default function DashboardGraph({
     }
   );
 
-  console.log("responses",response)
+
 
   const chartData = useMemo(
     () =>

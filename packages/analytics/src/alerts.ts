@@ -53,9 +53,7 @@ export async function sendAlertsForEvent({
       site_name: event?.workspaceName || "",
     };
 
-    console.log(
-      `[sendAlertsForEvent] Found ${alerts.length} alert(s) to send for workspaceId=${workspaceId}, eventName=${eventName}, recipientEmail=${recipientEmail}`
-    );
+  
     await Promise.allSettled(
       alerts.map((alert: (typeof alerts)[number]) => {
         const subject = interpolate(alert.subject, variables);

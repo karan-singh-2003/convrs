@@ -33,12 +33,6 @@ export async function recordEvent({
     continent,
     vercelRegion,
   } = payload;
-  console.log("Recording event:", {
-    website_id,
-    visitor_id,
-    workspace_id,
-    type: payload.type,
-  });
 
   // ── Guard: only website_id and visitor_id are required
   // session_id is optional — revenue events from Stripe webhooks may not have it

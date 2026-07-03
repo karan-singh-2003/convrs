@@ -68,11 +68,7 @@ export function AnalyticsToggle({
     activeFiltersWithStreaming,
   } = useAnalyticsFilters();
 
-  console.log("AnalyticsToggle render", {
-    filters,
-    activeFilters,
-    streaming,
-  });
+ 
 
   const filterSelect = (
     <Filter.Select

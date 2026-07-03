@@ -218,7 +218,7 @@ const BillingClient = () => {
     fetcher
   );
 
-  console.log("Billing data:", data, "Loading:", isLoading);
+
   const billingInterval = data?.billingCycle;
   const billingStartDate = data?.billingPeriodStart;
 

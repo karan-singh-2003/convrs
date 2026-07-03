@@ -25,7 +25,7 @@ export const sendViaNodeMailer = async ({
     });
 
     await transporter.verify();
-    console.log("[nodemailer] SMTP connection verified");
+
 
     const html = react ? await render(react as React.ReactElement) : undefined;
 
@@ -37,7 +37,7 @@ export const sendViaNodeMailer = async ({
       html,
     });
 
-    console.log("[nodemailer] Email sent:", result.messageId);
+ 
     return result;
   } catch (error) {
     console.error("[nodemailer] Failed to send email:", error);

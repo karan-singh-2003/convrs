@@ -236,7 +236,7 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
     where: { provider_externalEventId: { provider, externalEventId } },
   });
   if (existingPayment) {
-    console.log(`[payment] Already processed provider=${provider} externalEventId=${externalEventId} — skipping`);
+
     return;
   }
 
@@ -334,35 +334,6 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
 
   const ctx = attribution.enrichedContext;
 
-  console.log("payload in revenue process payment", {
-    workspace_id: workspaceId,
-    website_id: websiteId,
-    visitor_id: visitorId ?? "unknown",
-    session_id: sessionId ?? "",
-    user_id: userId,
-    type: "payment",
-    url: ctx?.url ?? "",
-    hostname: ctx ? new URL(ctx.url).hostname : "",
-    event_name: "checkout_completed",
-    // Pass enriched geo/device from the visitor's browser session
-    country: ctx?.country,
-    city: ctx?.city,
-    region: ctx?.region,
-    continent: ctx?.continent,
-    revenue: {
-      amount: tinybirdRevenue,
-      currency: currency.toUpperCase() as any,
-      provider: provider,
-      provider_id: externalPaymentId ?? "",
-    },
-    props: {
-      payment_id: externalPaymentId,
-      payment_intent_id: externalPaymentId,
-      customer_email: customerEmail ?? null,
-      attributed: attribution.attributed,
-      attribution_status: newAttributionStatus,
-    },
-  })
   try {
     const recorded = await recordEvent({
       req: new Request(`http://internal/${provider}-webhook`),
