@@ -24,7 +24,6 @@ export async function recordEvent({
   const {
     website_id,
     visitor_id,
-
     workspace_id,
     country,
     city,

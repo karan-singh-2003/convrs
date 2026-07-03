@@ -7,7 +7,7 @@ import Analytics from "@/ui/analytics";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 import Link from "next/link";
-import useStripeIntegration from "@/lib/swr/use-stripe-integration";
+import useIntegrations from "@/lib/swr/use-integration";
 import { Check, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useAttributionStatus } from "@/lib/swr/use-attribution";
 
@@ -16,9 +16,7 @@ const DashboardPage = () => {
   const params = useParams();
   const slug = params.slug as string;
   const { usageLimit, usage, subscriptionStatus, id, loading } = useWorkspace();
-  const { stripeIntegration } = useStripeIntegration();
-
-
+  const { integrations } = useIntegrations();
 
   const { hasAttributedPayment } = useAttributionStatus(id);
 
@@ -28,7 +26,7 @@ const DashboardPage = () => {
       title: "Connect revenue",
       description: "See your sales and revenue directly in Convrs.",
       action: <Link href={`/${slug}/settings/revenue`}>Connect payment provider</Link>,
-      completed: !!stripeIntegration,
+      completed: integrations.length > 0,
     },
     {
       title: "Attribute payments",
@@ -36,8 +34,6 @@ const DashboardPage = () => {
       completed: hasAttributedPayment,  // ← reads from Postgres, not Tinybird
     },
   ];
-
-
 
   const [collapsed, setCollapsed] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -51,11 +47,7 @@ const DashboardPage = () => {
         <>
           {subscriptionStatus == "inactive" ? (
             <div className="relative">
-              <div className="justify-center max-w-screen-lg mx-auto px-4 h-[500px]">
-                {/* <h1 className="font-default text-sm text-neutral-600">
-                    You have used {usage} of {usageLimit} events
-                  </h1> */}
-              </div>
+              <div className="justify-center max-w-screen-lg mx-auto px-4 h-[500px]" />
 
               <div className="absolute inset-0 flex items-center justify-center bg-white/80">
                 <div className="space-y-4">
@@ -77,15 +69,12 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
-          ) :
+          ) : (
             <div className="relative">
               <Analytics mode="private" workspaceId={id} />
 
               <div className="relative">
-
-
                 <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-neutral-200 bg-neutral-50  shadow-xl font-display">
-
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-[14px] font-medium text-neutral-600">
@@ -134,9 +123,7 @@ const DashboardPage = () => {
                                   <Check size={10} strokeWidth={3.5} />
                                 </div>
                               ) : active ? (
-                                <div className="flex h-[16px] w-[16px] items-center justify-center rounded-full border border-dashed border-neutral-400">
-                                  {/* <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-neutral-600" /> */}
-                                </div>
+                                <div className="flex h-[16px] w-[16px] items-center justify-center rounded-full border border-dashed border-neutral-400" />
                               ) : (
                                 <div className="h-[18px] w-[18px] rounded-full border border-neutral-300 bg-white" />
                               )}
@@ -167,7 +154,7 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
-          }
+          )}
         </>
       </PageWidthWrapper>
     </>

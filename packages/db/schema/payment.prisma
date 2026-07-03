@@ -1,32 +1,73 @@
+// model Payment {
+//   id                  String            @id @default(cuid())
+//   workspaceId         String
+//   customerId          String
+//   stripeSessionId     String?           @unique
+//   stripeEventId       String?           @unique
+//   stripePaymentIntent String?
+//   amount              Int               // in cents
+//   currency            String
+//   customerEmail       String?
+
+//   // Attribution
+//   attributionStatus   AttributionStatus @default(pending)
+//   attributedAt        DateTime?
+//   lastAttributionAttempt DateTime?
+//   visitorId           String?           // visitor_id used for attribution
+//   sessionId           String?           // session_id used for attribution
+
+//   // Tinybird sync
+//   tinybirdEventId     String?           // event_id sent to Tinybird
+//   sentToTinybird      Boolean           @default(false)
+//   sentToTinybirdAt    DateTime?
+
+//   createdAt           DateTime          @default(now())
+//   updatedAt           DateTime          @updatedAt
+
+//   workspace           Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+//   customer            Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+//   @@index([workspaceId])
+//   @@index([customerId])
+//   @@index([visitorId])
+//   @@index([attributionStatus])
+// }
+
 model Payment {
-  id                  String            @id @default(cuid())
-  workspaceId         String
-  customerId          String
-  stripeSessionId     String?           @unique
-  stripeEventId       String?           @unique
-  stripePaymentIntent String?
-  amount              Int               // in cents
-  currency            String
-  customerEmail       String?
+  id                     String            @id @default(cuid())
+  workspaceId            String
+  customerId             String
+  provider               RevenueProvider   @default(stripe)
+
+  // Generic external references (replaces stripeSessionId/stripeEventId/stripePaymentIntent)
+  externalSessionId      String?           // checkout session / order / transaction id
+  externalEventId        String?           // webhook delivery id, for idempotency
+  externalPaymentId      String?           // payment intent / charge / payment id
+
+  amount                 Int               // in cents (smallest currency unit)
+  currency               String
+  customerEmail          String?
 
   // Attribution
-  attributionStatus   AttributionStatus @default(pending)
-  attributedAt        DateTime?
+  attributionStatus      AttributionStatus @default(pending)
+  attributedAt           DateTime?
   lastAttributionAttempt DateTime?
-  visitorId           String?           // visitor_id used for attribution
-  sessionId           String?           // session_id used for attribution
+  visitorId              String?
+  sessionId              String?
 
   // Tinybird sync
-  tinybirdEventId     String?           // event_id sent to Tinybird
-  sentToTinybird      Boolean           @default(false)
-  sentToTinybirdAt    DateTime?
+  tinybirdEventId        String?
+  sentToTinybird         Boolean           @default(false)
+  sentToTinybirdAt       DateTime?
 
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  createdAt              DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
 
-  workspace           Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  customer            Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  workspace              Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customer               Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
+  @@unique([provider, externalSessionId])
+  @@unique([provider, externalEventId])
   @@index([workspaceId])
   @@index([customerId])
   @@index([visitorId])

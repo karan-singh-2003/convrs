@@ -253,7 +253,57 @@ SELECT
 
     SUM(coalesce(r.revenue, 0)) AS revenue
 
-FROM dub_click_events 
+FROM dub_click_events AS r
+LEFT JOIN (
+    SELECT
+        workspace_id,
+        session_id,
+        argMax(url, timestamp)        AS url,
+        argMax(hostname, timestamp)   AS hostname,
+        argMax(page, timestamp)       AS page,
+        argMax(entrypage, timestamp)  AS entrypage,
+        argMax(exitlink, timestamp)   AS exitlink,
+        argMax(referer, timestamp)    AS referer,
+        argMax(referer_url, timestamp) AS referer_url,
+        argMax(country, timestamp)    AS country,
+        argMax(city, timestamp)       AS city,
+        argMax(region, timestamp)     AS region,
+        argMax(continent, timestamp)  AS continent,
+        argMax(device, timestamp)     AS device,
+        argMax(browser, timestamp)    AS browser,
+        argMax(os, timestamp)         AS os,
+        argMax(trigger, timestamp)    AS trigger
+    FROM dub_click_events_mv
+    WHERE event_type != 'revenue'
+      AND session_id IS NOT NULL
+      AND session_id != ''
+    GROUP BY workspace_id, session_id
+) AS sc ON r.workspace_id = sc.workspace_id AND r.session_id = sc.session_id
+LEFT JOIN (
+    SELECT
+        workspace_id,
+        visitor_id,
+        argMax(url, timestamp)        AS url,
+        argMax(hostname, timestamp)   AS hostname,
+        argMax(page, timestamp)       AS page,
+        argMax(entrypage, timestamp)  AS entrypage,
+        argMax(exitlink, timestamp)   AS exitlink,
+        argMax(referer, timestamp)    AS referer,
+        argMax(referer_url, timestamp) AS referer_url,
+        argMax(country, timestamp)    AS country,
+        argMax(city, timestamp)       AS city,
+        argMax(region, timestamp)     AS region,
+        argMax(continent, timestamp)  AS continent,
+        argMax(device, timestamp)     AS device,
+        argMax(browser, timestamp)    AS browser,
+        argMax(os, timestamp)         AS os,
+        argMax(trigger, timestamp)    AS trigger
+    FROM dub_click_events_mv
+    WHERE event_type != 'revenue'
+      AND visitor_id IS NOT NULL
+      AND visitor_id != ''
+    GROUP BY workspace_id, visitor_id
+) AS vc ON r.workspace_id = vc.workspace_id AND r.visitor_id = vc.visitor_id
 
 WHERE
     r.event_type = 'revenue'

@@ -150,7 +150,7 @@ export const AnalyticsEventSchema = z
           "lemonsqueezy",
           "polar",
           "paddle",
-          "manual",
+          "dodo"
         ]),
         provider_id: z.string().optional(),
         email: z.string().email().optional(),

@@ -1,0 +1,38 @@
+TAGS "Dub Endpoints"
+
+NODE customer_attribution
+SQL >
+
+%
+SELECT
+    visitor_id,
+    session_id,
+    url,
+    page,
+    referer,
+    referer_url,
+    country,
+    city,
+    region,
+    continent,
+    device,
+    browser,
+    os,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    utm_content,
+    utm_term,
+    timestamp
+FROM dub_click_events_mv
+WHERE
+    event_type != 'revenue'
+    {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+    {% if defined(visitorId) %}   AND visitor_id  = {{ visitorId }}   {% end %}
+ORDER BY timestamp DESC
+LIMIT {{ Int32(limit, 1) }}
+
+NODE endpoint
+TYPE endpoint
+SQL >
+    SELECT * FROM customer_attribution

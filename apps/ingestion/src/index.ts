@@ -2,7 +2,11 @@ import "dotenv/config";
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { trackClickController } from "./controllers/track.js";
-import { stripeWebhookController } from "./controllers/stripe-webhook-controller.js";
+import { stripeWebhookController } from "./controllers/revenue/stripe-webhook-controller.js";
+import { polarWebhookController } from "./controllers/revenue/polar-webhook-controller.js";
+import { dodoWebhookController } from "./controllers/revenue/dodo-webhook-controller.js";
+import { lemonsqueezyWebhookController } from "./controllers/revenue/lemonsqueezy-webhook-controller.js";
+import { paddleWebhookController } from "./controllers/revenue/paddle-webhook-contoller.js";
 
 const app = express();
 
@@ -35,11 +39,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // 3. Stripe webhook route must use raw body for signature verification
-app.post(
-  "/api/stripe/webhook/:workspaceId",
-  express.raw({ type: "*/*" }),
-  stripeWebhookController
-);
+app.post("/api/stripe/webhook/:workspaceId", express.raw({ type: "*/*" }), stripeWebhookController);
+app.post("/api/polar/webhook/:workspaceId", express.raw({ type: "*/*" }), polarWebhookController);
+app.post("/api/dodo/webhook/:workspaceId", express.raw({ type: "*/*" }), dodoWebhookController);
+app.post("/api/lemonsqueezy/webhook/:workspaceId", express.raw({ type: "*/*" }), lemonsqueezyWebhookController);
+app.post("/api/paddle/webhook/:workspaceId", express.raw({ type: "*/*" }), paddleWebhookController);
 
 // 4. body parser for non-Stripe routes
 app.use(express.json());

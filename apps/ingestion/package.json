@@ -10,6 +10,8 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@paddle/paddle-node-sdk": "^3.8.0",
+    "@polar-sh/sdk": "^0.48.1",
     "@repo/analytics": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/email": "workspace:*",
@@ -18,9 +20,10 @@
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "ip-range-check": "^0.2.0",
-    "stripe": "^20.3.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "standardwebhooks": "^1.0.0",
+    "stripe": "^20.3.1",
     "ua-parser-js": "^2.0.9"
   },
   "devDependencies": {

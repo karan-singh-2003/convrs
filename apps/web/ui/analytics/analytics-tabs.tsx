@@ -20,7 +20,7 @@ import {
   formatPercentageChange,
   getChangeDirection,
 } from "@/lib/analytics/utils/calculate-percentage-change";
-import useStripeIntegration from "@/lib/swr/use-stripe-integration";
+
 
 type Tab = {
   id: AnalyticsResponseOptions;
@@ -111,7 +111,8 @@ export function AnalyticsTabs({
               : (totalEvents?.[id] ?? 0);
             const hasData =
               isLiveVisitorsTab || totalEvents?.[id] !== undefined;
-            const isClickable = id === "clicks" || id === "revenue";
+            const isClickable = id === "clicks" || (id === "revenue" && hasRevenueProvider);
+            console.log("hasrevenueProvider", hasRevenueProvider)
 
             const cardContent = (
               <>

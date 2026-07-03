@@ -167,7 +167,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
 
   // console.log("tinybird params", tinybirdParams)
   const response = await pipe(tinybirdParams);
-  console.log("response from pipe", JSON.stringify(response, null, 2));
+
 
   // Return parsed response
   const schema = analyticsResponse[groupBy!];

@@ -207,11 +207,11 @@
   }
 
   // ─── COOKIES ───────────────────────────────────────────────────────────────
-  var SESSION_KEY = "_atk_sid";
-  var VISITOR_KEY = "_atk_vid";
+  var SESSION_KEY = "_cv_sid";
+  var VISITOR_KEY = "_cv_vid";
   var SESSION_SECS = 30 * 60; // 30 min sliding
   var VISITOR_SECS = 365 * 24 * 3600; // 1 year
-  var ENTRY_KEY = "_atk_entry";
+  var ENTRY_KEY = "_cv_entry";
 
   function getEntryPage() {
     var existing = getCookie(ENTRY_KEY);

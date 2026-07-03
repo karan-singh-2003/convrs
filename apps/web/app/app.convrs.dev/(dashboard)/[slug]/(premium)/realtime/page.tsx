@@ -125,14 +125,14 @@ function DetailView({
 
         ...(title.toLowerCase() === "countries" &&
           item.code && {
-            icon: (
-              <img
-                src={`https://flagcdn.com/w20/${item.label.toLowerCase()}.png`}
-                alt={item.label}
-                width="20"
-              />
-            ),
-          }),
+          icon: (
+            <img
+              src={`https://flagcdn.com/w20/${item.label.toLowerCase()}.png`}
+              alt={item.label}
+              width="20"
+            />
+          ),
+        }),
       })),
     [barData, title]
   );
@@ -164,7 +164,7 @@ function DetailView({
           maxValue={maxValue}
           barBackground="bg-neutral-200"
           hoverBackground="hover:bg-neutral-100"
-          setShowModal={() => {}}
+          setShowModal={() => { }}
           limit={100}
         />
       </div>
@@ -325,7 +325,7 @@ export default function Dashboard() {
             count={dashboardData.referrers[0].count}
             onExpand={() => handleExpand("referrers")}
             renderValue={() => (
-              <span className="text-base flex items-center gap-x-3 font-medium text-neutral-600">
+              <span className="text-[15px] flex items-center gap-x-1.5 font-medium text-neutral-600">
                 <ArrowRight size={15} />
                 {dashboardData.referrers[0].source}
               </span>
@@ -345,24 +345,24 @@ export default function Dashboard() {
                 rawCode.length === 2
                   ? rawCode
                   : Object.entries(COUNTRIES).find(
-                      ([, name]) => name === rawCountry
-                    )?.[0] || "unknown"
+                    ([, name]) => name === rawCountry
+                  )?.[0] || "unknown"
               ).toLowerCase();
 
               const countryName =
                 rawCode.length === 2
                   ? COUNTRIES[
-                      rawCode.toUpperCase() as keyof typeof COUNTRIES
-                    ] || rawCountry
+                  rawCode.toUpperCase() as keyof typeof COUNTRIES
+                  ] || rawCountry
                   : rawCountry;
 
               return (
                 <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
                   {countryCode !== "unknown" && (
                     <img
+                      src={`https://flagcdn.com/w20/${countryCode}.png`}
                       alt={countryName}
-                      src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
-                      className="size-5 shrink-0 rounded-full"
+                      width="20"
                     />
                   )}
 

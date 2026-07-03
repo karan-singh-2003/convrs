@@ -72,7 +72,7 @@ model Workspace {
   plan               WorkspacePlan @default(free)
   timezone           String        @default("UTC")
 
-  stripeIntegration StripeIntegration?
+  integrations      Integration[]
 
   invoices         Invoice[]
   restrictedTokens RestrictedToken[]

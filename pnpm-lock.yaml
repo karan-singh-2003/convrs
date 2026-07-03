@@ -30,6 +30,12 @@ importers:
 
   apps/ingestion:
     dependencies:
+      '@paddle/paddle-node-sdk':
+        specifier: ^3.8.0
+        version: 3.8.0
+      '@polar-sh/sdk':
+        specifier: ^0.48.1
+        version: 0.48.1
       '@repo/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
@@ -60,6 +66,9 @@ importers:
       react-dom:
         specifier: ^19.2.5
         version: 19.2.5(react@19.2.5)
+      standardwebhooks:
+        specifier: ^1.0.0
+        version: 1.0.0
       stripe:
         specifier: ^20.3.1
         version: 20.3.1(@types/node@25.5.0)
@@ -3608,6 +3617,11 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
+  /@paddle/paddle-node-sdk@3.8.0:
+    resolution: {integrity: sha512-4RS6AhZisloYaT2jiFgx9hwm22qwLRUx4EgIVb1gS3bS96lhDBQWq8BC1/Zow2i3CuxMkehXQUc3qKSBS77ozA==}
+    engines: {node: '>=20'}
+    dev: false
+
   /@panva/hkdf@1.2.1:
     resolution: {integrity: sha512-6oclG6Y3PiDFcoyk8srjLfVKyMfVCKJ27JwNPViuXziFpmdz+MZnZN/aKY0JGXgYuO/VghU0jcOAZgWXZ1Dmrw==}
     dev: false
@@ -3622,6 +3636,13 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /@polar-sh/sdk@0.48.1:
+    resolution: {integrity: sha512-FmU6eLJRXJ6Zau0IkqscfkFta8xxYbFV1VD9zzS2Ki2btCuFmUyPZOkHOXU77R892h2zyBegLnHS7jrOhMN1Sw==}
+    dependencies:
+      standardwebhooks: 1.0.0
+      zod: 4.3.5
+    dev: false
 
   /@prisma/adapter-neon@7.3.0:
     resolution: {integrity: sha512-kwsMG9uweNwBiVuAzO5251dtVY2FB/PM2Rwovq+uzQHsscgI3I3X+qL9IKizMxmQRVjASY2nCNhwIL4KNM7KrQ==}

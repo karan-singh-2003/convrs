@@ -26,42 +26,81 @@ export type PlanDetails = {
 
 // ─── Dodo Product IDs ─────────────────────────────────────────────────────────
 
+// const PRODUCT_IDS = {
+//   starter: {
+//     monthly: "pdt_0NdQZEKYFbEhiC2G1iuxI",
+//     yearly:  "pdt_0NdQZKlr1ulxmSL4H2pLm",
+//   },
+//   basic: {
+//     monthly: "pdt_0Ne6T12o5m5JRQ3dxIC9c",
+//     yearly:  "pdt_0Ne6T7wV7CK2jcSgL1tQ5",
+//   },
+//   pro: {
+//     monthly: "pdt_0NdQZe5tfdWWGVyBbEzMC",
+//     yearly:  "pdt_0NdQZj9gYH2urESRYKdbd",
+//   },
+//   growth: {
+//     monthly: "pdt_0NdQZocJrfVDBby2RMhs4",
+//     yearly:  "pdt_0NdQdnhULy6GydM4QmtWs",
+//   },
+//   business: {
+//     monthly: "pdt_0NdQZvCbP0tQpbhnmUTIp",
+//     yearly:  "pdt_0NdQa4CQrqsCFvt9B3dhH",
+//   },
+//   scale: {
+//     monthly: "pdt_0NdQa8Vc6T6NGnVx2DfPd",
+//     yearly:  "pdt_0NdQaDEbN58MSda9aDwwt",
+//   },
+//   pro_plus: {
+//     monthly: "pdt_0NdQaHQ5se9vGGkR44nds",
+//     yearly:  "pdt_0NdQaNTXSjo8UlZYx9ga5",
+//   },
+//   enterprise: {
+//     monthly: "pdt_0Ne6UOmg3pCcJljShHRP1",
+//     yearly:  "pdt_0Ne6UJ3vHbjeY1J1613hD",
+//   },
+//   ultimate: {
+//     monthly: "pdt_0Ne6UbBxxmN9VJ2SRLUfN",
+//     yearly:  "pdt_0Ne6UXcHfmTprzFe5905p",
+//   },
+// } as const;
+
 const PRODUCT_IDS = {
   starter: {
-    monthly: "pdt_0NdQZEKYFbEhiC2G1iuxI",
-    yearly:  "pdt_0NdQZKlr1ulxmSL4H2pLm",
+    monthly: "pdt_0NiLtXHVn7qIbuSApa1CC", // 10K Events
+    yearly: "pdt_0NiLtWsbcVuqlRyhHtTzy",
   },
   basic: {
-    monthly: "pdt_0Ne6T12o5m5JRQ3dxIC9c",
-    yearly:  "pdt_0Ne6T7wV7CK2jcSgL1tQ5",
+    monthly: "pdt_0NiLtWB8q7cdPiloC3TSS", // 25K Events
+    yearly: "pdt_0NiLtWYJkCIvrsH9XHuXX",
   },
   pro: {
-    monthly: "pdt_0NdQZe5tfdWWGVyBbEzMC",
-    yearly:  "pdt_0NdQZj9gYH2urESRYKdbd",
+    monthly: "pdt_0NiLtBPEZgwM3avEYH8f0", // 100K Events
+    yearly: "pdt_0NiLtVnipCBTJUqRqwmK4",
   },
   growth: {
-    monthly: "pdt_0NdQZocJrfVDBby2RMhs4",
-    yearly:  "pdt_0NdQdnhULy6GydM4QmtWs",
+    monthly: "pdt_0NiLtVYKgLhikplp5jgfC", // 500K Events
+    yearly: "pdt_0NiLtV8V3pnqd5sUE6pMK",
   },
   business: {
-    monthly: "pdt_0NdQZvCbP0tQpbhnmUTIp",
-    yearly:  "pdt_0NdQa4CQrqsCFvt9B3dhH",
+    monthly: "pdt_0NiLtUdYuBeLpqQnksJmP", // 1M Events
+    yearly: "pdt_0NiLtTPArf4ImG9HzbqMo",
   },
   scale: {
-    monthly: "pdt_0NdQa8Vc6T6NGnVx2DfPd",
-    yearly:  "pdt_0NdQaDEbN58MSda9aDwwt",
+    monthly: "pdt_0NiLtT6RjBPWSsCI5H5X4", // 5M Events
+    yearly: "pdt_0NiLtAirntr5Ej5KQTQFf",
   },
   pro_plus: {
-    monthly: "pdt_0NdQaHQ5se9vGGkR44nds",
-    yearly:  "pdt_0NdQaNTXSjo8UlZYx9ga5",
+    monthly: "pdt_0NiLtSllfCPniyzeMunga", // 10M Events
+    yearly: "pdt_0NiLtSU9GnqmyK9fbL68W",
   },
   enterprise: {
-    monthly: "pdt_0Ne6UOmg3pCcJljShHRP1",
-    yearly:  "pdt_0Ne6UJ3vHbjeY1J1613hD",
+    monthly: "pdt_0NiLtCiIkLK6mQ2EpFDGN", // 15M Events
+    yearly: "pdt_0NiLtDXtOCPsj4kyuMksX",
   },
   ultimate: {
-    monthly: "pdt_0Ne6UbBxxmN9VJ2SRLUfN",
-    yearly:  "pdt_0Ne6UXcHfmTprzFe5905p",
+    monthly: "pdt_0NiLtCDmHaCr0ZQ3CIDFZ", // 25M Events
+    yearly: "pdt_0NiLtBokX11QHoqjpUDAf",
   },
 } as const;
 
@@ -174,7 +213,7 @@ export const getPlanFromProductId = (
   for (const plan of PLANS) {
     if (!plan.price.ids) continue;
     if (plan.price.ids.monthly === productId) return { plan, interval: "monthly" };
-    if (plan.price.ids.yearly  === productId) return { plan, interval: "yearly"  };
+    if (plan.price.ids.yearly === productId) return { plan, interval: "yearly" };
   }
   return { plan: null, interval: null };
 };
@@ -235,7 +274,7 @@ export const isDowngradePlan = ({
 /** Format event limit for display (e.g. 1_000_000 → "1M events/mo"). */
 export const formatEventLimit = (events: number): string => {
   if (events >= 1_000_000) return `${events / 1_000_000}M events/mo`;
-  if (events >= 1_000)     return `${events / 1_000}K events/mo`;
+  if (events >= 1_000) return `${events / 1_000}K events/mo`;
   return `${events} events/mo`;
 };
 

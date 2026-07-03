@@ -1,3 +1,4 @@
+// apps/web/app/api/integrations/stripe/connect/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@repo/db";
@@ -55,12 +56,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  //  Step 1 — Verify key
+  // Step 1 — Verify key
   let accountId: string;
   try {
     const account = await stripe.accounts.retrieve();
     accountId = account.id;
-  
   } catch (err) {
     const stripeError = err as Stripe.errors.StripeError;
 
@@ -72,8 +72,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (stripeError?.type === "StripePermissionError") {
-      // Restricted keys can fail `accounts.retrieve()` without KYC scope.
-      // Stripe includes the account id in this specific permission error message.
       const accountIdMatch = stripeError?.message?.match(/account '([^']+)'/);
       const inferredAccountId = accountIdMatch?.[1];
 
@@ -91,20 +89,18 @@ export async function POST(req: NextRequest) {
       }
     } else {
       return NextResponse.json(
-        {
-          error: stripeError?.message || "Failed to verify Stripe API key",
-        },
+        { error: stripeError?.message || "Failed to verify Stripe API key" },
         { status: 400 }
       );
     }
   }
 
-
-  //  Step 2 — Prevent duplicates
-  const existing = await prisma.stripeIntegration.findFirst({
+  // Step 2 — Prevent duplicates
+  const existing = await prisma.integration.findFirst({
     where: {
+      provider: "stripe",
       OR: [
-        { stripeAccountId: accountId },
+        { externalAccountId: accountId },
         { workspaceId: workspace.id },
       ],
     },
@@ -115,12 +111,12 @@ export async function POST(req: NextRequest) {
       { status: 409 }
     );
   }
-
-  //  Step 3 — Create webhook
+  const ingestionServerURL = "https://ingest.convrs.dev"
+  // Step 3 — Create webhook
   let webhook: Stripe.WebhookEndpoint;
   try {
     webhook = await stripe.webhookEndpoints.create({
-      url: `${appBaseUrl}/api/stripe/webhook/${workspace.id}`,
+      url: `${ingestionServerURL}/api/stripe/webhook/${workspace.id}`,
       enabled_events: [
         "checkout.session.completed",
         "invoice.paid",
@@ -149,19 +145,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  //  Step 4 — Store encrypted
-  await prisma.stripeIntegration.create({
+  // Step 4 — Store encrypted
+  await prisma.integration.create({
     data: {
       workspaceId: workspace.id,
-      stripeAccountId: accountId,
+      provider: "stripe",
+      externalAccountId: accountId,
       apiKeyEncrypted: encrypt(normalizedApiKey),
       webhookId: webhook.id,
       webhookSecret: webhook.secret!, // whsec_...
     },
   });
-
-  //  Step 5 — Trigger backfill (optional)
-  //   await queue.add("stripe-backfill", { workspaceId, apiKey });
 
   return NextResponse.json({ success: true, accountId });
 }

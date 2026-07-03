@@ -1,11 +1,50 @@
-model StripeIntegration {
-  id               String   @id @default(cuid())
-  workspaceId      String   @unique   // 👈 IMPORTANT (1:1)
-  stripeAccountId  String   @unique
-  apiKeyEncrypted  String
-  webhookId        String
-  webhookSecret    String
-  createdAt        DateTime @default(now())
+// model StripeIntegration {
+//   id               String   @id @default(cuid())
+//   workspaceId      String   @unique   // 👈 IMPORTANT (1:1)
+//   stripeAccountId  String   @unique
+//   apiKeyEncrypted  String
+//   webhookId        String
+//   webhookSecret    String
+//   createdAt        DateTime @default(now())
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+//   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+// }
+
+enum RevenueProvider {
+  stripe
+  dodo
+  polar
+  lemonsqueezy
+  paddle
+}
+
+// Replaces StripeIntegration. One row per (workspace, provider) instead of
+// a dedicated 1:1 table per provider, so a workspace can connect several
+// revenue sources at once.
+model Integration {
+  id                String          @id @default(cuid())
+  workspaceId       String
+  provider          RevenueProvider
+
+  // Stripe: restricted API key. Polar/LemonSqueezy/Paddle: API key for
+  // creating checkouts server-side (optional if you only ever use their
+  // no-code payment links).
+  apiKeyEncrypted   String?
+
+  // Provider-side account/store identifier (Stripe account id, Polar org id,
+  // LemonSqueezy store id, Paddle vendor id, Dodo business id).
+  externalAccountId String?
+
+  // Webhook verification
+  webhookId         String?         // Stripe endpoint id (used to delete on disconnect)
+  webhookSecret     String?         // Stripe signing secret / Polar+Dodo base64 secret /
+                                     // LemonSqueezy signing secret / Paddle notification secret
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  workspace         Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider])
+  @@index([workspaceId])
 }
