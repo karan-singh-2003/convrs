@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 export const POST = withWorkspace(
   async ({ workspace }) => {
+    console.log("workspace", workspace)
     if (!workspace.dodoCustomerId) {
       return NextResponse.json(
         { error: "No Dodo customer found" },

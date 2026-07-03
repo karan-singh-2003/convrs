@@ -205,7 +205,8 @@ const BillingClient = () => {
     freeTrialEndDate,
     subscriptionStatus,
     usageLimit,
-    usage
+    usage,
+    dodoCustomerId
   } = useWorkspace();
 
   const { setShowUpgradePlanModal, UpgradePlanModal } =
@@ -328,7 +329,7 @@ const BillingClient = () => {
                 </span>
               </div>
 
-              {planName.toLowerCase() !== "enterprise" && (
+              {dodoCustomerId && (
                 <Button
                   text="Manage"
                   loading={isOpeningPortal}

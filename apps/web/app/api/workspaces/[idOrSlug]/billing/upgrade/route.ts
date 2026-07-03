@@ -49,8 +49,10 @@ export const POST = withWorkspace(
     const { plan, period, baseUrl, onboarding } = schema.parse(
       await req.json()
     );
+    console.log("plan and other details in upgrade route", plan, period)
 
     const productId = getProductId({ planName: plan, interval: period });
+    console.log("product id", productId)
 
     if (!productId) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
