@@ -127,7 +127,7 @@ export const POST = withWorkspace(
     console.log("successurl", successUrl)
     try {
       console.log("creating checkout session")
-      console.log("process.env variables", process.env.DODO_API_KEY, process.env.DODO_WEBHOOK_SECRET, process.env.DODO_PAYMENTS_ENVIRONMENT)
+      console.log("process.env variables", process.env.DODO_PAYMENTS_API_KEY, process.env.DODO_PAYMENTS_WEBHOOK_KEY, process.env.DODO_PAYMENTS_ENVIRONMENT)
       const checkoutSession = await dodo.checkoutSessions.create({
         product_cart: [{ product_id: productId, quantity: 1 }],
 
