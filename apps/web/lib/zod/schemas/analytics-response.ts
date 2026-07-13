@@ -53,6 +53,14 @@ export const analyticsResponse = {
       .describe("The total bounce rate")
       .default(0)
       .transform((val) => val ?? 0),
+    revenue_per_visitor: z.coerce
+      .number()
+      .describe("The total revenue per visitor")
+      .default(0)
+      .transform((val) => val ?? 0),
+    new_visitors: z.coerce.number().describe("The total number of new visitors").default(0).transform((val) => val ?? 0),
+    returning_visitors: z.coerce.number().describe("The total number of returning visitors").default(0).transform((val) => val ?? 0),
+    refund_amound:z.coerce.number().describe("The total amount of refunded sales, in cents").default(0).transform((val) => val ?? 0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales, in cents"
     ),
@@ -68,21 +76,19 @@ export const analyticsResponse = {
   }),
   timeseries: z.object({
     start: z.string().describe("The starting timestamp of the interval"),
-    clicks: z
-      .number()
-      .describe("The number of clicks in the interval")
-      .default(0),
-    leads: z
-      .number()
-      .describe("The number of leads in the interval")
-      .default(0),
-    sales: z
-      .number()
-      .describe("The number of sales in the interval")
-      .default(0),
-    saleAmount: centsSchemaWithDefault.describe(
-      "The total amount of sales in the interval, in cents"
-    ),
+    clicks: z.number().describe("The number of clicks in the interval").default(0),
+    leads: z.number().describe("The number of leads in the interval").default(0),
+    sales: z.number().describe("The number of sales in the interval").default(0),
+    saleAmount: centsSchemaWithDefault.describe("The total amount of sales in the interval, in cents"),
+    revenue: z.coerce.number().describe("Revenue in the interval").default(0),
+    conversion_rate: z.coerce.number().describe("Conversion rate in the interval").default(0),
+    bounce_rate: z.coerce.number().describe("Bounce rate in the interval").default(0),
+    avg_session_duration: z.coerce.number().describe("Average session duration in the interval").default(0),
+    new_visitors: z.coerce.number().describe("New visitors in the interval").default(0),
+    returning_visitors: z.coerce.number().describe("Returning visitors in the interval").default(0),
+    new_revenue: z.coerce.number().describe("New (non-refunded) revenue in the interval").default(0),
+    refund_amount: z.coerce.number().describe("Refund amount in the interval").default(0),
+    revenue_per_visitor: z.coerce.number().describe("Revenue per visitor in the interval").default(0),
   }),
 
   continents: z.object({

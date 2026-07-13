@@ -15,7 +15,7 @@ import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 export function DeviceSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
-  const { selectedTab, saleUnit } = useContext(AnalyticsContext);
+  const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<DeviceTabs>("devices");
@@ -131,6 +131,7 @@ export function DeviceSection() {
               onRowFilterItem={(val) => onApplyFilterValues([val])}
               onApplyFilterValues={onApplyFilterValues}
               {...(limit && { limit })}
+              currency={currency}
             />
           ) : (
             <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

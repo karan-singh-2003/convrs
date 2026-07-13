@@ -26,11 +26,11 @@ export * from "./charts"
 export * from "./filter"    
 export * from "./sliders"
 export * from "./utm_builder";
-export * from "./data-picker";
 export * from "./combobox"
 export * from "./wordmark"
 export * from "./progress"
 export * from "./skeleton"
+export * from "./date"
 
 // hooks
 export * from "./hooks";

@@ -37,7 +37,8 @@ const config: Config = {
           "monospace",
         ],
         poppins: ["var(--font-poppins)", "system-ui", "sans-serif"],
-        bricolageGrotesque:["var(--font-bricolage-grotesque)", "system-ui", "sans-serif"],
+        bricolageGrotesque: ["var(--font-bricolage-grotesque)", "system-ui", "sans-serif"],
+        alexandria: ["var(--font-alexandria)", "system-ui", "sans-serif"],
       },
       fontSize: {
         "2xs": [

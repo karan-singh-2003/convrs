@@ -5,7 +5,6 @@ import { Calendar as CalendarPrimitive } from "./calendar";
 import { DatePickerContext, formatDate } from "./shared";
 import { Trigger } from "./trigger";
 import { PickerProps } from "./types";
-import { cn } from "@repo/utils";
 
 export type DatePickerTriggerRenderProps = {
   displayValue: string | null;
@@ -43,7 +42,7 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(
-    value ?? defaultValue ?? undefined
+    value ?? defaultValue ?? undefined,
   );
 
   useEffect(() => {
@@ -64,9 +63,9 @@ export function DatePicker({
         align={align}
         openPopover={open}
         setOpenPopover={setOpen}
-        popoverContentClassName="rounded-xl"
+        popoverContentClassName="rounded-xl p-0"
         content={
-          <div className="flex w-full">
+          <div className="flex w-full p-0">
             <CalendarPrimitive
               mode="single"
               selected={selected}
@@ -75,8 +74,8 @@ export function DatePicker({
               disableNavigation={disableNavigation}
               showYearNavigation={showYearNavigation}
               locale={locale}
-              className="p-3"
-              {...(props as any)}
+              className="p-0.5 font-display"
+              {...props}
             />
           </div>
         }
@@ -93,7 +92,7 @@ export function DatePicker({
           <Trigger
             placeholder={placeholder}
             disabled={disabled}
-            className={cn( "rounded-full", className)}
+            className={className}
             hasError={hasError}
             aria-required={props.required || props["aria-required"]}
             aria-invalid={props["aria-invalid"]}

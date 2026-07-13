@@ -167,7 +167,16 @@ export const DIMENSIONAL_ANALYTICS_FILTERS = [
 
 export const TRIGGER_TYPES = ["pageview"] as const;
 
-export const EVENT_TYPES = ["clicks", "bounce_rate", "avg_session_duration", "goals", "funnel", "revenue"] as const;
+export const EVENT_TYPES = [
+  "clicks",
+  "bounce_rate",
+  "avg_session_duration",
+  "conversion_rate", // ← add this
+  "revenue_per_visitor",
+  "goals",
+  "funnel",
+  "revenue",
+] as const;
 
 export const ANALYTICS_VIEWS = ["timeseries", "funnel"] as const;
 

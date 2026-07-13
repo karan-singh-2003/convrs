@@ -14,7 +14,7 @@ import { useScrollProgress } from "@repo/ui";
 import { useCreateWorkspaceModal } from "../../modals/create-workspace-modal";
 
 export function WorkspaceDropdown() {
-  const { workspaces } = useWorkspaces();
+  const { workspaces} = useWorkspaces();
   const { data: session, status } = useSession();
   const { slug: currentSlug } = useParams<{ slug: string }>();
   const [openPopover, setOpenPopover] = useState(false);
@@ -29,8 +29,7 @@ export function WorkspaceDropdown() {
       return {
         ...selectedWorkspace,
         image:
-          selectedWorkspace.logo ||
-          `https://avatar.vercel.sh/${selectedWorkspace.id}`,
+          selectedWorkspace.logo ,
       };
 
       // return personal account selector if there's no workspace or error (user doesn't have access to workspace)
@@ -38,8 +37,7 @@ export function WorkspaceDropdown() {
       return {
         name: session?.user?.name || session?.user?.email,
         image:
-          session?.user?.image ||
-          `https://avatar.vercel.sh/${session?.user?.email}`,
+          session?.user?.image,
       };
     }
   }, [currentSlug, workspaces, session]) as {
@@ -47,6 +45,7 @@ export function WorkspaceDropdown() {
     name: string;
     slug: string;
     image: string;
+    domain:string
   };
 
   if (status === "loading" || !workspaces) {
@@ -73,18 +72,18 @@ export function WorkspaceDropdown() {
         >
           <button
             onClick={() => setOpenPopover(!openPopover)}
-            className="flex w-auto items-center gap-1.5 rounded-full bg-neutral-100 p-1.5 sm:w-full sm:gap-2"
+            className="flex w-auto h-9 items-center gap-1.5 rounded-xl border border-neutral-200 p-1.5 px-4 sm:w-full sm:gap-2"
           >
-            <BlurImage
+            {/* <BlurImage
               src={selected.image}
               alt={selected.name}
               className="rounded-full shrink-0"
               width={21}
               height={21}
               draggable={false}
-            />
-            <span className="font-medium  font-default text-[14px] flex-1 truncate">
-              {selected.name}
+            /> */}
+            <span className="font-medium text-neutral-500  font-default text-[14px] flex-1 truncate">
+              {selected.domain}
             </span>
             <ChevronDown className="size-3.5 text-neutral-500 shrink-0" />
           </button>
@@ -176,14 +175,14 @@ function WorkspaceList({
                       shallow={false}
                       onClick={() => setOpenPopover(false)}
                     >
-                      <BlurImage
+                      {/* <BlurImage
                         src={logo || `https://avatar.vercel.sh/${id}`}
                         width={24}
                         height={24}
                         alt={id}
                         className="size-5 shrink-0 overflow-hidden rounded-full"
                         draggable={false}
-                      />
+                      /> */}
                       <span className="block truncate font-medium font-default leading-5 text-neutral-600 sm:max-w-[140px] text-[13px] sm:text-[14px]">
                         {name}
                       </span>

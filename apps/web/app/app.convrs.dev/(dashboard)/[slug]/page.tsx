@@ -81,7 +81,7 @@ const DashboardPage = () => {
                         Finish setting up Convrs
                       </h2>
 
-                      <p className="mt-0.5 text-[13px] font-display text-neutral-500">
+                      <p className="mt-0 text-[13px] font-poppins text-neutral-500">
                         {completedSteps}/{steps.length} completed
                       </p>
                     </div>

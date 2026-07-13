@@ -42,6 +42,9 @@ export function AnalyticsTabs({
   requiresUpgrade,
   showPaywall,
   country = "US",
+  currency,
+  kpiType,
+  kpiLabel
 }: {
   showConversions?: boolean;
   totalEvents?: { [key in AnalyticsResponseOptions]: number };
@@ -54,7 +57,10 @@ export function AnalyticsTabs({
   requiresUpgrade?: boolean;
   showPaywall?: boolean;
   country?: string;
-  hasRevenueProvider?: boolean
+  hasRevenueProvider?: boolean;
+  currency?: string;
+  kpiType?: "revenue" | "goal";   // ← was "funnel" | "composite", make optional
+  kpiLabel?: string;
 }) {
   const tabs = useMemo(
     () =>
@@ -67,7 +73,7 @@ export function AnalyticsTabs({
         },
         {
           id: "revenue",
-          label: "Revenue",
+          label: kpiType === "goal" ? (kpiLabel ?? "Goal") : "Revenue",
           colorClassName: "text-green-500/50",
           conversions: true,
         },
@@ -90,38 +96,52 @@ export function AnalyticsTabs({
           conversions: false,
         },
         {
+          id: "revenue_per_visitor",
+          label: "Revenue/visitor",
+          colorClassName: "text-teal-500/50",
+          conversions: true,
+        },
+        {
           id: "live_visitors",
           label: "Online Now",
           colorClassName: "text-blue-500/50",
           conversions: false,
         },
+
       ] as Tab[],
     [showConversions]
   );
 
+  console.log(hasRevenueProvider, "hasRevenueProvider")
+
   return (
     <div className="w-full overflow-x-hidden">
       <NumberFlowGroup>
-        <div className="grid w-full grid-cols-3 gap-0 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid w-full grid-cols-3 gap-0 md:grid-cols-3 xl:grid-cols-7">
           {tabs.map(({ id, label, colorClassName }, idx) => {
             const isLiveVisitorsTab = id === "live_visitors";
-            const isRevenueTab = label === "Revenue";
+            const isRevenueTab = id === "revenue";
             const value = isLiveVisitorsTab
               ? (liveVisitorsCount ?? 0)
               : (totalEvents?.[id] ?? 0);
             const hasData =
               isLiveVisitorsTab || totalEvents?.[id] !== undefined;
-            const isClickable = id === "clicks" || (id === "revenue" && hasRevenueProvider);
-     
+
+            const isClickable = isLiveVisitorsTab
+              ? false
+              : isRevenueTab
+                ? hasRevenueProvider
+                : hasData; // clicks, conversion_rate, bounce_rate, avg_session_duration
+
 
             const cardContent = (
               <>
-                <div className="flex items-start gap-2.5 text-[12px] text-neutral-500 sm:h-5 sm:items-center sm:text-[14px]">
-                  <span className="font-default font-medium">{label}</span>
+                <div className="flex items-start gap-2.5 text-[12.5px] text-neutral-500 sm:h-5 sm:items-center sm:text-[14.5px]">
+                  <span className="font-poppins font-medium">{label}</span>
                 </div>
 
                 <div className="flex items-start flex-col gap-y-1 justify-between">
-                  <div className="flex md:h-12 items-center">
+                  <div className="flex md:h-8 items-center">
                     {hasData ? (
                       id === "avg_session_duration" ? (
                         <div
@@ -138,20 +158,37 @@ export function AnalyticsTabs({
                           <Minus className="h-4 w-4 text-neutral-400" />
                           <Minus className="h-4 w-4 text-neutral-400" />
                         </div>) : (
+                        // <NumberFlow
+                        //   value={value}
+                        //   format={
+                        //     isRevenueTab && kpiType !== "goal"
+                        //       ? { style: "currency", currency: currency ?? "USD", currencyDisplay: "symbol" }
+                        //       : undefined
+                        //   }
+                        //   locales="en-US"
+                        //   className={cn(
+                        //     "text-lg text-neutral-600 font-medium font-alexandria sm:text-xl md:text-[26px]",
+                        //     showPaywall && "opacity-30"
+                        //   )}
+                        // />
                         <NumberFlow
                           value={value}
                           format={
-                            isRevenueTab
+                            isRevenueTab && kpiType !== "goal"
                               ? {
                                 style: "currency",
-                                currency: country === "US" ? "USD" : "USD",
+                                currency: currency ?? "USD",
                                 currencyDisplay: "symbol",
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
                               }
-                              : undefined
+                              : {
+                                maximumFractionDigits: 2,
+                              }
                           }
                           locales="en-US"
                           className={cn(
-                            "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                            "text-lg text-neutral-600 font-medium font-alexandria sm:text-xl md:text-[26px]",
                             showPaywall && "opacity-30"
                           )}
                         />
@@ -200,7 +237,7 @@ export function AnalyticsTabs({
                       return (
                         <div
                           className={cn(
-                            "inline-flex items-center gap-1 rounded-full text-[13.5px] font-display",
+                            "inline-flex items-center gap-1 rounded-full text-[13.5px] font-poppins",
                             textColor
                           )}
                         >
@@ -220,7 +257,7 @@ export function AnalyticsTabs({
                     href={tabHref(id)}
                     aria-current
                     className={cn(
-                      "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2 sm:min-h-[134px] sm:px-4 sm:py-3",
+                      "relative flex h-full min-h-[120px]  w-full flex-col gap-y-3 px-3 py-2  sm:px-4 sm:py-3",
                       "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
                       "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
                     )}
@@ -230,7 +267,7 @@ export function AnalyticsTabs({
                 ) : (
                   <div
                     className={cn(
-                      "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2 sm:min-h-[134px] sm:px-4 sm:py-3",
+                      "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2  sm:px-4 sm:py-3",
                       "ring-inset ring-neutral-500 sm:first:rounded-tl-xl"
                     )}
                   >
@@ -271,11 +308,11 @@ export function AnalyticsTabs({
 export function formatDuration(seconds: number): string {
   if (!seconds || seconds <= 0) return "0m";
 
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
+  const totalSeconds = Math.round(seconds);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
 
   if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`;
 }
-
-

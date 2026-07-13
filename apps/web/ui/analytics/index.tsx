@@ -45,16 +45,16 @@ function AnalyticsContent({
           <AnalyticsToggle />
         </div>
 
-        <div className="space-y-[6rem]">
+        <div className="space-y-[4rem]">
           <ChartSection mode={mode} workspaceId={workspaceId} />
           <StatsGrid />
         </div>
-
+{/* 
         {selectedTab !== "revenue" && (
           <div className="max-w-screen-lg mx-auto">
             <LowerGrid />
           </div>
-        )}
+        )} */}
       </div>
     </>
   );

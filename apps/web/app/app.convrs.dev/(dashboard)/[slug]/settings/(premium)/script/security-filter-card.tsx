@@ -117,7 +117,7 @@ export function SecurityFilterCard({
             ))}
           </div>
         ) : (
-          <p className="text-[13.5px] font-display text-neutral-500">
+          <p className="text-[13.5px] font-medium font-display text-neutral-500">
             {emptyText}
           </p>
         )}

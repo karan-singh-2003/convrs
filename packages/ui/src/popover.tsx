@@ -3,7 +3,7 @@
 import { cn } from "@repo/utils";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { PropsWithChildren, ReactNode, WheelEventHandler } from "react";
+import { PropsWithChildren, ReactNode, useEffect, useState, WheelEventHandler } from "react";
 import { Drawer } from "vaul";
 import { useMediaQuery } from "./hooks";
 
@@ -43,7 +43,17 @@ export function Popover({
 }: PopoverProps) {
   const { isMobile } = useMediaQuery();
 
-  if ((mobileOnly || isMobile) && !forceDropdown) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const shouldUseDrawer =
+    mounted && (mobileOnly || isMobile) && !forceDropdown;
+
+  if (shouldUseDrawer) {
+
     return (
       <Drawer.Root open={openPopover} onOpenChange={setOpenPopover}>
         <Drawer.Trigger className="sm:hidden" asChild>

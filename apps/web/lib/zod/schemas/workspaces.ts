@@ -109,6 +109,11 @@ export const WorkspaceSchema = z
       .date()
       .describe("The date and time when the workspace was created."),
 
+    currency: z
+      .string()
+      .default("USD")
+      .describe("The display currency for revenue metrics (ISO 4217 code, e.g. 'USD', 'INR')."),
+
     users: z
       .array(
         z.object({
@@ -153,6 +158,27 @@ export const createWorkspaceSchema = z.object({
       message: "Invalid domain format",
     }),
   conversionEnabled: z.boolean().optional(),
+  currency: z.enum([
+    "AED",
+    "AUD",
+    "BRL",
+    "CAD",
+    "CHF",
+    "CNY",
+    "CZK",
+    "EUR",
+    "GBP",
+    "HKD",
+    "IDR",
+    "INR",
+    "JPY",
+    "KRW",
+    "NZD",
+    "NOK",
+    "PLN",
+    "SGD",
+    "USD",
+  ]).optional(),
 });
 
 export const getWorkspaceUsersQuerySchema = z.object({

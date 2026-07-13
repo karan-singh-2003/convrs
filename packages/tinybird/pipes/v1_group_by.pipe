@@ -109,6 +109,9 @@ WHERE
     {% if defined(url) %}            AND splitByString('?', url)[1] = {{ url }} {% end %}
     {% if defined(start) %}          AND timestamp >= {{ DateTime64(start) }} {% end %}
     {% if defined(end) %}            AND timestamp <= {{ DateTime64(end) }}   {% end %}
+    {% if defined(kpiGoalName) %}
+        AND event_type = 'goals' AND event_name = {{ String(kpiGoalName) }}
+    {% end %}
     {% if defined(filters) %}
         {% for item in JSON(filters, '[]') %}
             {% if item.get('field', '') %}
@@ -428,6 +431,8 @@ FROM
 
     {% if String(groupBy) == 'goal_properties' %}  group_by_goal_properties
     {% elif eventType == 'revenue' %}      group_by_sales
+    {% elif eventType == 'revenue' and defined(kpiGoalName) %}
+        group_by_clicks  
     {% elif eventType == 'goals' %}        group_by_clicks
     {% elif eventType == 'composite' %}    group_by_clicks
     {% else %}                             group_by_clicks

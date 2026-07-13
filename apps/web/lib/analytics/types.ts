@@ -55,6 +55,9 @@ export type AnalyticsFilters = Partial<
   start?: Date | null;
   end?: Date | null;
   goalName?: string;  // ← add
+  currency?: string; // workspace's target currency, e.g. "INR"
+  kpiType?: "revenue" | "goal";
+  kpiEventName?: string;
   // Accept plain string (from partner-profile/cron routes) or ParsedFilter (from API schema)
   // partnerId?: string | ParsedFilter;
   // linkId?: string | ParsedFilter;

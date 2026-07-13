@@ -28,6 +28,7 @@ import { AnalyticsContext } from "./analytics-providers";
 // import { ShareButton } from "./share-button";
 import { useAnalyticsFilters } from "./use-analytics-filter";
 import { RefreshCcw } from "lucide-react";
+import { WorkspaceDropdown } from "../layout/sidebar/workspace-dropdown";
 
 export function AnalyticsToggle({
   page = "analytics",
@@ -51,6 +52,8 @@ export function AnalyticsToggle({
     interval,
   } = useContext(AnalyticsContext);
 
+  console.log("start and end and interval", start, end, interval)
+
   const scrolled = useScroll(120);
 
   const { isMobile } = useMediaQuery();
@@ -68,7 +71,7 @@ export function AnalyticsToggle({
     activeFiltersWithStreaming,
   } = useAnalyticsFilters();
 
- 
+
 
   const filterSelect = (
     <Filter.Select
@@ -87,14 +90,14 @@ export function AnalyticsToggle({
 
   const dateRangePicker = (
     <DateRangePicker
-      className="h-auto w-full rounded-full font-display text-[13px] leading-snug py-2 sm:h-9 sm:w-auto sm:py-0 sm:text-sm sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap [&>span]:whitespace-normal sm:[&>span]:whitespace-nowrap sm:[&>span]:overflow-hidden sm:[&>span]:text-ellipsis"
+      className="h-auto w-full px-5 font-normal  text-neutral-500 rounded-xl  font-alexandria text-[13px] leading-snug py-2 sm:h-9 sm:w-auto sm:py-0 sm:text-[13.5px] sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap "
       align={dashboardProps ? "end" : "center"}
       value={
         start && end
           ? {
-              from: start,
-              to: end,
-            }
+            from: start,
+            to: end,
+          }
           : undefined
       }
       presetId={
@@ -211,50 +214,55 @@ export function AnalyticsToggle({
                 dashboardProps && "md:w-auto"
               )}
             >
-              <div
-                className={cn(
-                  "flex w-full grow flex-col items-stretch  gap-2 sm:flex-row sm:items-center md:w-auto",
-                  {
-                    "grow-0": dashboardProps,
-                  }
-                )}
-              >
-                {dateRangePicker}
-                {!dashboardProps &&
-                  // <div className="flex grow justify-end gap-2">
-                  //   {page === "analytics" && (
-                  //     <>
-                  //       <Link
-                  //         href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}events${getQueryString()}`}
-                  //       >
-                  //         <Button
-                  //           variant="secondary"
-                  //           className="w-fit"
-                  //           text={isMobile ? undefined : "View Events"}
-                  //         />
-                  //       </Link>
-                  //     </>
-                  //   )}
-                  //   {page === "events" && (
-                  //     <>
-                  //       <Link
-                  //         href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}analytics${getQueryString()}`}
-                  //       >
-                  //         <Button
-                  //           variant="secondary"
-                  //           className="w-fit"
-                  //           text={isMobile ? undefined : "View Analytics"}
-                  //         />
-                  //       </Link>
-                  //     </>
-                  //   )}
-                  // </div>
-                  null}
+              <div className="flex items-center gap-2">
+                <div>
+                  <WorkspaceDropdown />
+                </div>
+                <div
+                  className={cn(
+                    "flex w-full grow flex-col items-stretch  gap-2 sm:flex-row sm:items-center md:w-auto",
+                    {
+                      "grow-0": dashboardProps,
+                    }
+                  )}
+                >
+                  {dateRangePicker}
+                  {!dashboardProps &&
+                    // <div className="flex grow justify-end gap-2">
+                    //   {page === "analytics" && (
+                    //     <>
+                    //       <Link
+                    //         href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}events${getQueryString()}`}
+                    //       >
+                    //         <Button
+                    //           variant="secondary"
+                    //           className="w-fit"
+                    //           text={isMobile ? undefined : "View Events"}
+                    //         />
+                    //       </Link>
+                    //     </>
+                    //   )}
+                    //   {page === "events" && (
+                    //     <>
+                    //       <Link
+                    //         href={`/${partnerPage ? `programs/${programSlug}/` : adminPage ? "" : `${slug}/`}analytics${getQueryString()}`}
+                    //       >
+                    //         <Button
+                    //           variant="secondary"
+                    //           className="w-fit"
+                    //           text={isMobile ? undefined : "View Analytics"}
+                    //         />
+                    //       </Link>
+                    //     </>
+                    //   )}
+                    // </div>
+                    null}
+                </div>
               </div>
               <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
-                {/* <div className="rounded-full border border-neutral-200 p-2">
+                <div className="rounded-full border border-neutral-200 p-2">
                   <RefreshCcw size={16} />
-                </div> */}
+                </div>
                 {filterSelect}
               </div>
             </div>
@@ -262,7 +270,7 @@ export function AnalyticsToggle({
         </div>
       </div>
 
-    <div className="w-full overflow-x-hidden">
+      <div className="w-full overflow-x-hidden">
         <Filter.List
           filters={filters}
           activeFilters={activeFiltersWithStreaming}

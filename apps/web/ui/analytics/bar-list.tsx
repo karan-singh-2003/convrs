@@ -40,7 +40,8 @@ export function BarList({
   onApplyFilterValues,
   placeholder,
   onRowFilterItem,
-  onExpandRow
+  onExpandRow,
+  currency = "USD",
 }: {
   placeholder?: string;
   tab: string;
@@ -79,6 +80,7 @@ export function BarList({
   onRowFilterItem?: (val: string) => void;
   onApplyFilterValues?: (values: string[]) => void;
   onExpandRow?: (filterValue: string) => void;
+  currency?: string;
 }) {
   const [search, setSearch] = useState("");
   const [modalSelectedValues, setModalSelectedValues] = useState<string[]>(
@@ -166,6 +168,7 @@ export function BarList({
       data.filterValue && onExpandRow
         ? () => onExpandRow(data.filterValue!)
         : undefined,
+    currency,
   }));
 
   // Removed filterButtons: No Filter/Clear buttons when clicking a bar
@@ -230,6 +233,27 @@ export function BarList({
   }
 }
 
+const CURRENCY_LOCALES: Record<string, string> = {
+  USD: "en-US",
+  INR: "en-IN",
+  EUR: "de-DE",
+  GBP: "en-GB",
+  AED: "en-AE",
+  AUD: "en-AU",
+  CAD: "en-CA",
+  SGD: "en-SG",
+  JPY: "ja-JP",
+  CHF: "de-CH",
+  CNY: "zh-CN",
+  KRW: "ko-KR",
+  HKD: "zh-HK",
+  NZD: "en-NZ",
+  NOK: "nb-NO",
+  PLN: "pl-PL",
+  CZK: "cs-CZ",
+  BRL: "pt-BR",
+  IDR: "id-ID",
+};
 export function LineItem({
   icon,
   title,
@@ -246,7 +270,8 @@ export function LineItem({
   onRowClick,
   onFilterClick,
   href,
-  onExpandRow
+  onExpandRow,
+  currency ,
 }: {
   icon?: ReactNode;
   title: string;
@@ -264,6 +289,7 @@ export function LineItem({
   href?: string;
   onRowClick?: () => void;
   onExpandRow?: () => void;  // ← add
+  currency?: string;
 }) {
   const [filterButtonHovered, setFilterButtonHovered] = useState(false);
   const [tooltipResetKey, setTooltipResetKey] = useState(0);
@@ -330,6 +356,7 @@ export function LineItem({
 
   const rowClickable = !!onFilterClick || (!!href && !onFilterClick);
 
+  console.log("barlist currency",currency)
   return (
     <div
       // onClick={() => {
@@ -396,7 +423,7 @@ export function LineItem({
                 "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
               )}
             >
-              <Maximize2 className="h-3.5 w-3.5" />
+              {/* <Maximize2 className="h-3.5 w-3.5" /> */}
             </button>
           )}
 
@@ -408,20 +435,24 @@ export function LineItem({
               unit === "sales" && saleUnit === "saleAmount" ? value / 100 : value
             }
             className={cn(
-              "z-10 px-1 sm:px-2 text-xs sm:text-sm font-display text-neutral-600 transition-transform duration-300",
+              "z-10 px-1 sm:px-2 text-xs sm:text-sm font-alexandria text-neutral-600 transition-transform duration-300",
               isModalView ? "-translate-x-14" : "group-hover:-translate-x-14"
             )}
             style={{ transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)` }}
-            locales="en-US"
+            locales={CURRENCY_LOCALES[currency ?? "USD"] ?? "en-US"}
             format={
               (unit === "sales" && saleUnit === "saleAmount") || unit === "revenue"
-                ? { style: "currency", currency: "USD", currencyDisplay: "symbol" }
+                ? {
+                  style: "currency",
+                  currency: currency ?? "USD",
+                  currencyDisplay: "symbol",
+                }
                 : { notation: value > 999999 ? "compact" : "standard" }
             }
           />
           <div
             className={cn(
-              "absolute right-0 font-display px-2 sm:px-3 text-xs sm:text-sm text-neutral-600/70 transition-all duration-300",
+              "absolute right-0 font-alexandria px-2 sm:px-3 text-xs sm:text-sm text-neutral-600/70 transition-all duration-300",
               isModalView
                 ? "visible translate-x-0 opacity-100"
                 : "invisible translate-x-14 opacity-0 group-hover:visible group-hover:translate-x-0 group-hover:opacity-100"

@@ -88,7 +88,7 @@ export function YAxis({
         tickFormat={(value) => tickFormat(value as number)}
         tickLength={tickAxisSpacing}
         tickLabelProps={() => ({
-          className: "transition-colors font-poppins",
+          className: "transition-colors font-alexandria",
           fontSize: 12,
           fill: "#00000066",
           textAnchor: "end",

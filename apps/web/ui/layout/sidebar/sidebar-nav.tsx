@@ -64,8 +64,9 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                           area={area}
                         >
                           {title === "" && (
-                            <div className="w-full">
-                              <WorkspaceDropdown />
+                            <div className="w-full px-1.5">
+                              {/* <WorkspaceDropdown /> */}
+                              <h1 className="font-poppins text-neutral-500 font-semibold   ">Convrs</h1>
                             </div>
                           )}
                           <div
@@ -97,7 +98,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                               className={cn(
                                 "flex w-full",
                                 area === "default"
-                                  ? "md:flex-row flex-col "
+                                  ? "hidden"
                                   : "md:flex-col  flex-col overflow-x-auto flex-nowrap scrollbar-hide pb-px"
                               )}
                             >

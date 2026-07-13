@@ -17,7 +17,9 @@ import {
   getVercelRegion,
   getContinent,
 } from "./get-geo-data.js";
-import { COUNTRIES } from "@repo/utils";
+import { COUNTRIES, COUNTRY_NAMES_TO_CODES } from "@repo/utils";
+import { registerTrackedEvent } from "./register-tracked-event.js";
+
 
 export async function trackClickController(req: Request, res: Response) {
   try {
@@ -67,6 +69,7 @@ export async function trackClickController(req: Request, res: Response) {
         blockedHostnames: true,
         blockedIpAddresses: true,
         blockedPages: true,
+        blockedCountries: true,
         subscriptionStatus: true,
         usage: true,
         usageLimit: true,
@@ -143,6 +146,8 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
+
+
     const usageLimit = workspace.usageLimit ?? 0;
     const usage = workspace.usage ?? 0;
 
@@ -158,6 +163,30 @@ export async function trackClickController(req: Request, res: Response) {
     const region = getGeoRegion(nativeReq);
     const vercelRegion = getVercelRegion();
     const continent = getContinent(nativeReq);
+
+    // Country filter
+    const visitorCountry = (geo.country ?? "").toUpperCase();
+
+    const isBlocked =
+      workspace.blockedCountries?.some((country) => {
+        const value = country.trim();
+
+        // User entered an ISO code (US, IN, CN)
+        if (COUNTRIES[value.toUpperCase()]) {
+          return value.toUpperCase() === visitorCountry;
+        }
+
+        // User entered a country name (United States, India)
+        const code = COUNTRY_NAMES_TO_CODES[value.toLowerCase()];
+        return code === visitorCountry;
+      }) ?? false;
+
+    if (isBlocked) {
+      return res.status(403).json({
+        success: false,
+        error: "Blocked by country filter",
+      });
+    }
 
     console.log("[Track Controller] Geo data:", {
       geo,
@@ -277,6 +306,14 @@ export async function trackClickController(req: Request, res: Response) {
         data: { usage: { increment: 1 } },
         select: { usage: true, usageLimit: true, slug: true },
       });
+
+      void registerTrackedEvent({
+        workspaceId: workspace.id,
+        eventName: parsed.data.event_name ?? parsed.data.type ?? "unknown",
+        eventType: recordedEvent.event_type,
+        trigger: recordedEvent.trigger,
+      });
+
 
       void maybeSendUsageLimitWarning({
         workspaceId: workspace.id,

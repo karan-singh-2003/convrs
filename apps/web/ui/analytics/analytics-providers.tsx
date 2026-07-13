@@ -39,21 +39,21 @@ export type AnalyticsDashboardProps = {
   showConversions?: boolean;
   workspacePlan?: WorkspacePlan;
 } & (
-  | {
+    | {
       domain: string;
       key: string;
       url: string;
       folderId?: never;
       folderName?: never;
     }
-  | {
+    | {
       folderId: string;
       folderName: string;
       domain?: never;
       key?: never;
       url?: never;
     }
-);
+  );
 
 export const AnalyticsContext = createContext<{
   basePath: string;
@@ -84,6 +84,9 @@ export const AnalyticsContext = createContext<{
   fetchCompositeStats?: boolean;
   requiresUpgrade?: boolean;
   dashboardProps?: AnalyticsDashboardProps;
+  currency?: string;
+  kpiType?: "revenue" | "goal";   // ← add
+  kpiLabel?: string;
 }>({
   basePath: "",
   baseApiPath: "",
@@ -102,6 +105,9 @@ export const AnalyticsContext = createContext<{
   requiresUpgrade: false,
   dashboardProps: undefined,
   percentageChanges: {},
+  currency: "USD",
+  kpiType: "revenue",   // ← add default
+  kpiLabel: undefined,  // ← add default
 });
 
 export default function AnalyticsProvider({
@@ -115,7 +121,7 @@ export default function AnalyticsProvider({
   workspaceId?: string;
 }>) {
   const searchParams = useSearchParams();
-  const { slug: workspaceSlug, plan: workspacePlan } = useWorkspace();
+  const { slug: workspaceSlug, plan: workspacePlan, currency, kpiEventName, kpiType } = useWorkspace();
 
   const [requiresUpgrade, setRequiresUpgrade] = useState(false);
 
@@ -350,7 +356,7 @@ export default function AnalyticsProvider({
   // Calculate percentage changes
   const percentageChanges = useMemo(() => {
     if (!totalEvents || !previousTotalEvents) {
-     
+
       return {};
     }
 
@@ -366,7 +372,7 @@ export default function AnalyticsProvider({
       }
     );
 
-   
+
     return changes;
   }, [totalEvents, previousTotalEvents]);
 
@@ -396,6 +402,9 @@ export default function AnalyticsProvider({
         fetchCompositeStats, // whether to pull composite stats or just clicks
         requiresUpgrade, // whether an upgrade is required to perform the query
         dashboardProps,
+        currency,
+        kpiType,
+        kpiLabel: kpiEventName ?? undefined,   // ← fix null → undefined
       }}
     >
       {children}

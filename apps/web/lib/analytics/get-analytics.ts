@@ -7,6 +7,7 @@ import { buildAdvancedFilters, prepareFiltersForPipe } from "./filter-helpers";
 import { AnalyticsFilters } from "./types";
 import { formatUTCDateTimeClickhouse } from "./utils/format-utc-date-time-clickhouse";
 import { getStartEndDates } from "./utils/get-start-and-end-dates";
+import { convertCurrency } from "../currency/convert";
 
 // Fetch data from Tinybird analytics pipes
 export const getAnalytics = async (params: AnalyticsFilters) => {
@@ -22,8 +23,14 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     country,
     timezone = "UTC",
     dataAvailableFrom,
-    goalName
+    goalName,
+    currency,
+    kpiType,
+    kpiEventName,
   } = params;
+
+  const usingCustomKpi = kpiType === "goal" && !!kpiEventName && event === "revenue";
+  const kpiGoalName = usingCustomKpi ? kpiEventName : undefined;
 
   if (event === "funnel") {
     const funnelPipe = tb.buildPipe({
@@ -72,7 +79,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       timezone,
     });
 
-  
+
 
     const { triggerForPipe, countryForPipe } = prepareFiltersForPipe({
       trigger,
@@ -142,6 +149,11 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       saleAmount: z.number().nullable().default(0),
       country: z.string().optional(),
       region: z.string().optional(),
+      revenue_per_visitor: z.number().nullable().default(0),
+      new_visitors: z.number().nullable().default(0),
+      returning_visitors: z.number().nullable().default(0),
+      new_revenue: z.number().nullable().default(0),
+      refund_amount: z.number().nullable().default(0),
     }),
   });
 
@@ -163,25 +175,61 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     filters:
       advancedFilters.length > 0 ? JSON.stringify(advancedFilters) : undefined,
     ...(goalName && { goalName }),  // ← add
+    ...(kpiGoalName && { kpiGoalName }),   // ← add
   };
 
   // console.log("tinybird params", tinybirdParams)
   const response = await pipe(tinybirdParams);
 
 
+
   // Return parsed response
   const schema = analyticsResponse[groupBy!];
 
-  return response.data.map((item: any) => {
+  // return response.data.map((item: any) => {
+  //   const parsed = schema.parse({
+  //     ...item,
+  //     [SINGULAR_ANALYTICS_ENDPOINTS[groupBy!]]: item.groupByField,
+  //   });
+
+  //   // Some group-by schemas do not declare revenue yet. Preserve it so revenue views can render values.
+  //   return {
+  //     ...parsed,
+  //     revenue: item?.revenue ?? 0,
+  //   };
+  // });
+  const results = response.data.map((item: any) => {
     const parsed = schema.parse({
       ...item,
       [SINGULAR_ANALYTICS_ENDPOINTS[groupBy!]]: item.groupByField,
     });
-
-    // Some group-by schemas do not declare revenue yet. Preserve it so revenue views can render values.
     return {
       ...parsed,
-      revenue: item?.revenue ?? 0,
+      revenue: usingCustomKpi && selectedPipe === "v1_group_by" ? (item?.clicks ?? 0) : (item?.revenue ?? 0),
+      conversion_rate: item?.conversion_rate ?? 0,
+      bounce_rate: item?.bounce_rate ?? 0,
+      avg_session_duration: item?.avg_session_duration ?? 0,
+      new_visitors: item?.new_visitors ?? 0,
+      returning_visitors: item?.returning_visitors ?? 0,
+      new_revenue: item?.new_revenue ?? 0,
+      refund_amount: item?.refund_amount ?? 0,
+      revenue_per_visitor: item?.revenue_per_visitor ?? 0,
     };
   });
+
+
+
+  if (usingCustomKpi || !currency || currency === "USD") {
+    return results;
+  }
+
+  return Promise.all(
+    results.map(async (item) => ({
+      ...item,
+      revenue: await convertCurrency(item.revenue, "USD", currency),
+      ...("saleAmount" in item
+        ? { saleAmount: await convertCurrency(item.saleAmount, "USD", currency) }
+        : {}),
+    }))
+  );
 };

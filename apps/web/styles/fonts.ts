@@ -1,4 +1,4 @@
-import { Inter, Poppins,Bricolage_Grotesque } from "next/font/google";
+import { Inter, Poppins,Bricolage_Grotesque,Alexandria } from "next/font/google";
 import { Google_Sans } from "next/font/google";
 
 export const inter = Inter({
@@ -22,4 +22,10 @@ export const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+export const alexandria = Alexandria({
+  variable: "--font-alexandria",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });

@@ -13,7 +13,7 @@ import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
-  const { selectedTab } = useContext(AnalyticsContext);
+  const { selectedTab,currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<
@@ -39,7 +39,7 @@ export function LocationSection() {
   }, []);
 
   useEffect(() => {
-  
+
   }, [selectedItems]);
 
   const onApplyFilterValues = useCallback(
@@ -158,6 +158,7 @@ export function LocationSection() {
               onApplyFilterValues={onApplyFilterValues}
               onRowFilterItem={(val) => onApplyFilterValues([val])}
               {...(limit && { limit })}
+              currency={currency}
             />
           ) : (
             <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

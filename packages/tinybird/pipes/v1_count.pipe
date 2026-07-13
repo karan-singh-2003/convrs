@@ -14,15 +14,14 @@ WITH session_data AS (
         visitor_id,
         session_id,
         COUNT(*) as session_clicks,
-        dateDiff('second', min(timestamp), max(timestamp)) as session_duration_seconds,
-        max(if(coalesce(revenue, 0) > 0, 1, 0)) as is_converted
+        dateDiff('second', min(timestamp), max(timestamp)) as session_duration_seconds
     FROM dub_click_events_mv
     WHERE
         true
         AND event_type != 'revenue'
-        {% if defined(eventType) and eventType != 'clicks' %}
-            AND event_type = {{ String(eventType) }}
-        {% end %}
+  {% if defined(eventType) and eventType not in ('clicks', 'composite', 'revenue', 'bounce_rate', 'conversion_rate', 'avg_session_duration') %}
+    AND event_type = {{ String(eventType) }}
+{% end %}
         {% if defined(eventName) %} AND event_name = {{ String(eventName) }} {% end %}
         {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
         {% if defined(continent) %} AND continent = {{ continent }} {% end %}
@@ -98,10 +97,27 @@ revenue_data AS (
         visitor_id,
         SUM(coalesce(revenue, 0)) as visitor_revenue,
         max(if(coalesce(revenue, 0) > 0, 1, 0)) as visitor_converted
-    FROM dub_click_events
+    FROM dub_click_events_mv
     WHERE
         event_type = 'revenue'
         AND coalesce(revenue, 0) > 0
+        {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+    GROUP BY visitor_id
+),
+
+-- Only evaluated meaningfully when kpiGoalName is passed — lets the
+-- "revenue" metric represent goal completions instead of dollar revenue
+-- for workspaces tracking a custom KPI goal rather than payments.
+kpi_goal_data AS (
+    SELECT
+        visitor_id,
+        COUNT(*) as goal_count
+    FROM dub_click_events_mv
+    WHERE
+        event_type = 'goals'
+        {% if defined(kpiGoalName) %} AND event_name = {{ String(kpiGoalName) }} {% end %}
         {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
         {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
         {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
@@ -123,12 +139,32 @@ SELECT
         0
     ) as bounce_rate,
 
+    {% if defined(kpiGoalName) %}
+    -- Goal-based KPI mode: "revenue" here means goal completions, not dollars
+    coalesce(
+        (SELECT SUM(goal_count) FROM kpi_goal_data
+         WHERE visitor_id IN (SELECT DISTINCT visitor_id FROM session_data)),
+        0
+    ) as revenue,
+    {% else %}
     -- Revenue joined by visitor_id (not identity_hash)
     coalesce(
         (SELECT SUM(visitor_revenue) FROM revenue_data
          WHERE visitor_id IN (SELECT DISTINCT visitor_id FROM session_data)),
         0
     ) as revenue,
+
+    {% end %}
+
+    coalesce(
+    (
+        SELECT SUM(visitor_revenue)
+        FROM revenue_data
+        WHERE visitor_id IN (SELECT DISTINCT visitor_id FROM session_data)
+    )
+    / nullIf(COUNT(DISTINCT sd.visitor_id), 0),
+    0
+) AS revenue_per_visitor,
 
     -- Conversion: % of sessions whose visitor made a purchase
     coalesce(
@@ -138,6 +174,7 @@ SELECT
     ) as conversion_rate
 
 FROM session_data AS sd
+
 
 NODE count_revenue
 SQL >
@@ -170,6 +207,7 @@ SELECT
     bounce_rate,
     revenue,
     conversion_rate
+    revenue_per_visitor
 FROM count_clicks
 
 
@@ -177,11 +215,12 @@ NODE endpoint
 TYPE endpoint
 SQL >
 
-%
-SELECT *
-FROM
-    {% if eventType == 'clicks' %} count_clicks
-    {% elif eventType == 'revenue' %} count_revenue
-    {% elif eventType == 'composite' %} count_composite
-    {% else %} count_clicks
-    {% end %}
+    %
+    SELECT *
+    FROM
+        {% if eventType == 'clicks' %} count_clicks
+        {% elif eventType == 'revenue' %} count_revenue
+        {% elif eventType == 'composite' %} count_composite
+        {% elif eventType in ('bounce_rate', 'conversion_rate', 'avg_session_duration') %} count_composite
+        {% else %} count_clicks
+        {% end %}

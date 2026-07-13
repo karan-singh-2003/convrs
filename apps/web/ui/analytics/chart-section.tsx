@@ -233,6 +233,9 @@ import { useCreateFunnelModal } from "../modals/create-funnel-modal";
 import useFunnels from "@/lib/swr/use-funnels";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 import useStripeIntegration from "@/lib/swr/use-stripe-integration";
+import useIntegration from "@/lib/swr/use-integration";
+import { toast } from "sonner";
+import useIntegrations from "@/lib/swr/use-integration";
 
 type ChartSectionProps = {
   mode: "private" | "public";
@@ -256,8 +259,10 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     saleUnit,
     view,
   } = useContext(AnalyticsContext);
-  const { connected: hasRevenueProvider } = useStripeIntegration();
-  const { plan, projectToken, id } = useWorkspace();
+  const { integrations, loading, error } = useIntegrations();
+
+  const hasRevenueProvider = integrations.length > 0;
+  const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();
   const { queryParams } = useRouterStuff();
   const { funnels } = useFunnels({
     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
@@ -290,18 +295,12 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
   const tabs = useMemo(
     () =>
       [
-        {
-          id: "clicks",
-          label: "Clicks",
-          colorClassName: "text-blue-500/50",
-          conversions: false,
-        },
-        {
-          id: "revenue",
-          label: "Revenue",
-          colorClassName: "text-teal-400/50",
-          conversions: true,
-        },
+        { id: "clicks", label: "Clicks", colorClassName: "text-blue-500/50", conversions: false },
+        { id: "revenue", label: "Revenue", colorClassName: "text-teal-400/50", conversions: true },
+        { id: "conversion_rate", label: "Conversion", colorClassName: "text-purple-500/50", conversions: true },
+        { id: "bounce_rate", label: "Bounce Rate", colorClassName: "text-red-500/50", conversions: false },
+        { id: "avg_session_duration", label: "Avg. Session", colorClassName: "text-green-500/50", conversions: false },
+        { id: "revenue_per_visitor", label: "Revenue/visitor", colorClassName: "text-green-500/50", conversions: false },
       ] as Tab[],
     [showConversions]
   );
@@ -323,6 +322,12 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     }
   }, [canShowFunnelView, queryParams, view]);
 
+  if (error) {
+    toast.error("Error loading analytics data");
+  }
+  if (loading) {
+    return "loading"
+  }
 
   return (
     <>
@@ -355,6 +360,9 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
                   }
                   requiresUpgrade={requiresUpgrade}
                   showPaywall={showPaywall}
+                  currency={currency}
+                  kpiType={kpiType ?? undefined}
+                  kpiLabel={kpiEventName ?? undefined}
                 />
               ) : (
                 <div className="md:min-h-[134px] min-h-[240px] bg-orange-50" />

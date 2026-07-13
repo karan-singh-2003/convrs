@@ -18,7 +18,7 @@ export function UserDropdown() {
     {
       label: "Account Settings",
       href: "/account/settings",
-      onClick: () => setOpenPopover(false),
+    onClick: () => setOpenPopover(false),
     },
     {
       label: "Log out",

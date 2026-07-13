@@ -20,7 +20,9 @@ type TrackingFilterCard = {
 type TrackingFilterKey =
   | "blockedHostnames"
   | "blockedIpAddresses"
+  | "blockedCountries"
   | "blockedPages";
+
 
 type ScriptConfigPayload = {
   domain: string | null;
@@ -28,15 +30,17 @@ type ScriptConfigPayload = {
   blockedHostnames: string[];
   blockedIpAddresses: string[];
   blockedPages: string[];
+  blockedCountries: string[]
 };
 
 const defaultFilters: Pick<
   ScriptConfigPayload,
-  "blockedHostnames" | "blockedIpAddresses" | "blockedPages"
+  "blockedHostnames" | "blockedIpAddresses" | "blockedPages" | "blockedCountries"
 > = {
   blockedHostnames: [],
   blockedIpAddresses: [],
   blockedPages: [],
+  blockedCountries: []
 };
 
 const cards: TrackingFilterCard[] = [
@@ -68,6 +72,15 @@ const cards: TrackingFilterCard[] = [
     helperText: "Use wildcards like /admin/*",
     emptyText: "You haven't blocked any pages yet.",
   },
+  {
+    key: "blockedCountries",
+    title: "Blocked countries",
+    description: "Block traffic from specific countries.",
+    placeholder: "United States or US",
+    actionLabel: "Block",
+    helperText: "Search and select one or more countries.",
+    emptyText: "You haven't blocked any countries yet.",
+  },
 ];
 
 export function TrackingFilters() {
@@ -80,6 +93,7 @@ export function TrackingFilters() {
     blockedHostnames: false,
     blockedIpAddresses: false,
     blockedPages: false,
+    blockedCountries: false
   });
 
   useEffect(() => {
@@ -100,6 +114,7 @@ export function TrackingFilters() {
           blockedHostnames: data.blockedHostnames || [],
           blockedIpAddresses: data.blockedIpAddresses || [],
           blockedPages: data.blockedPages || [],
+          blockedCountries: data.blockedCountries || [],
         });
       })
       .catch(() => {
@@ -134,6 +149,7 @@ export function TrackingFilters() {
       blockedHostnames: data.blockedHostnames || [],
       blockedIpAddresses: data.blockedIpAddresses || [],
       blockedPages: data.blockedPages || [],
+      blockedCountries: data.blockedCountries || []
     });
   };
 

@@ -1,186 +1,186 @@
-"use client";
-import useWorkspace from "@/lib/swr/use-workspace";
-import useStripeIntegration from "@/lib/swr/use-stripe-integration";
-import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
-import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
-import { Button, Input, ToggleGroup } from "@repo/ui";
-import Link from "next/link";
-import React, { useState } from "react";
-import { toast } from "sonner";
-import { LoadingSpinner } from "@repo/ui";
+// "use client";
+// import useWorkspace from "@/lib/swr/use-workspace";
+// import useStripeIntegration from "@/lib/swr/use-stripe-integration";
+// import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
+// import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
+// import { Button, Input, ToggleGroup } from "@repo/ui";
+// import Link from "next/link";
+// import React, { useState } from "react";
+// import { toast } from "sonner";
+// import { LoadingSpinner } from "@repo/ui";
 
-export default function RevenueSettingsPage() {
-  const [apiKey, setApiKey] = useState("");
-  const [provider, setProvider] = useState<"dodo" | "stripe" | "Polar">(
-    "dodo"
-  );
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
-    "idle"
-  );
-  const [error, setError] = useState("");
-  const [disconnecting, setDisconnecting] = useState(false);
+// export default function RevenueSettingsPage() {
+//   const [apiKey, setApiKey] = useState("");
+//   const [provider, setProvider] = useState<"dodo" | "stripe" | "Polar">(
+//     "dodo"
+//   );
+//   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
+//     "idle"
+//   );
+//   const [error, setError] = useState("");
+//   const [disconnecting, setDisconnecting] = useState(false);
 
-  const { id } = useWorkspace();
-  const { connected, loading, mutate } = useStripeIntegration();
+//   const { id } = useWorkspace();
+//   const { connected, loading, mutate } = useStripeIntegration();
 
-  async function handleConnect() {
-    setStatus("loading");
-    setError("");
-    try {
-      const res = await fetch("/api/integrations/stripe/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey, workspaceId: id }),
-      });
-      const data = await res.json();
+//   async function handleConnect() {
+//     setStatus("loading");
+//     setError("");
+//     try {
+//       const res = await fetch("/api/integrations/stripe/connect", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ apiKey, workspaceId: id }),
+//       });
+//       const data = await res.json();
 
-      if (!res.ok) {
-        const message = data.error || "Failed to connect";
-        toast.error(message);
-        setError(message);
-        setStatus("error");
-        return;
-      }
+//       if (!res.ok) {
+//         const message = data.error || "Failed to connect";
+//         toast.error(message);
+//         setError(message);
+//         setStatus("error");
+//         return;
+//       }
 
-      setStatus("done");
-      toast.success("Stripe connected");
-      setApiKey("");
-      await mutate();
-    } catch (e: any) {
-      setError(e.message);
-      setStatus("error");
-    }
-  }
+//       setStatus("done");
+//       toast.success("Stripe connected");
+//       setApiKey("");
+//       await mutate();
+//     } catch (e: any) {
+//       setError(e.message);
+//       setStatus("error");
+//     }
+//   }
 
-  async function handleDisconnect() {
-    if (!id) return;
+//   async function handleDisconnect() {
+//     if (!id) return;
 
-    setDisconnecting(true);
-    setError("");
+//     setDisconnecting(true);
+//     setError("");
 
-    try {
-      const res = await fetch("/api/integrations/stripe", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workspaceId: id }),
-      });
-      const data = await res.json();
+//     try {
+//       const res = await fetch("/api/integrations/stripe", {
+//         method: "DELETE",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ workspaceId: id }),
+//       });
+//       const data = await res.json();
 
-      if (!res.ok) {
-        const message = data.error || "Failed to disconnect";
-        toast.error(message);
-        setError(message);
-        return;
-      }
+//       if (!res.ok) {
+//         const message = data.error || "Failed to disconnect";
+//         toast.error(message);
+//         setError(message);
+//         return;
+//       }
 
-      toast.success("Stripe disconnected");
-      await mutate();
-    } catch (e: any) {
-      const message = e.message || "Failed to disconnect";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setDisconnecting(false);
-    }
-  }
+//       toast.success("Stripe disconnected");
+//       await mutate();
+//     } catch (e: any) {
+//       const message = e.message || "Failed to disconnect";
+//       setError(message);
+//       toast.error(message);
+//     } finally {
+//       setDisconnecting(false);
+//     }
+//   }
 
-  return (
-    <PageWidthWrapper>
-      <SettingsChildrenLayout
-        title="Revenue"
-        description="Get insights into your revenue streams, track performance, and make data-driven decisions to grow your business with our comprehensive revenue analytics tools."
-      >
-        <div className="rounded-3xl bg-neutral-50">
-          <div className="mt-4 rounded-2xl bg-white p-4 sm:p-5">
-            {loading ? (
-              <div className="py-4">
-                <LoadingSpinner className="mx-auto" />
-              </div>
-            ) : connected ? (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="font-display text-[15px] font-medium text-neutral-900">
-                    Stripe connected
-                  </h2>
-                  <p className="mt-1 font-display text-sm text-neutral-500">
-                    Your Stripe account is connected and revenue events will be synced
-                    automatically.
-                  </p>
-                </div>
+//   return (
+//     <PageWidthWrapper>
+//       <SettingsChildrenLayout
+//         title="Revenue"
+//         description="Get insights into your revenue streams, track performance, and make data-driven decisions to grow your business with our comprehensive revenue analytics tools."
+//       >
+//         <div className="rounded-3xl bg-neutral-50">
+//           <div className="mt-4 rounded-2xl bg-white p-4 sm:p-5">
+//             {loading ? (
+//               <div className="py-4">
+//                 <LoadingSpinner className="mx-auto" />
+//               </div>
+//             ) : connected ? (
+//               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+//                 <div>
+//                   <h2 className="font-display text-[15px] font-medium text-neutral-900">
+//                     Stripe connected
+//                   </h2>
+//                   <p className="mt-1 font-display text-sm text-neutral-500">
+//                     Your Stripe account is connected and revenue events will be synced
+//                     automatically.
+//                   </p>
+//                 </div>
 
-                <Button
-                  text="Disconnect"
-                  variant="danger"
-                  className="h-10 w-fit rounded-full px-5 font-display"
-                  onClick={handleDisconnect}
-                  loading={disconnecting}
-                />
-              </div>
-            ) : (
-              <div className="space-y-5">
-                <div>
-                  <h2 className="font-display text-[15px] font-medium text-neutral-900">
-                    Connect your Stripe account
-                  </h2>
-                  <p className="mt-1 font-display text-sm text-neutral-500">
-                    Create a restricted API key in your{" "}
-                    <Link
-                      href={STRIPE_CONNECT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-neutral-800 underline underline-offset-2"
-                    >
-                      Stripe Dashboard
-                    </Link>
-                    , then paste it below.
-                  </p>
-                </div>
+//                 <Button
+//                   text="Disconnect"
+//                   variant="danger"
+//                   className="h-10 w-fit rounded-full px-5 font-display"
+//                   onClick={handleDisconnect}
+//                   loading={disconnecting}
+//                 />
+//               </div>
+//             ) : (
+//               <div className="space-y-5">
+//                 <div>
+//                   <h2 className="font-display text-[15px] font-medium text-neutral-900">
+//                     Connect your Stripe account
+//                   </h2>
+//                   <p className="mt-1 font-display text-sm text-neutral-500">
+//                     Create a restricted API key in your{" "}
+//                     <Link
+//                       href={STRIPE_CONNECT_URL}
+//                       target="_blank"
+//                       rel="noopener noreferrer"
+//                       className="text-neutral-800 underline underline-offset-2"
+//                     >
+//                       Stripe Dashboard
+//                     </Link>
+//                     , then paste it below.
+//                   </p>
+//                 </div>
 
-                <div>
-                  <label className="mb-2 block font-display text-sm font-medium text-neutral-700">
-                    Restricted API Key
-                  </label>
+//                 <div>
+//                   <label className="mb-2 block font-display text-sm font-medium text-neutral-700">
+//                     Restricted API Key
+//                   </label>
 
-                  <Input
-                    placeholder="rk_live_********************************"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="h-11 bg-neutral-50"
-                  />
-                </div>
+//                   <Input
+//                     placeholder="rk_live_********************************"
+//                     value={apiKey}
+//                     onChange={(e) => setApiKey(e.target.value)}
+//                     className="h-11 bg-neutral-50"
+//                   />
+//                 </div>
 
-                <Button
-                  text="Connect"
-                  className="h-11 w-full rounded-full"
-                  onClick={handleConnect}
-                  loading={status === "loading"}
-                  disabled={!apiKey.trim() || status === "loading"}
-                />
-              </div>
-            )}
-          </div>
+//                 <Button
+//                   text="Connect"
+//                   className="h-11 w-full rounded-full"
+//                   onClick={handleConnect}
+//                   loading={status === "loading"}
+//                   disabled={!apiKey.trim() || status === "loading"}
+//                 />
+//               </div>
+//             )}
+//           </div>
 
-          {error && (
-            <p className="mt-3 font-display text-sm text-red-500">{error}</p>
-          )}
-        </div>
-      </SettingsChildrenLayout>
-    </PageWidthWrapper>
-  );
-}
+//           {error && (
+//             <p className="mt-3 font-display text-sm text-red-500">{error}</p>
+//           )}
+//         </div>
+//       </SettingsChildrenLayout>
+//     </PageWidthWrapper>
+//   );
+// }
 
-export const STRIPE_CONNECT_URL =
-  "https://dashboard.stripe.com/apikeys/create" +
-  "?name=Analytics" +
-  "&permissions[]=rak_account_read" +
-  "&permissions[]=rak_charge_read" +
-  "&permissions[]=rak_subscription_read" +
-  "&permissions[]=rak_customer_read" +
-  "&permissions[]=rak_payment_intent_read" +
-  "&permissions[]=rak_checkout_session_read" +
-  "&permissions[]=rak_invoice_read" +
-  "&permissions[]=rak_webhook_write" +
-  "&permissions[]=rak_product_read";
+// export const STRIPE_CONNECT_URL =
+//   "https://dashboard.stripe.com/apikeys/create" +
+//   "?name=Analytics" +
+//   "&permissions[]=rak_account_read" +
+//   "&permissions[]=rak_charge_read" +
+//   "&permissions[]=rak_subscription_read" +
+//   "&permissions[]=rak_customer_read" +
+//   "&permissions[]=rak_payment_intent_read" +
+//   "&permissions[]=rak_checkout_session_read" +
+//   "&permissions[]=rak_invoice_read" +
+//   "&permissions[]=rak_webhook_write" +
+//   "&permissions[]=rak_product_read";
 
 
 // -----------------------------------------------------------------------------------------------------
@@ -1229,3 +1229,222 @@ export const STRIPE_CONNECT_URL =
 //     </PageWidthWrapper>
 //   );
 // }
+
+
+// -----------------------------------------------------------------------------------------------------
+// ---------------------------------version4------------------------------------------------------------.
+// -----------------------------------------------------------------------------------------------------
+"use client";
+import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
+import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
+import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
+import { Button, LoadingSpinner } from "@repo/ui";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  PROVIDERS,
+  Provider,
+  FormState,
+  EMPTY_FORM,
+  buildConnectPayload,
+  isFormValid,
+} from "@/ui/revenue/provider-config";
+import { ProviderSelector } from "@/ui/revenue/provider-selector";
+import { ConnectedState } from "@/ui/revenue/connected-state";
+import { StripeConnectForm } from "@/ui/revenue/stripe-connect-form";
+import { PolarConnectForm } from "@/ui/revenue/polar-connect-form";
+import { LemonSqueezyConnectForm } from "@/ui/revenue/lemonsqueezy-connect-form";
+import { PaddleConnectForm } from "@/ui/revenue/paddle-connect-form";
+import { DodoConnectForm } from "@/ui/revenue/dodo-connect-form";
+import Currency from "./currency";
+
+export default function RevenueSettingsPage() {
+  const { id: workspaceId, currency: savedCurrency, mutate: mutateWorkspace } = useWorkspace();
+  const { integrations, loading, mutate } = useIntegrations();
+  const [provider, setProvider] = useState<Provider>("stripe");
+  const [openPopover, setOpenPopover] = useState(false);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [connecting, setConnecting] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Currency section
+  const [pendingCurrency, setPendingCurrency] = useState<string>(savedCurrency ?? "USD");
+  const [savingCurrency, setSavingCurrency] = useState(false);
+  const currencyChanged = pendingCurrency !== (savedCurrency ?? "USD");
+
+  async function handleSaveCurrency() {
+    if (!currencyChanged || !workspaceId) return;
+    setSavingCurrency(true);
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currency: pendingCurrency }),
+      });
+      if (!res.ok) throw new Error("Failed to update currency");
+      await mutateWorkspace();
+      toast.success(`Currency updated to ${pendingCurrency}`);
+    } catch {
+      toast.error("Failed to update currency. Please try again.");
+      // Revert picker to saved value
+      setPendingCurrency(savedCurrency ?? "USD");
+    } finally {
+      setSavingCurrency(false);
+    }
+  }
+
+  // Clear the form when switching providers so a leftover Stripe key doesn't
+  // accidentally get sent as a Polar access token, etc.
+  useEffect(() => {
+    setForm(EMPTY_FORM);
+    setError("");
+  }, [provider]);
+
+  const active = integrations?.find((i) => i.provider === provider);
+  const selected = PROVIDERS.find((p) => p.value === provider)!;
+
+  async function handleConnect() {
+    setConnecting(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/integrations/${provider}/connect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...buildConnectPayload(provider, form), workspaceId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to connect");
+        setError(data.error || "Failed to connect");
+        return;
+      }
+      toast.success(`${selected.label} connected`);
+      setForm(EMPTY_FORM);
+      await mutate();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setConnecting(false);
+    }
+  }
+
+  async function handleDisconnect() {
+    if (!workspaceId) return;
+    setDisconnecting(true);
+    try {
+      const res = await fetch(`/api/integrations/${provider}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to disconnect");
+        return;
+      }
+      toast.success(`${selected.label} disconnected`);
+      await mutate();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to disconnect");
+    } finally {
+      setDisconnecting(false);
+    }
+  }
+
+  return (
+    <PageWidthWrapper>
+      <SettingsChildrenLayout
+        title="Revenue"
+        description="Connect a payment provider to attribute revenue back to visitors and sessions."
+      >
+        <div className=" rounded-2xl flex flex-col gap-5 bg-white p-5">
+          <ProviderSelector
+            provider={provider}
+            setProvider={setProvider}
+            openPopover={openPopover}
+            setOpenPopover={setOpenPopover}
+          />
+
+          <div >
+            {loading ? (
+              <div className="py-4 text-sm font-medium text-neutral-500">
+                <LoadingSpinner className="mx-auto" />
+              </div>
+            ) : active ? (
+              <ConnectedState
+                label={selected.label}
+                disconnecting={disconnecting}
+                onDisconnect={handleDisconnect}
+              />
+            ) : provider === "stripe" ? (
+              <StripeConnectForm
+                form={form}
+                setForm={setForm}
+                onConnect={handleConnect}
+                connecting={connecting}
+                isValid={isFormValid(provider, form)}
+              />
+            ) : provider === "polar" ? (
+              <PolarConnectForm
+                form={form}
+                setForm={setForm}
+                onConnect={handleConnect}
+                connecting={connecting}
+                isValid={isFormValid(provider, form)}
+              />
+            ) : provider === "lemonsqueezy" ? (
+              <LemonSqueezyConnectForm
+                form={form}
+                setForm={setForm}
+                onConnect={handleConnect}
+                connecting={connecting}
+                isValid={isFormValid(provider, form)}
+                workspaceId={workspaceId}
+              />
+            ) : provider === "paddle" ? (
+              <PaddleConnectForm
+                form={form}
+                setForm={setForm}
+                onConnect={handleConnect}
+                connecting={connecting}
+                isValid={isFormValid(provider, form)}
+              />
+            ) : null}
+          </div>
+        </div>
+
+
+        {error ? <p className="mt-3 text-sm font-display text-red-500">{error}</p> : null}
+      </SettingsChildrenLayout>
+      <SettingsChildrenLayout
+        title="Currency"
+        description="Used for all revenue and payment conversions"
+        className="mt-5"
+      >
+        <div className="flex h-full flex-col gap-6 rounded-2xl bg-white ">
+          <div className="px-6 pt-4">
+            <Currency
+              value={pendingCurrency}
+              onChange={setPendingCurrency}
+              disabled={savingCurrency}
+            />
+          </div>
+
+          <div className="flex justify-end border-t border-neutral-100 pt-2">
+            <div className="px-6 pb-2">
+              <Button
+                text="Save"
+                className="h-9 w-24 text-sm rounded-full font-display"
+                onClick={handleSaveCurrency}
+                loading={savingCurrency}
+                disabled={!currencyChanged || savingCurrency}
+              />
+            </div>
+          </div>
+        </div>
+      </SettingsChildrenLayout>
+    </PageWidthWrapper>
+  );
+}
