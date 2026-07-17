@@ -29,7 +29,9 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     kpiEventName,
   } = params;
 
-  const usingCustomKpi = kpiType === "goal" && !!kpiEventName && event === "revenue";
+  // const usingCustomKpi = kpiType === "goal" && !!kpiEventName && event === "revenue";
+  // const kpiGoalName = usingCustomKpi ? kpiEventName : undefined;
+  const usingCustomKpi = kpiType === "goal" && !!kpiEventName;
   const kpiGoalName = usingCustomKpi ? kpiEventName : undefined;
 
   if (event === "funnel") {
@@ -178,7 +180,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     ...(goalName && { goalName }),  // ← add
     ...(kpiGoalName && { kpiGoalName }),   // ← add
   };
-
+  console.log("tinybird params", tinybirdParams)
   // console.log("tinybird params", tinybirdParams)
   const response = await pipe(tinybirdParams);
 
@@ -207,7 +209,10 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     return {
       ...parsed,
       conversions: item?.conversions ?? 0,
-      revenue: usingCustomKpi && selectedPipe === "v1_group_by" ? (item?.clicks ?? 0) : (item?.revenue ?? 0),
+      // revenue: usingCustomKpi && selectedPipe === "v1_group_by" ? (item?.clicks ?? 0) : (item?.revenue ?? 0),
+      revenue: usingCustomKpi && selectedPipe === "v1_group_by" && event === "revenue"
+        ? (item?.clicks ?? 0)
+        : (item?.revenue ?? 0),
       conversion_rate: item?.conversion_rate ?? 0,
       bounce_rate: item?.bounce_rate ?? 0,
       avg_session_duration: item?.avg_session_duration ?? 0,

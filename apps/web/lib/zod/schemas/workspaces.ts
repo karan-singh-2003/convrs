@@ -2,6 +2,7 @@ import { z } from "zod";
 import { RESERVED_SLUGS, DEFAULT_REDIRECTS, validSlugRegex } from "@repo/utils";
 import slugify from "@sindresorhus/slugify";
 import { WorkspaceRole } from "@repo/db/client";
+import { KpiType } from "@prisma/client";
 
 export const roleSchema = z
   .enum(Object.values(WorkspaceRole))
@@ -113,7 +114,8 @@ export const WorkspaceSchema = z
       .string()
       .default("USD")
       .describe("The display currency for revenue metrics (ISO 4217 code, e.g. 'USD', 'INR')."),
-
+    kpiType: z.string(),
+    kpiEventName: z.string(),
     users: z
       .array(
         z.object({

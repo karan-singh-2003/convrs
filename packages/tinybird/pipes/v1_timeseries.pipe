@@ -502,24 +502,73 @@ SQL >
     LEFT JOIN timeseries_revenue_data USING interval
 
 
+
+
+
+
+
+NODE timeseries_kpi_goal_data
+SQL >
+
+    %
+    SELECT
+        {% if granularity == "hour" %}
+            toStartOfHour(dce.timestamp, {{ String(timezone, 'UTC') }})
+        {% elif granularity == "month" %}
+            toDateTime64(toStartOfMonth(dce.timestamp, {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
+        {% else %}
+            toDateTime64(toStartOfDay(dce.timestamp, {{ String(timezone, 'UTC') }}), 3)
+        {% end %} AS interval,
+        count() as goal_count
+    FROM dub_click_events_mv AS dce
+    WHERE
+        dce.event_type = 'goals'
+        {% if defined(kpiGoalName) %} AND dce.event_name = {{ String(kpiGoalName) }} {% end %}
+        {% if defined(workspaceId) %} AND dce.workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(start) %} AND dce.timestamp >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %} AND dce.timestamp <= {{ DateTime64(end) }} {% end %}
+    GROUP BY interval
+
+
 NODE timeseries_composite
 SQL >
 
+    %
     SELECT
         c.groupByField AS groupByField,
         c.clicks AS clicks,
         c.new_visitors AS new_visitors,
         c.returning_visitors AS returning_visitors,
+        {% if defined(kpiGoalName) %}
+        coalesce(g.goal_count, 0) AS revenue,
+        0 AS new_revenue,
+        0 AS refund_amount,
+        {% else %}
         coalesce(r.revenue, 0) AS revenue,
         coalesce(r.new_revenue, 0) AS new_revenue,
         coalesce(r.refund_amount, 0) AS refund_amount,
+        {% end %}
+        {% if defined(kpiGoalName) %}
+        if(c.clicks > 0, coalesce(g.goal_count, 0) / c.clicks, 0) AS revenue_per_visitor,
+        if(c.clicks > 0, (coalesce(g.goal_count, 0) > 0) * 100.0 / c.clicks, 0) AS conversion_rate,
+        {% else %}
         if(c.clicks > 0, coalesce(r.revenue, 0) / c.clicks, 0) AS revenue_per_visitor,
         if(c.clicks > 0, (coalesce(r.revenue, 0) > 0) * 100.0 / c.clicks, 0) AS conversion_rate,
+        {% end %}
         coalesce(s.avg_session_duration, 0) AS avg_session_duration,
         coalesce(s.bounce_rate, 0) AS bounce_rate
     FROM (SELECT groupByField, clicks, new_visitors, returning_visitors FROM timeseries_clicks) AS c
     LEFT JOIN (SELECT groupByField, revenue, new_revenue, refund_amount FROM timeseries_revenue) AS r
         USING groupByField
+    {% if defined(kpiGoalName) %}
+    LEFT JOIN (
+        SELECT
+            formatDateTime(interval, '%FT%T.000%z') AS groupByField,
+            goal_count
+        FROM timeseries_kpi_goal_data
+    ) AS g
+        USING groupByField
+    {% end %}
     LEFT JOIN (
         SELECT
             formatDateTime(interval, '%FT%T.000%z') AS groupByField,
@@ -528,6 +577,7 @@ SQL >
         FROM session_stats
     ) AS s
         USING groupByField
+
 
 NODE timeseries_conversion_rate
 SQL >

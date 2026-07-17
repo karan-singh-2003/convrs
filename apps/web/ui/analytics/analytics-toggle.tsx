@@ -270,12 +270,14 @@ export function AnalyticsToggle({
                     null}
                 </div>
               </div>
-              <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
-                <div className="rounded-full border border-neutral-200 p-2">
-                  <RefreshCcw size={16} />
+              {mode !== "public" && (
+                <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
+                  <div className="rounded-full border border-neutral-200 p-2">
+                    <RefreshCcw size={16} />
+                  </div>
+                  {filterSelect}
                 </div>
-                {filterSelect}
-              </div>
+              )}
             </div>
           </div>
         </div>

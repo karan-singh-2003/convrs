@@ -20,8 +20,8 @@ export default function ScriptSettingsPage() {
           <ScriptSettingsContent />
           {/* <TrackingFilters /> */}
           <Timezone />
-          <AdditionalDomains />
-          <ManagedProxy/>
+          {/* <AdditionalDomains />
+          <ManagedProxy/> */}
           <KPI/>
         </div>
       </SettingsChildrenLayout>

@@ -112,7 +112,7 @@ export function AnalyticsTabs({
     [showConversions]
   );
 
-  console.log(hasRevenueProvider, "hasRevenueProvider")
+
 
   return (
     <div className="w-full overflow-x-hidden">
@@ -136,10 +136,14 @@ export function AnalyticsTabs({
 
             const cardContent = (
               <>
-                <div className="flex items-start gap-2.5 text-[12.5px] text-neutral-500 sm:h-5 sm:items-center sm:text-[14.5px]">
-                  <span className="font-poppins font-medium">{label}</span>
+                <div className="flex items-start gap-2.5 text-[12.5px] text-neutral-500 sm:items-center sm:text-[14.5px] min-w-0">
+                  <span
+                    className="font-poppins font-medium truncate min-w-0"
+                    title={label}
+                  >
+                    {label}
+                  </span>
                 </div>
-
                 <div className="flex items-start flex-col gap-y-1 justify-between">
                   <div className="flex md:h-8 items-center">
                     {hasData ? (

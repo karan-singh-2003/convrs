@@ -202,9 +202,17 @@ function SummaryRow({
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-export default function Dashboard() {
+export default function Dashboard({
+  workspaceId: workspaceIdProp,
+  projectToken: projectTokenProp,
+}: {
+  workspaceId?: string;
+  projectToken?: string;
+} = {}) {
   const [activeSection, setActiveSection] = useState<SectionKey | null>(null);
-  const { id: workspaceId, projectToken } = useWorkspace();
+  const workspace = useWorkspace();
+  const workspaceId = workspaceIdProp ?? workspace.id;
+  const projectToken = projectTokenProp ?? workspace.projectToken;
   const {
     count: liveCount,
     pages: livePages,
