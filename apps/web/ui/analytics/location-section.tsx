@@ -13,7 +13,7 @@ import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
-  const { selectedTab,currency } = useContext(AnalyticsContext);
+  const { selectedTab, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
   const [tab, setTab] = useState<
@@ -21,6 +21,7 @@ export function LocationSection() {
   >("countries");
 
   const { data } = useAnalyticsFilterOption(tab);
+
   const { data: allData } = useAnalyticsFilterOption(tab, {
     omitGroupByFilterKey: true,
   });
@@ -82,6 +83,41 @@ export function LocationSection() {
   };
 
   //  Safe mapping
+  // const mapData = (arr: any[]) =>
+  //   arr
+  //     ?.filter(isValidLocation)
+  //     ?.map((d) => ({
+  //       icon:
+  //         tab === "continents" ? (
+  //           <h1 className="size-3 sm:size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
+  //             {CONTINENTS[d.continent]?.[0] || "🌍"}
+  //           </h1>
+  //         ) : (
+  //           // <img
+  //           //   alt={d.country}
+  //           //   src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
+  //           //   className="size-3 sm:size-4 shrink-0"
+  //           // />
+  //           <img
+  //             src={`https://flagcdn.com/w20/${d.country.toLowerCase()}.png`}
+  //             alt={d.countryCode}
+  //             width="20"
+  //           />
+  //         ),
+
+  //       title:
+  //         tab === "continents"
+  //           ? CONTINENTS[d.continent]
+  //           : tab === "countries"
+  //             ? COUNTRIES[d.country]
+  //             : `${tab === "cities" ? `${d.city}, ` : ""}${REGIONS[d.region] || d.region?.split("-")[1]
+  //             }`,
+
+  //       filterValue: d[singularTabName],
+  //       value: d[dataKey] || 0,
+  //       revenue:d["revenue"]||0
+  //     }))
+  //     ?.sort((a, b) => b.value - a.value) || [];
   const mapData = (arr: any[]) =>
     arr
       ?.filter(isValidLocation)
@@ -89,21 +125,15 @@ export function LocationSection() {
         icon:
           tab === "continents" ? (
             <h1 className="size-3 sm:size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
-              {CONTINENTS[d.continent]?.[0] || "🌍"}
+              {CONTINENTS[d.continent]?.[0] || ""}
             </h1>
           ) : (
-            // <img
-            //   alt={d.country}
-            //   src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
-            //   className="size-3 sm:size-4 shrink-0"
-            // />
             <img
               src={`https://flagcdn.com/w20/${d.country.toLowerCase()}.png`}
               alt={d.countryCode}
-              width="20"
+              width={20}
             />
           ),
-
         title:
           tab === "continents"
             ? CONTINENTS[d.continent]
@@ -111,12 +141,10 @@ export function LocationSection() {
               ? COUNTRIES[d.country]
               : `${tab === "cities" ? `${d.city}, ` : ""}${REGIONS[d.region] || d.region?.split("-")[1]
               }`,
-
         filterValue: d[singularTabName],
-        value: d[dataKey] || 0,
-      }))
-      ?.sort((a, b) => b.value - a.value) || [];
-
+        count: d.count || 0,
+        revenue: d.revenue || 0,
+      })) || [];
   return (
     <AnalyticsCard
       tabs={[
@@ -132,7 +160,7 @@ export function LocationSection() {
       isFilterActive={isFilterActive}
       onClearFilter={onClearFilter}
     >
-      {({ limit, setShowModal }) =>
+      {({ limit, setShowModal, metric }) =>
         data ? (
           mapData(data).length > 0 ? (
             <BarList
@@ -141,9 +169,8 @@ export function LocationSection() {
               data={mapData(data)}
               allData={mapData(allData || [])}
               unit={selectedTab}
-              maxValue={
-                Math.max(...mapData(data).map((d) => d.value ?? 0)) || 0
-              }
+              metric={metric}
+              maxValue={Math.max(...mapData(data).map((d) => (metric === "revenue" ? d.revenue : d.count) ?? 0)) || 0}
               barBackground="bg-blue-100"
               hoverBackground="hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent hover:border-blue-500"
               filterSelectedBackground="bg-blue-600"

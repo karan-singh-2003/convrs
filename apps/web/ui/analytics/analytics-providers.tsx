@@ -249,7 +249,7 @@ export default function AnalyticsProvider({
   const currentQueryUrl = useMemo(() => {
     if (!baseApiPath) return null;
     return `${baseApiPath}?${editQueryString(queryString, {
-      event: fetchCompositeStats ? "composite" : "clicks",
+      event: fetchCompositeStats ? "composite" : "composite",
     })}`;
   }, [baseApiPath, queryString, fetchCompositeStats]);
 
@@ -281,7 +281,7 @@ export default function AnalyticsProvider({
           params.delete("interval");
 
           // Ensure event is set
-          params.set("event", fetchCompositeStats ? "composite" : "clicks");
+          params.set("event", fetchCompositeStats ? "composite" : "composite");
 
           return `${baseApiPath}?${params.toString()}`;
         }
@@ -294,7 +294,7 @@ export default function AnalyticsProvider({
         const params = new URLSearchParams(queryString);
         params.set("start", prevStart.toISOString());
         params.set("end", prevEnd.toISOString());
-        params.set("event", fetchCompositeStats ? "composite" : "clicks");
+        params.set("event", fetchCompositeStats ? "composite" : "composite");
 
         return `${baseApiPath}?${params.toString()}`;
       }

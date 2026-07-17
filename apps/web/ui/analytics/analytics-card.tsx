@@ -12,7 +12,7 @@ import {
 } from "@repo/ui";
 
 import { cn } from "@repo/utils";
-import { ChevronsUpDown } from "lucide-react";
+import { ArrowDownUp, ChevronsUpDown } from "lucide-react";
 import {
   Dispatch,
   ReactNode,
@@ -50,6 +50,7 @@ export function AnalyticsCard<T extends string>({
     limit?: number;
     event?: EventType;
     setShowModal: (show: boolean) => void;
+    metric: "clicks" | "revenue";
   }) => ReactNode;
   className?: string;
 }) {
@@ -57,6 +58,8 @@ export function AnalyticsCard<T extends string>({
 
   const [showModal, setShowModal] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  // Per-card toggle: which metric drives sort order + primary value in BarList
+  const [metric, setMetric] = useState<"clicks" | "revenue">("clicks");
 
   const selectedTab = tabs.find(({ id }) => id === selectedTabId) || tabs[0];
   const SelectedTabIcon = selectedTab.icon;
@@ -74,11 +77,6 @@ export function AnalyticsCard<T extends string>({
         setShowModal={setShowModal}
         className="max-w-lg px-0"
       >
-        {/* <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-2">
-          <h1 className=" text-[15px] text-neutral-700 font-medium md:text-lg font-display md:font-semibold">
-            {selectedTab?.label}
-          </h1>
-        </div> */}
         {subTabs && selectedSubTabId && onSelectSubTab && (
           <SubTabs
             subTabs={subTabs}
@@ -86,7 +84,7 @@ export function AnalyticsCard<T extends string>({
             onSelectTab={onSelectSubTab}
           />
         )}
-        {children({ setShowModal, event })}
+        {children({ setShowModal, event, metric })}
       </Modal>
       <div
         className={cn(
@@ -95,7 +93,6 @@ export function AnalyticsCard<T extends string>({
         )}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
-          {/* Main tabs */}
           {isMobile ? (
             <Popover
               openPopover={isOpen}
@@ -145,9 +142,18 @@ export function AnalyticsCard<T extends string>({
             />
           )}
 
-          {/* <div className="flex items-center gap-1 pr-2 text-neutral-500">
-            <p className="text-xs uppercase">{event}</p>
-          </div> */}
+          <button
+            type="button"
+            onClick={() =>
+              setMetric((m) => (m === "clicks" ? "revenue" : "clicks"))
+            }
+            className="flex items-center gap-1 pr-2 text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
+            <p className="text-[14px] font-medium font-display flex items-center gap-1 capitalize">
+              {metric}
+              <ArrowDownUp size={14} />
+            </p>
+          </button>
         </div>
         <AnimatedSizeContainer
           height
@@ -166,6 +172,7 @@ export function AnalyticsCard<T extends string>({
             limit: effectiveExpandLimit,
             event,
             setShowModal,
+            metric,
           })}
         </div>
         {showViewAll && (

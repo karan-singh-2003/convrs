@@ -27,6 +27,7 @@ export function DeviceSection() {
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
+
   useEffect(() => {
     setSelectedItems([]);
   }, [tab]);
@@ -74,49 +75,28 @@ export function DeviceSection() {
       isFilterActive={isFilterActive}
       onClearFilter={onClearFilter}
     >
-      {({ limit, setShowModal }) =>
+      {({ limit, setShowModal, metric }) =>
         data ? (
           data.length > 0 ? (
             <BarList
               tab={singularTabName}
-              data={
-                data
-                  ?.map((d) => ({
-                    icon: (
-                      <DeviceIcon
-                        display={d[singularTabName]}
-                        tab={tab}
-                        className="h-3 w-3 sm:h-4 sm:w-4"
-                      />
-                    ),
-                    title:
-                      tab === "triggers"
-                        ? TRIGGER_DISPLAY[d.trigger].title
-                        : d[singularTabName],
-                    filterValue: d[singularTabName],
-                    value: d[dataKey] || 0,
-                  }))
-                  ?.sort((a, b) => b.value - a.value) || []
-              }
-              allData={allData
-                ?.map((d) => ({
-                  icon: (
-                    <DeviceIcon
-                      display={d[singularTabName]}
-                      tab={tab}
-                      className="h-3 w-3 sm:h-4 sm:w-4"
-                    />
-                  ),
-                  title:
-                    tab === "triggers"
-                      ? TRIGGER_DISPLAY[d.trigger].title
-                      : d[singularTabName],
-                  filterValue: d[singularTabName],
-                  value: d[dataKey] || 0,
-                }))
-                ?.sort((a, b) => b.value - a.value)}
+              data={data?.map((d) => ({
+                icon: (<DeviceIcon display={d[singularTabName]} tab={tab} className="h-3 w-3 sm:h-4 sm:w-4" />),
+                title: tab === "triggers" ? TRIGGER_DISPLAY[d.trigger].title : d[singularTabName],
+                filterValue: d[singularTabName],
+                count: d.count || 0,
+                revenue: d.revenue || 0,
+              })) || []}
+              allData={allData?.map((d) => ({
+                icon: (<DeviceIcon display={d[singularTabName]} tab={tab} className="h-3 w-3 sm:h-4 sm:w-4" />),
+                title: tab === "triggers" ? TRIGGER_DISPLAY[d.trigger].title : d[singularTabName],
+                filterValue: d[singularTabName],
+                count: d.count || 0,
+                revenue: d.revenue || 0,
+              }))}
               unit={selectedTab}
-              maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
+              metric={metric}
+              maxValue={Math.max(...data.map((d) => (metric === "revenue" ? d.revenue : d.count) ?? 0)) || 0}
               barBackground="bg-green-100"
               hoverBackground="hover:bg-gradient-to-r hover:from-green-50 hover:to-transparent hover:border-green-500"
               filterSelectedBackground="bg-green-600"

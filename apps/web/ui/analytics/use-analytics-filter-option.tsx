@@ -73,12 +73,15 @@ export function useAnalyticsFilterOption(
     }
   );
 
+  console.log("response in analytics filter option",response)
+
   return {
     data:
       response?.data?.map((d) => ({
         ...d,
-        count: (d["events"] ?? d[selectedTab]) as number | undefined,
-        saleAmount: d.revenue as number | undefined,
+        count: (d["clicks"] ?? d[selectedTab]) as number | undefined,
+        saleAmount: d["revenue"] as number | undefined,
+        revenue:d["revenue"] as number | undefined,
       })) ?? null,
     loading: !response?.data || isLoading,
   };

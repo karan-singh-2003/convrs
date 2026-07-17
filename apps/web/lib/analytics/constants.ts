@@ -176,6 +176,7 @@ export const EVENT_TYPES = [
   "goals",
   "funnel",
   "revenue",
+  "composite"
 ] as const;
 
 export const ANALYTICS_VIEWS = ["timeseries", "funnel"] as const;

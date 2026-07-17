@@ -32,8 +32,12 @@ import { WorkspaceDropdown } from "../layout/sidebar/workspace-dropdown";
 
 export function AnalyticsToggle({
   page = "analytics",
+  mode = "private",
+  workspaceName
 }: {
   page?: "analytics" | "events";
+  mode?: "private" | "public";
+  workspaceName?: string;
 }) {
   const { slug, programSlug } = useParams();
   const { plan, createdAt } = useWorkspace();
@@ -52,7 +56,7 @@ export function AnalyticsToggle({
     interval,
   } = useContext(AnalyticsContext);
 
-  console.log("start and end and interval", start, end, interval)
+  
 
   const scrolled = useScroll(120);
 
@@ -215,9 +219,16 @@ export function AnalyticsToggle({
               )}
             >
               <div className="flex items-center gap-2">
-                <div>
-                  <WorkspaceDropdown />
-                </div>
+                {mode !== "public" && (
+                  <div>
+                    <WorkspaceDropdown />
+                  </div>
+                )}
+                {mode === "public" && (
+                  <div className="border px-4 font-alexandria text-neutral-500 text-sm py-2 border-neutral-200 rounded-2xl">
+                    <h1>{workspaceName}</h1>
+                  </div>
+                )}
                 <div
                   className={cn(
                     "flex w-full grow flex-col items-stretch  gap-2 sm:flex-row sm:items-center md:w-auto",

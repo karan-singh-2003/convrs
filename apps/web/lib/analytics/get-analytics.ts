@@ -141,6 +141,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       prop_key: z.string().optional(),
       groupByField: z.string().optional(),
       clicks: z.number().nullable().default(0),
+      conversions: z.number().nullable().default(0),
       bounce_rate: z.number().nullable().default(0),
       avg_session_duration: z.number().nullable().default(0),
       revenue: z.number().nullable().default(0),
@@ -205,6 +206,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     });
     return {
       ...parsed,
+      conversions: item?.conversions ?? 0,
       revenue: usingCustomKpi && selectedPipe === "v1_group_by" ? (item?.clicks ?? 0) : (item?.revenue ?? 0),
       conversion_rate: item?.conversion_rate ?? 0,
       bounce_rate: item?.bounce_rate ?? 0,

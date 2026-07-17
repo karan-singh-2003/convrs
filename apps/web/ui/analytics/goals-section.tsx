@@ -45,7 +45,7 @@ export function LowerGrid() {
 
   const onApplyFilterValues = useCallback(
     (values: string[]) => {
- 
+
       if (values.length === 0) {
         queryParams({ del: singularTabName });
       } else {
@@ -74,10 +74,11 @@ export function LowerGrid() {
         ?.map((d) => ({
           title: d[singularTabName] ?? d.goal,
           filterValue: d[singularTabName] ?? d.goal,
-          value: d[dataKey] || 0,
+          count: d.clicks || 0,
+          revenue: d.revenue || 0,
         }))
-        .sort((a, b) => b.value - a.value) ?? [],
-    [data, singularTabName, dataKey]
+        .sort((a, b) => b.count - a.count) ?? [],
+    [data, singularTabName]
   );
 
   const transformedAllData = useMemo(
@@ -86,10 +87,10 @@ export function LowerGrid() {
         ?.map((d) => ({
           title: d[singularTabName] ?? d.goal,
           filterValue: d[singularTabName] ?? d.goal,
-          value: d[dataKey] || 0,
-        }))
-        .sort((a, b) => b.value - a.value) ?? [],
-    [allData, singularTabName, dataKey]
+          count: d.clicks || 0,
+          revenue: d.revenue || 0,
+        })) ?? [],
+    [allData, singularTabName]
   );
 
   const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();

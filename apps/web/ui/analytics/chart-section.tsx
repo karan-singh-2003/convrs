@@ -259,7 +259,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     saleUnit,
     view,
   } = useContext(AnalyticsContext);
-  const { integrations, loading, error } = useIntegrations();
+  const { integrations, loading, error } = useIntegrations(workspaceId);
 
   const hasRevenueProvider = integrations.length > 0;
   const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();

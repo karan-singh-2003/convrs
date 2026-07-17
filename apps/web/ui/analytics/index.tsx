@@ -11,12 +11,12 @@ import { SourcesSection } from "./sources-section";
 import { useContext } from "react";
 import { LoadingSpinner } from "@repo/ui";
 
-export default function Analytics({ mode, workspaceId }) {
+export default function Analytics({ mode, workspaceId, workspaceName }) {
   return (
     <AnalyticsProvider
       workspaceId={mode === "public" ? workspaceId : undefined}
     >
-      <AnalyticsContent mode={mode} workspaceId={workspaceId} />
+      <AnalyticsContent mode={mode} workspaceId={workspaceId} workspaceName={workspaceName} />
     </AnalyticsProvider>
   );
 }
@@ -24,9 +24,11 @@ export default function Analytics({ mode, workspaceId }) {
 function AnalyticsContent({
   mode,
   workspaceId,
+  workspaceName
 }: {
   mode: "private" | "public";
   workspaceId: string;
+  workspaceName: string;
 }) {
   const { selectedTab, totalEventsLoading } = useContext(AnalyticsContext);
 
@@ -42,19 +44,19 @@ function AnalyticsContent({
     <>
       <div className="my-2 space-y-4">
         <div className="max-w-screen-lg mx-auto overflow-hidden rounded-md py-3 text-sm">
-          <AnalyticsToggle />
+          <AnalyticsToggle mode={mode}  workspaceName={workspaceName} />
         </div>
 
         <div className="space-y-[4rem]">
           <ChartSection mode={mode} workspaceId={workspaceId} />
           <StatsGrid />
         </div>
-{/* 
+
         {selectedTab !== "revenue" && (
           <div className="max-w-screen-lg mx-auto">
             <LowerGrid />
           </div>
-        )} */}
+        )}
       </div>
     </>
   );

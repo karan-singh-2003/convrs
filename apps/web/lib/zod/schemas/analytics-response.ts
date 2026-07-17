@@ -25,7 +25,20 @@ const analyticsTriggersResponse = z.object({
     "The total amount of sales from this trigger method, in cents"
   ),
 });
-
+const compositeMetricsFields = {
+  conversions: z.coerce
+    .number()
+    .describe("The number of conversions (goal completions) for this dimension")
+    .default(0),
+  conversion_rate: z.coerce
+    .number()
+    .describe("The conversion rate for this dimension")
+    .default(0),
+  revenue_per_visitor: z.coerce
+    .number()
+    .describe("Revenue per visitor for this dimension")
+    .default(0),
+};
 export const analyticsResponse = {
   count: z.object({
     clicks: z.coerce
@@ -60,7 +73,7 @@ export const analyticsResponse = {
       .transform((val) => val ?? 0),
     new_visitors: z.coerce.number().describe("The total number of new visitors").default(0).transform((val) => val ?? 0),
     returning_visitors: z.coerce.number().describe("The total number of returning visitors").default(0).transform((val) => val ?? 0),
-    refund_amound:z.coerce.number().describe("The total amount of refunded sales, in cents").default(0).transform((val) => val ?? 0),
+    refund_amound: z.coerce.number().describe("The total amount of refunded sales, in cents").default(0).transform((val) => val ?? 0),
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales, in cents"
     ),
@@ -112,6 +125,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this continent, in cents"
     ),
+    ...compositeMetricsFields,
   }),
 
   countries: z.object({
@@ -137,6 +151,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this country, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   regions: z.object({
@@ -164,6 +179,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this region, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   cities: z.object({
@@ -187,6 +203,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this city, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   devices: z.object({
@@ -206,6 +223,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this device, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   browsers: z.object({
@@ -225,6 +243,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this browser, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   os: z.object({
@@ -235,6 +254,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this OS, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   triggers: analyticsTriggersResponse,
@@ -259,6 +279,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this referer, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   referer_urls: z.object({
@@ -282,6 +303,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this referer to this URL, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_links: z.object({
@@ -321,6 +343,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this link, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_urls: z.object({
@@ -336,6 +359,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this URL, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_base_urls: z.object({
@@ -357,6 +381,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this base URL, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   utm_sources: z.object({
@@ -376,6 +401,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales with this UTM source, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   utm_mediums: z.object({
@@ -395,6 +421,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales with this UTM medium, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   utm_campaigns: z.object({
@@ -414,6 +441,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales with this UTM campaign, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   utm_terms: z.object({
@@ -433,6 +461,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales with this UTM term, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   utm_contents: z.object({
@@ -452,6 +481,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales with this UTM content, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_folders: z.object({
@@ -466,6 +496,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this link folder, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_link_tags: z.object({
@@ -476,6 +507,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this link tag, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_domains: z.object({
@@ -486,6 +518,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this domain, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_partners: z.object({
@@ -506,6 +539,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this partner for this program, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   hostname: z.object({
@@ -525,6 +559,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this hostname, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   page: z.object({
@@ -538,6 +573,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this page, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   entrypage: z.object({
@@ -557,6 +593,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this entry page, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   exitlink: z.object({
@@ -576,6 +613,7 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this exit link, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 
   top_groups: z.object({
@@ -592,5 +630,6 @@ export const analyticsResponse = {
     saleAmount: centsSchemaWithDefault.describe(
       "The total amount of sales from this group, in cents"
     ),
+     ...compositeMetricsFields,
   }),
 } as const;

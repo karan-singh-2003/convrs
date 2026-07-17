@@ -15,7 +15,7 @@ const DashboardPage = () => {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
-  const { usageLimit, usage, subscriptionStatus, id, loading } = useWorkspace();
+  const { usageLimit, usage, subscriptionStatus, id, loading, name } = useWorkspace();
   const { integrations } = useIntegrations();
 
   const { hasAttributedPayment } = useAttributionStatus(id);
@@ -71,7 +71,7 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="relative">
-              <Analytics mode="private" workspaceId={id} />
+              <Analytics mode="private" workspaceId={id} workspaceName={name} />
 
               <div className="relative">
                 <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-neutral-200 bg-neutral-50  shadow-xl font-display">

@@ -41,7 +41,7 @@ export default async function SharedAnalyticsPage({ params }: PageProps) {
         <nav className="mx-auto flex w-full max-w-screen-lg items-center justify-between gap-4 px-4 md:px-0">
           <div className="flex items-center gap-2.5 font-display text-sm font-medium text-neutral-600">
             <h1 className="font-semibold font-poppins px-1 text-[14.5px]">
-                {workspace.name}
+              {/* {workspace.name} */} Convrs
             </h1>
             {/* <h1 className="text-[13px] font-medium text-neutral-500 bg-neutral-100 px-2 py-1 rounded-full">
               {workspace.name}{" "}
@@ -56,8 +56,8 @@ export default async function SharedAnalyticsPage({ params }: PageProps) {
 
       {/* Analytics (read-only mode) */}
 
-      <div className="pt-24 ">
-        <Analytics mode="public" workspaceId={workspace.id} />
+      <div className="pt-0 ">
+        <Analytics mode="public" workspaceId={workspace.id} workspaceName={workspace.name} />
       </div>
     </div>
   );
