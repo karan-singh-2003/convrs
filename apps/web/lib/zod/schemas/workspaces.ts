@@ -115,7 +115,7 @@ export const WorkspaceSchema = z
       .default("USD")
       .describe("The display currency for revenue metrics (ISO 4217 code, e.g. 'USD', 'INR')."),
     kpiType: z.string(),
-    kpiEventName: z.string(),
+    kpiEventName: z.string().nullable(),
     users: z
       .array(
         z.object({

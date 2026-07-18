@@ -6,6 +6,9 @@ import { cn } from "@repo/utils";
 import { Cog, Globe, Settings2, Smile } from "lucide-react";
 import { MainNav } from "@/ui/layout/sidebar/main-nav";
 import { AppSidebar } from "@/ui/layout/sidebar/app-sidebar";
+import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
+import useWorkspace from "@/lib/swr/use-workspace";
+import { ThemeScope } from "@/styles/theme-scope";
 
 function AnalyticsIcon() {
   return (
@@ -48,7 +51,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { projectToken } = useWorkspace();
   const { slug } = useParams<{ slug: string }>();
+  const { count } = useLiveVisitors(projectToken || "")
 
   const items = [
     {
@@ -75,11 +80,11 @@ export default function DashboardLayout({
   ];
 
   return (
-    <>
+    <ThemeScope>
 
       <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
         <div className="flex items-center gap-1.5 border border-neutral-200 rounded-2xl bg-neutral-100 p-1 py-1.5">
-          {items.map(({ href, icon: Icon, exact }) => {
+          {items.map(({ href, icon: Icon, exact, label }) => {
             const active = exact
               ? pathname === href
               : pathname.startsWith(href);
@@ -89,13 +94,20 @@ export default function DashboardLayout({
                 key={href}
                 href={href}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
+                  "flex h-10 items-center justify-center gap-1 rounded-xl transition-all duration-200",
+                  label === "Realtime" ? "w-auto px-2" : "w-10",
                   active
                     ? "bg-white text-neutral-600"
                     : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-600"
                 )}
               >
                 <Icon className="h-[26px] w-[26px]" />
+
+                {label === "Realtime" && count > 0 && (
+                  <span className="font-alexandria text-lg ml-1 text-neutral-600">
+                    {count}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -103,6 +115,6 @@ export default function DashboardLayout({
       </div>
 
       <MainNav sidebar={AppSidebar}>{children}</MainNav>
-    </>
+    </ThemeScope>
   );
 }

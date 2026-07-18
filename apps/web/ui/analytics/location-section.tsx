@@ -9,12 +9,19 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
+  const { kpiEventName, kpiType } = useWorkspace()
+
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+
+  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
 
   const [tab, setTab] = useState<
     "countries" | "cities" | "regions" | "continents"
@@ -186,6 +193,9 @@ export function LocationSection() {
               onRowFilterItem={(val) => onApplyFilterValues([val])}
               {...(limit && { limit })}
               currency={currency}
+              kpiLabel={kpiLabel}      // NEW
+              isGoalKpi={isGoalKpi}
+              kpiConfigured={kpiConfigured}
             />
           ) : (
             <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

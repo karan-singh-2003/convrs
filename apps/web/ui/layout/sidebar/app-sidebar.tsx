@@ -45,6 +45,7 @@ const NAV_AREAS = {
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
           { title: "Billing", href: `/${slug}/settings/billing` },
+          { title: "Theme", href: `/${slug}/settings/theme` },
           ...(premiumAccess
             ? [
               { title: "Revenue", href: `/${slug}/settings/revenue` },

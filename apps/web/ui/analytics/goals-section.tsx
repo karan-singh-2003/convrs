@@ -15,13 +15,20 @@ import { AnalyticsContext } from "./analytics-providers";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { useGoalPropertiesModal } from "../modals/goal-property-modal";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export function LowerGrid() {
   const { queryParams, searchParams } = useRouterStuff();
   const { selectedTab, totalEvents } = useContext(AnalyticsContext);
+  const { kpiEventName, kpiType } = useWorkspace()
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"goals">("goals");
+
+
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+
 
   const { data } = useAnalyticsFilterOption(tab);
   const { data: allData } = useAnalyticsFilterOption(tab, {
@@ -94,6 +101,7 @@ export function LowerGrid() {
   );
 
   const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();
+  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
   return (
     <>
 
@@ -133,6 +141,9 @@ export function LowerGrid() {
                 onApplyFilterValues={onApplyFilterValues}
                 onExpandRow={(filterValue) => openGoalPropertiesModal(filterValue)}
                 {...(limit && { limit })}
+                kpiLabel={kpiLabel}      // NEW
+                isGoalKpi={isGoalKpi}
+                kpiConfigured={kpiConfigured}
               />
             ) : (
               <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

@@ -8,17 +8,21 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export function PagesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
-
+  const { kpiEventName, kpiType } = useWorkspace()
   const [tab, setTab] = useState<
     "hostname" | "page" | "entrypage" | "exitlink"
   >("hostname");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
 
   const { data } = useAnalyticsFilterOption({
     groupBy: tab,
@@ -62,6 +66,8 @@ export function PagesSection() {
     setSelectedItems([]);
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
+
+  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
 
   return (
     <AnalyticsCard
@@ -114,6 +120,9 @@ export function PagesSection() {
                 onRowFilterItem={(val) => onApplyFilterValues([val])}
                 {...(limit && { limit })}
                 currency={currency}
+                kpiLabel={kpiLabel}      // NEW
+                isGoalKpi={isGoalKpi}
+                kpiConfigured={kpiConfigured}
               />
             ) : (
               <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

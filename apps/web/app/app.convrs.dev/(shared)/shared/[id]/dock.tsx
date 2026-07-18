@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { cn } from "@repo/utils";
 import { Globe } from "lucide-react";
+import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 
 function AnalyticsIcon() {
   return (
@@ -35,11 +36,8 @@ function AnalyticsIcon() {
   );
 }
 
-export default function SharedDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function SharedDashboardLayout({ projectToken }: { projectToken: string }) {
+  const { count } = useLiveVisitors(projectToken || "")
   const pathname = usePathname();
   const { id } = useParams<{ id: string }>();
 
@@ -61,7 +59,7 @@ export default function SharedDashboardLayout({
     <>
       <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
         <div className="flex items-center gap-1.5 border border-neutral-200 rounded-2xl bg-neutral-100 p-1 py-1.5">
-          {items.map(({ href, icon: Icon, exact }) => {
+          {items.map(({ href, icon: Icon, exact, label }) => {
             const active = exact
               ? pathname === href
               : pathname.startsWith(href);
@@ -71,20 +69,27 @@ export default function SharedDashboardLayout({
                 key={href}
                 href={href}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
+                  "flex h-10 items-center justify-center gap-1 rounded-xl transition-all duration-200",
+                  label === "Realtime" ? "w-auto px-2" : "w-10",
                   active
                     ? "bg-white text-neutral-600"
                     : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-600"
                 )}
               >
                 <Icon className="h-[26px] w-[26px]" />
+
+                {label === "Realtime" && count > 0 && (
+                  <span className="font-alexandria text-lg ml-1  text-neutral-600">
+                    {count}
+                  </span>
+                )}
               </Link>
             );
           })}
         </div>
       </div>
-
-      {children}
+      {/* 
+      {children} */}
     </>
   );
 }

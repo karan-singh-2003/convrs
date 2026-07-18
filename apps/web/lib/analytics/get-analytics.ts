@@ -131,9 +131,16 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
 
   // v1_count handles composite via count_composite and should not receive
   // eventType='composite', because count_clicks would apply an event_type filter.
-  const eventTypeForPipe =
-    selectedPipe === "v1_count" && event === "composite" ? undefined : event;
 
+  // const eventTypeForPipe =
+  //   selectedPipe === "v1_count" && event === "composite" ? undefined : event;
+  // new one 
+  const eventTypeForPipe =
+    selectedPipe === "v1_count" && event === "composite"
+      ? undefined
+      : usingCustomKpi
+        ? "revenue"
+        : event;
 
   // Create a Tinybird pipe
   const pipe = tb.buildPipe({
@@ -180,7 +187,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     ...(goalName && { goalName }),  // ← add
     ...(kpiGoalName && { kpiGoalName }),   // ← add
   };
-  console.log("tinybird params", tinybirdParams)
+
   // console.log("tinybird params", tinybirdParams)
   const response = await pipe(tinybirdParams);
 
@@ -210,7 +217,10 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       ...parsed,
       conversions: item?.conversions ?? 0,
       // revenue: usingCustomKpi && selectedPipe === "v1_group_by" ? (item?.clicks ?? 0) : (item?.revenue ?? 0),
-      revenue: usingCustomKpi && selectedPipe === "v1_group_by" && event === "revenue"
+      // revenue: usingCustomKpi && selectedPipe === "v1_group_by" && event === "revenue"
+      //   ? (item?.clicks ?? 0)
+      //   : (item?.revenue ?? 0),
+      revenue: usingCustomKpi && selectedPipe === "v1_group_by"
         ? (item?.clicks ?? 0)
         : (item?.revenue ?? 0),
       conversion_rate: item?.conversion_rate ?? 0,

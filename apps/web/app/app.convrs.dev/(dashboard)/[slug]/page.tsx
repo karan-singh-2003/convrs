@@ -1,6 +1,6 @@
 "use client";
 import { Button, LoadingSpinner, Progress } from "@repo/ui";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 import Analytics from "@/ui/analytics";
@@ -10,6 +10,7 @@ import Link from "next/link";
 import useIntegrations from "@/lib/swr/use-integration";
 import { Check, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useAttributionStatus } from "@/lib/swr/use-attribution";
+import { useTheme } from "next-themes";
 
 const DashboardPage = () => {
   const router = useRouter();
@@ -19,6 +20,17 @@ const DashboardPage = () => {
   const { integrations } = useIntegrations();
 
   const { hasAttributedPayment } = useAttributionStatus(id);
+
+  const { theme, resolvedTheme, systemTheme } = useTheme();
+
+
+  useEffect(() => {
+    console.log("[DashboardPage] theme →", { theme, resolvedTheme, systemTheme });
+    console.log("[DashboardPage] html data-theme →", document.documentElement.getAttribute("data-theme"));
+    // If you're using the ThemeScope wrapper approach, also check the scoped div:
+    console.log("[DashboardPage] scoped wrapper class →", document.querySelector('[data-theme-scope]')?.className);
+  }, [theme, resolvedTheme, systemTheme]);
+
 
   const steps = [
     { title: "Install script", completed: !!usage },

@@ -49,14 +49,14 @@ function AnalyticsContent({
 
         <div className="space-y-[4rem]">
           <ChartSection mode={mode} workspaceId={workspaceId} />
-          {/* <StatsGrid /> */}
+          <StatsGrid />
         </div>
 
-        {/* {selectedTab !== "revenue" && (
+        {selectedTab !== "revenue" && (
           <div className="max-w-screen-lg mx-auto">
             <LowerGrid />
           </div>
-        )} */}
+        )}
       </div>
     </>
   );

@@ -8,6 +8,7 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 type TabId = "referers" | "utm";
 type Subtab =
@@ -59,7 +60,7 @@ export function SourcesSection() {
 
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
-
+  const { kpiEventName, kpiType } = useWorkspace()
   const [tab, setTab] = useState<TabId>("referers");
   const [subtab, setSubtab] = useState<Subtab>(
     TAB_CONFIG["referers"].defaultSubtab
@@ -71,7 +72,8 @@ export function SourcesSection() {
     setTab(newTab);
     setSubtab(TAB_CONFIG[newTab].defaultSubtab);
   };
-
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
   const { data } = useAnalyticsFilterOption({
     groupBy: subtab,
   });
@@ -126,7 +128,7 @@ export function SourcesSection() {
       onSelectSubTab: setSubtab,
     };
   }, [tab, subtab]);
-
+const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
   return (
     <AnalyticsCard
       tabs={[
@@ -177,6 +179,9 @@ export function SourcesSection() {
                 onApplyFilterValues={onApplyFilterValues}
                 {...(limit && { limit })}
                 currency={currency}
+                kpiLabel={kpiLabel}      // NEW
+                isGoalKpi={isGoalKpi}
+                kpiConfigured={kpiConfigured}
               />
             ) : (
               <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

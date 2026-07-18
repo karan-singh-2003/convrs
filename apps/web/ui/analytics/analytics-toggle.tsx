@@ -56,7 +56,7 @@ export function AnalyticsToggle({
     interval,
   } = useContext(AnalyticsContext);
 
-  
+
 
   const scrolled = useScroll(120);
 
@@ -219,7 +219,7 @@ export function AnalyticsToggle({
               )}
             >
               <div className="flex items-center gap-2">
-                {mode !== "public" && (
+                {mode === "private" && (
                   <div>
                     <WorkspaceDropdown />
                   </div>

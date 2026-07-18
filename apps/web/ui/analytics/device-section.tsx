@@ -11,18 +11,26 @@ import { BarList } from "./bar-list";
 import { DeviceIcon } from "./device-icon";
 import { TRIGGER_DISPLAY } from "./trigger-display";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export function DeviceSection() {
   const { queryParams, searchParams } = useRouterStuff();
-
+  const { kpiEventName, kpiType } = useWorkspace()
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
+
+  
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
 
   const [tab, setTab] = useState<DeviceTabs>("devices");
   const { data } = useAnalyticsFilterOption(tab);
   const { data: allData } = useAnalyticsFilterOption(tab, {
     omitGroupByFilterKey: true,
   });
+
+  console.log("all data", allData)
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -112,6 +120,9 @@ export function DeviceSection() {
               onApplyFilterValues={onApplyFilterValues}
               {...(limit && { limit })}
               currency={currency}
+              kpiLabel={kpiLabel}      // NEW
+              isGoalKpi={isGoalKpi}
+              kpiConfigured={kpiConfigured}
             />
           ) : (
             <div className="flex h-[250px] items-center justify-center sm:h-[300px]">

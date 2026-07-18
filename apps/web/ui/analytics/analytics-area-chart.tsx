@@ -1249,7 +1249,7 @@ export function AnalyticsAreaChart({
                       {formatValue(activeSeries?.valueAccessor(d) ?? 0)}
                     </h1>
                   </div>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-[13px] font-alexandria text-neutral-500">
                     {nFormatter(d.values.clicks ?? 0)} visitors this period
                   </p>
                 </div>
