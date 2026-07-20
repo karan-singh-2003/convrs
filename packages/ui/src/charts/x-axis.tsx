@@ -73,22 +73,24 @@ export function XAxis({
         tickValues={tickValues}
         hideTicks
         hideAxisLine={!showAxisLine}
-        stroke="#00000026"
+        stroke="rgb(var(--border-subtle))"
         tickFormat={(date) => tickFormat(date as Date)}
         tickLabelProps={(date, idx, { length }) => ({
-          className: "transition-colors text-neutral-600 font-light font-alexandria text-[12.5px]",
+          className: "transition-colors font-light font-alexandria",
           textAnchor:
             idx === 0 ? "start" : idx === length - 1 ? "end" : "middle",
           fontSize: 12,
-          fill: (
+          fill:
             tooltipData
               ? tooltipData.date === date
+                ? "rgb(var(--content-default))"
+                : "rgb(var(--content-subtle))"
               : highlightLast && idx === length - 1
-          )
-            ? "#525252"
-            : "#00000066",
+                ? "rgb(var(--content-default))"
+                : "rgb(var(--content-subtle))",
         })}
       />
+
       {showGridLines && (
         <Group left={margin.left} top={margin.top}>
           {tickValues.length > 0 &&
@@ -100,7 +102,9 @@ export function XAxis({
                 y1={height}
                 y2={0}
                 stroke={
-                  date === tooltipData?.date ? "transparent" : "#00000026"
+                  date === tooltipData?.date
+                    ? "transparent"
+                    : "rgb(var(--border-subtle))"
                 }
                 strokeWidth={1}
                 strokeDasharray={[startDate, endDate].includes(date) ? 0 : 5}

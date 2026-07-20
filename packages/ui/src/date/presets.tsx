@@ -77,7 +77,7 @@ const Presets = <TPreset extends Preset, TValue>({
 
   return (
     <Command
-      className="w-full rounded-none ring-neutral-200 ring-offset-2 focus:outline-none"
+      className="w-full rounded-none ring-border-default ring-offset-2 focus:outline-none"
       tabIndex={0}
       autoFocus
       loop
@@ -92,18 +92,20 @@ const Presets = <TPreset extends Preset, TValue>({
               title={preset.label}
               value={preset.id}
               className={cn(
-                "group relative font-alexandria flex cursor-pointer items-center justify-between overflow-hidden text-ellipsis whitespace-nowrap rounded-nonw border border-neutral-200",
-                "px-2.5 py-1.5 text-left text-sm text-neutral-500 shadow-sm outline-none sm:w-full sm:border-none sm:py-2 sm:shadow-none",
-                "disabled:pointer-events-none disabled:opacity-50",
-                "sm:data-[selected=true]:bg-neutral-100",
-                matchesCurrent(preset) && "font-normal text-neutral-600",
+                "group relative font-alexandria flex cursor-pointer items-center justify-between overflow-hidden text-ellipsis whitespace-nowrap rounded-none border border-border-subtle",
+                "px-2.5 py-1.5 text-left text-sm text-content-subtle shadow-sm outline-none sm:w-full sm:border-none sm:py-2 sm:shadow-none",
+                "hover:bg-bg-subtle hover:text-content-default",
+                "data-[selected=true]:bg-bg-subtle data-[selected=true]:text-content-default",
+                "disabled:pointer-events-none disabled:text-content-muted disabled:opacity-50",
+                matchesCurrent(preset) &&
+                "font-normal text-content-default",
               )}
             >
               <span>{preset.label}</span>
               {preset.requiresUpgrade ? (
                 <Lock className="h-3.5 w-3.5" aria-hidden="true" />
               ) : preset.shortcut ? (
-                <kbd className="text-neutral-4000 hidden rounded-none bg-neutral-100 px-2 py-0.5 text-xs font-light group-data-[selected=true]:bg-neutral-200 md:block">
+              <kbd className="hidden rounded-none bg-bg-subtle px-2 py-0.5 text-xs font-light text-content-subtle group-data-[selected=true]:bg-bg-muted md:block">
                   {preset.shortcut.toUpperCase()}
                 </kbd>
               ) : null}

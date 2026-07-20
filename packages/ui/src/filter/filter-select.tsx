@@ -190,7 +190,7 @@ export function FilterSelect({
             }
             className="w-full md:w-[250px]"
           >
-            <div className="flex font-display items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
+            <div className="flex font-display items-center overflow-hidden rounded-t-lg border-b border-border-subtle">
               <CommandInput
                 placeholder={`${selectedFilter?.label || "Search"}`}
                 value={search}
@@ -240,7 +240,7 @@ export function FilterSelect({
                             onSelect={() => openFilter(filter.key)}
                           />
                           {filter.separatorAfter && (
-                            <Command.Separator className="-mx-1 my-1 border-b border-neutral-200" />
+                            <Command.Separator className="-mx-1 my-1 border-b border-border-subtle" />
                           )}
                         </Fragment>
                       ))
@@ -315,7 +315,7 @@ export function FilterSelect({
         type="button"
         className={cn(
           "group flex h-10 cursor-pointer appearance-none font-display items-center gap-x-2 truncate rounded-md border px-3 text-sm outline-none transition-all",
-          "border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400",
+          "border-border-subtle bg-bg-card text-content-default placeholder-neutral-400",
           className
         )}
       >

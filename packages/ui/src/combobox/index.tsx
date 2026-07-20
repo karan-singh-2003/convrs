@@ -366,7 +366,7 @@ export function Combobox({
           {...buttonProps}
           className={cn(
             buttonProps?.className,
-            "flex gap-2 focus:outline-none font-display border text-[14px]  border-neutral-200 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=open]:ring-offset-0 data-[state=open]:border-neutral-200"
+            "flex gap-2 focus:outline-none font-display border text-[14px]  border-border-subtle rounded-full focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-0 data-[state=open]:ring-offset-0 data-[state=open]:border-neutral-200"
           )}
           textWrapperClassName={cn(
             buttonProps?.textWrapperClassName,

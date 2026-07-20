@@ -180,7 +180,7 @@ const DateRangePickerInner = ({
                   className="scrollbar-hide font-display overflow-x-scroll"
                   classNames={{
                     months:
-                      "flex flex-row divide-x divide-neutral-200 overflow-x-scroll scrollbar-hide",
+                      "flex flex-row divide-x divide-border-subtle overflow-x-scroll scrollbar-hide",
                   }}
                   {...props}
                 />
@@ -222,7 +222,7 @@ function PresetScrollContainer({ children }: PropsWithChildren) {
         onScroll={updateScrollProgress}
         className={cn(
           "relative flex h-16 w-full items-center sm:h-full sm:w-48",
-          "border-b border-neutral-200 sm:border-b-0 sm:border-l",
+          "border-b border-border-subtle sm:border-b-0 sm:border-l",
           "scrollbar-hide overflow-auto",
         )}
       >
@@ -230,7 +230,7 @@ function PresetScrollContainer({ children }: PropsWithChildren) {
       </div>
       {/* Bottom scroll fade */}
       <div
-        className="pointer-events-none absolute bottom-0 left-0 hidden h-16 w-full rounded-b-lg bg-gradient-to-t from-white sm:block"
+        className="pointer-events-none absolute bottom-0 left-0 hidden h-16 w-full rounded-b-lg bg-gradient-to-t from-bg-card to-transparent sm:block"
         style={{ opacity: 1 - Math.pow(scrollProgress, 2) }}
       />
     </div>

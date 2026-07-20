@@ -90,10 +90,10 @@ export function YAxis({
         tickLabelProps={() => ({
           className: "transition-colors font-alexandria",
           fontSize: 12,
-          fill: "#00000066",
+          fill: "rgb(var(--content-subtle))",
           textAnchor: "end",
           verticalAnchor: "middle",
-        })}
+        })} 
       />
       {showGridLines && (
         <Group left={margin.left} top={margin.top}>
@@ -109,7 +109,7 @@ export function YAxis({
                   y2={y}
                   x1={0}
                   x2={width}
-                  stroke="#00000026"
+                  stroke="rgb(var(--border-subtle))"
                   strokeWidth={1}
                   strokeDasharray={5}
                 />
