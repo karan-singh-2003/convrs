@@ -15,23 +15,18 @@ export const maxDuration = 300; // seconds — adjust to your plan's ceiling
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  { params }: { params: Promise<{ idOrSlug: string }> }
 ) {
   try {
-    const { workspaceId } = params;
-    if (!workspaceId) {
+    const { idOrSlug } = await params;
+
+    if (!idOrSlug) {
       return NextResponse.json(
-        { success: false, error: "Missing workspaceId" },
+        { success: false, error: "Missing workspace identifier" },
         { status: 400 }
       );
     }
 
-    // NOTE: on platforms with a request body size cap (e.g. Vercel serverless
-    // functions cap at 4.5MB), a large Plausible export will not reach this
-    // handler at all — the request will be rejected before it gets here. If
-    // your exports can exceed that, upload the zip to object storage from
-    // the client first and pass a URL/key in the JSON body instead of the
-    // raw file, then fetch it here.
     const formData = await request.formData();
     const file = formData.get("file");
 
@@ -53,6 +48,7 @@ export async function POST(
     }
 
     const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
         { success: false, error: "File exceeds the 50MB limit" },
@@ -60,9 +56,18 @@ export async function POST(
       );
     }
 
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { id: true, slug: true, domain: true },
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [
+          { id: idOrSlug },
+          { slug: idOrSlug },
+        ],
+      },
+      select: {
+        id: true,
+        slug: true,
+        domain: true,
+      },
     });
 
     if (!workspace) {
@@ -72,9 +77,6 @@ export async function POST(
       );
     }
 
-    // Your schema keeps a single `domain` field directly on Workspace
-    // (there's no separate Domain model) — that's what imported traffic
-    // gets attributed to.
     if (!workspace.domain) {
       return NextResponse.json(
         {
@@ -89,10 +91,11 @@ export async function POST(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const { events, filesParsed, filesSkipped, rowCount } = parsePlausibleZip(
-      buffer,
-      { workspaceId: workspace.id, hostname: workspace.domain }
-    );
+    const { events, filesParsed, filesSkipped, rowCount } =
+      parsePlausibleZip(buffer, {
+        workspaceId: workspace.id,
+        hostname: workspace.domain,
+      });
 
     if (rowCount === 0) {
       return NextResponse.json(
@@ -105,7 +108,9 @@ export async function POST(
       );
     }
 
-    const { batches, rows } = await loadEventsIntoTinybird({ events });
+    const { batches, rows } = await loadEventsIntoTinybird({
+      events,
+    });
 
     return NextResponse.json({
       success: true,
@@ -116,6 +121,7 @@ export async function POST(
     });
   } catch (error) {
     console.error("[Plausible Import] Error:", error);
+
     return NextResponse.json(
       {
         success: false,
@@ -130,21 +136,45 @@ export async function POST(
 // realize it double-counts against existing data).
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  { params }: { params: Promise<{ idOrSlug: string }> }
 ) {
   try {
-    const { workspaceId } = params;
-    if (!workspaceId) {
+    const { idOrSlug } = await params;
+
+    if (!idOrSlug) {
       return NextResponse.json(
-        { success: false, error: "Missing workspaceId" },
+        { success: false, error: "Missing workspace identifier" },
         { status: 400 }
       );
     }
 
-    await deletePlausibleImport({ workspaceId });
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        OR: [
+          { id: idOrSlug },
+          { slug: idOrSlug },
+        ],
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        { success: false, error: "Workspace not found" },
+        { status: 404 }
+      );
+    }
+
+    await deletePlausibleImport({
+      workspaceId: workspace.id,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[Plausible Import Delete] Error:", error);
+
     return NextResponse.json(
       {
         success: false,

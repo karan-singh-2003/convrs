@@ -9,6 +9,7 @@ import { AppSidebar } from "@/ui/layout/sidebar/app-sidebar";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { ThemeScope } from "@/styles/theme-scope";
+import { Suspense } from "react";
 
 function AnalyticsIcon() {
   return (
@@ -45,7 +46,7 @@ function SettingsIcon() {
 
   )
 }
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode;
@@ -116,5 +117,18 @@ export default function DashboardLayout({
 
       <MainNav sidebar={AppSidebar}>{children}</MainNav>
     </ThemeScope>
+  );
+}
+
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </Suspense>
   );
 }
