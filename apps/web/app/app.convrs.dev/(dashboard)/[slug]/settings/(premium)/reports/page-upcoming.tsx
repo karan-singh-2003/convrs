@@ -21,7 +21,7 @@ export default function ReportsSettingsPage() {
     fetcher
   );
 
-  console.log("data in reports",data)
+  console.log("data in reports", data)
 
   const [pendingKey, setPendingKey] = useState<string | null>(null);
 
@@ -58,20 +58,20 @@ export default function ReportsSettingsPage() {
         title="Reports"
         description="Get weekly reports for your analytics data."
       >
-        <div className="rounded-xl bg-white divide-y divide-neutral-100">
+        <div className="rounded-xl bg-bg-card divide-y divide-border-subtle">
           <div className="flex items-center justify-between px-4 py-4">
             <div>
-              <h1 className="font-display text-[15px] font-medium text-neutral-600">
+              <h1 className="font-display text-[15px] font-medium text-content-default">
                 Weekly summary
               </h1>
-              <p className="text-[13px] font-display text-neutral-500">
+              <p className="text-[13px] font-display text-content-subtle">
                 A recap of your clicks, revenue, and top links every Monday.
               </p>
             </div>
             <Switch
               disabled={!data || pendingKey === "weeklySummary"}
               checked={data?.weeklySummary ?? false}
-              trackDimensions="radix-state-checked:bg-black focus-visible:ring-black/20 w-8 h-5"
+              trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
               thumbDimensions="size-4"
               thumbTranslate="translate-x-3"
               fn={(checked: boolean) => updatePreference("weeklySummary", checked)}
@@ -80,17 +80,17 @@ export default function ReportsSettingsPage() {
 
           <div className="flex items-center justify-between px-4 py-4">
             <div>
-              <h1 className="font-display text-[15px] font-medium text-neutral-600">
+              <h1 className="font-display text-[15px] font-medium text-content-default">
                 Traffic spikes
               </h1>
-              <p className="text-[13px] font-display text-neutral-500">
+              <p className="text-[13px] font-display text-content-subtle">
                 Get notified when your traffic spikes above normal.
               </p>
             </div>
             <Switch
               disabled={!data || pendingKey === "trafficSpikes"}
               checked={data?.trafficSpikes ?? false}
-              trackDimensions="radix-state-checked:bg-black focus-visible:ring-black/20 w-8 h-5"
+              trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
               thumbDimensions="size-4"
               thumbTranslate="translate-x-3"
               fn={(checked: boolean) => updatePreference("trafficSpikes", checked)}

@@ -78,14 +78,14 @@ export default function ExportPage() {
             description="Download a portable copy of your analytics data."
             className="mx-5"
         >
-            <div className="mx-1 max-w-4xl rounded-2xl bg-white px-6 py-4">
+            <div className="mx-1 max-w-4xl rounded-2xl bg-bg-card px-6 py-4 border border-border-subtle">
                 <div className="flex flex-col items-start justify-between gap-4">
                     <div className="max-w-2xl font-display">
-                        <h2 className="font-display text-[15px] font-medium text-neutral-600">
+                        <h2 className="font-display text-[15px] font-medium text-content-default">
                             Export analytics
                         </h2>
 
-                        <p className="mt-1 leading-snug text-[14px]   text-neutral-500">
+                        <p className="mt-1 leading-snug text-[14px]   text-content-subtle">
                             Download a portable ZIP containing your analytics data. Use it to restore
                             another Convrs workspace or migrate to analytics platforms that support
                             Plausible imports.
@@ -107,7 +107,7 @@ export default function ExportPage() {
                             </>
                         )}
                         icon={loading ? (<Loader2 className=" h-3.5 w-3.5 animate-spin" />) : (<Download className=" h-3.5 w-3.5" />)}
-                        className="h-8 text-[14px] border border-neutral-200 rounded-lg font-display text-neutral-600 w-fit shrink-0"
+                        className="h-8 text-[14px] border border-border-subtle rounded-lg font-display text-content-default w-fit shrink-0"
                         onClick={exportWorkspace}
                         disabled={loading}
                         variant={"outline"}
