@@ -1,3 +1,568 @@
+// import { cn, pluralize, truncate } from "@repo/utils";
+// import { Command } from "cmdk";
+// import { X } from "lucide-react";
+// import { AnimatePresence, motion } from "framer-motion";
+// import Link from "next/link";
+// import { ReactNode, isValidElement, useCallback, useState } from "react";
+// import { AnimatedSizeContainer } from "../animated-size-container";
+
+// import { Popover } from "../popover";
+// import {
+//   ActiveFilterInput,
+//   Filter,
+//   FilterOperator,
+//   FilterOption,
+//   normalizeActiveFilter,
+// } from "./types";
+// import { Check } from "lucide-react";
+
+// type FilterListProps = {
+//   filters: Filter[];
+//   activeFilters?: ActiveFilterInput[];
+//   onRemove: (key: string, value: FilterOption["value"]) => void;
+//   onRemoveFilter?: (key: string) => void;
+//   onRemoveAll: () => void;
+//   onSelect?: (
+//     key: string,
+//     value: FilterOption["value"] | FilterOption["value"][]
+//   ) => void;
+//   onToggleOperator?: (key: string) => void;
+//   isAdvancedFilter?: boolean;
+//   className?: string;
+// };
+
+// function getOperatorLabel(operator: FilterOperator): string {
+//   switch (operator) {
+//     case "IS":
+//     case "IS_ONE_OF":
+//       return "is";
+
+//     case "IS_NOT":
+//     case "IS_NOT_ONE_OF":
+//       return "is not";
+
+//     default:
+//       return "is";
+//   }
+// }
+
+// export function FilterList({
+//   filters,
+//   activeFilters,
+//   onRemove,
+//   onRemoveFilter,
+//   onRemoveAll,
+//   onSelect,
+//   onToggleOperator,
+//   isAdvancedFilter = false,
+//   className,
+// }: FilterListProps) {
+//   const normalizedFilters = activeFilters?.map(normalizeActiveFilter) ?? [];
+
+//   return (
+//     <AnimatedSizeContainer
+//       height
+//       className="w-full overflow-x-hidden"
+//       transition={{ type: "tween", duration: 0.3 }}
+//     >
+//       <div
+//         className={cn(
+//           "flex w-full flex-wrap items-start gap-4 font-display ",
+//           className
+//         )}
+//       >
+//         <div className="flex grow flex-wrap gap-x-4 gap-y-2">
+//           <AnimatePresence>
+//             {normalizedFilters.map(({ key, values, operator }) => {
+//               if (key === "loader") {
+//                 return (
+//                   <motion.div
+//                     key={`loader-${values?.[0] ?? 0}`}
+//                     initial={{ opacity: 0, y: 4 }}
+//                     animate={{ opacity: 1, y: 0 }}
+//                     className="h-9 w-48 animate-pulse rounded-full border border-border-subtle bg-bg-card"
+//                   />
+//                 );
+//               }
+
+//               const filter = filters.find((f) => f.key === key);
+//               if (!filter) {
+//                 console.error(
+//                   "Filter.List received an activeFilter without a corresponding filter"
+//                 );
+//                 return null;
+//               }
+
+//               const isSingleValue = values.length === 1;
+//               const displayValues = values.slice(0, 3);
+
+//               const displayLabel = isSingleValue
+//                 ? (() => {
+//                   const value = values[0];
+//                   const option = filter.options?.find((o) =>
+//                     typeof o.value === "string" && typeof value === "string"
+//                       ? o.value.toLowerCase() === value.toLowerCase()
+//                       : o.value === value
+//                   );
+//                   return (
+//                     option?.label ??
+//                     filter.getOptionLabel?.(value, {
+//                       key: filter.key,
+//                       option,
+//                     }) ??
+//                     String(value)
+//                   );
+//                 })()
+//                 : `${values.length} ${filter.labelPlural ?? pluralize(filter.label, values.length)}`;
+
+//               const OptionDisplay = ({ className }: { className?: string }) => {
+//                 let iconDisplay;
+//                 let permalinkDisplay;
+
+//                 if (isSingleValue) {
+//                   const value = values[0];
+//                   const option = filter.options?.find((o) =>
+//                     typeof o.value === "string" && typeof value === "string"
+//                       ? o.value.toLowerCase() === value.toLowerCase()
+//                       : o.value === value
+//                   );
+
+//                   permalinkDisplay =
+//                     option?.permalink ??
+//                     filter.getOptionPermalink?.(value) ??
+//                     null;
+
+//                   const OptionIcon =
+//                     option?.icon ??
+//                     filter.getOptionIcon?.(value, {
+//                       key: filter.key,
+//                       option,
+//                     }) ??
+//                     filter.icon;
+
+//                   iconDisplay = OptionIcon ? (
+//                     <span className="shrink-0 text-content-subtle">
+//                       {isReactNode(OptionIcon) ? (
+//                         OptionIcon
+//                       ) : (
+//                         <OptionIcon className="md:h-4 md:w-4 h-3 w-3" />
+//                       )}
+//                     </span>
+//                   ) : null;
+//                 } else if (!filter.hideMultipleIcons) {
+//                   iconDisplay = (
+//                     <div className="flex shrink-0 -space-x-1">
+//                       {displayValues.map((value, idx) => {
+//                         const option = filter.options?.find((o) =>
+//                           typeof o.value === "string" &&
+//                             typeof value === "string"
+//                             ? o.value.toLowerCase() === value.toLowerCase()
+//                             : o.value === value
+//                         );
+
+//                         const OptionIcon =
+//                           option?.icon ??
+//                           filter.getOptionIcon?.(value, {
+//                             key: filter.key,
+//                             option,
+//                           }) ??
+//                           filter.icon;
+
+//                         return OptionIcon ? (
+//                           <span
+//                             key={idx}
+//                             className="inline-flex text-content-subtle"
+//                             style={{ zIndex: displayValues.length - idx }}
+//                           >
+//                             {isReactNode(OptionIcon) ? (
+//                               OptionIcon
+//                             ) : (
+//                               <OptionIcon className="h-4 w-4" />
+//                             )}
+//                           </span>
+//                         ) : null;
+//                       })}
+//                     </div>
+//                   );
+//                 } else {
+//                   iconDisplay = filter.icon ? (
+//                     <span className="shrink-0 text-content-subtle">
+//                       {isReactNode(filter.icon) ? (
+//                         filter.icon
+//                       ) : (
+//                         <filter.icon className="h-4 w-4" />
+//                       )}
+//                     </span>
+//                   ) : null;
+//                 }
+
+//                 return (
+//                   <div
+//                     className={cn(
+//                       "flex items-center gap-2.5 px-3 py-2",
+//                       className
+//                     )}
+//                   >
+//                     {iconDisplay}
+//                     {permalinkDisplay ? (
+//                       <Link
+//                         href={permalinkDisplay}
+//                         target="_blank"
+//                         className="cursor-alias decoration-dotted underline-offset-2 hover:underline"
+//                       >
+//                         {truncate(displayLabel, 30)}
+//                       </Link>
+//                     ) : (
+//                       truncate(displayLabel, 30)
+//                     )}
+//                   </div>
+//                 );
+//               };
+
+//               return (
+//                 <OperatorFilterPill
+//                   key={key}
+//                   filterKey={key}
+//                   filter={filter}
+//                   values={values}
+//                   operator={operator}
+//                   OptionDisplay={OptionDisplay}
+//                   onRemove={onRemove}
+//                   onRemoveFilter={onRemoveFilter}
+//                   onSelect={onSelect}
+//                   onToggleOperator={onToggleOperator}
+//                   isAdvancedFilter={isAdvancedFilter}
+//                 />
+//               );
+//             })}
+//           </AnimatePresence>
+//         </div>
+//         {normalizedFilters.length !== 0 && (
+//           <button
+//             type="button"
+//             className="group mt-px flex items-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-2 text-[13px] md:text-sm text-content-subtle ring-inset ring-neutral-500 transition-colors hover:border-neutral-200 hover:bg-white hover:text-black focus:outline-none"
+//             onClick={onRemoveAll}
+//           >
+//             Clear Filters
+//             {/* <kbd className="rounded-md border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-950 group-hover:bg-neutral-50">
+//               ESC
+//             </kbd> */}
+//           </button>
+//         )}
+//       </div>
+//     </AnimatedSizeContainer>
+//   );
+// }
+
+// function OperatorFilterPill({
+//   filterKey,
+//   filter,
+//   values,
+//   operator,
+//   OptionDisplay,
+//   onRemove,
+//   onRemoveFilter,
+//   onSelect,
+//   onToggleOperator,
+//   isAdvancedFilter = false,
+// }: {
+//   filterKey: string;
+//   filter: Filter;
+//   values: FilterOption["value"][];
+//   operator: FilterOperator;
+//   OptionDisplay: ({ className }: { className?: string }) => ReactNode;
+//   onRemove: (key: string, value: FilterOption["value"]) => void;
+//   onRemoveFilter?: (key: string) => void;
+//   onSelect?: (
+//     key: string,
+//     value: FilterOption["value"] | FilterOption["value"][]
+//   ) => void;
+//   onToggleOperator?: (key: string) => void;
+//   isAdvancedFilter?: boolean;
+// }) {
+//   const [operatorDropdownOpen, setOperatorDropdownOpen] = useState(false);
+//   const [valueDropdownOpen, setValueDropdownOpen] = useState(false);
+//   const [search, setSearch] = useState("");
+//   const [initialSelectedValues, setInitialSelectedValues] = useState<
+//     Set<FilterOption["value"]>
+//   >(new Set());
+
+//   const openValueDropdown = useCallback(() => {
+//     setInitialSelectedValues(new Set(values));
+//     setValueDropdownOpen(true);
+//   }, [values]);
+
+//   const toggleValue = useCallback(
+//     (value: FilterOption["value"]) => {
+//       const isSelected = values.includes(value);
+//       if (isSelected) {
+//         onRemove(filterKey, value);
+//       } else {
+//         onSelect?.(filterKey, value);
+//       }
+
+//       if (!isAdvancedFilter && !filter.multiple) setValueDropdownOpen(false);
+//     },
+//     [filterKey, values, onSelect, onRemove, isAdvancedFilter, filter.multiple]
+//   );
+
+//   return (
+//     <motion.div
+//       initial={{ opacity: 0, y: 4 }}
+//       animate={{ opacity: 1, y: 0 }}
+//      className="flex items-center divide-x divide-border-subtle rounded-full border border-border-subtle bg-bg-card px-2 text-[15px] font-display text-content-default"
+//     >
+//       <div className="flex items-center gap-2.5 px-3 py-2">
+//         {filter.icon && (
+//           <span className="shrink-0 text-neutral-600">
+//             {isReactNode(filter.icon) ? (
+//               filter.icon
+//             ) : (
+//               <filter.icon className="md:h-4 md:w-4 h-3 w-3" />
+//             )}
+//           </span>
+//         )}
+//         {filter.label}
+//       </div>
+
+//       {(isAdvancedFilter || filter.multiple) &&
+//         !filter.singleSelect &&
+//         !filter.hideOperator ? (
+//         <Popover
+//           openPopover={operatorDropdownOpen}
+//           setOpenPopover={setOperatorDropdownOpen}
+//           content={
+//             <div className="w-32 p-1">
+//               <button
+//                 type="button"
+//                 className={cn(
+//                   "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] md:text-sm transition-colors hover:bg-bg-subtle",
+//                   !operator.includes("NOT") && "bg-bg-emphasis"
+//                 )}
+//                 onClick={() => {
+//                   if (operator.includes("NOT")) {
+//                     onToggleOperator?.(filterKey);
+//                   }
+//                   setOperatorDropdownOpen(false);
+//                 }}
+//               >
+//                 is
+//               </button>
+//               <button
+//                 type="button"
+//                 className={cn(
+//                   "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] md:text-sm transition-colors hover:bg-bg-subtle",
+//                   operator.includes("NOT") && "bg-bg-emphasis"
+//                 )}
+//                 onClick={() => {
+//                   if (!operator.includes("NOT")) {
+//                     onToggleOperator?.(filterKey);
+//                   }
+//                   setOperatorDropdownOpen(false);
+//                 }}
+//               >
+//                 is not
+//               </button>
+//             </div>
+//           }
+//           align="center"
+//         >
+//           <button
+//             type="button"
+//             className="px-3 py-2 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700"
+//           >
+//             {getOperatorLabel(operator)}
+//           </button>
+//         </Popover>
+//       ) : (
+//         <div className="px-3 py-2 text-neutral-500">is</div>
+//       )}
+
+//       <Popover
+//         openPopover={valueDropdownOpen}
+//         setOpenPopover={(open) => {
+//           setValueDropdownOpen(open);
+//           if (!open) {
+//             setSearch("");
+//             setInitialSelectedValues(new Set());
+//           }
+//         }}
+//         content={
+//           <div>
+//             <AnimatedSizeContainer width height className="rounded-[inherit]">
+//               <Command loop shouldFilter={false}>
+//                 <div className="flex items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
+//                   <Command.Input
+//                     placeholder={`${filter.label}...`}
+//                     value={search}
+//                     onValueChange={setSearch}
+//                     className="grow border-0 py-3 pl-4 pr-2 outline-none placeholder:text-neutral-400 focus:ring-0 sm:text-sm"
+//                     autoCapitalize="none"
+//                   />
+//                 </div>
+//                 <div className="scrollbar-hide max-h-[50vh] overflow-y-scroll">
+//                   <Command.List className="flex w-full min-w-[180px] flex-col gap-1 p-1">
+//                     {(() => {
+//                       const filteredOptions =
+//                         filter.options?.filter((option) => {
+//                           if (!search) return true;
+//                           const optionLabel = (
+//                             option.label ??
+//                             filter.getOptionLabel?.(option.value, {
+//                               key: filter.key,
+//                               option,
+//                             }) ??
+//                             String(option.value)
+//                           ).toLowerCase();
+//                           return optionLabel.includes(search.toLowerCase());
+//                         }) ?? [];
+
+//                       const selectedOptions = filteredOptions.filter((option) =>
+//                         initialSelectedValues.has(option.value)
+//                       );
+//                       const unselectedOptions = filteredOptions.filter(
+//                         (option) => !initialSelectedValues.has(option.value)
+//                       );
+
+//                       const renderOption = (option: FilterOption) => {
+//                         const isSelected = values.includes(option.value);
+//                         const OptionIcon =
+//                           option.icon ??
+//                           filter.getOptionIcon?.(option.value, {
+//                             key: filter.key,
+//                             option,
+//                           }) ??
+//                           filter.icon;
+
+//                         const optionLabel =
+//                           option.label ??
+//                           filter.getOptionLabel?.(option.value, {
+//                             key: filter.key,
+//                             option,
+//                           }) ??
+//                           String(option.value);
+
+//                         return (
+//                           <Command.Item
+//                             key={option.value}
+//                             className={cn(
+//                               "flex cursor-pointer items-center gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-[13px] md:text-sm",
+//                               "data-[selected=true]:bg-neutral-100"
+//                             )}
+//                             onSelect={() => {
+//                               toggleValue(option.value);
+//                             }}
+//                             onPointerDown={(e) => {
+//                               e.preventDefault();
+//                             }}
+//                             value={optionLabel + option.value}
+//                           >
+//                             {(isAdvancedFilter || filter.multiple) &&
+//                               !filter.singleSelect && (
+//                                 <div
+//                                   className={cn(
+//                                     "flex h-4 w-4 items-center justify-center rounded border",
+//                                     isSelected
+//                                       ? "border-neutral-900 bg-neutral-900"
+//                                       : "border-neutral-300"
+//                                   )}
+//                                 >
+//                                   {isSelected && (
+//                                     <Check className="h-3 w-3 text-white" />
+//                                   )}
+//                                 </div>
+//                               )}
+//                             {OptionIcon && (
+//                               <span className="shrink-0 text-neutral-600">
+//                                 {isReactNode(OptionIcon) ? (
+//                                   OptionIcon
+//                                 ) : (
+//                                   <OptionIcon className="h-4 w-4" />
+//                                 )}
+//                               </span>
+//                             )}
+//                             <span className="flex-1">
+//                               {truncate(optionLabel, 48)}
+//                             </span>
+//                             <div className="ml-1 flex shrink-0 justify-end text-neutral-500">
+//                               {(isAdvancedFilter || filter.multiple) &&
+//                                 !filter.singleSelect ? (
+//                                 option.right
+//                               ) : isSelected ? (
+//                                 <Check className="h-4 w-4" />
+//                               ) : (
+//                                 option.right
+//                               )}
+//                             </div>
+//                           </Command.Item>
+//                         );
+//                       };
+
+//                       return (
+//                         <>
+//                           {selectedOptions.map(renderOption)}
+
+//                           {(isAdvancedFilter || filter.multiple) &&
+//                             !filter.singleSelect &&
+//                             selectedOptions.length > 0 &&
+//                             unselectedOptions.length > 0 && (
+//                               <Command.Separator className="-mx-1 my-1 border-b border-neutral-200" />
+//                             )}
+
+//                           {unselectedOptions.map(renderOption)}
+//                         </>
+//                       );
+//                     })()}
+//                   </Command.List>
+//                 </div>
+//               </Command>
+//             </AnimatedSizeContainer>
+//           </div>
+//         }
+//         align="start"
+//       >
+//         <button
+//           type="button"
+//           onClick={openValueDropdown}
+//           disabled={filter.options?.length === 0}
+//           className={cn(
+//             "flex items-center",
+//             filter.options?.length && "transition-colors hover:bg-neutral-50"
+//           )}
+//         >
+//           {!filter.options ? (
+//             <div className="flex items-center gap-2.5 px-3 py-2">
+//               <div className="h-5 w-12 animate-pulse rounded-md bg-neutral-200" />
+//             </div>
+//           ) : (
+//             OptionDisplay({ className: "cursor-pointer" })
+//           )}
+//         </button>
+//       </Popover>
+
+//       <button
+//         type="button"
+//         className="h-full rounded-r-md p-2 text-neutral-500 ring-inset ring-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus:outline-none focus-visible:ring-1"
+//         onClick={() => {
+//           if (onRemoveFilter) {
+//             onRemoveFilter(filterKey);
+//           } else {
+//             values.forEach((value) => {
+//               onRemove(filterKey, value);
+//             });
+//           }
+//         }}
+//       >
+//         <X className="h-3.5 w-3.5" />
+//       </button>
+//     </motion.div>
+//   );
+// }
+
+// const isReactNode = (element: any): element is ReactNode =>
+//   isValidElement(element);
+
+
 import { cn, pluralize, truncate } from "@repo/utils";
 import { Command } from "cmdk";
 import { X } from "lucide-react";
@@ -67,11 +632,11 @@ export function FilterList({
     >
       <div
         className={cn(
-          "flex w-full flex-wrap items-start gap-4 font-display ",
+          "flex w-full flex-wrap items-start gap-2 font-display sm:gap-4",
           className
         )}
       >
-        <div className="flex grow flex-wrap gap-x-4 gap-y-2">
+        <div className="flex grow flex-wrap gap-x-2 gap-y-2 sm:gap-x-4">
           <AnimatePresence>
             {normalizedFilters.map(({ key, values, operator }) => {
               if (key === "loader") {
@@ -80,7 +645,7 @@ export function FilterList({
                     key={`loader-${values?.[0] ?? 0}`}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="h-9 w-48 animate-pulse rounded-full border border-neutral-200 bg-white"
+                    className="h-9 w-48 animate-pulse rounded-full border border-border-subtle bg-bg-card"
                   />
                 );
               }
@@ -141,7 +706,7 @@ export function FilterList({
                     filter.icon;
 
                   iconDisplay = OptionIcon ? (
-                    <span className="shrink-0 text-neutral-600">
+                    <span className="shrink-0 text-content-subtle">
                       {isReactNode(OptionIcon) ? (
                         OptionIcon
                       ) : (
@@ -171,7 +736,7 @@ export function FilterList({
                         return OptionIcon ? (
                           <span
                             key={idx}
-                            className="inline-flex text-neutral-600"
+                            className="inline-flex text-content-subtle"
                             style={{ zIndex: displayValues.length - idx }}
                           >
                             {isReactNode(OptionIcon) ? (
@@ -186,7 +751,7 @@ export function FilterList({
                   );
                 } else {
                   iconDisplay = filter.icon ? (
-                    <span className="shrink-0 text-neutral-600">
+                    <span className="shrink-0 text-content-subtle">
                       {isReactNode(filter.icon) ? (
                         filter.icon
                       ) : (
@@ -199,7 +764,7 @@ export function FilterList({
                 return (
                   <div
                     className={cn(
-                      "flex items-center gap-2.5 px-3 py-2",
+                      "flex min-w-0 items-center gap-2.5 px-3 py-2",
                       className
                     )}
                   >
@@ -208,12 +773,14 @@ export function FilterList({
                       <Link
                         href={permalinkDisplay}
                         target="_blank"
-                        className="cursor-alias decoration-dotted underline-offset-2 hover:underline"
+                        className="cursor-alias truncate decoration-dotted underline-offset-2 hover:underline"
                       >
                         {truncate(displayLabel, 30)}
                       </Link>
                     ) : (
-                      truncate(displayLabel, 30)
+                      <span className="truncate">
+                        {truncate(displayLabel, 30)}
+                      </span>
                     )}
                   </div>
                 );
@@ -240,11 +807,11 @@ export function FilterList({
         {normalizedFilters.length !== 0 && (
           <button
             type="button"
-            className="group mt-px flex items-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-2 text-[13px] md:text-sm text-neutral-500 ring-inset ring-neutral-500 transition-colors hover:border-neutral-200 hover:bg-white hover:text-black focus:outline-none"
+            className="group mt-px flex items-center gap-2 whitespace-nowrap rounded-full border border-transparent px-3 py-2 text-[13px] text-content-subtle ring-inset ring-border-default transition-colors hover:border-border-subtle hover:bg-bg-card hover:text-content-default focus:outline-none md:text-sm"
             onClick={onRemoveAll}
           >
             Clear Filters
-            {/* <kbd className="rounded-md border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-950 group-hover:bg-neutral-50">
+            {/* <kbd className="rounded-md border border-border-subtle px-1.5 py-0.5 text-xs text-content-default group-hover:bg-bg-subtle">
               ESC
             </kbd> */}
           </button>
@@ -310,11 +877,11 @@ function OperatorFilterPill({
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center divide-x rounded-full border border-neutral-200 px-2 bg-white text-[15px] text-neutral-800  font-display"
+      className="flex max-w-full items-center divide-x divide-border-subtle rounded-full border border-border-subtle bg-bg-card px-2 text-[15px] font-display text-content-default"
     >
-      <div className="flex items-center gap-2.5 px-3 py-2">
+      <div className="flex min-w-0 items-center gap-2.5 px-3 py-2">
         {filter.icon && (
-          <span className="shrink-0 text-neutral-600">
+          <span className="shrink-0 text-content-subtle">
             {isReactNode(filter.icon) ? (
               filter.icon
             ) : (
@@ -322,7 +889,7 @@ function OperatorFilterPill({
             )}
           </span>
         )}
-        {filter.label}
+        <span className="truncate">{filter.label}</span>
       </div>
 
       {(isAdvancedFilter || filter.multiple) &&
@@ -336,8 +903,8 @@ function OperatorFilterPill({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] md:text-sm transition-colors hover:bg-neutral-100",
-                  !operator.includes("NOT") && "bg-neutral-50"
+                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] transition-colors hover:bg-bg-subtle md:text-sm",
+                  !operator.includes("NOT") && "bg-bg-emphasis"
                 )}
                 onClick={() => {
                   if (operator.includes("NOT")) {
@@ -351,8 +918,8 @@ function OperatorFilterPill({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] md:text-sm transition-colors hover:bg-neutral-100",
-                  operator.includes("NOT") && "bg-neutral-50"
+                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] transition-colors hover:bg-bg-subtle md:text-sm",
+                  operator.includes("NOT") && "bg-bg-emphasis"
                 )}
                 onClick={() => {
                   if (!operator.includes("NOT")) {
@@ -369,13 +936,13 @@ function OperatorFilterPill({
         >
           <button
             type="button"
-            className="px-3 py-2 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700"
+            className="px-3 py-2 text-content-subtle transition-colors hover:bg-bg-subtle hover:text-content-default"
           >
             {getOperatorLabel(operator)}
           </button>
         </Popover>
       ) : (
-        <div className="px-3 py-2 text-neutral-500">is</div>
+        <div className="px-3 py-2 text-content-subtle">is</div>
       )}
 
       <Popover
@@ -391,12 +958,12 @@ function OperatorFilterPill({
           <div>
             <AnimatedSizeContainer width height className="rounded-[inherit]">
               <Command loop shouldFilter={false}>
-                <div className="flex items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
+                <div className="flex items-center overflow-hidden rounded-t-xl border-b border-border-subtle">
                   <Command.Input
                     placeholder={`${filter.label}...`}
                     value={search}
                     onValueChange={setSearch}
-                    className="grow border-0 py-3 pl-4 pr-2 outline-none placeholder:text-neutral-400 focus:ring-0 sm:text-sm"
+                    className="grow border-0 bg-transparent py-3 pl-4 pr-2 text-content-default outline-none placeholder:text-content-subtle focus:ring-0 sm:text-sm"
                     autoCapitalize="none"
                   />
                 </div>
@@ -446,8 +1013,8 @@ function OperatorFilterPill({
                           <Command.Item
                             key={option.value}
                             className={cn(
-                              "flex cursor-pointer items-center gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-[13px] md:text-sm",
-                              "data-[selected=true]:bg-neutral-100"
+                              "flex cursor-pointer items-center gap-3 whitespace-nowrap rounded-md px-3 py-2 text-left text-[13px] text-content-default md:text-sm",
+                              "data-[selected=true]:bg-bg-subtle"
                             )}
                             onSelect={() => {
                               toggleValue(option.value);
@@ -463,17 +1030,17 @@ function OperatorFilterPill({
                                   className={cn(
                                     "flex h-4 w-4 items-center justify-center rounded border",
                                     isSelected
-                                      ? "border-neutral-900 bg-neutral-900"
-                                      : "border-neutral-300"
+                                      ? "border-bg-inverted bg-bg-inverted"
+                                      : "border-border-default"
                                   )}
                                 >
                                   {isSelected && (
-                                    <Check className="h-3 w-3 text-white" />
+                                    <Check className="h-3 w-3 text-content-inverted" />
                                   )}
                                 </div>
                               )}
                             {OptionIcon && (
-                              <span className="shrink-0 text-neutral-600">
+                              <span className="shrink-0 text-content-subtle">
                                 {isReactNode(OptionIcon) ? (
                                   OptionIcon
                                 ) : (
@@ -481,10 +1048,10 @@ function OperatorFilterPill({
                                 )}
                               </span>
                             )}
-                            <span className="flex-1">
+                            <span className="flex-1 truncate">
                               {truncate(optionLabel, 48)}
                             </span>
-                            <div className="ml-1 flex shrink-0 justify-end text-neutral-500">
+                            <div className="ml-1 flex shrink-0 justify-end text-content-subtle">
                               {(isAdvancedFilter || filter.multiple) &&
                                 !filter.singleSelect ? (
                                 option.right
@@ -506,7 +1073,7 @@ function OperatorFilterPill({
                             !filter.singleSelect &&
                             selectedOptions.length > 0 &&
                             unselectedOptions.length > 0 && (
-                              <Command.Separator className="-mx-1 my-1 border-b border-neutral-200" />
+                              <Command.Separator className="-mx-1 my-1 border-b border-border-subtle" />
                             )}
 
                           {unselectedOptions.map(renderOption)}
@@ -526,13 +1093,13 @@ function OperatorFilterPill({
           onClick={openValueDropdown}
           disabled={filter.options?.length === 0}
           className={cn(
-            "flex items-center",
-            filter.options?.length && "transition-colors hover:bg-neutral-50"
+            "flex min-w-0 items-center",
+            filter.options?.length && "transition-colors hover:bg-bg-subtle"
           )}
         >
           {!filter.options ? (
             <div className="flex items-center gap-2.5 px-3 py-2">
-              <div className="h-5 w-12 animate-pulse rounded-md bg-neutral-200" />
+              <div className="h-5 w-12 animate-pulse rounded-md bg-bg-emphasis" />
             </div>
           ) : (
             OptionDisplay({ className: "cursor-pointer" })
@@ -542,7 +1109,7 @@ function OperatorFilterPill({
 
       <button
         type="button"
-        className="h-full rounded-r-md p-2 text-neutral-500 ring-inset ring-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus:outline-none focus-visible:ring-1"
+        className="h-full shrink-0 rounded-r-md p-2 text-content-subtle ring-inset ring-border-default transition-colors hover:bg-bg-subtle hover:text-content-default focus:outline-none focus-visible:ring-1"
         onClick={() => {
           if (onRemoveFilter) {
             onRemoveFilter(filterKey);
