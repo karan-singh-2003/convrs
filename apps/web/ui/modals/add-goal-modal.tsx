@@ -60,27 +60,28 @@ function AddGoalModal({
     <Modal
       showModal={showAddGoalModal}
       setShowModal={setShowAddGoalModal}
-      className="px-4 py-3 md:px-0 md:py-1.5 max-h-[90vh] md:max-h-[95dvh] md:overflow-y-auto"
+      className="max-h-[90vh] px-4 py-3 md:max-h-[95dvh] md:overflow-y-auto md:px-0 md:py-1.5"
     >
-      <div className="space-y-1 md:py-1 md:border-b md:border-[#F0F0F0]">
-        <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-black/65">
+      <div className="space-y-1 md:border-b md:border-border-subtle md:py-1">
+        <h3 className="px-0 font-display text-[16px] font-medium text-content-default md:px-5 md:text-[17.5px]">
           Add a Goal
         </h3>
       </div>
 
-      <div className="md:py-4 md:px-5 gap-y-5 space-y-4">
-        <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500">
-          Name the event you want to track as a goal, then fire it from your
-          site whenever it happens (e.g. a signup or purchase).
+      <div className="space-y-4 md:px-5 md:py-4">
+        <p className="font-display text-[13px] text-content-subtle md:text-[14.5px]">
+          Name the event you want to track as a goal, then fire it from your site
+          whenever it happens (e.g. a signup or purchase).
         </p>
 
         <div className="space-y-1.5">
           <label
             htmlFor="goal-event-name"
-            className="text-[13px] font-display font-medium text-neutral-600"
+            className="font-display text-[13px] font-medium text-content-default"
           >
             Event name
           </label>
+
           <input
             id="goal-event-name"
             type="text"
@@ -88,12 +89,13 @@ function AddGoalModal({
             onChange={(e) => setEventName(e.target.value)}
             placeholder="checkout_completed"
             maxLength={100}
-            className="w-full rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2 font-display text-[14.5px] text-neutral-600 placeholder:text-neutral-400 focus:outline-none focus:ring-0 focus:border-neutral-400"
+            className="w-full rounded-xl border border-border-subtle bg-bg-subtle px-4 py-2 font-display text-[14.5px] text-content-default placeholder:text-content-subtle transition-colors focus:border-border-default focus:bg-bg-card focus:outline-none focus:ring-0"
             onKeyDown={(e) => {
               if (e.key === "Enter" && canSave && !saving) handleSave();
             }}
           />
-          <p className="text-[12px] font-display text-neutral-400">
+
+          <p className="font-display text-[12px] text-content-muted">
             Letters, numbers, underscores, and hyphens only.
           </p>
         </div>
@@ -102,7 +104,7 @@ function AddGoalModal({
           type="button"
           onClick={handleSave}
           disabled={!canSave || saving}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 font-display text-[14px] font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-bg-inverted px-4 py-2 font-display text-[14px] font-medium text-content-inverted transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {saving ? "Adding..." : "Add Goal"}
         </button>
