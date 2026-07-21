@@ -559,7 +559,7 @@ SQL >
         coalesce(s.bounce_rate, 0) AS bounce_rate
     FROM (SELECT groupByField, clicks, new_visitors, returning_visitors FROM timeseries_clicks) AS c
     LEFT JOIN (SELECT groupByField, revenue, new_revenue, refund_amount FROM timeseries_revenue) AS r
-        USING groupByField
+        ON c.groupByField = r.groupByField
     {% if defined(kpiGoalName) %}
     LEFT JOIN (
         SELECT
@@ -567,7 +567,7 @@ SQL >
             goal_count
         FROM timeseries_kpi_goal_data
     ) AS g
-        USING groupByField
+        ON c.groupByField = g.groupByField
     {% end %}
     LEFT JOIN (
         SELECT
@@ -576,7 +576,7 @@ SQL >
             bounce_rate
         FROM session_stats
     ) AS s
-        USING groupByField
+        ON c.groupByField = s.groupByField
 
 
 NODE timeseries_conversion_rate
