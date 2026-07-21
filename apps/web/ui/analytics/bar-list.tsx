@@ -285,8 +285,8 @@ export function BarList({
   } else {
     return (
       <>
-        <div className="px-2 py-2 border-b border-neutral-200 sm:px-4 sm:py-3">
-          <div className="flex overflow-hidden focus-within:border-neutral-300 border border-transparent rounded-full w-full bg-neutral-100">
+        <div className="border-b border-border-subtle px-2 py-2 sm:px-4 sm:py-3">
+          <div className="flex w-full overflow-hidden rounded-full border border-transparent bg-bg-subtle transition-colors focus-within:border-border-default focus-within:bg-bg-card">
             <input
               type="text"
               placeholder={`Search ${placeholder ?? ""}`}
@@ -298,13 +298,14 @@ export function BarList({
                   setSearch(inputValue);
                 }
               }}
-              className="w-full min-w-0 border-0 bg-neutral-100 rounded-full font-default border-neutral-300 py-2 md:py-2.5 text-sm text-black placeholder:text-neutral-400 px-4 sm:px-5 focus:outline-none focus:ring-0 sm:text-[15px]"
+              className="w-full min-w-0 rounded-full border-0 bg-transparent px-4 py-2 text-sm font-default text-content-default placeholder:text-content-subtle focus:outline-none focus:ring-0 sm:px-5 sm:py-2.5 sm:text-[15px]"
             />
+
             <button
               type="button"
               onClick={() => setSearch(inputValue)}
               aria-label="Search"
-              className="flex shrink-0 items-center justify-center pr-3 pl-3 sm:pr-4 bg-neutral-700 text-white hover:bg-neutral-600 transition-colors"
+              className="flex shrink-0 items-center justify-center bg-bg-inverted px-3 text-content-inverted transition-colors hover:opacity-90 sm:px-4"
             >
               <Search className="h-4 w-4" />
             </button>
