@@ -353,14 +353,14 @@ const COUNT_LABELS: Record<string, string> = {
 // always matches what's actually drawn on the bar.
 const METRIC_COLORS = {
   clicks: {
-    active: "bg-neutral-200",
-    inactive: "bg-neutral-100",
-    swatch: "bg-neutral-200",
+    active: "bg-bg-bar-primary",
+    inactive: "bg-bg-bar-secondary",
+    swatch: "bg-bg-bar-primary",
   },
   revenue: {
-    active: "bg-neutral-200",
-    inactive: "bg-neutral-100",
-    swatch: "bg-neutral-200",
+    active: "bg-bg-bar-primary",
+    inactive: "bg-bg-bar-secondary",
+    swatch: "bg-bg-bar-primary",
   },
 } as const;
 
@@ -510,12 +510,12 @@ export function LineItem({
     const estimatedTooltipHeight = 150;
     const spaceAbove = rect.top;
     const placeAbove = spaceAbove > estimatedTooltipHeight + TOOLTIP_GAP;
-
+    const leftAdded = 114
     setTooltipPos({
       top: placeAbove
         ? rect.top + 4 * TOOLTIP_GAP
         : rect.bottom + 2 * TOOLTIP_GAP,
-      left: clampedCenterX - 4 * TOOLTIP_GAP,
+      left: clampedCenterX - leftAdded,
       placement: placeAbove ? "above" : "below",
       width,
     });
@@ -612,12 +612,12 @@ export function LineItem({
           contentClassName="max-w-[min(90vw,32rem)]"
           disabled={filterButtonHovered}
         >
-          <div className="truncate text-[13px] text-neutral-600 sm:text-[16px]">
+          <div className="truncate text-[13px] text-content-default font-display sm:text-[16px]">
             {getPrettyUrl(title)}
           </div>
         </Tooltip>
       ) : (
-        <div className="truncate text-[13px] text-neutral-600 sm:text-[15px]">
+        <div className="truncate text-[13px] text-content-default font-display sm:text-[15px]">
           {title}
         </div>
       )}
@@ -814,13 +814,13 @@ export function LineItem({
         </div>
         <div
           className={cn(
-            "relative z-10 flex h-7 sm:h-8 w-full min-w-0 items-center border-l-4 border-neutral-500 px-2 sm:px-4 font-display",
+            "relative z-10 flex h-7 sm:h-8 w-full min-w-0 items-center   px-2 sm:px-4 font-display",
             "max-w-[calc(100%-2rem)] transition-[max-width] duration-300 ease-in-out",
             "group-hover:max-w-[calc(100%-5rem)]"
           )}
         >
           <div className="min-w-0 flex-1">{lineItem}</div>
-          {onExpandRow && (
+          {/* {onExpandRow && (
             <button
               type="button"
               onClick={(e) => {
@@ -839,7 +839,7 @@ export function LineItem({
             >
               <Maximize2 className="h-3.5 w-3.5" />
             </button>
-          )}
+          )} */}
         </div>
 
         <div className="z-10 flex shrink-0 items-center gap-2 px-2 sm:px-3">
@@ -872,7 +872,7 @@ export function LineItem({
                 : activeValue
             }
             className={cn(
-              "z-10 px-1 sm:px-2 text-xs sm:text-sm font-alexandria text-neutral-600 transition-transform duration-300",
+              "z-10 px-1 sm:px-2 text-xs sm:text-sm font-alexandria text-content-default transition-transform duration-300",
               isModalView ? "-translate-x-14" : "group-hover:-translate-x-14"
             )}
             style={{ transform: `translateX(var(--tw-translate-x, 0)) translateZ(0)` }}
@@ -890,7 +890,7 @@ export function LineItem({
           />
           <div
             className={cn(
-              "absolute right-0 font-alexandria px-2 sm:px-3 text-xs sm:text-sm text-neutral-600/70 transition-all duration-300",
+              "absolute right-0 font-alexandria px-2 sm:px-3 text-xs sm:text-sm text-content-subtle transition-all duration-300",
               isModalView
                 ? "visible translate-x-0 opacity-100"
                 : "invisible translate-x-14 opacity-0 group-hover:visible group-hover:translate-x-0 group-hover:opacity-100"
@@ -924,30 +924,39 @@ export function LineItem({
               pointerEvents: "none",
               width: tooltipPos!.width,
             }}
-            className="z-50 rounded-xl font-alexandria bg-neutral-50 p-3 text-neutral-400 shadow-xl backdrop-blur-sm"
+            className="z-50 rounded-xl font-alexandria bg-bg-default p-3 text-content-subtle shadow-xl backdrop-blur-sm"
           >
-            <div className="flex items-center gap-1.5 border-b border-neutral-200 pb-2">
+            <div className="flex items-center gap-1.5 border-b border-border-subtle pb-2">
               {icon && <div className="flex size-[18px] shrink-0 items-center justify-center">{icon}</div>}
-              <span className="truncate text-[13.5px] font-medium text-neutral-500">{title}</span>
+              <span className="truncate text-[13px] font-medium text-content-subtle">{title}</span>
             </div>
 
             <div className="mt-2 space-y-1.5">
-              <div className="flex items-center font-alexandria justify-between text-[13.5px]">
-                <span className="flex items-center gap-1.5 text-neutral-400">
-
-                  {countLabel}
-                </span>
-                <span className="font-medium">{formatNumber(safeCount)}</span>
-              </div>
-              <div className="flex items-center font-alexandria justify-between text-[13.5px]">
-                <span className="flex items-center gap-1.5 text-neutral-400">
-                  {kpiLabel}
-                </span>
-                <span className="font-medium">{formatKpiValue(safeRevenue)}</span>
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center font-alexandria justify-between text-[13.5px]">
+                  <span className="flex items-center gap-1.5 text-content-subtle">
+                    <span
+                      className={cn("size-3 shrink-0 rounded-full", clicksBar.colorClass)}
+                      aria-hidden="true"
+                    />
+                    {countLabel}
+                  </span>
+                  <span className="font-medium">{formatNumber(safeCount)}</span>
+                </div>
+                <div className="flex items-center font-alexandria justify-between text-[13.5px]">
+                  <span className="flex items-center gap-1.5 text-content-subtle">
+                    <span
+                      className={cn("size-3 shrink-0 rounded-full", revenueBar.colorClass)}
+                      aria-hidden="true"
+                    />
+                    {kpiLabel}
+                  </span>
+                  <span className="font-medium">{formatKpiValue(safeRevenue)}</span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-2 space-y-1 border-t border-neutral-200 pt-2">
+            <div className="mt-2 space-y-1 border-t border-border-subtle pt-2">
               <div className="flex items-center font-alexandria justify-between text-[13.5px] text-neutral-400">
                 <span>{kpiLabel}/{countLabel.toLowerCase().replace(/s$/, "")}</span>
                 <span className="font-medium text-neutral-400">

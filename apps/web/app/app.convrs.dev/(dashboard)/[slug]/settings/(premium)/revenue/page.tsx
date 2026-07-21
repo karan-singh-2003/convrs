@@ -1359,7 +1359,7 @@ export default function RevenueSettingsPage() {
         title="Revenue"
         description="Connect a payment provider to attribute revenue back to visitors and sessions."
       >
-        <div className=" rounded-2xl flex flex-col gap-5 bg-white p-5">
+        <div className=" rounded-2xl flex flex-col gap-5 bg-bg-default p-5">
           <ProviderSelector
             provider={provider}
             setProvider={setProvider}
@@ -1423,7 +1423,7 @@ export default function RevenueSettingsPage() {
         description="Used for all revenue and payment conversions"
         className="mt-5"
       >
-        <div className="flex h-full flex-col gap-6 rounded-2xl bg-white ">
+        <div className="flex h-full flex-col gap-6 rounded-2xl bg-bg-default ">
           <div className="px-6 pt-4">
             <Currency
               value={pendingCurrency}
@@ -1432,7 +1432,7 @@ export default function RevenueSettingsPage() {
             />
           </div>
 
-          <div className="flex justify-end border-t border-neutral-100 pt-2">
+          <div className="flex justify-end border-t border-border-subtle pt-2">
             <div className="px-6 pb-2">
               <Button
                 text="Save"

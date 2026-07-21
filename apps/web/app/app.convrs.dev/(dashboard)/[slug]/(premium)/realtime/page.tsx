@@ -128,7 +128,7 @@ function DetailView({
           item.code && {
           icon: (
             <img
-              src={`https://flagcdn.com/w20/${item.label.toLowerCase()}.png`}
+              src={`https://flagcdn.com/w20/${item.code.toLowerCase()}.png`}
               alt={item.label}
               width="20"
             />
@@ -140,31 +140,35 @@ function DetailView({
 
   return (
     <div className="py-3">
-      <div className="flex items-center mb-5 px-2 justify-between">
+      <div className="mb-5 flex items-center justify-between px-2">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-neutral-200 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle"
           aria-label="Go back"
         >
-          <ChevronLeft size={16} className="text-neutral-500" />
+          <ChevronLeft
+            size={16}
+            className="text-content-subtle"
+          />
         </button>
-        <h1 className="font-medium text-neutral-600 text-[15px] text-center">
+
+        <h1 className="px-2 text-center font-display text-[14px] font-medium text-content-default sm:text-[15px]">
           {title}
         </h1>
-        {/* Spacer to balance the back chevron so title is truly centred */}
-        <div className="w-7" />
+
+        <div className="h-8 w-8" />
       </div>
 
-      <div className="max-h-[200px] overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <div className="max-h-[220px] overflow-x-hidden overflow-y-auto scrollbar-hide">
         <BarList
           tab={title.toLowerCase()}
           unit="visitors"
           data={mappedBarData}
           allData={mappedBarData}
           maxValue={maxValue}
-          barBackground="bg-neutral-200"
-          hoverBackground="hover:bg-neutral-100"
+          barBackground="bg-bg-bar-primary"
+          hoverBackground="hover:bg-bg-subtle"
           setShowModal={() => { }}
           limit={100}
         />
@@ -186,13 +190,17 @@ function SummaryRow({
   onExpand: () => void;
 }) {
   return (
-    <div className="grid grid-cols-[90px_1fr_auto] items-center gap-2">
-      <span className="text-[13.5px] font-display text-neutral-500">{label}</span>
+    <div className="grid grid-cols-[72px_1fr_auto] gap-2 sm:grid-cols-[90px_1fr_auto] sm:gap-3 items-center">
+      <span className="truncate font-display text-[13px] text-content-subtle sm:text-[13.5px]">
+        {label}
+      </span>
+
       {renderValue()}
+
       <button
         type="button"
         onClick={onExpand}
-        className="flex items-center gap-1 text-sm font-alexandria text-neutral-400 hover:text-neutral-600 transition-colors"
+        className="flex items-center gap-1 text-sm font-alexandria text-content-subtle transition-colors hover:text-content-default"
         aria-label={`Expand ${label}`}
       >
         <span>{count}</span>
@@ -202,7 +210,7 @@ function SummaryRow({
   );
 }
 
-// // ─── Mock data for UI testing ────────────────────────────────────────────────
+// ─── Mock data for UI testing ────────────────────────────────────────────────
 // const USE_MOCK_DATA = true; // flip to false to use real live data
 
 // const MOCK_LIVE_DATA = {
@@ -358,7 +366,7 @@ function SummaryRow({
 //   const summaryContent = (
 //     <div className="space-y-4 px-4 py-2.5">
 //       {hasLiveData && (
-//         <div className="flex items-center justify-between pb-1 text-neutral-600">
+//         <div className="flex items-center justify-between pb-1 text-content-default">
 //           <p className="text-[14px] font-medium">
 //             •{" "}
 //             <span className="font-alexandria">
@@ -376,10 +384,20 @@ function SummaryRow({
 //             count={dashboardData.referrers[0].count}
 //             onExpand={() => handleExpand("referrers")}
 //             renderValue={() => (
-//               <span className="text-[15px] flex items-center gap-x-1.5 font-medium text-neutral-600">
-//                 <ArrowRight size={18} />
-//                 {dashboardData.referrers[0].source}
-//               </span>
+//               <div className="flex min-w-0 items-center gap-2">
+//                 {/* {dashboardData.referrers[0].source === "direct" ? (
+//                   <ArrowRight
+//                     size={16}
+//                     className="shrink-0 text-content-subtle"
+//                   />
+//                 ) : (
+//                   null
+//                 )} */}
+
+//                 <span className="truncate font-display text-[14px] font-medium text-content-default sm:text-[15px]">
+//                   {dashboardData.referrers[0].source}
+//                 </span>
+//               </div>
 //             )}
 //           />
 
@@ -408,7 +426,7 @@ function SummaryRow({
 //                   : rawCountry;
 
 //               return (
-//                 <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
+//                 <div className="flex items-center gap-2 text-base font-medium text-content-default">
 //                   {countryCode !== "unknown" && (
 //                     <img
 //                       src={`https://flagcdn.com/w20/${countryCode}.png`}
@@ -428,7 +446,7 @@ function SummaryRow({
 //             count={dashboardData.pages[0]?.count ?? 0}
 //             onExpand={() => handleExpand("pages")}
 //             renderValue={() => (
-//               <span className="text-base font-medium text-neutral-600">
+//               <span className="text-base font-medium text-content-default">
 //                 {dashboardData.pages[0]?.page ?? "No data"}
 //               </span>
 //             )}
@@ -473,7 +491,7 @@ function SummaryRow({
 
 //       <div className="fixed inset-x-0 bottom-20 z-20 px-3">
 //         {hasLiveData ? (
-//           <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-neutral-200/70 bg-neutral-100 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+//           <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-border-subtle bg-bg-card shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
 //             <AnimatedCardBody
 //               activeSection={activeSection}
 //               summaryContent={summaryContent}
@@ -530,7 +548,7 @@ function SummaryRow({
 // }
 
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
+// // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard({
   workspaceId: workspaceIdProp,
   projectToken: projectTokenProp,
@@ -644,8 +662,8 @@ export default function Dashboard({
   const summaryContent = (
     <div className="space-y-4 px-4 py-2.5">
       {hasLiveData && (
-        <div className="flex items-center justify-between pb-1 text-neutral-600">
-          <p className="text-[15px] font-medium">
+        <div className="flex items-center justify-between pb-1 text-content-default">
+          <p className="text-[14px] font-medium">
             •{" "}
             <span className="font-alexandria">
               {dashboardData.total}
@@ -662,10 +680,20 @@ export default function Dashboard({
             count={dashboardData.referrers[0].count}
             onExpand={() => handleExpand("referrers")}
             renderValue={() => (
-              <span className="text-[15px] flex items-center gap-x-1.5 font-medium text-neutral-600">
-                <ArrowRight size={18} />
-                {dashboardData.referrers[0].source}
-              </span>
+              <div className="flex min-w-0 items-center gap-2">
+                {/* {dashboardData.referrers[0].source === "direct" ? (
+                  <ArrowRight
+                    size={16}
+                    className="shrink-0 text-content-subtle"
+                  />
+                ) : (
+                  null
+                )} */}
+
+                <span className="truncate font-display text-[14px] font-medium text-content-default sm:text-[15px]">
+                  {dashboardData.referrers[0].source}
+                </span>
+              </div>
             )}
           />
 
@@ -694,7 +722,7 @@ export default function Dashboard({
                   : rawCountry;
 
               return (
-                <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
+                <div className="flex items-center gap-2 text-base font-medium text-content-default">
                   {countryCode !== "unknown" && (
                     <img
                       src={`https://flagcdn.com/w20/${countryCode}.png`}
@@ -714,7 +742,7 @@ export default function Dashboard({
             count={dashboardData.pages[0]?.count ?? 0}
             onExpand={() => handleExpand("pages")}
             renderValue={() => (
-              <span className="text-base font-medium text-neutral-600">
+              <span className="text-base font-medium text-content-default">
                 {dashboardData.pages[0]?.page ?? "No data"}
               </span>
             )}
@@ -759,7 +787,7 @@ export default function Dashboard({
 
       <div className="fixed inset-x-0 bottom-20 z-20 px-3">
         {hasLiveData ? (
-          <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-neutral-200/70 bg-neutral-100/90 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-border-subtle bg-bg-card shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
             <AnimatedCardBody
               activeSection={activeSection}
               summaryContent={summaryContent}

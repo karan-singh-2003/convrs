@@ -106,15 +106,22 @@ function Calendar({
           "hover:bg-bg-subtle active:bg-bg-muted outline outline-0 outline-offset-2 focus-visible:outline-2 outline-content-default",
         ),
         day_today: "font-normal",
-        day_selected:
-          "rounded aria-selected:bg-bg-inverted aria-selected:text-bg-card aria-selected:font-normal",
+        // day_selected:
+        //   "rounded aria-selected:bg-bg-inverted aria-selected:text-bg-card aria-selected:font-normal",
         day_disabled:
           "!text-content-disabled line-through disabled:hover:bg-transparent",
         day_outside: "text-content-subtle",
+        day_selected:
+          "rounded-md aria-selected:bg-bg-inverted aria-selected:text-content-inverted aria-selected:font-medium",
+
+        day_range_start:
+          "rounded-r-none !rounded-l-md aria-selected:bg-bg-inverted aria-selected:text-content-inverted",
+
+        day_range_end:
+          "rounded-l-none !rounded-r-md aria-selected:bg-bg-inverted aria-selected:text-content-inverted",
+
         day_range_middle:
-          "!rounded-none aria-selected:!bg-bg-subtle aria-selected:!text-content-default",
-        day_range_start: "rounded-r-none !rounded-l",
-        day_range_end: "rounded-l-none !rounded-r",
+          "!rounded-none aria-selected:bg-bg-emphasis aria-selected:text-content-inverted",
         day_hidden: "invisible",
         ...classNames,
       }}

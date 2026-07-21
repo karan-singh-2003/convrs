@@ -268,7 +268,7 @@ export function Combobox({
         >
           <Command loop shouldFilter={shouldFilter}>
             {!hideSearch && (
-              <div className=" border-b border-neutral-200">
+              <div className=" border-b border-border-subtle">
                 <Command.Input
                   placeholder={searchPlaceholder}
                   value={search}

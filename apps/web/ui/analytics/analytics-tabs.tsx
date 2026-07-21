@@ -136,7 +136,7 @@ export function AnalyticsTabs({
 
             const cardContent = (
               <>
-                <div className="flex items-start gap-2.5 text-[12.5px] text-neutral-500 sm:items-center sm:text-[14.5px] min-w-0">
+                <div className="flex items-start gap-2.5 text-[12.5px] text-content-subtle sm:items-center sm:text-[14.5px] min-w-0">
                   <span
                     className="font-poppins font-medium truncate min-w-0"
                     title={label}
@@ -150,7 +150,7 @@ export function AnalyticsTabs({
                       id === "avg_session_duration" ? (
                         <div
                           className={cn(
-                            "text-lg text-neutral-600 font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                            "text-lg text-content-default font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
                             showPaywall && "opacity-30"
                           )}
                         >
@@ -192,7 +192,7 @@ export function AnalyticsTabs({
                           }
                           locales="en-US"
                           className={cn(
-                            "text-lg text-neutral-600 font-medium font-alexandria sm:text-xl md:text-[26px]",
+                            "text-lg text-content-default font-medium font-alexandria sm:text-xl md:text-[26px]",
                             showPaywall && "opacity-30"
                           )}
                         />
@@ -206,7 +206,7 @@ export function AnalyticsTabs({
                     )}
                   </div>
 
-                  <div className="min-h-5">
+                  {/* <div className="min-h-5">
                     {(() => {
                       const change = percentageChanges?.[id];
                       const hasChange =
@@ -250,7 +250,7 @@ export function AnalyticsTabs({
                         </div>
                       );
                     })()}
-                  </div>
+                  </div> */}
                 </div>
               </>
             );
@@ -261,8 +261,8 @@ export function AnalyticsTabs({
                     href={tabHref(id)}
                     aria-current
                     className={cn(
-                      "relative flex h-full min-h-[120px]  w-full flex-col gap-y-3 px-3 py-2  sm:px-4 sm:py-3",
-                      "transition-colors hover:bg-neutral-50 focus:outline-none active:bg-neutral-100",
+                      "relative flex h-full min-h-[105px]  w-full flex-col gap-y-3 px-3 py-2  sm:px-4 sm:py-3",
+                      "transition-colors hover:bg-bg-card focus:outline-none active:bg-bg-card",
                       "ring-inset ring-neutral-500 focus-visible:ring-1 sm:first:rounded-tl-xl"
                     )}
                   >
@@ -271,7 +271,7 @@ export function AnalyticsTabs({
                 ) : (
                   <div
                     className={cn(
-                      "relative flex h-full min-h-[120px] w-full flex-col gap-y-3 px-3 py-2  sm:px-4 sm:py-3",
+                      "relative flex h-full min-h-[105px] w-full flex-col gap-y-3 px-3 py-2  sm:px-4 sm:py-3",
                       "ring-inset ring-neutral-500 sm:first:rounded-tl-xl"
                     )}
                   >

@@ -16,6 +16,7 @@ export default function PublicStats() {
       setEnabled(isPublic);
     }
   }, [isPublic]);
+
   const handleToggle = async (next: boolean) => {
     setLoading(true);
 
@@ -50,22 +51,25 @@ export default function PublicStats() {
     publicId && typeof window !== "undefined"
       ? `${window.location.origin}/shared/${publicId}`
       : "";
+
   return (
-    <div className="bg-white p-4 border-neutral-200 rounded-2xl border space-y-2">
-      <div className="relative w-full flex justify-between items-center  ">
+    <div className="space-y-2 rounded-2xl border border-border-subtle bg-bg-default p-4">
+      <div className="relative flex w-full items-center justify-between">
         <div className="space-y-0.5 font-display">
-          <h2 className="font-medium text-neutral-600 text-sm">
+          <h2 className="text-sm font-medium text-content-default">
             Public Dashboard
           </h2>
-          <div className="font-default text-[13.5px] text-neutral-500">
+
+          <p className="font-default text-[13px] text-content-subtle">
             Share your project stats with the public.
-          </div>
+          </p>
         </div>
+
         <Switch
           disabled={loading}
           checked={enabled || false}
-          trackDimensions="radix-state-checked:bg-black focus-visible:ring-black/20 w-7 h-4"
-          thumbDimensions="size-3"
+          trackDimensions="radix-state-checked:bg-bg-inverted focus-visible:ring-content-emphasis/20 h-4 w-7"
+          thumbDimensions="size-3.5"
           thumbTranslate="translate-x-3"
           fn={(value) => {
             setEnabled(value);
@@ -73,6 +77,7 @@ export default function PublicStats() {
           }}
         />
       </div>
+
       {enabled && shareUrl && (
         <div className="mt-3">
           <Input readOnly value={shareUrl} />

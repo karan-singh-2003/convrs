@@ -22,8 +22,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={isPassword && showPassword ? "text" : type}
             suppressHydrationWarning
             className={cn(
-              "h-10 w-full rounded-sm font-display border border-border-subtle bg-bg-default px-3 text-sm md:text-[15px] text-content-default placeholder-neutral-400 transition-colors",
-              "read-only:bg-bg-default read-only:text-content-subtle",
+              "h-10 w-full rounded-sm font-display border border-border-subtle bg-bg-emphasis/80 px-3 text-sm md:text-[15px] text-content-default placeholder-neutral-400 transition-colors",
+              "read-only:bg-bg-emphasis/80 read-only:text-content-subtle",
               "focus:border-neutral-500 focus:outline-none focus:ring-0",
               error && "border-red-400 focus:border-red-500",
               (error || isPassword) && "pr-9"

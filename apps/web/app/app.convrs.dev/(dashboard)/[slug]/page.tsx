@@ -86,14 +86,14 @@ const DashboardPage = () => {
               <Analytics mode="private" workspaceId={id} workspaceName={name} />
 
               <div className="relative">
-                <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-neutral-200 bg-neutral-50  shadow-xl font-display">
+                <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-border-subtle bg-bg-card  shadow-xl font-display">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-[14px] font-medium text-neutral-600">
+                      <h2 className="text-[14px] font-medium text-content-default">
                         Finish setting up Convrs
                       </h2>
 
-                      <p className="mt-0 text-[13px] font-poppins text-neutral-500">
+                      <p className="mt-0 text-[13px] font-poppins text-content-subtle">
                         {completedSteps}/{steps.length} completed
                       </p>
                     </div>
@@ -101,14 +101,14 @@ const DashboardPage = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setCollapsed(!collapsed)}
-                        className="rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100"
+                        className="rounded-full p-1 text-content-subtle transition hover:bg-neutral-100"
                       >
                         {collapsed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
 
                       <button
                         onClick={() => setHidden(true)}
-                        className="rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100"
+                        className="rounded-full p-1 text-content-subtle transition hover:bg-neutral-100"
                       >
                         <X size={16} />
                       </button>
@@ -135,24 +135,24 @@ const DashboardPage = () => {
                                   <Check size={10} strokeWidth={3.5} />
                                 </div>
                               ) : active ? (
-                                <div className="flex h-[16px] w-[16px] items-center justify-center rounded-full border border-dashed border-neutral-400" />
+                                <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-dashed border-border-subtle" />
                               ) : (
-                                <div className="h-[18px] w-[18px] rounded-full border border-neutral-300 bg-white" />
+                                <div className="h-[18px] w-[18px] rounded-full border border-border-subtle bg-bg-card" />
                               )}
 
                               <div className="flex-1">
-                                <p className="text-[13px] font-medium text-neutral-700">
+                                <p className="text-[13px] font-medium text-content-default">
                                   {step.title}
                                 </p>
 
                                 {step.description && (
-                                  <p className="mt-0.5 text-[12.5px] leading-5 text-neutral-500">
+                                  <p className="mt-0.5 text-[12.5px] leading-5 text-content-subtle">
                                     {step.description}
                                   </p>
                                 )}
 
                                 {step.action && (
-                                  <div className="mt-1 text-[12px] font-medium text-neutral-600 underline">
+                                  <div className="mt-1 text-[12px] font-medium text-content-default underline">
                                     {step.action}
                                   </div>
                                 )}

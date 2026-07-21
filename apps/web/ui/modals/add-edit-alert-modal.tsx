@@ -117,12 +117,12 @@ function AddEditAlertModal({
       className="flex h-[85dvh] max-w-[900px] flex-col overflow-hidden p-0"
     >
       {/* Header */}
-      <div className="shrink-0 border-b border-neutral-100 px-5 py-3">
+      <div className="shrink-0 border-b border-border-subtle px-5 py-3">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="font-display text-[15px] font-medium text-black/70">
+          <h3 className="font-display text-[15px] font-medium text-content-default">
             {alert ? "Edit Alert" : "Create Alert"}
           </h3>
-          <h1 className="font-display font-medium text-neutral-500 text-[13px]">
+          <h1 className="font-display font-medium text-content-subtle text-[13px]">
             Alerts are sent to : official.jaskaran13@gmail.com
           </h1>
         </div>
@@ -131,7 +131,7 @@ function AddEditAlertModal({
       {/* Body */}
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-2">
         {/* LEFT PANEL */}
-        <div className="flex h-full flex-col overflow-hidden border-b border-neutral-100 md:border-b-0 md:border-r">
+        <div className="flex h-full flex-col overflow-hidden border-b border-border-subtle md:border-b-0 md:border-r">
           <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
             {/* Alert Name */}
             <div className="flex flex-col gap-1.5">
@@ -147,7 +147,7 @@ function AddEditAlertModal({
 
             {/* Trigger */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[13.5px] font-medium text-neutral-500">
+              <label className="text-[13.5px] font-medium text-content-subtle">
                 Trigger
               </label>
               <Input
@@ -174,7 +174,7 @@ function AddEditAlertModal({
                 { value: "editor", label: "Editor" },
                 { value: "preview", label: "Preview" },
               ]}
-              className="bg-neutral-50 w-full text-center border border-neutral-200"
+              className="bg-bg-emphasis w-full text-center border border-border-subtle"
               optionClassName="w-full px-3 py-1 text-center text-sm justify-center"
             />
           </div>
@@ -190,10 +190,10 @@ function AddEditAlertModal({
             />
           </div>
 
-          <div className="bg-neutral-50 min-h-64 max-h-full flex-1 rounded-2xl mt-2 p-1 overflow-hidden">
+          <div className="bg-bg-default min-h-64 max-h-full flex-1 rounded-2xl mt-2 p-1 overflow-hidden">
             <div className="flex h-full flex-col">
-              <div className="flex items-center  px-3 border-b border-neutral-200/80">
-                <h1 className="font-display text-sm font-medium text-neutral-500 whitespace-nowrap">
+              <div className="flex items-center  px-3 border-b border-border-subtle">
+                <h1 className="font-display text-sm font-medium text-content-subtle whitespace-nowrap">
                   Subject
                 </h1>
                 {view === "editor" ? (
@@ -231,7 +231,7 @@ function AddEditAlertModal({
       </div>
 
       {/* Footer */}
-      <div className="flex shrink-0 justify-end gap-2 border-t border-neutral-100 px-5 py-3">
+      <div className="flex shrink-0 justify-end gap-2 border-t border-border-subtle px-5 py-3">
         <Button
           text="Cancel"
           variant="outline"

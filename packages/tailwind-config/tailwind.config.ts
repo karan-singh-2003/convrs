@@ -214,16 +214,21 @@ const config: Config = {
 
         // Light/dark mode colors
 
-        "bg-emphasis": "rgb(var(--bg-emphasis, 229 229 229) / <alpha-value>)",
         "bg-default": "rgb(var(--bg-default, 255 255 255) / <alpha-value>)",
-        "bg-subtle": "rgb(var(--bg-subtle, 245 245 245) / <alpha-value>)",
+        "bg-card": "rgb(var(--bg-card, 255 255 255) / <alpha-value>)",
         "bg-muted": "rgb(var(--bg-muted, 250 250 250) / <alpha-value>)",
+        "bg-subtle": "rgb(var(--bg-subtle, 245 245 245) / <alpha-value>)",
+        "bg-emphasis": "rgb(var(--bg-emphasis, 229 229 229) / <alpha-value>)",
         "bg-inverted": "rgb(var(--bg-inverted, 23 23 23) / <alpha-value>)",
 
         "bg-info": "rgb(var(--bg-info, 191 219 254) / <alpha-value>)",
         "bg-success": "rgb(var(--bg-success, 220 252 231) / <alpha-value>)",
         "bg-attention": "rgb(var(--bg-attention, 255 237 213) / <alpha-value>)",
         "bg-error": "rgb(var(--bg-error, 254 226 226) / <alpha-value>)",
+
+
+        "bg-bar-primary": "rgb(var(--bg-bar-primary, 229 229 229) / <alpha-value>)",
+        "bg-bar-secondary": "rgb(var(--bg-bar-secondary, 245 245 245) / <alpha-value>)",
 
         "border-emphasis":
           "rgb(var(--border-emphasis, 163 163 163) / <alpha-value>)",

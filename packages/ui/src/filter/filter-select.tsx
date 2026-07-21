@@ -359,7 +359,7 @@ const CommandInput = (
     <Command.Input
       {...restProps}
       size={1}
-      className="grow border-0 py-2 pl-4 pr-2 outline-none font-default placeholder:text-neutral-400 focus:ring-0 sm:text-[14.5px]"
+      className="grow border-0 py-2 pl-4 pr-2 outline-none bg-transparent font-default placeholder:text-neutral-400 focus:ring-0 sm:text-[14.5px]"
       onKeyDown={(e) => {
         props.onKeyDown?.(e);
 
@@ -390,7 +390,7 @@ const FilterScroll = forwardRef(
         </div>
         {/* Bottom scroll fade */}
         <div
-          className="pointer-events-none absolute bottom-0 left-0 hidden h-16 w-full bg-gradient-to-t from-white sm:block"
+          className="pointer-events-none absolute bottom-0 left-0 hidden h-16 w-full bg-gradient-to-t from-bg-card sm:block"
           style={{ opacity: 1 - Math.pow(scrollProgress, 2) }}
         ></div>
       </>
@@ -428,7 +428,7 @@ function FilterButton({
     <Command.Item
       className={cn(
         "flex cursor-pointer font-display items-center gap-3 whitespace-nowrap rounded-none px-3 pr-4 py-2 text-left text-sm",
-        "data-[selected=true]:bg-neutral-100"
+        "data-[selected=true]:bg-bg-emphasis/65"
       )}
       onSelect={onSelect}
       value={label + option?.value}

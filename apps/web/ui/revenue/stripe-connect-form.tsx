@@ -18,18 +18,18 @@ export function StripeConnectForm({
   isValid: boolean;
 }) {
   return (
-    <div className=" space-y-5 rounded-2xl bg-white ">
+    <div className=" space-y-5 rounded-2xl  ">
       <div>
-        <h2 className="font-display text-[15px] font-medium text-neutral-600">
+        <h2 className="font-display text-[15px] font-medium text-content-default">
           Connect your Stripe account
         </h2>
-        <p className="mt-0.5 font-medium font-display text-sm text-neutral-500">
-          Create a restricted API key in your <Link href={CONNECT_URLS.stripe} target="_blank" rel="noopener noreferrer" className="text-neutral-600 underline underline-offset-2" > Stripe Dashboard </Link>, then paste it below.
+        <p className="mt-0.5 font-medium font-display text-sm text-content-subtle">
+          Create a restricted API key in your <Link href={CONNECT_URLS.stripe} target="_blank" rel="noopener noreferrer" className="text-content-default underline underline-offset-2" > Stripe Dashboard </Link>, then paste it below.
         </p>
       </div>
 
       <div>
-        <label className="mb-2 block font-display text-sm font-medium text-neutral-600">
+        <label className="mb-2 block font-display text-sm font-medium text-content-default">
           Restricted API Key
         </label>
 
@@ -39,14 +39,27 @@ export function StripeConnectForm({
           onChange={(e) =>
             setForm((f) => ({ ...f, apiKey: e.target.value }))
           }
-          className="h-11 bg-neutral-50"
+          className="h-11 "
         />
 
       </div>
 
       <Button
         text="Connect"
-        className="h-11 w-full rounded-lg"
+        className="
+    h-11
+    w-full
+    rounded-xl
+    font-display
+    font-medium
+    transition-all
+    bg-bg-inverted
+    text-content-inverted
+    hover:opacity-90
+    active:scale-[0.99]
+    disabled:opacity-50
+    disabled:hover:opacity-50
+  "
         onClick={onConnect}
         loading={connecting}
         disabled={!isValid || connecting}

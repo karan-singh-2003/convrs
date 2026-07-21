@@ -263,7 +263,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
 
   const hasRevenueProvider = integrations.length > 0;
   const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();
-  console.log("kpitype and label",kpiEventName,kpiType)
+  console.log("kpitype and label", kpiEventName, kpiType)
   const { queryParams } = useRouterStuff();
   const { funnels } = useFunnels({
     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
@@ -327,7 +327,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     toast.error("Error loading analytics data");
   }
   if (loading) {
-    return "loading"
+    return ""
   }
 
   return (
@@ -335,7 +335,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
       <CreateFunnelEditorModal />
       <FunnelListModal />
       <div>
-        <div className="w-full bg-neutral-50 border-b">
+        <div className="w-full border-y border-border-subtle bg-bg-card">
           <div className="w-full relative  py-2">
             {/* CENTER → Tabs */}
             <div className="max-w-screen-lg mx-auto flex justify-center ">
@@ -371,10 +371,10 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
             </div>
 
             {/* RIGHT → Toggle (floating) */}
-            <div className="absolute right-3 md:top-1 z-20 flex items-center gap-2 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow">
+            <div className="absolute right-3 top-2 z-20 flex items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md">
               {safeView === "funnel" && hasFunnels && (
                 <button
-                  className="bg-neutral-100 text-neutral-600 text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
+                  className="bg-bg-emphasis text-content-default text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
                   onClick={() => openFunnelListModal()}
                 >
                   {selectedFunnel?.name || "Choose funnel"}
@@ -391,13 +391,13 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
         <div className="relative">
           <div className={cn("relative overflow-hidden sm:rounded-b-xl")}>
             {safeView === "timeseries" && (
-              <div className="h-[444px] w-full sm:h-[464px]">
+              <div className="h-[444px] bg-bg-card w-full sm:h-[464px]">
                 <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
               </div>
             )}
 
             {safeView === "funnel" && (
-              <div className="relative h-[444px] w-full sm:h-[464px]">
+              <div className="relative h-[444px] border-b bg-bg-card border-border-subtle w-full sm:h-[464px]">
                 <div
                   className={`h-full w-full transition-opacity ${mode === "private" && funnels.length === 0
                     ? "opacity-20"

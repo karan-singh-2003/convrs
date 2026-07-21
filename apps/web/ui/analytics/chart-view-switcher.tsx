@@ -17,11 +17,11 @@ export function ChartViewSwitcher({
   return (
     <ToggleGroup
       className={cn(
-        "flex w-fit shrink-0 items-center gap-1 border-neutral-100 bg-neutral-100",
+        "flex w-fit shrink-0 items-center gap-1 border-border-subtle bg-bg-emphasis",
         className
       )}
       optionClassName="size-8 text-sm p-0 flex items-center justify-center"
-      indicatorClassName="border border-neutral-200 bg-white"
+      indicatorClassName="border border-border-default bg-bg-default"
       options={[
         {
           label: "A",

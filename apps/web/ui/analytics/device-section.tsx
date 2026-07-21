@@ -132,7 +132,7 @@ export function DeviceSection() {
             </div>
           )
         ) : (
-          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
+          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-centersm:h-[300px]">
             <LoadingSpinner />
           </div>
         )

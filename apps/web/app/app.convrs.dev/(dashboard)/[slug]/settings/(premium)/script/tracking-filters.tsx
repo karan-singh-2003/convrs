@@ -189,7 +189,7 @@ export function TrackingFilters() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 ">
       {cards.map((card) => (
         <SecurityFilterCard
           key={card.title}

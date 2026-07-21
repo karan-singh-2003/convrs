@@ -58,13 +58,13 @@ export function SecurityFilterCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-default">
       <div className="space-y-3 p-4">
         <div className="space-y-0.5">
-          <h3 className="text-sm font-medium font-display text-neutral-700">
+          <h3 className="text-sm font-medium font-display text-content-default">
             {title}
           </h3>
-          <p className="text-[14px] font-display text-neutral-500">
+          <p className="text-[14px] font-display text-content-subtle">
             {description}
           </p>
         </div>
@@ -76,7 +76,7 @@ export function SecurityFilterCard({
               onChange={(event) => setInputValue(event.target.value)}
               placeholder={placeholder}
               disabled={loading || saving}
-              className="h-10 w-full rounded-none border border-neutral-200 bg-neutral-100/80 pl-3 pr-24 text-[14px] font-display text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-300 focus:outline-none"
+              className="h-10 w-full rounded-none border border-border-subtle bg-bg-emphasis/65 pl-3 pr-24 text-[14px] font-display text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-300 focus:outline-none"
             />
 
             <Button
@@ -84,7 +84,7 @@ export function SecurityFilterCard({
               variant="primary"
               type="submit"
               disabled={!canSubmit}
-              className="absolute right-1 top-1/2 h-8 w-fit -translate-y-1/2 rounded-md bg-transparent px-3 text-[13px] font-display text-black/60"
+              className="absolute right-1 top-1/2 h-8 w-fit border-0 -translate-y-1/2 rounded-md bg-transparent px-3 text-[13px] font-display text-content-subtle"
             />
           </div>
         </form>

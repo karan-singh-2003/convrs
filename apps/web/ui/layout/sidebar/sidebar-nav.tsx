@@ -66,7 +66,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                           {title === "" && (
                             <div className="w-full px-1.5">
                               {/* <WorkspaceDropdown /> */}
-                              <h1 className="font-poppins text-neutral-500 font-semibold   ">Convrs</h1>
+                              <h1 className="font-poppins text-content-default font-semibold   ">Convrs</h1>
                             </div>
                           )}
                           <div
@@ -179,8 +179,8 @@ function NavItem({ item, area }: { item: NavItemType; area: string }) {
           ? "px-2 text-[14.5px] md:text-[14.5px]"
           : "flex-shrink-0 px-3 py-1 text-[14.5px] md:text-[16.5px]",
         isActive
-          ? "text-neutral-700/90"
-          : "text-neutral-500/80 hover:text-neutral-500"
+          ? "text-content-default"
+          : "text-content-subtle hover:text-content-default"
       )}
     >
       {title}

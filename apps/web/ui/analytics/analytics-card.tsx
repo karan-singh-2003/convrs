@@ -88,11 +88,11 @@ export function AnalyticsCard<T extends string>({
       </Modal>
       <div
         className={cn(
-          "group relative z-0 h-[400px] overflow-hidden rounded-lg border border-neutral-200 bg-white sm:h-[450px] sm:rounded-xl",
+          "group relative z-0 h-[400px] overflow-hidden rounded-lg border border-border-subtle bg-bg-card sm:h-[450px] sm:rounded-xl",
           className
         )}
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
+        <div className="flex items-center justify-between border-b border-border-subtle px-3 sm:px-4">
           {isMobile ? (
             <Popover
               openPopover={isOpen}
@@ -111,7 +111,7 @@ export function AnalyticsCard<T extends string>({
                       icon={Icon && <Icon className="size-4" />}
                       className={cn(
                         "h-9 w-full justify-start px-2 font-medium",
-                        selectedTabId === id && "bg-neutral-100"
+                        selectedTabId === id && "bg-bg-card"
                       )}
                     />
                   ))}
@@ -211,8 +211,8 @@ function SubTabs({
       }))}
       selected={selectedTab}
       selectAction={(period) => onSelectTab(period)}
-      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-3 py-2 sm:flex-nowrap sm:px-5"
-      optionClassName="text-[13px] px-2 text-neutral-500 font-medium hover:text-neutral-700 sm:text-[15px] sm:px-2.5"
+      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-border-subtle bg-bg-card px-3 py-2 sm:flex-nowrap sm:px-5"
+      optionClassName="text-[13px] px-2 text-content-subtle font-medium hover:text-content-default sm:text-[15px] sm:px-2.5"
       indicatorClassName="border-0 bg-transparent rounded-md"
     />
   );

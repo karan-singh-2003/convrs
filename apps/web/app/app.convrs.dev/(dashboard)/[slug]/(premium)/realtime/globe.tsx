@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
+import { useTheme } from "next-themes";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -55,7 +56,7 @@ function upsertDataPointsLayer(
     type: "circle",
     source: DATA_SOURCE_ID,
     paint: {
-      "circle-radius": 14, // fixed size for all points
+      "circle-radius": 14,
       "circle-color": ["coalesce", ["get", "color"], "#2563eb"],
       "circle-opacity": 0.95,
       "circle-stroke-color": "#ffffff",
@@ -69,6 +70,8 @@ export default function Globe({
 }: {
   dataPoints?: GlobeDataPoint[];
 }) {
+  const { resolvedTheme } = useTheme();
+
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const pointsRef = useRef<GlobeDataPoint[]>(dataPoints);
@@ -91,13 +94,23 @@ export default function Globe({
     mapRef.current = map;
 
     map.on("style.load", () => {
-      map.setFog({
-        color: "white", // sky color
-        "high-color": "white", // upper atmosphere
-        "horizon-blend": 0.0, // remove glow
-        "space-color": "white", // remove black space
-        "star-intensity": 0, //  no stars
-      });
+      map.setFog(
+        resolvedTheme === "dark"
+          ? {
+              color: "#171717",
+              "high-color": "#171717",
+              "space-color": "#000000",
+              "horizon-blend": 0,
+              "star-intensity": 0,
+            }
+          : {
+              color: "#ffffff",
+              "high-color": "#ffffff",
+              "space-color": "#ffffff",
+              "horizon-blend": 0,
+              "star-intensity": 0,
+            }
+      );
 
       upsertDataPointsLayer(map, pointsRef.current);
     });
@@ -108,6 +121,30 @@ export default function Globe({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
+
+    map.setFog(
+      resolvedTheme === "dark"
+        ? {
+            color: "#171717",
+            "high-color": "#171717",
+            "space-color": "#000000",
+            "horizon-blend": 0,
+            "star-intensity": 0,
+          }
+        : {
+            color: "#ffffff",
+            "high-color": "#ffffff",
+            "space-color": "#ffffff",
+            "horizon-blend": 0,
+            "star-intensity": 0,
+          }
+    );
+  }, [resolvedTheme]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
     upsertDataPointsLayer(map, dataPoints);
   }, [dataPoints]);
 

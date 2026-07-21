@@ -61,6 +61,7 @@ export function WorkspaceDropdown() {
           align="start"
           openPopover={openPopover}
           setOpenPopover={setOpenPopover}
+          popoverContentClassName="rounded-xl bg-bg-card"
           content={
             <WorkspaceList
               workspaces={workspaces}
@@ -72,7 +73,7 @@ export function WorkspaceDropdown() {
         >
           <button
             onClick={() => setOpenPopover(!openPopover)}
-            className="flex w-auto h-9 items-center gap-1.5 rounded-xl border border-neutral-200 p-1.5 px-4 sm:w-full sm:gap-2"
+            className="flex w-auto h-9 items-center gap-1.5 rounded-xl border bg-bg-card border-border-subtle p-1.5 px-4 sm:w-full sm:gap-2"
           >
             {/* <BlurImage
               src={selected.image}
@@ -82,10 +83,10 @@ export function WorkspaceDropdown() {
               height={21}
               draggable={false}
             /> */}
-            <span className="font-medium text-neutral-500  font-default text-[14px] flex-1 truncate">
+            <span className="font-medium text-content-default font-default text-[14px] flex-1 truncate">
               {selected.domain}
             </span>
-            <ChevronDown className="size-3.5 text-neutral-500 shrink-0" />
+            <ChevronDown className="size-3.5 text-content-muted shrink-0" />
           </button>
         </Popover>
       </div>
@@ -122,7 +123,7 @@ function WorkspaceList({
         <div
           ref={scrollRef}
           onScroll={updateScrollProgress}
-          className="md:w-xs md:max-h-84 relative w-full overflow-auto rounded-none bg-white text-base sm:w-[300px] sm:text-sm"
+          className="md:w-xs md:max-h-84 relative w-full overflow-auto rounded-2xl bg-bg-card text-base sm:w-[280px] sm:text-sm"
         >
           {/* Current workspace section */}
           {/* <div className="flex flex-col gap-2.5 border-b border-neutral-200 px-3 pb-3 sm:p-2">
@@ -156,7 +157,7 @@ function WorkspaceList({
           {/* Workspaces section */}
           <div className="flex flex-col gap-2.5   px-1 ">
             <div>
-              <p className="px-2 py-1.5 text-[12.5px] font-display font-medium text-neutral-500">
+              <p className="px-2 py-1.5 text-[12.5px] font-display font-medium text-content-subtle">
                 Projects
               </p>
               <div className="flex flex-col ">
@@ -167,9 +168,9 @@ function WorkspaceList({
                       key={slug}
                       className={cn(
                         "relative flex w-full items-center gap-x-2 rounded-none px-2 py-1.5 transition-all duration-75",
-                        "hover:bg-neutral-200/50 active:bg-neutral-200/80",
+                        "hover:bg-bg-emphasis/70 active:bg-bg-emphasis/70",
                         "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
-                        isActive && "bg-neutral-200/50"
+                        isActive && "bg-bg-emphasis/70"
                       )}
                       href={`/${slug}`}
                       shallow={false}
@@ -183,11 +184,11 @@ function WorkspaceList({
                         className="size-5 shrink-0 overflow-hidden rounded-full"
                         draggable={false}
                       /> */}
-                      <span className="block truncate font-medium font-default leading-5 text-neutral-600 sm:max-w-[140px] text-[13px] sm:text-[14px]">
+                      <span className="block truncate font-medium font-default leading-5 text-content-default sm:max-w-[140px] text-[13px] sm:text-[14px]">
                         {name}
                       </span>
                       {selected.slug === slug ? (
-                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-black">
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-content-default">
                           <Check2 className="size-4" aria-hidden="true" />
                         </span>
                       ) : null}
@@ -199,11 +200,11 @@ function WorkspaceList({
                     setOpenPopover(false);
                     setShowCreateWorkspaceModal(true);
                   }}
-                  className="group flex w-full cursor-pointer items-center gap-x-2.5 px-2 py-1 my-1 text-neutral-500 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
+                  className="group flex w-full cursor-pointer items-center gap-x-2.5 px-2 py-1 my-1 text-content-default transition-all duration-75 hover:bg-bg-emphasis/70 active:bg-content-muted"
                 >
-                  <Plus className="ml-0.5 size-4 text-neutral-500" />
+                  <Plus className="ml-0.5 size-4 text-content-default" />
 
-                  <span className="block truncate font-display text-[12.5px] sm:text-[14px] font-medium py-0.5 leading-5 text-neutral-600/85">
+                <span className="block truncate font-display text-[12.5px] sm:text-[14px] font-medium py-0.5 leading-5 text-content-default">
                     Add Project
                   </span>
                 </button>
@@ -211,11 +212,11 @@ function WorkspaceList({
                   onClick={() => {
                     router.push(`/dashboard`);
                   }}
-                  className="group flex w-full cursor-pointer items-center gap-x-2.5 my-0.5 py-1 border-t border-neutral-200 text-neutral-500 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
+                  className="group flex w-full cursor-pointer items-center gap-x-2.5 my-0.5 py-1 border-t border-border-subtle text-neutral-500 transition-all duration-75 hover:bg-bg-emphasis/70 active:bg-content-muted"
                 >
                   
 
-                  <span className="block truncate px-2 font-display text-[12.5px] sm:text-[14px] font-medium py-0.5 leading-5 text-neutral-600/85">
+                  <span className="block truncate px-2 font-display text-[12.5px] sm:text-[14px] font-medium py-0.5 leading-5 text-content-default">
                     All Projects
                   </span>
                 </button>
@@ -265,9 +266,9 @@ function WorkspaceList({
 
 function WorkspaceDropdownPlaceholder() {
   return (
-    <button className="gap-2 flex items-center bg-[#F0F0F0] p-1.5 rounded-full w-full justify-between">
+    <button className="gap-2 flex items-center bg-bg-emphasis/65 p-1.5 rounded-full w-full justify-between">
       <div className="flex items-center gap-2">
-        <div className="size-6 rounded-full bg-neutral-200" />
+        <div className="size-6 rounded-full bg-bg-card" />
       </div>
     </button>
   );

@@ -20,25 +20,25 @@ export function PaddleConnectForm({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="font-display text-[15px] font-medium text-neutral-600">
+        <h2 className="font-display text-[15px] font-medium text-content-default">
           Connect your Paddle account
         </h2>
-        <p className="mt-0.5 font-medium font-display text-sm text-neutral-500">
+        <p className="mt-0.5 font-medium font-display text-sm text-content-subtle">
           Create an API key in your Paddle dashboard, then paste it below.
         </p>
       </div>
 
       <div>
-        <label className="mb-2 block font-display text-sm font-medium text-neutral-600">
+        <label className="mb-2 block font-display text-sm font-medium text-content-default">
           API Key
         </label>
         <Input
           placeholder="pdl_live_********************************"
           value={form.apiKey}
           onChange={(e) => setForm((f) => ({ ...f, apiKey: e.target.value }))}
-          className="h-11 bg-neutral-50"
+          className="h-11 "
         />
-        <p className="mt-2 font-display text-sm font-medium text-neutral-500 leading-6">
+        <p className="mt-2 font-display text-sm font-medium text-content-subtle leading-6">
           Paddle Dashboard <ArrowRight className="mx-1 inline h-3.5 w-3.5" />
           Developer <ArrowRight className="mx-1 inline h-3.5 w-3.5" />
           Tools <ArrowRight className="mx-1 inline h-3.5 w-3.5" />
@@ -51,7 +51,20 @@ export function PaddleConnectForm({
 
       <Button
         text="Connect"
-        className="h-11 w-full rounded-lg"
+        className="
+    h-11
+    w-full
+    rounded-xl
+    font-display
+    font-medium
+    transition-all
+    bg-bg-inverted
+    text-content-inverted
+    hover:opacity-90
+    active:scale-[0.99]
+    disabled:opacity-50
+    disabled:hover:opacity-50
+  "
         onClick={onConnect}
         loading={connecting}
         disabled={!isValid || connecting}

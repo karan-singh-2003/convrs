@@ -161,7 +161,7 @@ export default function KPI() {
     return (
         <>
             <AddGoalModal />
-            <div className="bg-white border border-neutral-200 rounded-xl p-4">
+            <div className="bg-bg-default border border-border-subtle rounded-xl p-4">
                 <div className="space-y-3">
                     <div className="space-y-0.5">
                         <h2 className="font-display text-sm font-medium text-neutral-600">
@@ -173,7 +173,7 @@ export default function KPI() {
                     </div>
 
                     {kpiLoading ? (
-                        <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+                        <div className="h-10 animate-pulse rounded-lg bg-bg-card" />
                     ) : (
                         <>
                             <ToggleGroup
@@ -183,41 +183,41 @@ export default function KPI() {
                                 ]}
                                 selected={kpi}
                                 selectAction={(option) => setKpi(option as "Revenue" | "Goal")}
-                                className="w-full border border-neutral-200 bg-neutral-100"
+                                className="w-full border border-border-subtle bg-bg-emphasis"
                                 optionClassName="w-full justify-center px-3 py-1 text-sm"
                             />
 
                             {kpi === "Revenue" && (
                                 <RadioGroup value="revenue">
-                                    <div className="flex items-center rounded-2xl bg-neutral-100 px-4 py-3 gap-4">
+                                    <div className="flex items-center rounded-2xl bg-bg-emphasis/65 px-4 py-3 gap-4">
                                         <RadioGroupItem value="revenue" id="option-revenue" />
                                         <div>
                                             <Label
                                                 htmlFor="option-revenue"
-                                                className="font-display font-medium text-neutral-600"
+                                                className="font-display font-medium text-content-default"
                                             >
                                                 Revenue
                                             </Label>
-                                            <h1 className="font-display text-[13.5px] font-medium text-neutral-500">
+                                            <h1 className="font-display text-[13.5px] font-medium text-content-subtle">
                                                 Shows how your revenue changes over time
                                             </h1>
                                         </div>
                                     </div>
-                                    <div className="flex items-center rounded-2xl bg-neutral-100 px-4 py-3 gap-4 opacity-50">
+                                    <div className="flex items-center rounded-2xl bg-bg-emphasis/65 px-4 py-3 gap-4 opacity-50">
                                         <RadioGroupItem value="mrr" id="option-mrr" disabled />
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
                                                 <Label
                                                     htmlFor="option-mrr"
-                                                    className="font-display font-medium text-neutral-600"
+                                                    className="font-display font-medium text-content-default"
                                                 >
                                                     MRR
                                                 </Label>
-                                                <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[11px] font-medium text-neutral-500">
+                                                <span className="rounded-full bg-neutral-200 font-display px-2 py-0.5 text-[11px] font-medium text-neutral-500">
                                                     Coming soon
                                                 </span>
                                             </div>
-                                            <h1 className="font-display text-[13.5px] font-medium text-neutral-500">
+                                            <h1 className="font-display text-[13.5px] font-medium text-content-subtle">
                                                 Shows how your MRR changes over time
                                             </h1>
                                         </div>
@@ -228,17 +228,18 @@ export default function KPI() {
                             {kpi === "Goal" && (
                                 <>
                                     {eventsLoading ? (
-                                        <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+                                        <div className="h-10 animate-pulse rounded-xl bg-bg-emphasis" />
                                     ) : eventOptions.length === 0 ? (
-                                        <div className="rounded-lg font-display border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-[13px] text-neutral-500 space-y-2.5">
-                                            <p>
-                                                No goal events tracked yet. Once a custom event fires on
-                                                your site, it'll show up here to pick as your KPI.
+                                        <div className="space-y-3 rounded-xl border  border-border-subtle bg-bg-subtle p-4 font-display">
+                                            <p className="text-[13px] leading-5 text-content-subtle">
+                                                No goal events have been tracked yet. Once a custom event is received
+                                                from your site, it'll appear here so you can use it as a KPI.
                                             </p>
+
                                             <button
                                                 type="button"
                                                 onClick={() => setShowAddGoalModal(true)}
-                                                className="rounded-lg bg-white px-4 py-1.5 font-display text-[13px] font-medium text-neutral-600 transition hover:bg-neutral-100"
+                                                className="rounded-lg bg-bg-default px-4 py-2 text-[13px] font-medium text-content-default transition-colors hover:bg-bg-emphasis"
                                             >
                                                 Add Goal
                                             </button>
@@ -253,12 +254,19 @@ export default function KPI() {
                                             trigger={
                                                 <button
                                                     type="button"
-                                                    className="flex w-full items-center justify-between rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2 font-display text-[14.5px] text-neutral-500 transition hover:bg-neutral-200"
+                                                    className="flex w-full items-center justify-between rounded-xl border border-border-subtle bg-bg-subtle px-4 py-2.5 font-display text-[14px] text-content-default transition-colors hover:bg-bg-emphasis"
                                                 >
-                                                    <span className="truncate">
+                                                    <span
+                                                        className={
+                                                            selectedEvent
+                                                                ? "truncate text-content-default"
+                                                                : "truncate text-content-subtle"
+                                                        }
+                                                    >
                                                         {selectedEvent?.label ?? "Select an event"}
                                                     </span>
-                                                    <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" />
+
+                                                    <ChevronDown className="h-4 w-4 shrink-0 text-content-subtle" />
                                                 </button>
                                             }
                                         />

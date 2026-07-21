@@ -25,7 +25,7 @@ const Form = ({
 
   return (
     <TooltipProvider>
-      <div className="bg-white border border-neutral-200 rounded-xl p-4">
+      <div className="bg-bg-default border border-border-subtle rounded-xl p-4">
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -37,10 +37,10 @@ const Form = ({
         >
           <div className="space-y-3">
             <div className="space-y-0.5">
-              <h2 className="font-medium text-sm font-display text-neutral-600">
+              <h2 className="font-medium text-sm font-display text-content-default">
                 {title}
               </h2>
-              <p className="text-[14px] font-display text-neutral-500">
+              <p className="text-[14px] font-display text-content-subtle">
                 {description}
               </p>
             </div>
@@ -62,7 +62,7 @@ const Form = ({
                   loading={saving}
                   text={buttonText}
                   disabledTooltip={disabledTooltip}
-                  className="absolute w-fit bg-transparent border-none font-display right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-[13px] rounded-full  text-black/60"
+                  className="absolute w-fit bg-transparent border-none font-display right-1 top-1/2 -translate-y-1/2 h-7 px-3 text-[13px] text-content-subtle  rounded-full "
                 />
               )}
             </div>

@@ -92,20 +92,21 @@ export function UpgradePlanPricingCard() {
   }, [fillPercent]);
 
   return (
-    <div className="bg-white py-5 sm:py-6">
+    <div className="py-5 sm:py-6">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-5 px-4 sm:px-6 md:flex-row md:items-start md:justify-between">
           <div className="flex w-full flex-col items-start gap-4">
-            <h3 className="px-1 font-display text-[16px] font-medium text-neutral-800 sm:text-[18px] md:text-[20px]">
+            <h3 className="px-1 font-display text-[16px] font-medium text-content-default sm:text-[18px] md:text-[20px]">
               How many Monthly events do you want ?
             </h3>
+
             <div
               ref={containerRef}
-              className="relative flex w-full items-center rounded-full border border-neutral-200 bg-white px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] sm:px-4 sm:py-4"
+              className="relative flex w-full items-center rounded-full border border-border-subtle bg-bg-card px-3 py-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] sm:px-4 sm:py-4"
             >
               <div
                 ref={pillRef}
-                className="pointer-events-none absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-display whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1 text-[13px] font-semibold text-neutral-700 shadow-[0_1px_3px_rgba(0,0,0,0.10)] sm:text-[12px] md:text-[13px]"
+                className="pointer-events-none absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-border-subtle bg-bg-default px-3 py-1 font-display text-[13px] font-semibold text-content-default shadow-sm sm:text-[12px] md:text-[13px]"
               >
                 {EVENT_TIERS[selectedIndex].label}
               </div>
@@ -117,28 +118,32 @@ export function UpgradePlanPricingCard() {
                 step={1}
                 value={selectedIndex}
                 onChange={(e) => setSelectedIndex(Number(e.target.value))}
-                style={{ "--fill": `${fillPercent}%` } as React.CSSProperties}
+                style={
+                  {
+                    "--fill": `${fillPercent}%`,
+                  } as React.CSSProperties
+                }
                 className="
-                  w-full cursor-pointer appearance-none bg-transparent
+              w-full cursor-pointer appearance-none bg-transparent
 
-                  [&::-webkit-slider-runnable-track]:h-3
-                  [&::-webkit-slider-runnable-track]:rounded-full
-                  [&::-webkit-slider-runnable-track]:bg-[linear-gradient(to_right,#1c1c1c_var(--fill),#ededed_var(--fill))]
+              [&::-webkit-slider-runnable-track]:h-3
+              [&::-webkit-slider-runnable-track]:rounded-full
+              [&::-webkit-slider-runnable-track]:bg-[linear-gradient(to_right,rgb(var(--bg-inverted))_var(--fill),rgb(var(--bg-emphasis))_var(--fill))]
 
-                  [&::-webkit-slider-thumb]:appearance-none
-                  [&::-webkit-slider-thumb]:h-0
-                  [&::-webkit-slider-thumb]:w-0
-                  [&::-webkit-slider-thumb]:opacity-0
+              [&::-webkit-slider-thumb]:appearance-none
+              [&::-webkit-slider-thumb]:h-0
+              [&::-webkit-slider-thumb]:w-0
+              [&::-webkit-slider-thumb]:opacity-0
 
-                  [&::-moz-range-track]:h-3
-                  [&::-moz-range-track]:rounded-full
-                  [&::-moz-range-track]:bg-[linear-gradient(to_right,#1c1c1c_var(--fill),#ededed_var(--fill))]
+              [&::-moz-range-track]:h-3
+              [&::-moz-range-track]:rounded-full
+              [&::-moz-range-track]:bg-[linear-gradient(to_right,rgb(var(--bg-inverted))_var(--fill),rgb(var(--bg-emphasis))_var(--fill))]
 
-                  [&::-moz-range-thumb]:h-0
-                  [&::-moz-range-thumb]:w-0
-                  [&::-moz-range-thumb]:border-none
-                  [&::-moz-range-thumb]:opacity-0
-                "
+              [&::-moz-range-thumb]:h-0
+              [&::-moz-range-thumb]:w-0
+              [&::-moz-range-thumb]:border-none
+              [&::-moz-range-thumb]:opacity-0
+            "
               />
             </div>
           </div>
@@ -148,15 +153,16 @@ export function UpgradePlanPricingCard() {
               type="button"
               onClick={() => setBillingCycle("monthly")}
               aria-pressed={billingCycle === "monthly"}
-              className={`flex h-28 flex-col gap-y-2 rounded-[16px] border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${billingCycle === "monthly"
-                ? "border-neutral-700 bg-neutral-100 text-neutral-900"
-                : "border-neutral-200 bg-white text-neutral-500"
+              className={`flex h-28 flex-col gap-y-2 rounded-2xl border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${billingCycle === "monthly"
+                  ? "border-border-default bg-bg-emphasis text-content-default"
+                  : "border-border-subtle bg-bg-card text-content-subtle hover:bg-bg-subtle"
                 }`}
             >
-              <div className="text-[12px] font-medium font-display tracking-wide text-neutral-500 sm:text-[13px] md:text-[14px]">
+              <div className="font-display text-[12px] font-medium tracking-wide text-content-subtle sm:text-[13px] md:text-[14px]">
                 Monthly
               </div>
-              <div className="mt-2 font-bricolageGrotesque text-[22px] font-semibold text-neutral-900 sm:text-[26px] md:text-[28px]">
+
+              <div className="mt-2 font-bricolageGrotesque text-[22px] font-semibold text-content-default sm:text-[26px] md:text-[28px]">
                 ${Math.round(monthlyPrice)}
               </div>
             </button>
@@ -165,47 +171,50 @@ export function UpgradePlanPricingCard() {
               type="button"
               onClick={() => setBillingCycle("yearly")}
               aria-pressed={billingCycle === "yearly"}
-              className={`flex h-28 flex-col gap-y-2 rounded-[16px] border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${billingCycle === "yearly"
-                ? "border-neutral-700 bg-neutral-100 text-neutral-900"
-                : "border-neutral-200 bg-white text-neutral-500"
+              className={`flex h-28 flex-col gap-y-2 rounded-2xl border px-4 py-3 text-left transition-colors sm:h-32 sm:w-1/2 ${billingCycle === "yearly"
+                  ? "border-border-default bg-bg-emphasis text-content-default"
+                  : "border-border-subtle bg-bg-card text-content-subtle hover:bg-bg-subtle"
                 }`}
             >
-              <div className="text-[12px] font-medium font-display tracking-wide text-neutral-500 sm:text-[13px] md:text-[14px]">
+              <div className="font-display text-[12px] font-medium tracking-wide text-content-subtle sm:text-[13px] md:text-[14px]">
                 Yearly
               </div>
-              <div className="mt-2 font-bricolageGrotesque text-[22px] font-semibold text-neutral-900 sm:text-[26px] md:text-[28px]">
+
+              <div className="mt-2 font-bricolageGrotesque text-[22px] font-semibold text-content-default sm:text-[26px] md:text-[28px]">
                 ${Math.round(yearlyPrice)}
               </div>
             </button>
           </div>
         </div>
 
-        <div className="h-px w-full bg-neutral-100" />
+        <div className="h-px w-full bg-border-subtle" />
 
         <div className="flex flex-col items-start justify-between gap-2 px-4 sm:px-6 md:flex-row md:items-center">
           <div className="flex items-baseline gap-3">
-            <span className="font-display text-[16px] font-semibold text-neutral-900 sm:text-[17px] md:text-[18px]">
+            <span className="font-display text-[16px] font-semibold text-content-default sm:text-[17px] md:text-[18px]">
               Total
             </span>
           </div>
 
           <div className="flex w-full flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between md:w-auto md:gap-x-4">
             <div>
-              <div className="font-bricolageGrotesque text-[18px] font-semibold text-neutral-900 sm:text-[19px] md:text-[20px]">
+              <div className="font-bricolageGrotesque text-[18px] font-semibold text-content-default sm:text-[19px] md:text-[20px]">
                 ${Math.round(animatedPrice).toLocaleString("en-US")}
                 {billingCycle === "yearly" ? "/year" : "/month"}
               </div>
-              <div className="text-[14px] font-display text-neutral-500 sm:text-[13px] md:text-[14.5px]">
+
+              <div className="font-display text-[14px] text-content-subtle sm:text-[13px] md:text-[14.5px]">
                 {billingCycle === "yearly"
                   ? "billed yearly"
                   : "save 20% with annual plan"}
               </div>
             </div>
+
             <UpgradePlanButton
               showTrialLabel={freeTrailEnabled}
               plan={selectedTier.name.toLowerCase()}
               period={billingCycle}
-              className="h-10 w-full rounded-full border-0 bg-black text-[15px] font-medium font-display text-white hover:bg-neutral-900 md:w-[240px]"
+              className="h-10 w-full rounded-full border-0 bg-bg-inverted font-display text-[15px] font-medium text-content-inverted transition-opacity hover:opacity-90 md:w-[240px]"
             />
           </div>
         </div>

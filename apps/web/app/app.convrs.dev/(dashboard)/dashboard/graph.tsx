@@ -138,11 +138,11 @@ export default function DashboardGraph({
       {/* Metrics */}
       <div className="flex items-center gap-y-2 px-1">
         <div>
-          <p className="text-[12px] font-medium font-default text-neutral-500 sm:text-[14px]">
+          <p className="text-[12px] font-medium font-default text-content-default sm:text-[14px]">
             Visitors
           </p>
           <div className="my-1 flex items-end">
-            <p className="text-2xl font-semibold text-neutral-800 sm:text-3xl">
+            <p className="text-2xl font-semibold text-content-default sm:text-3xl">
               {nFormatter(totalVisitors)}
             </p>
             {/* <span
@@ -160,7 +160,7 @@ export default function DashboardGraph({
       </div>
 
       {/* Chart */}
-      <div className="h-[110px] w-full rounded-lg bg-neutral-50 p-1 sm:h-[120px]">
+      <div className="h-[110px] w-full rounded-lg p-1 sm:h-[120px]">
         <TimeSeriesChart
           data={chartData}
           series={[

@@ -18,12 +18,12 @@ export function ProviderSelector({
   const selected = PROVIDERS.find((p) => p.value === provider)!;
 
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-neutral-50 p-0">
+    <div className="flex items-center justify-between rounded-xl bg-bg-card p-0">
       <Popover
         openPopover={openPopover}
         setOpenPopover={setOpenPopover}
         align="center"
-        popoverContentClassName="rounded-2xl"
+        popoverContentClassName="rounded-xl"
         content={
           <div className="w-[var(--radix-popover-trigger-width)] p-1">
             {PROVIDERS.map((p) => (
@@ -33,9 +33,9 @@ export function ProviderSelector({
                   setProvider(p.value);
                   setOpenPopover(false);
                 }}
-                className="flex w-full items-center justify-between rounded-none px-2.5 py-2 text-left text-sm hover:bg-neutral-100"
+                className="flex w-full items-center justify-between rounded-none px-2.5 py-2 text-left text-sm hover:bg-bg-emphasis"
               >
-                <span className="flex font-display text-neutral-600 items-center gap-2">
+                <span className="flex font-display text-content-default items-center gap-2">
                   <div className="flex items-center justify-center">{p.img}</div>
                   {p.label}
                 </span>
@@ -45,10 +45,10 @@ export function ProviderSelector({
           </div>
         }
       >
-        <button className="flex h-10 w-full font-display items-center gap-1.5 rounded-lg border justify-between border-neutral-200 bg-neutral-100 px-4 text-[15px] font-medium text-neutral-700">
+        <button className="flex h-10 w-full font-display items-center gap-1.5 rounded-xl border justify-between border-border-subtle bg-bg-emphasis/65 px-4 text-[15px] font-medium text-content-default">
           <div className="flex items-center gap-2">
             <div className="flex size-8 items-center justify-center">{selected.img}</div>
-            <p className="text-neutral-600">  {selected.label}</p>
+            <p className="">  {selected.label}</p>
           </div>
           <ChevronDown className="h-3.5 w-3.5" />
         </button>

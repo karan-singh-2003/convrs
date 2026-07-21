@@ -13,7 +13,7 @@ export function ConnectedState({
 }) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h2 className="font-display text-[14.5px] font-medium text-neutral-600">
+      <h2 className="font-display text-[14.5px] font-medium text-content-default">
         You have connected {label}
       </h2>
       <Button

@@ -55,7 +55,7 @@ export default function Currency({ value, onChange, disabled }: CurrencyPickerPr
         <button
           type="button"
           disabled={disabled}
-          className="flex w-full items-center justify-between rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2 font-display text-[14.5px] text-neutral-500 transition hover:bg-neutral-200 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-between rounded-lg border border-border-subtle bg-bg-emphasis/65 px-4 py-2 font-display text-[14.5px] text-content-default transition hover:bg-neutral-200 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <span className="truncate">{selected.label}</span>
           <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" />

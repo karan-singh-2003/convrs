@@ -205,7 +205,7 @@ export function LocationSection() {
             </div>
           )
         ) : (
-          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
+          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center  sm:h-[300px]">
             <LoadingSpinner />
           </div>
         )
