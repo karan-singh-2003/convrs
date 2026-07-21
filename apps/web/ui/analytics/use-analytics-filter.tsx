@@ -262,7 +262,7 @@ export function useAnalyticsFilters({
 
           return (
             <img
-              src={`https://flagcdn.com/w20/${value.toLowerCase()}.svg`}
+              src={`https://flagcdn.com/w20/${value.toLowerCase()}.png`}
               alt={value}
               width={20}
             />
@@ -286,7 +286,7 @@ export function useAnalyticsFilters({
             label: city,
             icon: (
               <img
-                src={`https://flagcdn.com/w20/${country.toLowerCase()}.svg`}
+                src={`https://flagcdn.com/w20/${country.toLowerCase()}.png`}
                 alt={country}
                 width={20}
               />
@@ -304,7 +304,7 @@ export function useAnalyticsFilters({
             label: REGIONS[region] || region.split("-")[1],
             icon: (
               <img
-                src={`https://flagcdn.com/w20/${country.toLowerCase()}.svg`}
+                src={`https://flagcdn.com/w20/${country.toLowerCase()}.png`}
                 alt={country}
                 width={20}
               />
