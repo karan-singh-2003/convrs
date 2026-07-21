@@ -203,25 +203,7 @@ export default function KPI() {
                                             </h1>
                                         </div>
                                     </div>
-                                    <div className="flex items-center rounded-2xl bg-bg-emphasis/65 px-4 py-3 gap-4 opacity-50">
-                                        <RadioGroupItem value="mrr" id="option-mrr" disabled />
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <Label
-                                                    htmlFor="option-mrr"
-                                                    className="font-display font-medium text-content-default"
-                                                >
-                                                    MRR
-                                                </Label>
-                                                <span className="rounded-full bg-neutral-200 font-display px-2 py-0.5 text-[11px] font-medium text-neutral-500">
-                                                    Coming soon
-                                                </span>
-                                            </div>
-                                            <h1 className="font-display text-[13.5px] font-medium text-content-subtle">
-                                                Shows how your MRR changes over time
-                                            </h1>
-                                        </div>
-                                    </div>
+                                
                                 </RadioGroup>
                             )}
 
