@@ -12,17 +12,24 @@ import { DeviceIcon } from "./device-icon";
 import { TRIGGER_DISPLAY } from "./trigger-display";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
 
 export function DeviceSection() {
   const { queryParams, searchParams } = useRouterStuff();
   const { kpiEventName, kpiType } = useWorkspace()
+  const { integrations } = useIntegrations()
+  console.log("integrations", integrations)
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 
-  
+
   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const isRevenueKpi =
+    kpiType === "revenue" && integrations.length > 0;
+  const kpiConfigured = isRevenueKpi || isGoalKpi;
+
   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
-  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
+
 
   const [tab, setTab] = useState<DeviceTabs>("devices");
   const { data } = useAnalyticsFilterOption(tab);
@@ -30,7 +37,7 @@ export function DeviceSection() {
     omitGroupByFilterKey: true,
   });
 
-  console.log("all data", allData)
+
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -132,7 +139,7 @@ export function DeviceSection() {
             </div>
           )
         ) : (
-          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-centersm:h-[300px]">
+          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center  sm:h-[300px]">
             <LoadingSpinner />
           </div>
         )

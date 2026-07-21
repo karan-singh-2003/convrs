@@ -9,6 +9,7 @@ import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
 
 type TabId = "referers" | "utm";
 type Subtab =
@@ -61,6 +62,7 @@ export function SourcesSection() {
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
   const { kpiEventName, kpiType } = useWorkspace()
+  const { integrations } = useIntegrations()
   const [tab, setTab] = useState<TabId>("referers");
   const [subtab, setSubtab] = useState<Subtab>(
     TAB_CONFIG["referers"].defaultSubtab
@@ -73,6 +75,9 @@ export function SourcesSection() {
     setSubtab(TAB_CONFIG[newTab].defaultSubtab);
   };
   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const isRevenueKpi =
+    kpiType === "revenue" && integrations.length > 0;
+
   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
   const { data } = useAnalyticsFilterOption({
     groupBy: subtab,
@@ -128,7 +133,7 @@ export function SourcesSection() {
       onSelectSubTab: setSubtab,
     };
   }, [tab, subtab]);
-const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
+  const kpiConfigured = isRevenueKpi || isGoalKpi;
   return (
     <AnalyticsCard
       tabs={[

@@ -120,7 +120,7 @@ export function AnalyticsTabs({
         <div className="grid w-full grid-cols-3 gap-0 md:grid-cols-3 xl:grid-cols-7">
           {tabs.map(({ id, label, colorClassName }, idx) => {
             const isLiveVisitorsTab = id === "live_visitors";
-            const isRevenueTab = id === "revenue";
+            const isRevenueTab = id === "revenue" || id==="revenue_per_visitor";
             const value = isLiveVisitorsTab
               ? (liveVisitorsCount ?? 0)
               : (totalEvents?.[id] ?? 0);

@@ -263,7 +263,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
 
   const hasRevenueProvider = integrations.length > 0;
   const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();
-  console.log("kpitype and label", kpiEventName, kpiType)
+
   const { queryParams } = useRouterStuff();
   const { funnels } = useFunnels({
     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,

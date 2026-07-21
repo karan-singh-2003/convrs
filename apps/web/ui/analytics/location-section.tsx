@@ -10,18 +10,25 @@ import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
 
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, currency } = useContext(AnalyticsContext);
+  const { integrations } = useIntegrations()
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
   const { kpiEventName, kpiType } = useWorkspace()
 
+
+
   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+  const isRevenueKpi =
+    kpiType === "revenue" && integrations.length > 0;
+  const kpiConfigured = isRevenueKpi || isGoalKpi;
 
-  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
+
 
   const [tab, setTab] = useState<
     "countries" | "cities" | "regions" | "continents"

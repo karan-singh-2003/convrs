@@ -16,6 +16,7 @@ import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { useGoalPropertiesModal } from "../modals/goal-property-modal";
 import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
 
 export function LowerGrid() {
   const { queryParams, searchParams } = useRouterStuff();
@@ -24,10 +25,12 @@ export function LowerGrid() {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"goals">("goals");
-
+  const { integrations } = useIntegrations()
 
   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
-  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+  const isRevenueKpi =
+    kpiType === "revenue" && integrations.length > 0;
+  const kpiConfigured = isRevenueKpi || isGoalKpi;
 
 
   const { data } = useAnalyticsFilterOption(tab);
@@ -37,6 +40,8 @@ export function LowerGrid() {
 
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
   const dataKey = "clicks";
+
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
@@ -101,7 +106,7 @@ export function LowerGrid() {
   );
 
   const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();
-  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
+
   return (
     <>
 

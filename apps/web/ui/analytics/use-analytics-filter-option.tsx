@@ -73,7 +73,7 @@ export function useAnalyticsFilterOption(
     }
   );
 
-  console.log("response in analytics filter option",response)
+
 
   return {
     data:

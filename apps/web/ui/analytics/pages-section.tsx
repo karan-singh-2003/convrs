@@ -9,11 +9,13 @@ import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
 import useWorkspace from "@/lib/swr/use-workspace";
+import useIntegrations from "@/lib/swr/use-integration";
 
 export function PagesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
+  const { integrations } = useIntegrations()
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
   const { kpiEventName, kpiType } = useWorkspace()
   const [tab, setTab] = useState<
@@ -22,6 +24,8 @@ export function PagesSection() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const isRevenueKpi =
+    kpiType === "revenue" && integrations.length > 0;
   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
 
   const { data } = useAnalyticsFilterOption({
@@ -67,7 +71,7 @@ export function PagesSection() {
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
 
-  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
+  const kpiConfigured = isRevenueKpi || isGoalKpi;
 
   return (
     <AnalyticsCard

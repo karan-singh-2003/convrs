@@ -113,8 +113,6 @@ export function BarList({
     activeFilterValues ?? []
   );
 
-
-
   useEffect(() => {
     if (!limit) {
       setModalSelectedValues(activeFilterValues ?? []);
@@ -944,26 +942,30 @@ export function LineItem({
                   </span>
                   <span className="font-medium">{formatNumber(safeCount)}</span>
                 </div>
-                <div className="flex items-center font-alexandria justify-between text-[13.5px]">
-                  <span className="flex items-center gap-1.5 text-content-subtle">
-                    <span
-                      className={cn("size-3 shrink-0 rounded-full", revenueBar.colorClass)}
-                      aria-hidden="true"
-                    />
-                    {kpiLabel}
-                  </span>
-                  <span className="font-medium">{formatKpiValue(safeRevenue)}</span>
-                </div>
+                {kpiConfigured && (
+                  <div className="flex items-center font-alexandria justify-between text-[13.5px]">
+                    <span className="flex items-center gap-1.5 text-content-subtle">
+                      <span
+                        className={cn("size-3 shrink-0 rounded-full", revenueBar.colorClass)}
+                        aria-hidden="true"
+                      />
+                      {kpiLabel}
+                    </span>
+                    <span className="font-medium">{formatKpiValue(safeRevenue)}</span>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="mt-2 space-y-1 border-t border-border-subtle pt-2">
-              <div className="flex items-center font-alexandria justify-between text-[13.5px] text-neutral-400">
-                <span>{kpiLabel}/{countLabel.toLowerCase().replace(/s$/, "")}</span>
-                <span className="font-medium text-neutral-400">
-                  {formatKpiValue(revenuePerVisitor)}
-                </span>
-              </div>
+              {kpiConfigured && (
+                <div className="flex items-center font-alexandria justify-between text-[13.5px] text-neutral-400">
+                  <span>{kpiLabel}/{countLabel.toLowerCase().replace(/s$/, "")}</span>
+                  <span className="font-medium text-neutral-400">
+                    {formatKpiValue(revenuePerVisitor)}
+                  </span>
+                </div>
+              )}
               {typeof conversionRate === "number" && !Number.isNaN(conversionRate) && (
                 <div className="flex items-center justify-between text-[13px] text-neutral-400">
                   <span>Conversion rate</span>
