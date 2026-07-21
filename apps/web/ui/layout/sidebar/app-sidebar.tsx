@@ -52,7 +52,7 @@ const NAV_AREAS = {
               { title: "Alerts", href: `/${slug}/settings/alerts` },
               { title: "Exclusions", href: `/${slug}/settings/exclusions` },
               // { title: "Reports", href: `/${slug}/settings/reports` },
-              { title: "Import", href: `/${slug}/settings/import` },
+              // { title: "Import", href: `/${slug}/settings/import` },
               // { title: "Export", href: `/${slug}/settings/export` },
             ]
             : []),
