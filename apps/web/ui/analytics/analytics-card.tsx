@@ -40,8 +40,8 @@ export function AnalyticsCard<T extends string>({
   subTabs?: { id: string; label: string }[];
   selectedSubTabId?: string;
   onSelectSubTab?:
-    | Dispatch<SetStateAction<string>>
-    | ((subTabId: string) => void);
+  | Dispatch<SetStateAction<string>>
+  | ((subTabId: string) => void);
   expandLimit: number;
   dataLength?: number;
   isFilterActive?: boolean;
@@ -175,13 +175,17 @@ export function AnalyticsCard<T extends string>({
             metric,
           })}
         </div>
+
         {showViewAll && (
           <div className="absolute bottom-0 left-0 z-10 flex w-full items-end">
-            <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-white sm:h-48" />
-            <div className="relative flex w-full items-center justify-center gap-2 py-3 px-2 sm:py-4">
+            {/* Fade */}
+            <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-bg-card via-bg-card/90 to-transparent sm:h-48" />
+
+            {/* Button */}
+            <div className="relative flex w-full items-center justify-center px-3 py-3 sm:py-4">
               <button
                 onClick={() => setShowModal(true)}
-                className="h-8 w-full rounded-none font-poppins font-medium border-neutral-200 bg-white px-3 text-[12.5px] text-neutral-600 transition-colors hover:bg-neutral-100 active:border-neutral-300 sm:w-fit sm:text-[13px]"
+                className="h-9 w-full rounded-xl border border-border-subtle bg-bg-card px-4 font-display text-[13px] font-medium text-content-default shadow-sm transition-all hover:bg-bg-subtle active:scale-[0.98] sm:w-auto"
               >
                 View All
               </button>
