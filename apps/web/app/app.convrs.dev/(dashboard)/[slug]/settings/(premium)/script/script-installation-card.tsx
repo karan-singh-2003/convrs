@@ -60,14 +60,13 @@ export function getAnalytics() {
         typeof window !== "undefined"
           ? window.location.host
           : "localhost",
-      autoCapturePageviews: true,${
-        allowLocalhostDebugging
-          ? `
+      autoCapturePageviews: true,${allowLocalhostDebugging
+    ? `
       apiUrl: "http://localhost:3000/api/track",
       allowLocalhost: true,
       debug: true,`
-          : ""
-      }
+    : ""
+  }
     });
   }
 
@@ -98,7 +97,7 @@ export default function ScriptInstallationCard({
   );
 
   return (
-    <div className="bg-neutral-100 p-3 rounded-xl space-y-4">
+    <div className="bg-bg-emphasis/65 p-3 rounded-xl space-y-4">
       <div className="flex items-center justify-between gap-3">
         {/* <p className="font-display font-medium text-sm text-gray-500">
           Install Signal analytics using a script tag or the npm SDK.
@@ -161,7 +160,7 @@ export default function ScriptInstallationCard({
               ),
             },
           ]}
-          className="bg-neutral-100 w-full text-center border border-neutral-200"
+          className="bg-bg-emphasis w-full text-center border border-border-subtle"
           optionClassName="w-full px-3 py-1 text-center text-sm justify-center"
         />
       </div>
@@ -170,7 +169,7 @@ export default function ScriptInstallationCard({
         <>
           <p className="font-display text-sm text-gray-500">
             Add this to the{" "}
-            <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-700">
+            <code className="text-xs bg-bg-emphasis px-1.5 py-0.5 rounded font-mono text-content-default">
               &lt;head&gt;
             </code>{" "}
             of your website.If you need more help see our installation guides .
@@ -180,11 +179,11 @@ export default function ScriptInstallationCard({
           {!scriptConfig.projectToken ? (
             <div className="space-y-2">
               {/* <div className="h-4 w-3/4 animate-pulse rounded-md bg-neutral-200" /> */}
-              <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
-                <div className="h-3 w-full animate-pulse rounded-none bg-neutral-200" />
-                <div className="h-3 w-5/6 animate-pulse rounded-none bg-neutral-200" />
-                <div className="h-3 w-4/6 animate-pulse rounded-none bg-neutral-200" />
-                <div className="h-3 w-2/3 animate-pulse rounded-none bg-neutral-200" />
+              <div className="space-y-2 rounded-xl border border-border-subtle bg-bg-card p-4">
+                <div className="h-3 w-full animate-pulse rounded bg-bg-emphasis" />
+                <div className="h-3 w-5/6 animate-pulse rounded bg-bg-emphasis" />
+                <div className="h-3 w-4/6 animate-pulse rounded bg-bg-emphasis" />
+                <div className="h-3 w-3/6 animate-pulse rounded bg-bg-emphasis" />
               </div>
             </div>
           ) : (
@@ -204,11 +203,11 @@ export default function ScriptInstallationCard({
 
           <div className="space-y-2">
             {/* <div className="h-4 w-56 animate-pulse rounded bg-neutral-200" /> */}
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
-              <div className="h-3 w-full animate-pulse rounded-none bg-neutral-200" />
-              <div className="h-3 w-5/6 animate-pulse rounded-none bg-neutral-200" />
-              <div className="h-3 w-4/6 animate-pulse rounded-none bg-neutral-200" />
-              <div className="h-3 w-3/6 animate-pulse rounded-none bg-neutral-200" />
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-bg-card p-4">
+              <div className="h-3 w-full animate-pulse rounded bg-bg-emphasis" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-bg-emphasis" />
+              <div className="h-3 w-4/6 animate-pulse rounded bg-bg-emphasis" />
+              <div className="h-3 w-3/6 animate-pulse rounded bg-bg-emphasis" />
             </div>
           </div>
         </div>

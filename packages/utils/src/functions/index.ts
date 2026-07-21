@@ -10,6 +10,7 @@ export * from "./format-date";
 export * from "./construct-metadata";
 export * from "./get-first-and-last-day";
 export * from "./currency-formatter";
+export * from "./format-currency";
 export * from "./nformatter"
 export * from "./parse-datetime";
 export * from "./capitalize";

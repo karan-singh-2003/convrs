@@ -8,17 +8,21 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export function PagesSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
-  const { selectedTab, saleUnit } = useContext(AnalyticsContext);
+  const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
-
+  const { kpiEventName, kpiType } = useWorkspace()
   const [tab, setTab] = useState<
     "hostname" | "page" | "entrypage" | "exitlink"
   >("hostname");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
 
   const { data } = useAnalyticsFilterOption({
     groupBy: tab,
@@ -63,6 +67,8 @@ export function PagesSection() {
     if (isFilterActive) queryParams({ del: singularTabName });
   }, [singularTabName, queryParams, isFilterActive]);
 
+  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
+
   return (
     <AnalyticsCard
       tabs={[
@@ -78,30 +84,27 @@ export function PagesSection() {
       isFilterActive={isFilterActive}
       onClearFilter={onClearFilter}
     >
-      {({ limit, setShowModal }) => (
+      {({ limit, setShowModal, metric }) => (
         <>
           {data ? (
             data.length > 0 ? (
               <BarList
                 tab={singularTabName}
-                data={
-                  data
-                    ?.map((d) => ({
-                      title: d[singularTabName],
-                      filterValue: d[singularTabName],
-                      value: d[dataKey] || 0,
-                    }))
-                    ?.sort((a, b) => b.value - a.value) || []
-                }
-                allData={allData
-                  ?.map((d) => ({
-                    title: d[singularTabName],
-                    filterValue: d[singularTabName],
-                    value: d[dataKey] || 0,
-                  }))
-                  ?.sort((a, b) => b.value - a.value)}
+                data={data?.map((d) => ({
+                  title: d[singularTabName],
+                  filterValue: d[singularTabName],
+                  count: d.count || 0,
+                  revenue: d.revenue || 0,
+                })) || []}
+                allData={allData?.map((d) => ({
+                  title: d[singularTabName],
+                  filterValue: d[singularTabName],
+                  count: d.count || 0,
+                  revenue: d.revenue || 0,
+                }))}
                 unit={selectedTab}
-                maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
+                metric={metric}
+                maxValue={Math.max(...data.map((d) => (metric === "revenue" ? d.revenue : d.count) ?? 0)) || 0}
                 barBackground="bg-purple-100"
                 hoverBackground="hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:border-purple-500"
                 filterSelectedBackground="bg-purple-600"
@@ -116,6 +119,10 @@ export function PagesSection() {
                 onApplyFilterValues={onApplyFilterValues}
                 onRowFilterItem={(val) => onApplyFilterValues([val])}
                 {...(limit && { limit })}
+                currency={currency}
+                kpiLabel={kpiLabel}      // NEW
+                isGoalKpi={isGoalKpi}
+                kpiConfigured={kpiConfigured}
               />
             ) : (
               <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
@@ -125,7 +132,7 @@ export function PagesSection() {
               </div>
             )
           ) : (
-            <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
+            <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center  sm:h-[300px]">
               <LoadingSpinner />
             </div>
           )}

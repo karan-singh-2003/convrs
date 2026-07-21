@@ -1,0 +1,56 @@
+DESCRIPTION >
+    Export raw click events for a workspace within a date range, paginated for bulk export.
+
+TAGS "Dub Endpoints"
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+%
+SELECT
+    event_id,
+    timestamp,
+    event_type,
+    event_name,
+    visitor_id,
+    session_id,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    utm_content,
+    utm_term,
+    url,
+    hostname,
+    page,
+    entrypage,
+    exitlink,
+    referer,
+    referer_url,
+    country,
+    city,
+    region,
+    continent,
+    device,
+    device_model,
+    device_vendor,
+    browser,
+    browser_version,
+    os,
+    os_version,
+    engine,
+    engine_version,
+    ua,
+    trigger,
+    event_properties,
+    revenue,
+    currency
+FROM dub_click_events
+WHERE
+    workspace_id = {{ String(workspaceId, description="Workspace ID", required=True) }}
+    AND bot = 0
+    {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
+    {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
+ORDER BY timestamp ASC
+LIMIT {{ Int32(limit, 10000) }}
+OFFSET {{ Int32(offset, 0) }}

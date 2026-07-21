@@ -1,0 +1,32 @@
+enum TrackedEventType {
+  goals
+  pageview
+  identify
+  revenue
+  exitlink
+}
+
+enum TrackedEventTrigger {
+  goal
+  page
+  payment
+  exitlink
+}
+
+model TrackedEvent {
+  id          String   @id @default(cuid())
+  workspaceId String
+
+  eventName   String
+  eventType   TrackedEventType
+  trigger     TrackedEventTrigger?
+
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, eventName, eventType])
+  @@index([workspaceId])
+  @@index([workspaceId, eventType])
+}

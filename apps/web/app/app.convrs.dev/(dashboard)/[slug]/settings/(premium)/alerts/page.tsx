@@ -16,20 +16,23 @@ export default function AlersSettingsPage() {
   const { alerts, loading, mutate } = useAlerts();
   const [selectedAlert, setSelectedAlert] = useState<AlertProps | undefined>();
 
-  const { setShowAddEditAlertModal, AddEditAlertModal } = useAddEditAlertModal({
-    alert: selectedAlert,
-    setSelectedAlert,
-  });
+  const { setShowAddEditAlertModal, AddEditAlertModal } =
+    useAddEditAlertModal({
+      alert: selectedAlert,
+      setSelectedAlert,
+    });
 
   const columns = useMemo<ColumnDef<AlertProps>[]>(
     () => [
       {
         accessorKey: "name",
         header: () => (
-          <span className="text-xs font-medium text-neutral-500">Name</span>
+          <span className="text-xs font-medium text-content-subtle">
+            Name
+          </span>
         ),
         cell: ({ row }) => (
-          <span className="text-[13.5px] font-display font-medium text-neutral-600">
+          <span className="text-[13.5px] font-display font-medium text-content-default">
             {row.original.name}
           </span>
         ),
@@ -37,10 +40,12 @@ export default function AlersSettingsPage() {
       {
         accessorKey: "trigger",
         header: () => (
-          <span className="text-xs font-medium text-neutral-500">Trigger</span>
+          <span className="text-xs font-medium text-content-subtle">
+            Trigger
+          </span>
         ),
         cell: ({ row }) => (
-          <code className="font-mono bg-neutral-200/60 px-2 py-1.5 rounded-sm text-[12px] text-gray-600">
+          <code className="rounded-md border border-border-subtle bg-bg-subtle px-2 py-1.5 font-mono text-[12px] text-content-default">
             {row.original.trigger}
           </code>
         ),
@@ -48,10 +53,12 @@ export default function AlersSettingsPage() {
       {
         accessorKey: "subject",
         header: () => (
-          <span className="text-xs font-medium text-neutral-500">Subject</span>
+          <span className="text-xs font-medium text-content-subtle">
+            Subject
+          </span>
         ),
         cell: ({ row }) => (
-          <span className="text-sm font-display text-neutral-600 line-clamp-1">
+          <span className="line-clamp-1 text-sm font-display text-content-default">
             {row.original.subject}
           </span>
         ),
@@ -59,10 +66,12 @@ export default function AlersSettingsPage() {
       {
         accessorKey: "updatedAt",
         header: () => (
-          <span className="text-xs font-medium text-neutral-500">Updated</span>
+          <span className="text-xs font-medium text-content-subtle">
+            Updated
+          </span>
         ),
         cell: ({ row }) => (
-          <span className="text-sm font-display text-neutral-600">
+          <span className="text-sm font-display text-content-default">
             {formatDate(row.original.updatedAt, {
               month: "short",
               day: "numeric",
@@ -103,14 +112,15 @@ export default function AlersSettingsPage() {
   return (
     <>
       <AddEditAlertModal />
+
       <PageWidthWrapper>
         <SettingsChildrenLayout
           title="Alerts"
-          description="Get Notified of important events and updates with our customizable alert system."
+          description="Get notified of important events and updates with customizable alerts."
           actions={
             <Button
               text="Add Alert"
-              className="text-black/60 w-fit  bg-[#f3f4f6] h-fit font-display rounded-full text-[12.5px] py-1"
+              className="h-fit w-fit rounded-full border-border-subtle bg-bg-subtle px-3 py-1 text-[12.5px] font-display text-content-default transition-colors hover:bg-bg-emphasis"
               onClick={() => {
                 setSelectedAlert(undefined);
                 setShowAddEditAlertModal(true);
@@ -119,7 +129,8 @@ export default function AlersSettingsPage() {
           }
         >
           <Table table={table} {...tableProps} />
-          <h1 className="font-display p-2 font-medium text-[13px] text-neutral-500">
+
+          <h1 className="p-2 font-display text-[13px] font-medium text-content-subtle">
             {alerts.length}/10 alerts used
           </h1>
         </SettingsChildrenLayout>
@@ -158,30 +169,31 @@ function AlertRowMenu({
     <Popover
       openPopover={isOpen}
       setOpenPopover={setIsOpen}
+      align="end"
       content={
-        <div className="w-fit">
+        <div className="w-44 rounded-xl border border-border-subtle bg-bg-card p-1 shadow-lg">
           <Button
-            className="w-full text-[13px] font-default justify-start"
+            className="w-full justify-start rounded-lg bg-transparent text-[13px] font-default text-content-default hover:bg-bg-subtle"
             onClick={() => {
               onEdit(alert);
               setIsOpen(false);
             }}
             text="Edit Alert"
           />
+
           <Button
-            className="w-full text-[13px] font-default justify-start text-white"
+            className="w-full justify-start rounded-lg bg-transparent text-[13px] font-default text-red-600 hover:bg-red-50"
             onClick={handleDelete}
             text="Delete Alert"
           />
         </div>
       }
-      align="end"
     >
       <Button
         type="button"
-        className="h-8 whitespace-nowrap px-2 disabled:border-transparent disabled:bg-transparent"
         variant="outline"
-        icon={<MoreHorizontal className="h-4 w-4 shrink-0" />}
+        className="h-8 whitespace-nowrap rounded-lg border border-border-subtle bg-bg-card px-2 transition-colors hover:bg-bg-subtle disabled:border-transparent disabled:bg-transparent"
+        icon={<MoreHorizontal className="h-4 w-4 shrink-0 text-content-subtle" />}
       />
     </Popover>
   );

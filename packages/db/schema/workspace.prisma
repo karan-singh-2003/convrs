@@ -26,6 +26,33 @@ enum WorkspacePlan {
   ultimate
 }
 
+enum Currency {
+  USD
+  EUR
+  GBP
+  INR
+  AUD
+  CAD
+  SGD
+  AED
+  CHF
+  CNY
+  JPY
+  KRW
+  HKD
+  NZD
+  NOK
+  PLN
+  CZK
+  BRL
+  IDR
+}
+
+enum KpiType {
+  revenue
+  goal
+}
+
 model Workspace {
   id String @id @default(cuid())
 
@@ -66,24 +93,33 @@ model Workspace {
   freeTrialEndDate   DateTime?
   cancelAtPeriodEnd  Boolean   @default(false)
 
-  blockedHostnames   String[]      @default([])
-  blockedIpAddresses String[]      @default([])
-  blockedPages       String[]      @default([])
-  plan               WorkspacePlan @default(free)
-  timezone           String        @default("UTC")
+  kpiType      KpiType @default(revenue)
+  kpiEventName String?   // required when kpiType = goal, must match a TrackedEvent.eventName
 
-  integrations      Integration[]
 
-  invoices         Invoice[]
-  restrictedTokens RestrictedToken[]
-  sentEmails       SentEmail[]
-  webhooks         Webhook[]
-  invites          WorkspaceInvite[]
-  users            WorkspaceUsers[]
-  funnels          Funnel[]
-  alerts           Alert[]
-  customers        Customer[]
-  payments         Payment[]
+  blockedHostnames   String[] @default([])
+  blockedIpAddresses String[] @default([])
+  blockedPages       String[] @default([])
+  blockedCountries   String[] @default([])
+
+  plan     WorkspacePlan @default(free)
+  timezone String        @default("UTC")
+  currency Currency      @default(USD)
+
+  integrations Integration[]
+
+  invoices               Invoice[]
+  restrictedTokens       RestrictedToken[]
+  sentEmails             SentEmail[]
+  webhooks               Webhook[]
+  invites                WorkspaceInvite[]
+  users                  WorkspaceUsers[]
+  funnels                Funnel[]
+  alerts                 Alert[]
+  customers              Customer[]
+  payments               Payment[]
+  trackedEvents TrackedEvent[]
+  notificationPreference NotificationPreference?
 
   @@index([usageLastChecked])
   @@index([dodoSubscriptionId])

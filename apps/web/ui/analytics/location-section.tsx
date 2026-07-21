@@ -9,18 +9,26 @@ import { LoadingSpinner } from "@repo/ui";
 import { AnalyticsContext } from "./analytics-providers";
 import { BarList } from "./bar-list";
 import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 export function LocationSection() {
   const { queryParams, searchParams } = useRouterStuff();
 
-  const { selectedTab } = useContext(AnalyticsContext);
+  const { selectedTab, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
+  const { kpiEventName, kpiType } = useWorkspace()
+
+  const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+  const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+
+  const kpiConfigured = kpiType === "revenue" || (kpiType === "goal" && !!kpiEventName);
 
   const [tab, setTab] = useState<
     "countries" | "cities" | "regions" | "continents"
   >("countries");
 
   const { data } = useAnalyticsFilterOption(tab);
+
   const { data: allData } = useAnalyticsFilterOption(tab, {
     omitGroupByFilterKey: true,
   });
@@ -39,7 +47,7 @@ export function LocationSection() {
   }, []);
 
   useEffect(() => {
-  
+
   }, [selectedItems]);
 
   const onApplyFilterValues = useCallback(
@@ -82,6 +90,41 @@ export function LocationSection() {
   };
 
   //  Safe mapping
+  // const mapData = (arr: any[]) =>
+  //   arr
+  //     ?.filter(isValidLocation)
+  //     ?.map((d) => ({
+  //       icon:
+  //         tab === "continents" ? (
+  //           <h1 className="size-3 sm:size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
+  //             {CONTINENTS[d.continent]?.[0] || "🌍"}
+  //           </h1>
+  //         ) : (
+  //           // <img
+  //           //   alt={d.country}
+  //           //   src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
+  //           //   className="size-3 sm:size-4 shrink-0"
+  //           // />
+  //           <img
+  //             src={`https://flagcdn.com/w20/${d.country.toLowerCase()}.png`}
+  //             alt={d.countryCode}
+  //             width="20"
+  //           />
+  //         ),
+
+  //       title:
+  //         tab === "continents"
+  //           ? CONTINENTS[d.continent]
+  //           : tab === "countries"
+  //             ? COUNTRIES[d.country]
+  //             : `${tab === "cities" ? `${d.city}, ` : ""}${REGIONS[d.region] || d.region?.split("-")[1]
+  //             }`,
+
+  //       filterValue: d[singularTabName],
+  //       value: d[dataKey] || 0,
+  //       revenue:d["revenue"]||0
+  //     }))
+  //     ?.sort((a, b) => b.value - a.value) || [];
   const mapData = (arr: any[]) =>
     arr
       ?.filter(isValidLocation)
@@ -89,21 +132,15 @@ export function LocationSection() {
         icon:
           tab === "continents" ? (
             <h1 className="size-3 sm:size-4 flex items-center justify-center rounded-full border border-cyan-500 text-xs font-semibold text-cyan-700">
-              {CONTINENTS[d.continent]?.[0] || "🌍"}
+              {CONTINENTS[d.continent]?.[0] || ""}
             </h1>
           ) : (
-            // <img
-            //   alt={d.country}
-            //   src={`https://hatscripts.github.io/circle-flags/flags/${d.country.toLowerCase()}.svg`}
-            //   className="size-3 sm:size-4 shrink-0"
-            // />
             <img
               src={`https://flagcdn.com/w20/${d.country.toLowerCase()}.png`}
               alt={d.countryCode}
-              width="20"
+              width={20}
             />
           ),
-
         title:
           tab === "continents"
             ? CONTINENTS[d.continent]
@@ -111,12 +148,10 @@ export function LocationSection() {
               ? COUNTRIES[d.country]
               : `${tab === "cities" ? `${d.city}, ` : ""}${REGIONS[d.region] || d.region?.split("-")[1]
               }`,
-
         filterValue: d[singularTabName],
-        value: d[dataKey] || 0,
-      }))
-      ?.sort((a, b) => b.value - a.value) || [];
-
+        count: d.count || 0,
+        revenue: d.revenue || 0,
+      })) || [];
   return (
     <AnalyticsCard
       tabs={[
@@ -132,7 +167,7 @@ export function LocationSection() {
       isFilterActive={isFilterActive}
       onClearFilter={onClearFilter}
     >
-      {({ limit, setShowModal }) =>
+      {({ limit, setShowModal, metric }) =>
         data ? (
           mapData(data).length > 0 ? (
             <BarList
@@ -141,9 +176,8 @@ export function LocationSection() {
               data={mapData(data)}
               allData={mapData(allData || [])}
               unit={selectedTab}
-              maxValue={
-                Math.max(...mapData(data).map((d) => d.value ?? 0)) || 0
-              }
+              metric={metric}
+              maxValue={Math.max(...mapData(data).map((d) => (metric === "revenue" ? d.revenue : d.count) ?? 0)) || 0}
               barBackground="bg-blue-100"
               hoverBackground="hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent hover:border-blue-500"
               filterSelectedBackground="bg-blue-600"
@@ -158,6 +192,10 @@ export function LocationSection() {
               onApplyFilterValues={onApplyFilterValues}
               onRowFilterItem={(val) => onApplyFilterValues([val])}
               {...(limit && { limit })}
+              currency={currency}
+              kpiLabel={kpiLabel}      // NEW
+              isGoalKpi={isGoalKpi}
+              kpiConfigured={kpiConfigured}
             />
           ) : (
             <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
@@ -167,7 +205,7 @@ export function LocationSection() {
             </div>
           )
         ) : (
-          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center bg-white/50 sm:h-[300px]">
+          <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center  sm:h-[300px]">
             <LoadingSpinner />
           </div>
         )

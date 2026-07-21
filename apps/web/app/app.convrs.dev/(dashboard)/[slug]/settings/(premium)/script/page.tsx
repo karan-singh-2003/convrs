@@ -5,6 +5,9 @@ import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 import ScriptSettingsContent from "./script-settings-content";
 import { TrackingFilters } from "./tracking-filters";
 import { Timezone } from "./timezone";
+import { AdditionalDomains } from "./additional-domains";
+import ManagedProxy from "./managed-proxy";
+import KPI from "./kpi";
 export default function ScriptSettingsPage() {
   return (
     <PageWidthWrapper>
@@ -15,11 +18,14 @@ export default function ScriptSettingsPage() {
       >
         <div className="space-y-3">
           <ScriptSettingsContent />
-          <TrackingFilters />
-          <Timezone/>
+          {/* <TrackingFilters /> */}
+          <Timezone />
+          {/* <AdditionalDomains />
+          <ManagedProxy/> */}
+          <KPI/>
         </div>
       </SettingsChildrenLayout>
-  
+
     </PageWidthWrapper>
   );
 }

@@ -291,19 +291,19 @@ const BillingClient = () => {
           className="px-3 lg:px-8"
           actions={
             <Button
-              variant="secondary"
+              variant="primary"
               text="Upgrade"
-              className="text-sm w-fit h-fit py-1 text-neutral-500"
+           className="h-fit w-fit rounded-full border-border-subtle bg-bg-subtle px-3 py-1 text-[12.5px] font-display text-content-default transition-colors hover:bg-bg-emphasis"
               onClick={() => setShowUpgradePlanModal(true)}
             />
           }
         >
-          <div className="bg-white rounded-xl border border-neutral-200">
+          <div className="bg-bg-default rounded-xl border border-border-subtle">
             <div className="space-y-0.5 px-3.5 py-2.5">
-              <h3 className="text-sm font-medium font-display text-neutral-500">
+              <h3 className="text-sm font-medium font-display text-content-subtle">
                 Current Plan
               </h3>
-              <p className="text-[13.5px] font-display text-neutral-500">
+              <p className="text-[13.5px] font-display text-content-default">
                 {subscriptionStatus === "trialing"
                   ? `14 days Free Trial (${freeTrialEndDate
                     ? `ends on ${new Date(freeTrialEndDate).toLocaleDateString()}`
@@ -317,12 +317,12 @@ const BillingClient = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-x-3 px-3 py-2.5 border-t border-neutral-200/70">
+            <div className="flex items-center gap-x-3 px-3 py-2.5 border-t border-border-subtle">
               <div className="flex items-center gap-x-1 px-1">
-                <p className="text-[14px] font-medium font-display text-neutral-500">
+                <p className="text-[14px] font-medium font-display text-content-default">
                   {loading ? "" : planName}
                 </p>
-                <span className="text-[13px] font-display text-neutral-500">
+                <span className="text-[13px] font-display text-content-subtle">
                   {usageLimit !== undefined
                     ? ` (${formatCompactNumber(usageLimit)} monthly events)`
                     : ""}
@@ -334,7 +334,7 @@ const BillingClient = () => {
                   text="Manage"
                   loading={isOpeningPortal}
                   variant="secondary"
-                  className="ml-auto rounded-full h-fit bg-[#EDF3FF] text-[#3A8ED3] text-[12.5px] py-1 px-3 w-fit font-default"
+                  className="ml-auto h-fit w-fit rounded-full bg-bg-subtle px-3 py-1 text-[12.5px] font-default text-content-default transition-colors hover:bg-bg-emphasis"
                   onClick={handleManageSubscription}
                 />
               )}
@@ -347,7 +347,7 @@ const BillingClient = () => {
           className="px-3 lg:px-8">
           {usageLimit !== undefined && (
             <div className="px-1 space-y-1">
-              <p className="text-[14px] font-medium font-display text-neutral-500">
+              <p className="text-[14px] font-medium font-display text-content-default">
                 You have used {formatCompactNumber(usage)} of {formatCompactNumber(usageLimit)} monthly events.
               </p>
             </div>

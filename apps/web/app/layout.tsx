@@ -1,5 +1,5 @@
 import "../styles/globals.css";
-import { inter, googleSans, poppins, bricolageGrotesque } from "@/styles/fonts";
+import { inter, googleSans, poppins, bricolageGrotesque ,alexandria} from "@/styles/fonts";
 import Providers from "./providers";
 import { constructMetadata } from "@repo/utils";
 
@@ -13,7 +13,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${googleSans.variable} ${poppins.variable} ${bricolageGrotesque.variable} `}
+        className={`${inter.variable} ${googleSans.variable} ${poppins.variable} ${bricolageGrotesque.variable} ${alexandria.variable} `}
       >
         <Providers>{children}</Providers>
       </body>

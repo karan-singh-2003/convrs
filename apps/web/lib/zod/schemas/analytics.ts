@@ -423,6 +423,7 @@ export function parseEventsQuery(searchParams: Record<string, string>) {
 export const analyticsFilterTB = z.object({
   goalName: z.string().optional(),  // ← add
   eventType: analyticsEvents,
+  kpiGoalName: z.string().optional(),
   workspaceId: z.string().optional(),
   groupBy: analyticsGroupBy,
   domain: z

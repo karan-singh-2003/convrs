@@ -17,14 +17,14 @@ export const FUNNEL_COLORS = [
 export type FunnelColor = (typeof FUNNEL_COLORS)[number];
 
 const colorClassMap: Record<FunnelColor, string> = {
-  blue:   "text-blue-500",
-  purple: "text-purple-500",
-  teal:   "text-teal-500",
-  amber:  "text-amber-500",
-  rose:   "text-rose-500",
-  green:  "text-green-500",
-  indigo: "text-indigo-500",
-  pink:   "text-pink-500",
+  blue:   "text-blue-500 dark:text-blue-400",
+  purple: "text-purple-500 dark:text-purple-400",
+  teal:   "text-teal-500 dark:text-teal-400",
+  amber:  "text-amber-500 dark:text-amber-400",
+  rose:   "text-rose-500 dark:text-rose-400",
+  green:  "text-green-500 dark:text-green-400",
+  indigo: "text-indigo-500 dark:text-indigo-400",
+  pink:   "text-pink-500 dark:text-pink-400",
 };
 
 export function getColorClass(color?: FunnelColor | string, index?: number): string {
@@ -38,10 +38,10 @@ export function getColorClass(color?: FunnelColor | string, index?: number): str
 export type FunnelStep = {
   id: string;
   label: string;
-  value?: number;           // defaults to 0 when omitted
+  value?: number;
   additionalValue?: number;
   color?: FunnelColor | string;
-  colorClassName?: string;  // takes precedence over color
+  colorClassName?: string;
 };
 
 type NormalizedStep = Required<Pick<FunnelStep, "id" | "label" | "value">> & {
@@ -55,7 +55,7 @@ type FunnelChartProps = {
   tooltips?: boolean;
   defaultTooltipStepId?: string;
   chartPadding?: number;
-  maxSteps?: number;        // hard cap, default 8
+  maxSteps?: number;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -110,7 +110,6 @@ function FunnelChartInner({
 }: { width: number; height: number } & FunnelChartProps) {
   const { isMobile } = useMediaQuery();
 
-  // Normalize: cap, default value=0, resolve color
   const steps: NormalizedStep[] = useMemo(
     () =>
       rawSteps.slice(0, maxSteps).map((s, idx) => ({
@@ -142,7 +141,7 @@ function FunnelChartInner({
   const zeroData = useMemo(() => interpolate(0, 0), []);
 
   const maxValue = useMemo(
-    () => Math.max(...steps.map((s) => s.value), 1), // avoid div-by-zero
+    () => Math.max(...steps.map((s) => s.value), 1),
     [steps],
   );
 
@@ -168,7 +167,7 @@ function FunnelChartInner({
                   y={0}
                   width={width / steps.length}
                   height={height}
-                  className="fill-transparent transition-colors hover:fill-blue-600/5"
+                  className="fill-transparent transition-colors hover:fill-content-emphasis/5 dark:hover:fill-content-emphasis/10"
                   onPointerEnter={() => setTooltip(id)}
                   onPointerDown={() => setTooltip(id)}
                   onPointerLeave={() =>
@@ -180,7 +179,7 @@ function FunnelChartInner({
               <line
                 x1={xScale(idx)} y1={0}
                 x2={xScale(idx)} y2={height}
-                className="stroke-black/5 sm:stroke-black/10"
+                className="stroke-border-subtle sm:stroke-border-default"
               />
 
               {/* Step label */}
@@ -188,7 +187,7 @@ function FunnelChartInner({
                 x={stepCenterX}
                 y={height - 8}
                 textAnchor="middle"
-                className="fill-neutral-400 font-display text-[14px] font-medium select-none"
+                className="fill-content-muted font-display text-[14px] font-medium select-none"
                 fontSize={11}
               >
                 {steps[idx].label}
@@ -241,18 +240,18 @@ function FunnelChartInner({
             width: width / steps.length,
           }}
         >
-          <div className="rounded-2xl w-64 bg-white text-base ">
-            <p className=" font-default  px-3 py-2 text-sm text-neutral-900 sm:px-4 sm:py-3">
+          <div className="rounded-2xl w-64 bg-bg-emphasis text-base border border-border-subtle">
+            <p className="font-default px-3 py-2 text-sm text-content-default sm:px-4 sm:py-3">
               {tooltipStep.label}
             </p>
             <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 px-3 py-2 text-sm sm:px-4 sm:py-3">
-              <p className="whitespace-nowrap capitalize font-default text-neutral-600">
+              <p className="whitespace-nowrap capitalize font-default text-content-subtle">
                 {formatPercentage((tooltipStep.value / maxValue) * 100) + "%"}
               </p>
-              <p className="whitespace-nowrap font-medium text-neutral-900">
+              <p className="whitespace-nowrap font-medium text-content-emphasis">
                 {nFormatter(tooltipStep.value, { full: true })}
                 {tooltipStep.additionalValue !== undefined && (
-                  <span className="text-neutral-500">
+                  <span className="text-content-muted">
                     {" "}({currencyFormatter(tooltipStep.additionalValue)})
                   </span>
                 )}
@@ -278,13 +277,23 @@ function PersistentPercentage({
 
   return (
     <g>
-      <rect x={x - pillWidth / 2} width={pillWidth} y={y - 14} height={28} rx={14} fill="white" />
+      <rect
+        x={x - pillWidth / 2}
+        width={pillWidth}
+        y={y - 14}
+        height={28}
+        rx={14}
+        className="fill-bg-card"
+      />
       <Text
         innerTextRef={textRef}
         x={x} y={y}
         textAnchor="middle" verticalAnchor="middle"
         fill="currentColor" fontSize={14}
-        className={cn("pointer-events-none select-none font-medium brightness-50", colorClassName)}
+        className={cn(
+          "pointer-events-none select-none font-medium brightness-50 dark:brightness-100",
+          colorClassName,
+        )}
       >
         {value}
       </Text>

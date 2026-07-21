@@ -12,7 +12,7 @@ import {
 } from "@repo/ui";
 
 import { cn } from "@repo/utils";
-import { ChevronsUpDown } from "lucide-react";
+import { ArrowDownUp, ChevronsUpDown } from "lucide-react";
 import {
   Dispatch,
   ReactNode,
@@ -50,6 +50,7 @@ export function AnalyticsCard<T extends string>({
     limit?: number;
     event?: EventType;
     setShowModal: (show: boolean) => void;
+    metric: "clicks" | "revenue";
   }) => ReactNode;
   className?: string;
 }) {
@@ -57,6 +58,8 @@ export function AnalyticsCard<T extends string>({
 
   const [showModal, setShowModal] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  // Per-card toggle: which metric drives sort order + primary value in BarList
+  const [metric, setMetric] = useState<"clicks" | "revenue">("clicks");
 
   const selectedTab = tabs.find(({ id }) => id === selectedTabId) || tabs[0];
   const SelectedTabIcon = selectedTab.icon;
@@ -74,11 +77,6 @@ export function AnalyticsCard<T extends string>({
         setShowModal={setShowModal}
         className="max-w-lg px-0"
       >
-        {/* <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-2">
-          <h1 className=" text-[15px] text-neutral-700 font-medium md:text-lg font-display md:font-semibold">
-            {selectedTab?.label}
-          </h1>
-        </div> */}
         {subTabs && selectedSubTabId && onSelectSubTab && (
           <SubTabs
             subTabs={subTabs}
@@ -86,16 +84,15 @@ export function AnalyticsCard<T extends string>({
             onSelectTab={onSelectSubTab}
           />
         )}
-        {children({ setShowModal, event })}
+        {children({ setShowModal, event, metric })}
       </Modal>
       <div
         className={cn(
-          "group relative z-0 h-[400px] overflow-hidden rounded-lg border border-neutral-200 bg-white sm:h-[450px] sm:rounded-xl",
+          "group relative z-0 h-[400px] overflow-hidden rounded-lg border border-border-subtle bg-bg-card sm:h-[450px] sm:rounded-xl",
           className
         )}
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-3 sm:px-4">
-          {/* Main tabs */}
+        <div className="flex items-center justify-between border-b border-border-subtle px-3 sm:px-4">
           {isMobile ? (
             <Popover
               openPopover={isOpen}
@@ -114,7 +111,7 @@ export function AnalyticsCard<T extends string>({
                       icon={Icon && <Icon className="size-4" />}
                       className={cn(
                         "h-9 w-full justify-start px-2 font-medium",
-                        selectedTabId === id && "bg-neutral-100"
+                        selectedTabId === id && "bg-bg-card"
                       )}
                     />
                   ))}
@@ -145,9 +142,18 @@ export function AnalyticsCard<T extends string>({
             />
           )}
 
-          {/* <div className="flex items-center gap-1 pr-2 text-neutral-500">
-            <p className="text-xs uppercase">{event}</p>
-          </div> */}
+          <button
+            type="button"
+            onClick={() =>
+              setMetric((m) => (m === "clicks" ? "revenue" : "clicks"))
+            }
+            className="flex items-center gap-1 pr-2 text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
+            <p className="text-[14px] font-medium font-display flex items-center gap-1 capitalize">
+              {metric}
+              <ArrowDownUp size={14} />
+            </p>
+          </button>
         </div>
         <AnimatedSizeContainer
           height
@@ -166,6 +172,7 @@ export function AnalyticsCard<T extends string>({
             limit: effectiveExpandLimit,
             event,
             setShowModal,
+            metric,
           })}
         </div>
         {showViewAll && (
@@ -204,8 +211,8 @@ function SubTabs({
       }))}
       selected={selectedTab}
       selectAction={(period) => onSelectTab(period)}
-      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-neutral-200 bg-neutral-50 px-3 py-2 sm:flex-nowrap sm:px-5"
-      optionClassName="text-[13px] px-2 text-neutral-500 font-medium hover:text-neutral-700 sm:text-[15px] sm:px-2.5"
+      className="flex w-full font-display flex-wrap rounded-none border-x-0 border-t-0 border-border-subtle bg-bg-card px-3 py-2 sm:flex-nowrap sm:px-5"
+      optionClassName="text-[13px] px-2 text-content-subtle font-medium hover:text-content-default sm:text-[15px] sm:px-2.5"
       indicatorClassName="border-0 bg-transparent rounded-md"
     />
   );

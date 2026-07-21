@@ -14,7 +14,7 @@ type Props = {
   variant?: "primary" | "secondary";
   className?: string;
   disabled?: boolean;
-  showTrialLabel?:boolean
+  showTrialLabel?: boolean
 };
 
 export function UpgradePlanButton({
@@ -45,7 +45,7 @@ export function UpgradePlanButton({
 
   // ── Derive button state ───────────────────────────────────────────────────
   const isCurrentPlan =
-    currentPlanName?.toLowerCase() === plan.toLowerCase() ;
+    currentPlanName?.toLowerCase() === plan.toLowerCase();
 
   const isDowngrade =
     !isCurrentPlan &&
@@ -107,8 +107,8 @@ export function UpgradePlanButton({
     const successMsg = isDowngrade
       ? `Downgraded to ${planDisplayName}. Change takes effect at end of billing period.`
       : showTrialLabel
-      ? `Your 14-day free trial of ${planDisplayName} has started!`
-      : `Upgraded to ${planDisplayName} successfully!`;
+        ? `Your 14-day free trial of ${planDisplayName} has started!`
+        : `Upgraded to ${planDisplayName} successfully!`;
 
     toast.promise(performUpgrade(), {
       loading: `${action} to ${planDisplayName}...`,
@@ -139,13 +139,23 @@ export function UpgradePlanButton({
       loading={loading}
       disabled={disabled || isCurrentPlan || loading}
       text={buttonLabel}
+      // className={cn(
+      //   "flex h-8 w-full items-center justify-center truncate rounded-full px-3 text-[13.5px] font-medium font-display transition",
+      //   isCurrentPlan
+      //     ? "cursor-default border border-neutral-200 !bg-white text-neutral-400 shadow-none"
+      //     : isDowngrade
+      //     ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
+      //     : "bg-neutral-900 text-white hover:bg-neutral-800",
+      //   className
+      // )}
       className={cn(
-        "flex h-8 w-full items-center justify-center truncate rounded-full px-3 text-[13.5px] font-medium font-display transition",
+        "flex h-8 w-full items-center justify-center rounded-full px-3 text-[13.5px] font-medium font-display transition-all duration-200",
         isCurrentPlan
-          ? "cursor-default border border-neutral-200 !bg-white text-neutral-400 shadow-none"
+          ? "cursor-default bg-neutral-200 text-neutral-700 hover:bg-neutral-200 shadow-none"
           : isDowngrade
-          ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
-          : "bg-neutral-900 text-white hover:bg-neutral-800",
+            ? "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100"
+            : "bg-neutral-900 text-white hover:bg-neutral-800 active:scale-[0.98]",
+        loading && "cursor-wait",
         className
       )}
     />

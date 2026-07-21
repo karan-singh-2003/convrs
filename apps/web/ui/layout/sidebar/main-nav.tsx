@@ -56,7 +56,7 @@ export function MainNav({
   return (
     <div
       className={cn(
-        "min-h-screen w-full mx-auto py-1 bg-white flex flex-col",
+        "min-h-screen w-full mx-auto py-1 bg-bg-default flex flex-col",
         isRealtime && "h-dvh overflow-hidden"
       )}
     >
@@ -82,7 +82,7 @@ export function MainNav({
 
             <div
               className={cn(
-                "absolute left-0 top-0 h-full w-[248px] max-w-[85vw] border-r border-[#EBEBEB] bg-[#fafafa] transition-transform",
+                "absolute left-0 top-0 h-full w-[248px] max-w-[85vw] border-r border-border-subtle bg-bg-default transition-transform",
                 isOpen ? "translate-x-0" : "-translate-x-full"
               )}
             >
@@ -97,8 +97,8 @@ export function MainNav({
               "fixed left-0 z-30 w-full transition-[top] duration-300",
               hasBanner ? "top-11" : "top-0",
               isRealtime
-                ? "bg-white/55 backdrop-blur-md supports-[backdrop-filter]:bg-white/45 "
-                : "bg-white border-b border-neutral-200 md:border-none"
+                ? "bg-bg-default  "
+                : "bg-bg-default border-b border-border-subtle md:border-none"
             )}
           >
             <div className=" flex h-12 w-full px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between  ">
@@ -118,7 +118,7 @@ export function MainNav({
         ) : (
           <div className=" py-2 flex h-full w-full mx-auto  max-w-screen-lg items-center justify-between gap-4 px-4 md:px-0">
             <nav className="flex items-center w-full justify-between gap-x-2">
-              <div className="flex items-center gap-2.5 font-display text-sm font-medium text-neutral-600">
+              <div className="flex items-center gap-2.5 font-display text-sm font-medium text-content-default">
                 <h1 className="font-semibold font-display text-[14.5px]">
                   Convrs
                 </h1>
@@ -144,7 +144,7 @@ export function MainNav({
                   <Sidebar />
                 </div>
               </div>
-              <div className="min-w-0 max-w-screen-lg rounded-2xl bg-neutral-50">
+              <div className="min-w-0 max-w-screen-lg rounded-2xl bg-bg-default">
                 <div className="px-6 md:px-0 py-5">{children}</div>
               </div>
             </div>
@@ -152,7 +152,7 @@ export function MainNav({
             <div
               className={cn(
                 "px-6 md:px-0",
-                isRealtime ? "bg-transparent" : "bg-white"
+                isRealtime ? "bg-transparent" : "bg-bg-default"
               )}
             >
               <div className={cn(isRealtime ? "py-0" : "py-4")}>{children}</div>

@@ -45,11 +45,16 @@ const NAV_AREAS = {
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
           { title: "Billing", href: `/${slug}/settings/billing` },
+          { title: "Theme", href: `/${slug}/settings/theme` },
           ...(premiumAccess
             ? [
-                { title: "Revenue", href: `/${slug}/settings/revenue` },
-                { title: "Alerts", href: `/${slug}/settings/alerts` },
-              ]
+              { title: "Revenue", href: `/${slug}/settings/revenue` },
+              { title: "Alerts", href: `/${slug}/settings/alerts` },
+              { title: "Exclusions", href: `/${slug}/settings/exclusions` },
+              // { title: "Reports", href: `/${slug}/settings/reports` },
+              { title: "Import", href: `/${slug}/settings/import` },
+              // { title: "Export", href: `/${slug}/settings/export` },
+            ]
             : []),
         ],
       },
@@ -125,14 +130,14 @@ export function AppSidebar({
     paramsSlug ||
     (typeof window !== "undefined" && workspaces
       ? (() => {
-          const storedSlug = sessionStorage.getItem(
-            "boilercode_last_workspace_slug"
-          );
-          if (storedSlug && workspaces.some((ws) => ws.slug === storedSlug)) {
-            return storedSlug;
-          }
-          return undefined;
-        })()
+        const storedSlug = sessionStorage.getItem(
+          "boilercode_last_workspace_slug"
+        );
+        if (storedSlug && workspaces.some((ws) => ws.slug === storedSlug)) {
+          return storedSlug;
+        }
+        return undefined;
+      })()
       : undefined);
 
   const currentArea = useMemo(() => {

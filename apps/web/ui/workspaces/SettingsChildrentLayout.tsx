@@ -15,14 +15,19 @@ export default function SettingsChildrenLayout({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-y-4 ", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-y-4 p-3 bg-bg-emphasis/65 rounded-2xl",
+        className
+      )}
+    >
       {/* Header */}
       <div className="px-1 flex items-center justify-between gap-4">
         <div className="flex flex-col">
-          <h1 className="font-display text-[16px] font-medium text-[#555555]">
+          <h1 className="font-display text-[16px] font-medium text-content-default">
             {title}
           </h1>
-          <p className="font-display text-[14px] font-medium text-[#727272] opacity-90">
+          <p className="font-display text-[14px] font-medium text-content-subtle ">
             {description}
           </p>
         </div>
@@ -32,7 +37,7 @@ export default function SettingsChildrenLayout({
       </div>
 
       {/* Content */}
-      <div className={`bg-[#fafafa] rounded-2xl  ${actions ? "p-0" : "p-0"}`}>
+      <div className={` rounded-2xl  ${actions ? "p-0" : "p-0"}`}>
         {children}
       </div>
     </div>

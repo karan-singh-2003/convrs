@@ -6,4 +6,11 @@ export { getIdentityHash } from "./utils/get-identity-hash";
 export { encrypt, decrypt } from "./utils/encryption";
 export { upsertCustomer, upsertAnonymousCustomer } from "./customer";
 export { sendAlertsForEvent } from "./alerts";
+export {
+    parsePlausibleZip,
+    loadEventsIntoTinybird,
+    deletePlausibleImport,
+} from "./plausible-import";
+export { exportWorkspaceData } from "./export-workspace-data";
+export {parseRawConvrsExport} from "./raw-convrs-import"
 export type { RequestContext, UserAgentInfo, GeoInfo } from "./types";

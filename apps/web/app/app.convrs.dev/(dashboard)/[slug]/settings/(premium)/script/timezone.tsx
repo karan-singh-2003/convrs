@@ -129,6 +129,8 @@
 // function setIsLoading(arg0: boolean) {
 //     throw new Error("Function not implemented.");
 // }
+
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -218,34 +220,38 @@ export function Timezone() {
 
 
   return (
-    <div className="overflow-hidden rounded-xl space-y-3 border border-neutral-200 px-4 py-3 bg-white">
-      <label className="text-sm font-display font-medium text-neutral-600">Time zone</label>
+    <div className="overflow-hidden rounded-xl space-y-3 border border-border-subtle  py-3 bg-bg-default">
+      <div className="px-4">
+        <label className="text-sm font-display font-medium text-neutral-600">Time zone</label>
 
-      <Combobox
-        selected={current}
-        setSelected={onChange}
-        options={options}
-        searchPlaceholder="Search timezone..."
-        placeholder="Select timezone"
-        trigger={
-          <button
-            type="button"
-            className="flex w-full items-center justify-between font-display rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2 text-[14.5px] text-neutral-500 transition hover:bg-neutral-200"
-          >
-            <span className="truncate">{current?.label ?? "Select timezone"}</span>
-            <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" />
-          </button>
-        }
-      />
-      <div className="flex items-end w-full justify-end">
-        <Button
-          text="save"
-          variant="secondary"
-          onClick={onSave}
-          loading={isLoading}
-          disabled={!pendingValue || pendingValue === timezone}
-          className="w-fit h-fit py-1 font-display text-sm"
+        <Combobox
+          selected={current}
+          setSelected={onChange}
+          options={options}
+          searchPlaceholder="Search timezone..."
+          placeholder="Select timezone"
+          trigger={
+            <button
+              type="button"
+              className="flex w-full items-center justify-between font-display rounded-lg border border-border-subtle bg-bg-emphasis/65 px-4 py-2 text-[14.5px] text-content-default transition hover:bg-bg-default"
+            >
+              <span className="truncate">{current?.label ?? "Select timezone"}</span>
+              <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" />
+            </button>
+          }
         />
+      </div>
+
+      <div className="flex justify-end border-t border-border-subtle pt-2">
+        <div className="px-6 ">
+          <Button
+            text="Save"
+            className="h-9 w-24 text-sm rounded-full font-display"
+            onClick={onSave}
+            loading={isLoading}
+            disabled={!pendingValue || pendingValue === timezone}
+          />
+        </div>
       </div>
     </div>
   );

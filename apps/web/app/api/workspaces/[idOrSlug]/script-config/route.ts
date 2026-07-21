@@ -7,6 +7,7 @@ const updateScriptConfigSchema = z.object({
   blockedHostnames: z.array(z.string()).optional(),
   blockedIpAddresses: z.array(z.string()).optional(),
   blockedPages: z.array(z.string()).optional(),
+  blockedCountries: z.array(z.string()).optional(),
 });
 
 function normalizeList(values: string[]) {
@@ -26,6 +27,7 @@ export const GET = withWorkspace(
       blockedHostnames: workspace.blockedHostnames || [],
       blockedIpAddresses: workspace.blockedIpAddresses || [],
       blockedPages: workspace.blockedPages || [],
+      blockedCountries: workspace.blockedCountries || [],
     });
   },
   {
@@ -52,6 +54,9 @@ export const PATCH = withWorkspace(
         ...(payload.blockedPages !== undefined && {
           blockedPages: normalizeList(payload.blockedPages),
         }),
+        ...(payload.blockedCountries !== undefined && {
+          blockedCountries: normalizeList(payload.blockedCountries),
+        }),
       },
       select: {
         domain: true,
@@ -59,6 +64,7 @@ export const PATCH = withWorkspace(
         blockedHostnames: true,
         blockedIpAddresses: true,
         blockedPages: true,
+        blockedCountries: true,
       },
     });
 

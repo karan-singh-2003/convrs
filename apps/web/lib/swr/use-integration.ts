@@ -19,13 +19,13 @@ export type Integration = {
   createdAt: string;
 };
 
-export default function useIntegrations() {
-  const { id: workspaceId } = useWorkspace();
-
+export default function useIntegrations(workspaceId?: string | null) {
+  const { id: _workspaceId } = useWorkspace();
+  const wsId = workspaceId ?? _workspaceId;
   const { data, error, isLoading, mutate } = useSWR<{
     integrations: Integration[];
   }>(
-    workspaceId ? `/api/integrations?workspaceId=${workspaceId}` : null,
+    workspaceId ? `/api/integrations?workspaceId=${wsId}` : null,
     fetcher,
     {
       dedupingInterval: 30000,

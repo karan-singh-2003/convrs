@@ -44,7 +44,7 @@ export default function CustomersPage() {
       {
         accessorKey: "customer",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             Customer
           </span>
         ),
@@ -69,13 +69,15 @@ export default function CustomersPage() {
                   href={`/${slug}/customers/details?customerId=${encodeURIComponent(
                     user.id
                   )}`}
-                  className="text-sm font-medium font-display text-neutral-500 hover:text-neutral-700"
+                  className="font-display text-sm font-medium text-content-emphasis transition-colors hover:text-content-default"
                 >
                   {user.name || "Unnamed customer"}
                 </Link>
 
                 {user.email && (
-                  <span className="text-xs text-neutral-500">{user.email}</span>
+                  <span className="text-xs text-content-subtle">
+                    {user.email}
+                  </span>
                 )}
               </div>
             </div>
@@ -85,7 +87,7 @@ export default function CustomersPage() {
       {
         accessorKey: "country",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             Country
           </span>
         ),
@@ -99,18 +101,13 @@ export default function CustomersPage() {
 
           return (
             <div className="flex items-center gap-2">
-              {/* <img
-                alt={country || "Unknown"}
-                src={`https://hatscripts.github.io/circle-flags/flags/${countryCode}.svg`}
-                className="size-5 shrink-0"
-              /> */}
               <img
-                src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
+                src={`https://flagcdn.com/w20/${countryCode}.png`}
                 alt={countryCode}
-                width="20"
-
+                width={20}
               />
-              <span className="text-sm font-display font-medium text-neutral-500">
+
+              <span className="font-display text-sm font-medium text-content-default">
                 {country || "-"}
               </span>
             </div>
@@ -120,12 +117,12 @@ export default function CustomersPage() {
       {
         accessorKey: "ltv",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             LTV
           </span>
         ),
         cell: ({ row }) => (
-          <span className="text-sm font-display font-medium text-neutral-500">
+          <span className="font-display text-sm font-medium text-content-default">
             {formatAmount(row.original.saleAmount)}
           </span>
         ),
@@ -133,12 +130,12 @@ export default function CustomersPage() {
       {
         accessorKey: "sales",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             Sales
           </span>
         ),
         cell: ({ row }) => (
-          <span className="text-sm font-display font-medium text-neutral-500">
+          <span className="font-display text-sm font-medium text-content-default">
             {row.original.sales}
           </span>
         ),
@@ -146,12 +143,12 @@ export default function CustomersPage() {
       {
         accessorKey: "time",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             Time
           </span>
         ),
         cell: ({ row }) => (
-          <span className="text-sm font-display font-medium text-neutral-500">
+          <span className="font-display text-sm font-medium text-content-default">
             {formatDate(row.original.createdAt)}
           </span>
         ),
@@ -159,7 +156,6 @@ export default function CustomersPage() {
     ],
     [slug]
   );
-
   const { table, ...tableProps } = useTable<CustomerListItem>({
     data: customers,
     columns,
@@ -182,13 +178,13 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6 max-w-screen-lg mx-auto  sm:px-0">
       {isLoading && (
-        <div className="w-full h-[300px] bg-neutral-50 animate-pulse rounded-2xl" />
+        <div className="w-full h-[300px] bg-bg-card animate-pulse rounded-2xl" />
       )}
-      <div className=" bg-[#fafafa] rounded-2xl overflow-x-auto">
+      <div className=" bg-bg-card rounded-2xl overflow-x-auto">
         <Table
           table={table}
           {...tableProps}
-          className="bg-[#FBFBFB] rounded-2xl min-w-[760px]"
+          className="bg-bg-card rounded-2xl min-w-[760px]"
         />
       </div>
     </div>

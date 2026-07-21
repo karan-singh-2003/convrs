@@ -64,8 +64,9 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                           area={area}
                         >
                           {title === "" && (
-                            <div className="w-full">
-                              <WorkspaceDropdown />
+                            <div className="w-full px-1.5">
+                              {/* <WorkspaceDropdown /> */}
+                              <h1 className="font-poppins text-content-default font-semibold   ">Convrs</h1>
                             </div>
                           )}
                           <div
@@ -97,7 +98,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                               className={cn(
                                 "flex w-full",
                                 area === "default"
-                                  ? "md:flex-row flex-col "
+                                  ? "hidden"
                                   : "md:flex-col  flex-col overflow-x-auto flex-nowrap scrollbar-hide pb-px"
                               )}
                             >
@@ -178,8 +179,8 @@ function NavItem({ item, area }: { item: NavItemType; area: string }) {
           ? "px-2 text-[14.5px] md:text-[14.5px]"
           : "flex-shrink-0 px-3 py-1 text-[14.5px] md:text-[16.5px]",
         isActive
-          ? "text-neutral-700/90"
-          : "text-neutral-500/80 hover:text-neutral-500"
+          ? "text-content-default"
+          : "text-content-subtle hover:text-content-default"
       )}
     >
       {title}

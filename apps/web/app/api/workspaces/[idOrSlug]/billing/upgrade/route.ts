@@ -49,22 +49,22 @@ export const POST = withWorkspace(
     const { plan, period, baseUrl, onboarding } = schema.parse(
       await req.json()
     );
-    console.log("plan and other details in upgrade route", plan, period)
+
 
     const productId = getProductId({ planName: plan, interval: period });
-    console.log("product id", productId)
+
 
     if (!productId) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    console.log("workspace.dodo", workspace.dodoCustomerId, workspace.dodoSubscriptionId)
+    
     // ── CASE 1: Active subscriber → Change Plan ────────────────────────────
     if (
       workspace.dodoSubscriptionId &&
       ["active", "on_hold"].includes(workspace.subscriptionStatus ?? "")
     ) {
-      console.log("upgrading acitve subscribe ")
+     
       // Prevent no-op: same plan + same billing interval
       const sameInterval =
         (period === "monthly" && workspace.billingInterval === "month") ||
@@ -107,12 +107,7 @@ export const POST = withWorkspace(
         const message = err?.error?.message ?? err?.message ?? "";
         const userMessage = mapDodoError(status, message);
 
-        console.error("[billing/upgrade] Dodo changePlan failed:", {
-          status,
-          message,
-          subscriptionId: workspace.dodoSubscriptionId,
-        });
-
+   
         return NextResponse.json({ error: userMessage }, { status: 400 });
       }
 
@@ -124,11 +119,9 @@ export const POST = withWorkspace(
       ? `${APP_DOMAIN}/onboarding/success?workspace=${workspace.slug}`
       : `${APP_DOMAIN}/${workspace.slug}?upgraded=true`;
 
-    console.log("successurl", successUrl)
+
     try {
-      console.log("creating checkout session")
-      console.log("process.env variables", process.env.DODO_PAYMENTS_API_KEY, process.env.DODO_PAYMENTS_WEBHOOK_KEY, process.env.DODO_PAYMENTS_ENVIRONMENT)
-      console.log("session workspace plan period  and product_id", session.user, workspace.id, plan, period, productId)
+   
       const checkoutSession = await dodo.checkoutSessions.create({
         product_cart: [{ product_id: productId, quantity: 1 }],
 
@@ -146,23 +139,12 @@ export const POST = withWorkspace(
 
         return_url: successUrl,
       });
-      console.log("checkout session res", checkoutSession)
+ 
       return NextResponse.json({ url: checkoutSession.checkout_url });
     } catch (err: any) {
       const status = err?.status ?? err?.statusCode ?? 500;
       const message = err?.error?.message ?? err?.message ?? "";
       const userMessage = mapDodoError(status, message);
-
-
-      console.error("[billing/upgrade] Dodo checkoutSessions.create failed:", {
-        status,
-        message,
-        productId,
-        plan,
-        period,
-        raw: err?.error ?? err,
-      });
-
       return NextResponse.json({ error: userMessage }, { status: 400 });
     }
   },

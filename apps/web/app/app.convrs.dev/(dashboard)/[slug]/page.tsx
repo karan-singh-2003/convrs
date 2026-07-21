@@ -1,6 +1,6 @@
 "use client";
 import { Button, LoadingSpinner, Progress } from "@repo/ui";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 import Analytics from "@/ui/analytics";
@@ -10,15 +10,27 @@ import Link from "next/link";
 import useIntegrations from "@/lib/swr/use-integration";
 import { Check, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useAttributionStatus } from "@/lib/swr/use-attribution";
+import { useTheme } from "next-themes";
 
 const DashboardPage = () => {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
-  const { usageLimit, usage, subscriptionStatus, id, loading } = useWorkspace();
+  const { usageLimit, usage, subscriptionStatus, id, loading, name } = useWorkspace();
   const { integrations } = useIntegrations();
 
   const { hasAttributedPayment } = useAttributionStatus(id);
+
+  const { theme, resolvedTheme, systemTheme } = useTheme();
+
+
+  useEffect(() => {
+    console.log("[DashboardPage] theme →", { theme, resolvedTheme, systemTheme });
+    console.log("[DashboardPage] html data-theme →", document.documentElement.getAttribute("data-theme"));
+    // If you're using the ThemeScope wrapper approach, also check the scoped div:
+    console.log("[DashboardPage] scoped wrapper class →", document.querySelector('[data-theme-scope]')?.className);
+  }, [theme, resolvedTheme, systemTheme]);
+
 
   const steps = [
     { title: "Install script", completed: !!usage },
@@ -71,17 +83,17 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="relative">
-              <Analytics mode="private" workspaceId={id} />
+              <Analytics mode="private" workspaceId={id} workspaceName={name} />
 
               <div className="relative">
-                <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-neutral-200 bg-neutral-50  shadow-xl font-display">
+                <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-border-subtle bg-bg-card  shadow-xl font-display">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-[14px] font-medium text-neutral-600">
+                      <h2 className="text-[14px] font-medium text-content-default">
                         Finish setting up Convrs
                       </h2>
 
-                      <p className="mt-0.5 text-[13px] font-display text-neutral-500">
+                      <p className="mt-0 text-[13px] font-poppins text-content-subtle">
                         {completedSteps}/{steps.length} completed
                       </p>
                     </div>
@@ -89,14 +101,14 @@ const DashboardPage = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => setCollapsed(!collapsed)}
-                        className="rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100"
+                        className="rounded-full p-1 text-content-subtle transition hover:bg-neutral-100"
                       >
                         {collapsed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
 
                       <button
                         onClick={() => setHidden(true)}
-                        className="rounded-full p-1 text-neutral-500 transition hover:bg-neutral-100"
+                        className="rounded-full p-1 text-content-subtle transition hover:bg-neutral-100"
                       >
                         <X size={16} />
                       </button>
@@ -123,24 +135,24 @@ const DashboardPage = () => {
                                   <Check size={10} strokeWidth={3.5} />
                                 </div>
                               ) : active ? (
-                                <div className="flex h-[16px] w-[16px] items-center justify-center rounded-full border border-dashed border-neutral-400" />
+                                <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full border border-dashed border-border-subtle" />
                               ) : (
-                                <div className="h-[18px] w-[18px] rounded-full border border-neutral-300 bg-white" />
+                                <div className="h-[18px] w-[18px] rounded-full border border-border-subtle bg-bg-card" />
                               )}
 
                               <div className="flex-1">
-                                <p className="text-[13px] font-medium text-neutral-700">
+                                <p className="text-[13px] font-medium text-content-default">
                                   {step.title}
                                 </p>
 
                                 {step.description && (
-                                  <p className="mt-0.5 text-[12.5px] leading-5 text-neutral-500">
+                                  <p className="mt-0.5 text-[12.5px] leading-5 text-content-subtle">
                                     {step.description}
                                   </p>
                                 )}
 
                                 {step.action && (
-                                  <div className="mt-1 text-[12px] font-medium text-neutral-600 underline">
+                                  <div className="mt-1 text-[12px] font-medium text-content-default underline">
                                     {step.action}
                                   </div>
                                 )}

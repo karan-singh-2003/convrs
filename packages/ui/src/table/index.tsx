@@ -77,7 +77,7 @@ export function Table<T>({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-5 py-3 text-left rounded-none text-[12.5px] font-display font-medium text-[#ececed]/60 border-b border-border/40"
+                      className="px-5 py-3 text-left rounded-none text-[12.5px] font-display font-medium text-[#ececed]/60 border-b border-border-subtle"
                     >
                       {header.isPlaceholder
                         ? null
@@ -104,7 +104,7 @@ export function Table<T>({
                       "group transition-colors",
                       hasMultipleRows &&
                         !isLastRow &&
-                        "border-b border-border/40",
+                        "border-b border-border-subtle",
                       onRowClick && "cursor-pointer hover:bg-bg-surface/50"
                     )}
                   >
@@ -115,7 +115,7 @@ export function Table<T>({
                           "px-5 py-2.5 font-default text-[#ececed]/80 align-middle",
                           hasMultipleRows &&
                             !isLastRow &&
-                            "border-b border-border/60"
+                            "border-b border-border-subtle"
                         )}
                       >
                         {flexRender(
@@ -135,10 +135,10 @@ export function Table<T>({
           <div className="flex flex-col items-center font-display justify-center py-16 text-center">
             {emptyState || (
               <>
-                <p className="text-sm font-medium font-display text-neutral-700">
+                <p className="text-sm font-medium font-display text-content-default">
                   No data available
                 </p>
-                <p className="text-[13px] font-display font-medium text-neutral-500 mt-1">
+                <p className="text-[13px] font-display font-medium text-content-subtle mt-1">
                   When data is available, it will appear here.
                 </p>
               </>
@@ -148,7 +148,7 @@ export function Table<T>({
       )}
 
       {table.getPageCount() > 1 && hasData && (
-        <div className="flex items-center border-t border-neutral-100 justify-between px-5 py-1 text-sm">
+        <div className="flex items-center border-t border-border-subtle justify-between px-5 py-1 text-sm">
           <div></div>
           <div className="flex gap-2">
             <Button

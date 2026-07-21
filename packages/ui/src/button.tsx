@@ -3,22 +3,31 @@ import { VariantProps, cva } from "class-variance-authority";
 import { ReactNode, forwardRef } from "react";
 import { Tooltip } from "./tooltip";
 
-export const buttonVariants = cva("transition-all", {
+export const buttonVariants = cva("transition-all duration-200", {
   variants: {
     variant: {
       primary:
-        "border-black text-white bg-black dark:bg-white dark:border-white  hover:bg-inverted hover:ring-0 e",
+        "border border-bg-inverted bg-bg-inverted text-content-inverted hover:opacity-90",
+
       secondary: cn(
-        "border-border-subtle bg-white dark:bg-black text-content-emphasis hover:bg-bg-muted  outline-none",
+        "border border-border-subtle bg-bg-card text-content-emphasis hover:bg-bg-subtle",
         "data-[state=open]:border-border-emphasis data-[state=open]:ring-4 data-[state=open]:ring-border-subtle"
       ),
-      outline: "border-transparent text-content-default hover:bg-bg-subtle",
+
+      outline:
+        "border border-transparent bg-transparent text-content-default hover:bg-bg-subtle hover:text-content-emphasis",
+
       success:
-        "border-blue-500 bg-blue-500 text-white hover:bg-blue-600 hover:ring-4 hover:ring-blue-100",
-      danger: " bg-[#BC2D2D] font-normal  text-white hover:bg-[#DD3C3C] ",
+        "border-blue-600 bg-blue-600 text-white hover:bg-blue-700",
+
+      danger:
+        "border border-transparent bg-red-600 text-white hover:bg-red-700",
+
       "danger-outline":
-        "border-transparent bg-white text-red-500 hover:bg-red-600 hover:text-white",
-      auth: "rounded-none font-medium border border-[#2a2a2a] bg-[#1a1a1a] text-white w-full hover:bg-[#222222] hover:border-[#333333]",
+        "border border-border-subtle bg-bg-card text-red-600 hover:bg-red-600 hover:text-white",
+
+      auth:
+        "w-full rounded-none border border-border-default bg-bg-subtle text-content-emphasis hover:bg-bg-muted font-medium",
     },
   },
   defaultVariants: {
@@ -28,8 +37,8 @@ export const buttonVariants = cva("transition-all", {
 
 export interface ButtonProps
   extends
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  VariantProps<typeof buttonVariants> {
   text?: ReactNode | string;
   textWrapperClassName?: string;
   shortcutClassName?: string;
@@ -62,7 +71,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <Tooltip content={disabledTooltip}>
           <div
             className={cn(
-              "flex h-10 w-full cursor-not-allowed items-center justify-center gap-x-2 rounded-none  bg-neutral-100 px-4 md:text-sm  text-neutral-400 transition-all focus:outline-none",
+              "flex h-10 w-full cursor-not-allowed items-center justify-center gap-x-2 rounded-none bg-bg-subtle px-4 text-content-disabled transition-all md:text-sm focus:outline-none",
               {
                 "border-transparent bg-transparent":
                   variant?.endsWith("outline"),
@@ -85,7 +94,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {shortcut && (
               <kbd
                 className={cn(
-                  "hidden rounded-full border font-display border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs font-normal text-neutral-400 md:inline-block",
+                  "hidden rounded-full border font-display border-border-subtle bg-bg-subtle px-2 py-0.5 text-xs font-normal text-content-muted md:inline-block",
                   {
                     "bg-neutral-100": variant?.endsWith("outline"),
                   },
@@ -108,7 +117,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "group flex h-10 w-full items-center focus:outline-none focus-visible:ring-4 focus-visible:ring-border-subtle  justify-center gap-2 whitespace-nowrap rounded-none px-4 text-[15px]",
           props.disabled || loading
-            ? "cursor-not-allowed border-neutral-200 bg-neutral-100 text-neutral-400 outline-none"
+            ? "cursor-not-allowed border border-border-subtle bg-bg-subtle text-content-disabled"
             : buttonVariants({ variant }),
           className
         )}
@@ -117,8 +126,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <div className="flex items-center justify-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
-            <span className="text-sm font-display text-neutral-500">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-default border-t-border-default" />
+            <span className="text-sm font-display text-content-subtle">
               {text}
             </span>
           </div>
@@ -141,15 +150,20 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 className={cn(
                   "hidden rounded px-2 py-0.5 text-xs font-light transition-all duration-75 md:inline-block",
                   {
-                    "bg-neutral-700 text-neutral-400 group-hover:bg-neutral-600 group-hover:text-neutral-300":
-                      variant === "primary",
-                    "bg-neutral-200 text-neutral-400 group-hover:bg-neutral-100 group-hover:text-neutral-500":
-                      variant === "secondary",
-                    "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200":
-                      variant === "outline",
-                    "bg-red-400 text-white": variant === "danger",
-                    "bg-red-100 text-red-600 group-hover:bg-red-500 group-hover:text-white":
-                      variant === "danger-outline",
+                    primary:
+                      "bg-bg-card/20 text-content-inverted group-hover:bg-bg-card/30",
+
+                    secondary:
+                      "bg-bg-subtle text-content-subtle group-hover:bg-bg-muted",
+
+                    outline:
+                      "bg-bg-subtle text-content-default group-hover:bg-bg-muted",
+
+                    danger:
+                      "bg-red-500/30 text-white",
+
+                    "danger-outline":
+                      "bg-red-100 text-red-600 group-hover:bg-red-600 group-hover:text-white",
                   },
                   shortcutClassName
                 )}

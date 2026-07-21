@@ -1,4 +1,4 @@
 export * from "./calendar";
-export * from "./data-picker";
-export * from "./data-range-picker";
+export * from "./date-picker";
+export * from "./date-range-picker";
 export { DatePickerContext } from "./shared";

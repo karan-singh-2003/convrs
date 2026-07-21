@@ -15,45 +15,45 @@ export function UserDropdown() {
     href?: string;
     onClick: () => void;
   }> = [
-    {
-      label: "Account Settings",
-      href: "/account/settings",
-      onClick: () => setOpenPopover(false),
-    },
-    {
-      label: "Log out",
-      onClick: () =>
-        signOut({
-          callbackUrl: "/login",
-        }),
-    },
-  ];
+      {
+        label: "Account Settings",
+        href: "/account/settings",
+        onClick: () => setOpenPopover(false),
+      },
+      {
+        label: "Log out",
+        onClick: () =>
+          signOut({
+            callbackUrl: "/login",
+          }),
+      },
+    ];
 
- 
+
   return (
     <Popover
       content={
-        <div className="flex w-full flex-col divide-y rounded-md bg-white sm:min-w-64">
+        <div className="flex w-full flex-col  rounded-md sm:min-w-64">
           {/* User Info */}
           {session?.user ? (
             <div className="px-3 py-3 sm:py-2">
-              <p className="truncate text-[13.5px] sm:text-sm font-display font-medium text-neutral-700">
+              <p className="truncate text-[13.5px] sm:text-sm font-display font-medium text-content-default">
                 {session.user.name || session.user.email?.split("@")[0]}
               </p>
 
-              <p className="truncate text-[13.5px] sm:text-sm font-display text-neutral-500">
+              <p className="truncate text-[13.5px] sm:text-sm font-display text-content-subtle">
                 {session.user.email}
               </p>
             </div>
           ) : (
             <div className="grid gap-2 px-3 py-3">
-              <div className="h-3 w-16 animate-pulse rounded-full bg-neutral-200" />
-              <div className="h-3 w-24 animate-pulse rounded-full bg-neutral-200" />
+              <div className="h-3 w-16 animate-pulse rounded-full bg-bg-emphasis" />
+              <div className="h-3 w-24 animate-pulse rounded-full bg-bg-emphasis" />
             </div>
           )}
 
           {/* Menu Options */}
-          <div className="py-1">
+          <div className="py-1 border-t border-border-subtle">
             {menuOptions.map((menuOption, idx) => (
               <UserOption
                 key={idx}
@@ -71,9 +71,9 @@ export function UserDropdown() {
       <button
         onClick={() => setOpenPopover(!openPopover)}
         className={cn(
-          "group relative  flex pr-1  items-center justify-center rounded-none transition-all",
-          "hover:bg-bg-inverted/5 active:bg-bg-inverted/10 data-[state=open]:bg-bg-inverted/10 transition-colors duration-150",
-          "outline-none focus-visible:ring-2 focus-visible:ring-black/50 "
+          "group relative flex items-center justify-center rounded-none pr-1 outline-none transition-colors duration-150",
+          "hover:bg-bg-emphasis active:bg-bg-default data-[state=open]:bg-bg-default",
+          "focus-visible:ring-2 focus-visible:ring-border-default"
         )}
       >
         {session?.user ? (
@@ -91,7 +91,7 @@ export function UserDropdown() {
             )}
           </div>
         ) : (
-          <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-100" />
+          <div className="h-6 w-6 animate-pulse rounded-full bg-bg-emphasis" />
         )}
       </button>
     </Popover>
@@ -120,14 +120,14 @@ function UserOption<T extends ElementType = "button">({
         px-3 py-1
         text-[14px] sm:text-sm
         font-display font-medium
-        text-neutral-500
+        text-content-subtle
         transition-colors
-        hover:text-neutral-600
+        hover:text-content-default
         
       "
       {...rest}
     >
-      {Icon && <Icon className="size-5 sm:size-4 text-neutral-500" />}
+      {Icon && <Icon className="size-5 sm:size-4 text-content-subtle" />}
 
       <span className="flex-1 truncate">{label}</span>
 

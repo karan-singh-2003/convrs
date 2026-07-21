@@ -190,7 +190,7 @@ export function FilterSelect({
             }
             className="w-full md:w-[250px]"
           >
-            <div className="flex font-display items-center overflow-hidden rounded-t-lg border-b border-neutral-200">
+            <div className="flex font-display items-center overflow-hidden rounded-t-lg border-b border-border-subtle">
               <CommandInput
                 placeholder={`${selectedFilter?.label || "Search"}`}
                 value={search}
@@ -240,7 +240,7 @@ export function FilterSelect({
                             onSelect={() => openFilter(filter.key)}
                           />
                           {filter.separatorAfter && (
-                            <Command.Separator className="-mx-1 my-1 border-b border-neutral-200" />
+                            <Command.Separator className="-mx-1 my-1 border-b border-border-subtle" />
                           )}
                         </Fragment>
                       ))
@@ -315,7 +315,7 @@ export function FilterSelect({
         type="button"
         className={cn(
           "group flex h-10 cursor-pointer appearance-none font-display items-center gap-x-2 truncate rounded-md border px-3 text-sm outline-none transition-all",
-          "border-neutral-200 bg-white text-neutral-900 placeholder-neutral-400",
+          "border-border-subtle bg-bg-card text-content-default placeholder-neutral-400",
           className
         )}
       >
@@ -359,7 +359,7 @@ const CommandInput = (
     <Command.Input
       {...restProps}
       size={1}
-      className="grow border-0 py-2 pl-4 pr-2 outline-none font-default placeholder:text-neutral-400 focus:ring-0 sm:text-[14.5px]"
+      className="grow border-0 py-2 pl-4 pr-2 outline-none bg-transparent font-default placeholder:text-neutral-400 focus:ring-0 sm:text-[14.5px]"
       onKeyDown={(e) => {
         props.onKeyDown?.(e);
 
@@ -390,7 +390,7 @@ const FilterScroll = forwardRef(
         </div>
         {/* Bottom scroll fade */}
         <div
-          className="pointer-events-none absolute bottom-0 left-0 hidden h-16 w-full bg-gradient-to-t from-white sm:block"
+          className="pointer-events-none absolute bottom-0 left-0 hidden h-16 w-full bg-gradient-to-t from-bg-card sm:block"
           style={{ opacity: 1 - Math.pow(scrollProgress, 2) }}
         ></div>
       </>
@@ -428,7 +428,7 @@ function FilterButton({
     <Command.Item
       className={cn(
         "flex cursor-pointer font-display items-center gap-3 whitespace-nowrap rounded-none px-3 pr-4 py-2 text-left text-sm",
-        "data-[selected=true]:bg-neutral-100"
+        "data-[selected=true]:bg-bg-emphasis/65"
       )}
       onSelect={onSelect}
       value={label + option?.value}

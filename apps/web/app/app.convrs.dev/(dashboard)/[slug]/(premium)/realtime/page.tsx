@@ -121,13 +121,14 @@ function DetailView({
     () =>
       barData.map((item) => ({
         title: item.label,
-        value: item.value,
+        count: item.value,
+        revenue: 0,
 
         ...(title.toLowerCase() === "countries" &&
           item.code && {
           icon: (
             <img
-              src={`https://flagcdn.com/w20/${item.label.toLowerCase()}.png`}
+              src={`https://flagcdn.com/w20/${item.code.toLowerCase()}.png`}
               alt={item.label}
               width="20"
             />
@@ -139,31 +140,35 @@ function DetailView({
 
   return (
     <div className="py-3">
-      <div className="flex items-center mb-5 px-2 justify-between">
+      <div className="mb-5 flex items-center justify-between px-2">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-neutral-200 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle"
           aria-label="Go back"
         >
-          <ChevronLeft size={16} className="text-neutral-500" />
+          <ChevronLeft
+            size={16}
+            className="text-content-subtle"
+          />
         </button>
-        <h1 className="font-medium text-neutral-600 text-[15px] text-center">
+
+        <h1 className="px-2 text-center font-display text-[14px] font-medium text-content-default sm:text-[15px]">
           {title}
         </h1>
-        {/* Spacer to balance the back chevron so title is truly centred */}
-        <div className="w-7" />
+
+        <div className="h-8 w-8" />
       </div>
 
-      <div className="max-h-[200px] overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <div className="max-h-[220px] overflow-x-hidden overflow-y-auto scrollbar-hide">
         <BarList
           tab={title.toLowerCase()}
           unit="visitors"
           data={mappedBarData}
           allData={mappedBarData}
           maxValue={maxValue}
-          barBackground="bg-neutral-200"
-          hoverBackground="hover:bg-neutral-100"
+          barBackground="bg-bg-bar-primary"
+          hoverBackground="hover:bg-bg-subtle"
           setShowModal={() => { }}
           limit={100}
         />
@@ -185,13 +190,17 @@ function SummaryRow({
   onExpand: () => void;
 }) {
   return (
-    <div className="grid grid-cols-[90px_1fr_auto] items-center gap-2">
-      <span className="text-[13.5px] font-display text-neutral-500">{label}</span>
+    <div className="grid grid-cols-[72px_1fr_auto] gap-2 sm:grid-cols-[90px_1fr_auto] sm:gap-3 items-center">
+      <span className="truncate font-display text-[13px] text-content-subtle sm:text-[13.5px]">
+        {label}
+      </span>
+
       {renderValue()}
+
       <button
         type="button"
         onClick={onExpand}
-        className="flex items-center gap-1 text-sm font-bricolageGrotesque text-neutral-400 hover:text-neutral-600 transition-colors"
+        className="flex items-center gap-1 text-sm font-alexandria text-content-subtle transition-colors hover:text-content-default"
         aria-label={`Expand ${label}`}
       >
         <span>{count}</span>
@@ -201,10 +210,356 @@ function SummaryRow({
   );
 }
 
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-export default function Dashboard() {
+// ─── Mock data for UI testing ────────────────────────────────────────────────
+// const USE_MOCK_DATA = true; // flip to false to use real live data
+
+// const MOCK_LIVE_DATA = {
+//   count: 128,
+//   pages: [
+//     { page: "/", count: 42 },
+//     { page: "/pricing", count: 31 },
+//     { page: "/blog/launch-week", count: 24 },
+//     { page: "/docs/getting-started", count: 18 },
+//     { page: "/changelog", count: 13 },
+//   ],
+//   points: [
+//     { id: "p1", latitude: 40.7128, longitude: -74.006, value: 12 },   // New York
+//     { id: "p2", latitude: 51.5072, longitude: -0.1276, value: 9 },    // London
+//     { id: "p3", latitude: 35.6762, longitude: 139.6503, value: 7 },   // Tokyo
+//     { id: "p4", latitude: 19.076, longitude: 72.8777, value: 15 },    // Mumbai
+//     { id: "p5", latitude: -33.8688, longitude: 151.2093, value: 5 },  // Sydney
+//     { id: "p6", latitude: 52.52, longitude: 13.405, value: 6 },       // Berlin
+//     { id: "p7", latitude: 1.3521, longitude: 103.8198, value: 8 },    // Singapore
+//     { id: "p8", latitude: -23.5505, longitude: -46.6333, value: 4 },  // São Paulo
+//   ],
+//   referrers: [
+//     { source: "google.com", count: 58 },
+//     { source: "twitter.com", count: 27 },
+//     { source: "(direct)", count: 21 },
+//     { source: "producthunt.com", count: 14 },
+//     { source: "github.com", count: 8 },
+//   ],
+//   countries: [
+//     { country: "United States", code: "US", count: 45 },
+//     { country: "India", code: "IN", count: 27 },
+//     { country: "United Kingdom", code: "GB", count: 19 },
+//     { country: "Germany", code: "DE", count: 15 },
+//     { country: "Japan", code: "JP", count: 12 },
+//     { country: "Singapore", code: "SG", count: 10 },
+//   ],
+// };
+
+// // ─── Dashboard ────────────────────────────────────────────────────────────────
+// export default function Dashboard({
+//   workspaceId: workspaceIdProp,
+//   projectToken: projectTokenProp,
+// }: {
+//   workspaceId?: string;
+//   projectToken?: string;
+// } = {}) {
+//   const [activeSection, setActiveSection] = useState<SectionKey | null>(null);
+//   const workspace = useWorkspace();
+//   const workspaceId = workspaceIdProp ?? workspace.id;
+//   const projectToken = projectTokenProp ?? workspace.projectToken;
+
+//   const liveVisitors = useLiveVisitors(projectToken ?? null);
+
+//   const {
+//     count: liveCount,
+//     pages: livePages,
+//     points: livePoints,
+//     referrers: liveReferrers,
+//     countries: liveCountries,
+//   } = USE_MOCK_DATA ? MOCK_LIVE_DATA : liveVisitors;
+
+//   const globeDataPoints = useMemo<GlobeDataPoint[]>(
+//     () =>
+//       livePoints.map((point, index) => ({
+//         id: point.id ?? `live-point-${index}`,
+//         latitude: point.latitude,
+//         longitude: point.longitude,
+//         value: point.value,
+//       })),
+//     [livePoints]
+//   );
+
+//   const handleExpand = useCallback(
+//     (key: SectionKey) => setActiveSection(key),
+//     []
+//   );
+//   const handleBack = useCallback(() => setActiveSection(null), []);
+
+//   const dashboardData = useMemo<DashboardData>(() => {
+//     const pages = livePages.map((item) => ({
+//       page: item.page,
+//       count: item.count,
+//     }));
+
+//     const referrers =
+//       liveReferrers.length > 0
+//         ? liveReferrers
+//         : [{ source: "No data", count: 0 }];
+
+//     const countries =
+//       liveCountries.length > 0
+//         ? liveCountries
+//         : [{ country: "No data", code: "US", count: 0 }];
+
+//     return {
+//       total: liveCount,
+//       referrers,
+//       countries,
+//       pages,
+//       globe: globeDataPoints,
+//     };
+//   }, [liveCount, livePages, liveReferrers, liveCountries, globeDataPoints]);
+
+//   const hasLiveData = liveCount > 0 || livePages.length > 0;
+
+//   useEffect(() => {
+//     if (!hasLiveData && activeSection !== null) {
+//       setActiveSection(null);
+//     }
+//   }, [hasLiveData, activeSection]);
+
+//   const referrerBarData = useMemo(
+//     () =>
+//       dashboardData.referrers.map((item) => ({
+//         label: item.source,
+//         value: item.count,
+//       })),
+//     [dashboardData.referrers]
+//   );
+//   const countryBarData = useMemo(
+//     () =>
+//       dashboardData.countries.map((item) => ({
+//         label: item.country,
+//         value: item.count,
+//         code: item.code,
+//       })),
+//     [dashboardData.countries]
+//   );
+//   const pageBarData = useMemo(
+//     () =>
+//       dashboardData.pages.map((item) => ({
+//         label: item.page,
+//         value: item.count,
+//       })),
+//     [dashboardData.pages]
+//   );
+
+//   const referrerMax = useMemo(
+//     () => Math.max(...referrerBarData.map((d) => d.value), 1),
+//     [referrerBarData]
+//   );
+//   const countryMax = useMemo(
+//     () => Math.max(...countryBarData.map((d) => d.value), 1),
+//     [countryBarData]
+//   );
+//   const pageMax = useMemo(
+//     () => Math.max(...pageBarData.map((d) => d.value), 1),
+//     [pageBarData]
+//   );
+
+
+
+//   const summaryContent = (
+//     <div className="space-y-4 px-4 py-2.5">
+//       {hasLiveData && (
+//         <div className="flex items-center justify-between pb-1 text-content-default">
+//           <p className="text-[14px] font-medium">
+//             •{" "}
+//             <span className="font-alexandria">
+//               {dashboardData.total}
+//             </span>{" "}
+//             live visitors
+//           </p>
+//         </div>
+//       )}
+
+//       {hasLiveData && (
+//         <>
+//           <SummaryRow
+//             label="Referrers"
+//             count={dashboardData.referrers[0].count}
+//             onExpand={() => handleExpand("referrers")}
+//             renderValue={() => (
+//               <div className="flex min-w-0 items-center gap-2">
+//                 {/* {dashboardData.referrers[0].source === "direct" ? (
+//                   <ArrowRight
+//                     size={16}
+//                     className="shrink-0 text-content-subtle"
+//                   />
+//                 ) : (
+//                   null
+//                 )} */}
+
+//                 <span className="truncate font-display text-[14px] font-medium text-content-default sm:text-[15px]">
+//                   {dashboardData.referrers[0].source}
+//                 </span>
+//               </div>
+//             )}
+//           />
+
+//           <SummaryRow
+//             label="Countries"
+//             count={dashboardData.countries[0].count}
+//             onExpand={() => handleExpand("countries")}
+//             renderValue={() => {
+//               const rawCountry =
+//                 dashboardData.countries[0].country || "Unknown";
+//               const rawCode = dashboardData.countries[0].code || "";
+
+//               const countryCode = (
+//                 rawCode.length === 2
+//                   ? rawCode
+//                   : Object.entries(COUNTRIES).find(
+//                     ([, name]) => name === rawCountry
+//                   )?.[0] || "unknown"
+//               ).toLowerCase();
+
+//               const countryName =
+//                 rawCode.length === 2
+//                   ? COUNTRIES[
+//                   rawCode.toUpperCase() as keyof typeof COUNTRIES
+//                   ] || rawCountry
+//                   : rawCountry;
+
+//               return (
+//                 <div className="flex items-center gap-2 text-base font-medium text-content-default">
+//                   {countryCode !== "unknown" && (
+//                     <img
+//                       src={`https://flagcdn.com/w20/${countryCode}.png`}
+//                       alt={countryName}
+//                       width="20"
+//                     />
+//                   )}
+
+//                   <span>{countryName}</span>
+//                 </div>
+//               );
+//             }}
+//           />
+
+//           <SummaryRow
+//             label="Pages"
+//             count={dashboardData.pages[0]?.count ?? 0}
+//             onExpand={() => handleExpand("pages")}
+//             renderValue={() => (
+//               <span className="text-base font-medium text-content-default">
+//                 {dashboardData.pages[0]?.page ?? "No data"}
+//               </span>
+//             )}
+//           />
+//         </>
+//       )}
+//     </div>
+//   );
+
+//   const detailContent = (
+//     <>
+//       {activeSection === "referrers" && (
+//         <DetailView
+//           title="Referrers"
+//           onBack={handleBack}
+//           barData={referrerBarData}
+//           maxValue={referrerMax}
+//         />
+//       )}
+//       {activeSection === "countries" && (
+//         <DetailView
+//           title="Countries"
+//           onBack={handleBack}
+//           barData={countryBarData}
+//           maxValue={countryMax}
+//         />
+//       )}
+//       {activeSection === "pages" && (
+//         <DetailView
+//           title="Pages"
+//           onBack={handleBack}
+//           barData={pageBarData}
+//           maxValue={pageMax}
+//         />
+//       )}
+//     </>
+//   );
+
+//   return (
+//     <div className="relative min-h-screen">
+//       <Globe dataPoints={dashboardData.globe} />
+
+//       <div className="fixed inset-x-0 bottom-20 z-20 px-3">
+//         {hasLiveData ? (
+//           <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-border-subtle bg-bg-card shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+//             <AnimatedCardBody
+//               activeSection={activeSection}
+//               summaryContent={summaryContent}
+//               detailContent={detailContent}
+//             />
+//           </div>
+//         ) : (
+//           <div className="mx-auto w-fit px-3 py-1 overflow-hidden rounded-3xl border border-neutral-200/70 bg-neutral-100/90 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+//             <h1 className="font-bricolageGrotesque flex items-center gap-x-2 text-[20px] font-medium text-neutral-500">
+//               {" "}
+//               <svg
+//                 xmlns="http://www.w3.org/2000/svg"
+//                 fill="none"
+//                 viewBox="0 0 14 14"
+//                 id="Web--Streamline-Core"
+//                 height="18"
+//                 width="18"
+//               >
+//                 <desc>Web Streamline Icon: https://streamlinehq.com</desc>
+//                 <g id="web--server-world-internet-earth-www-globe-worldwide-web-network">
+//                   <path
+//                     id="Vector"
+//                     stroke="#000000"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M7 13.5c3.5899 0 6.5 -2.9101 6.5 -6.5C13.5 3.41015 10.5899 0.5 7 0.5 3.41015 0.5 0.5 3.41015 0.5 7c0 3.5899 2.91015 6.5 6.5 6.5Z"
+//                     strokeWidth="1"
+//                   ></path>
+//                   <path
+//                     id="Vector_2"
+//                     stroke="#000000"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M0.5 7h13"
+//                     strokeWidth="1"
+//                   ></path>
+//                   <path
+//                     id="Vector_3"
+//                     stroke="#000000"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M9.5 7c-0.1228 2.37699 -0.99832 4.6533 -2.5 6.5C5.49832 11.6533 4.6228 9.37699 4.5 7c0.1228 -2.37699 0.99832 -4.65335 2.5 -6.5C8.50168 2.34665 9.3772 4.62301 9.5 7v0Z"
+//                     strokeWidth="1"
+//                   ></path>
+//                 </g>
+//               </svg>
+//               0{" "}
+//             </h1>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+
+// // ─── Dashboard ────────────────────────────────────────────────────────────────
+export default function Dashboard({
+  workspaceId: workspaceIdProp,
+  projectToken: projectTokenProp,
+}: {
+  workspaceId?: string;
+  projectToken?: string;
+} = {}) {
   const [activeSection, setActiveSection] = useState<SectionKey | null>(null);
-  const { id: workspaceId, projectToken } = useWorkspace();
+  const workspace = useWorkspace();
+  const workspaceId = workspaceIdProp ?? workspace.id;
+  const projectToken = projectTokenProp ?? workspace.projectToken;
   const {
     count: liveCount,
     pages: livePages,
@@ -307,10 +662,10 @@ export default function Dashboard() {
   const summaryContent = (
     <div className="space-y-4 px-4 py-2.5">
       {hasLiveData && (
-        <div className="flex items-center justify-between pb-1 text-neutral-600">
-          <p className="text-[15px] font-medium">
+        <div className="flex items-center justify-between pb-1 text-content-default">
+          <p className="text-[14px] font-medium">
             •{" "}
-            <span className="font-bricolageGrotesque">
+            <span className="font-alexandria">
               {dashboardData.total}
             </span>{" "}
             live visitors
@@ -325,10 +680,20 @@ export default function Dashboard() {
             count={dashboardData.referrers[0].count}
             onExpand={() => handleExpand("referrers")}
             renderValue={() => (
-              <span className="text-[15px] flex items-center gap-x-1.5 font-medium text-neutral-600">
-                <ArrowRight size={15} />
-                {dashboardData.referrers[0].source}
-              </span>
+              <div className="flex min-w-0 items-center gap-2">
+                {/* {dashboardData.referrers[0].source === "direct" ? (
+                  <ArrowRight
+                    size={16}
+                    className="shrink-0 text-content-subtle"
+                  />
+                ) : (
+                  null
+                )} */}
+
+                <span className="truncate font-display text-[14px] font-medium text-content-default sm:text-[15px]">
+                  {dashboardData.referrers[0].source}
+                </span>
+              </div>
             )}
           />
 
@@ -357,7 +722,7 @@ export default function Dashboard() {
                   : rawCountry;
 
               return (
-                <div className="flex items-center gap-2 text-base font-medium text-neutral-600">
+                <div className="flex items-center gap-2 text-base font-medium text-content-default">
                   {countryCode !== "unknown" && (
                     <img
                       src={`https://flagcdn.com/w20/${countryCode}.png`}
@@ -377,7 +742,7 @@ export default function Dashboard() {
             count={dashboardData.pages[0]?.count ?? 0}
             onExpand={() => handleExpand("pages")}
             renderValue={() => (
-              <span className="text-base font-medium text-neutral-600">
+              <span className="text-base font-medium text-content-default">
                 {dashboardData.pages[0]?.page ?? "No data"}
               </span>
             )}
@@ -420,9 +785,9 @@ export default function Dashboard() {
     <div className="relative min-h-screen">
       <Globe dataPoints={dashboardData.globe} />
 
-      <div className="fixed inset-x-0 bottom-4 z-20 px-3">
+      <div className="fixed inset-x-0 bottom-20 z-20 px-3">
         {hasLiveData ? (
-          <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-neutral-200/70 bg-neutral-100/90 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-[24rem] pb-3 overflow-hidden rounded-3xl border border-border-subtle bg-bg-card shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
             <AnimatedCardBody
               activeSection={activeSection}
               summaryContent={summaryContent}
@@ -430,48 +795,7 @@ export default function Dashboard() {
             />
           </div>
         ) : (
-          <div className="mx-auto w-fit px-3 py-1 overflow-hidden rounded-3xl border border-neutral-200/70 bg-neutral-100/90 shadow-[0_10px_40px_rgba(0,0,0,0.12)] backdrop-blur-sm">
-            <h1 className="font-bricolageGrotesque flex items-center gap-x-2 text-[20px] font-medium text-neutral-500">
-              {" "}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-                id="Web--Streamline-Core"
-                height="18"
-                width="18"
-              >
-                <desc>Web Streamline Icon: https://streamlinehq.com</desc>
-                <g id="web--server-world-internet-earth-www-globe-worldwide-web-network">
-                  <path
-                    id="Vector"
-                    stroke="#000000"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7 13.5c3.5899 0 6.5 -2.9101 6.5 -6.5C13.5 3.41015 10.5899 0.5 7 0.5 3.41015 0.5 0.5 3.41015 0.5 7c0 3.5899 2.91015 6.5 6.5 6.5Z"
-                    strokeWidth="1"
-                  ></path>
-                  <path
-                    id="Vector_2"
-                    stroke="#000000"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M0.5 7h13"
-                    strokeWidth="1"
-                  ></path>
-                  <path
-                    id="Vector_3"
-                    stroke="#000000"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.5 7c-0.1228 2.37699 -0.99832 4.6533 -2.5 6.5C5.49832 11.6533 4.6228 9.37699 4.5 7c0.1228 -2.37699 0.99832 -4.65335 2.5 -6.5C8.50168 2.34665 9.3772 4.62301 9.5 7v0Z"
-                    strokeWidth="1"
-                  ></path>
-                </g>
-              </svg>
-              0{" "}
-            </h1>
-          </div>
+          null
         )}
       </div>
     </div>

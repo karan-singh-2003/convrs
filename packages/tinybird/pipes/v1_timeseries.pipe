@@ -5,31 +5,70 @@ DESCRIPTION >
 TAGS "Dub Endpoints"
 
 NODE month_intervals
-
-
 SQL >
 
     %
-        WITH
-            toStartOfMonth(
-                toDateTime64({{ DateTime64(start, '2024-02-24 00:00:00.000') }}, 3),
-                {{ String(timezone, 'UTC') }}
-            ) AS start,
-            toStartOfMonth(
-                toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
-                {{ String(timezone, 'UTC') }}
-            ) AS
-        end,
+    WITH
+        toStartOfMonth(
+            toDateTime64({{ DateTime64(start, '2024-02-24 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfMonth(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS end,
         dateDiff('month', start, end) + 1 AS months_diff
+    SELECT
+        arrayJoin(
+            arrayMap(
+                x -> toDateTime64(start + toIntervalMonth(x), 3, {{ String(timezone, 'UTC') }}),
+                range(0, months_diff)
+            )
+        ) as interval
+
+NODE session_stats
+SQL >
+
+    %
+    SELECT
+        interval,
+        avgIf(session_duration, session_duration > 0) AS avg_session_duration,
+        if(count() > 0, countIf(event_count = 1) * 100.0 / count(), 0) AS bounce_rate
+    FROM (
         SELECT
-            arrayJoin(
-                arrayMap(
-                    x -> toDateTime64(start + toIntervalMonth(x), 3, {{ String(timezone, 'UTC') }}),
-                    range(0, months_diff)
-                )
-            ) as interval
-
-
+            session_id,
+            {% if granularity == "hour" %} toStartOfHour(min(dce.timestamp), {{ String(timezone, 'UTC') }})
+            {% elif granularity == "month" %}
+                toDateTime64(toStartOfMonth(min(dce.timestamp), {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
+            {% else %} toDateTime64(toStartOfDay(min(dce.timestamp), {{ String(timezone, 'UTC') }}), 3)
+            {% end %} AS interval,
+            count() AS event_count,
+            dateDiff('second', min(dce.timestamp), max(dce.timestamp)) AS session_duration
+        FROM
+            {% if defined(customerId) %} dub_click_events_id AS dce
+            {% else %} dub_click_events_mv AS dce
+            {% end %}
+        WHERE
+            true
+            {% if defined(workspaceId) %} AND dce.workspace_id = {{ workspaceId }} {% end %}
+            {% if defined(linkId) %}
+                {% if defined(linkIdOperator) and String(linkIdOperator) == 'NOT IN' %}
+                    AND dce.link_id NOT IN {{ Array(linkId, 'String') }}
+                {% else %}
+                    AND dce.link_id IN {{ Array(linkId, 'String') }}
+                {% end %}
+            {% elif defined(programId) or defined(partnerId) or defined(groupId) or defined(
+                tenantId
+            ) or defined(folderId) or defined(domain) or defined(
+                tagId
+            ) or defined(root) %} AND dce.link_id in (SELECT link_id from workspace_links)
+            {% end %}
+            {% if defined(start) %} AND dce.timestamp >= {{ DateTime64(start) }} {% end %}
+            {% if defined(end) %} AND dce.timestamp <= {{ DateTime64(end) }} {% end %}
+        GROUP BY session_id
+    )
+    GROUP BY interval
+    ORDER BY interval
 
 NODE day_intervals
 SQL >
@@ -43,10 +82,8 @@ SQL >
         toStartOfDay(
             toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
             {{ String(timezone, 'UTC') }}
-        ) AS
-    end,
-    dateDiff('day', start, end
-    ) + 1 AS days_diff
+        ) AS end,
+        dateDiff('day', start, end) + 1 AS days_diff
     SELECT
         arrayJoin(
             arrayMap(
@@ -56,57 +93,34 @@ SQL >
         ) as interval
 
 
-
 NODE hour_intervals
 SQL >
 
     %
-        WITH
-            toStartOfHour(
-                toDateTime64({{ DateTime64(start, '2024-05-22 00:00:00.000') }}, 3),
-                {{ String(timezone, 'UTC') }}
-            ) AS start,
-            toStartOfHour(
-                toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
-                {{ String(timezone, 'UTC') }}
-            ) AS
-        end
-        SELECT
-            arrayJoin(
-                arrayMap(x -> toDateTime64(x, 3), range(toUInt32(start), toUInt32(end + 3600), 3600)
-            )
+    WITH
+        toStartOfHour(
+            toDateTime64({{ DateTime64(start, '2024-05-22 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfHour(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS end
+    SELECT
+        arrayJoin(
+            arrayMap(x -> toDateTime64(x, 3), range(toUInt32(start), toUInt32(end + 3600), 3600))
         ) as interval
 
 
-
-NODE timeseries_clicks_data
+NODE visitor_first_seen
 SQL >
 
     %
     SELECT
-        {% if granularity == "hour" %} toStartOfHour(timestamp, {{ String(timezone, 'UTC') }})
-        {% elif granularity == "month" %}
-            toDateTime64(
-                toStartOfMonth(timestamp, {{ String(timezone, 'UTC') }}),
-                3,
-                {{ String(timezone, 'UTC') }}
-            )
-        {% else %} toDateTime64(toStartOfDay(timestamp, {{ String(timezone, 'UTC') }}), 3)
-        {% end %} AS interval,
-        uniq(visitor_id) as clicks
-    FROM
-        {% if defined(customerId) %} dub_click_events_id
-        {% else %} dub_click_events_mv
-        {% end %}
-        {% if defined(customerId) %}
-            PREWHERE event_id IN (
-                SELECT DISTINCT event_id
-                FROM dub_lead_events_mv
-                WHERE customer_id = {{ String(customerId) }}
-            )
-        {% end %}
-    WHERE
-        true
+        visitor_id,
+        min(timestamp) AS first_seen
+    FROM dub_click_events_mv
+    WHERE true
         {% if defined(workspaceId) %} AND workspace_id = {{ workspaceId }} {% end %}
         {% if defined(linkId) %}
             {% if defined(linkIdOperator) and String(linkIdOperator) == 'NOT IN' %}
@@ -118,149 +132,205 @@ SQL >
             tenantId
         ) or defined(folderId) or defined(domain) or defined(
             tagId
-        ) or defined(
-            root
-        ) %} AND link_id in (SELECT link_id from workspace_links)
+        ) or defined(root) %} AND link_id in (SELECT link_id from workspace_links)
         {% end %}
-        {% if defined(region) %} AND region = {{ region }} {% end %}
-        {% if defined(hostname) %} AND hostname = {{ hostname }} {% end %}
-        {% if defined(page) %} AND page = {{ page }} {% end %}
-        {% if defined(entrypage) %} AND entrypage = {{ entrypage }} {% end %}
-        {% if defined(exitlink) %} AND exitlink = {{ exitlink }} {% end %}
-        {% if defined(goal) %} AND event_type = 'goals' AND event_name = {{ String(goal) }} {% end %}
-        {% if defined(start) %} AND timestamp >= {{ DateTime64(start) }} {% end %}
-        {% if defined(end) %} AND timestamp <= {{ DateTime64(end) }} {% end %}
-        {% if defined(filters) %}
-            {% for item in JSON(filters, '[]') %}
-                {% if item.get('field', '') %}
-                    {% set field = item.get('field', '') %}
-                    {% set operator = item.get('operator', 'IN') %}
-                    {% set values = item.get('values', []) %}
-                    {% if field == 'country' %}
-                        {% if operator == 'IN' %} AND country IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND country NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'city' %}
-                        {% if operator == 'IN' %} AND city IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND city NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'continent' %}
-                        {% if operator == 'IN' %} AND continent IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND continent NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'device' %}
-                        {% if operator == 'IN' %} AND device IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND device NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'browser' %}
-                        {% if operator == 'IN' %} AND browser IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND browser NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'hostname' %}
-                        {% if operator == 'IN' %} AND hostname IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND hostname NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'page' %}
-                        {% if operator == 'IN' %} AND page IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND page NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'entrypage' %}
-                        {% if operator == 'IN' %} AND entrypage IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND entrypage NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'exitlink' %}
-                        {% if operator == 'IN' %} AND exitlink IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND exitlink NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'goal' %}
-                        {% if operator == 'IN' %}
-                            AND event_type = 'goals' AND event_name IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %}
-                            AND NOT (event_type = 'goals' AND event_name IN {{ Array(values, 'String') }})
-                        {% end %}
-                    {% elif field == 'os' %}
-                        {% if operator == 'IN' %} AND os IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND os NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'trigger' %}
-                        {% if operator == 'IN' %} AND trigger IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND trigger NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'referer' %}
-                        {% if operator == 'IN' %} AND referer IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND referer NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'refererUrl' %}
-                        {% if operator == 'IN' %} AND splitByString('?', referer_url)[1] IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND splitByString('?', referer_url)[1] NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'url' %}
-                        {% if operator == 'IN' %} AND splitByString('?', url)[1] IN {{ Array(values, 'String') }}
-                        {% elif operator == 'NOT IN' %} AND splitByString('?', url)[1] NOT IN {{ Array(values, 'String') }}
-                        {% end %}
-                    {% elif field == 'utm_source' %}
-                        {% if operator == 'IN' %}
-                            AND (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% elif operator == 'NOT IN' %}
-                            AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% end %}
-                    {% elif field == 'utm_medium' %}
-                        {% if operator == 'IN' %}
-                            AND (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% elif operator == 'NOT IN' %}
-                            AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% end %}
-                    {% elif field == 'utm_campaign' %}
-                        {% if operator == 'IN' %}
-                            AND (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% elif operator == 'NOT IN' %}
-                            AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% end %}
-                    {% elif field == 'utm_term' %}
-                        {% if operator == 'IN' %}
-                            AND (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% elif operator == 'NOT IN' %}
-                            AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% end %}
-                    {% elif field == 'utm_content' %}
-                        {% if operator == 'IN' %}
-                            AND (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% elif operator == 'NOT IN' %}
-                            AND NOT (0{% for val in values %} OR url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
-                        {% end %}
-                    {% elif field == 'domain' %}
-                        {% if operator == 'IN' %} AND link_id IN (SELECT link_id FROM workspace_links WHERE domain IN {{ Array(values, 'String') }})
-                        {% elif operator == 'NOT IN' %} AND link_id NOT IN (SELECT link_id FROM workspace_links WHERE domain IN {{ Array(values, 'String') }})
-                        {% end %}
-                    {% elif field == 'tagId' %}
-                        {% if operator == 'IN' %} AND link_id IN (SELECT link_id FROM workspace_links WHERE arrayIntersect(tag_ids, {{ Array(values, 'String') }}) != [])
-                        {% elif operator == 'NOT IN' %} AND link_id NOT IN (SELECT link_id FROM workspace_links WHERE arrayIntersect(tag_ids, {{ Array(values, 'String') }}) != [])
-                        {% end %}
-                    {% elif field == 'folderId' %}
-                        {% if operator == 'IN' %} AND link_id IN (SELECT link_id FROM workspace_links WHERE folder_id IN {{ Array(values, 'String') }})
-                        {% elif operator == 'NOT IN' %} AND link_id NOT IN (SELECT link_id FROM workspace_links WHERE folder_id IN {{ Array(values, 'String') }})
+    GROUP BY visitor_id
+
+
+NODE timeseries_clicks_data
+SQL >
+
+    %
+    SELECT
+        interval,
+        uniq(visitor_id) AS clicks,
+        uniqIf(visitor_id, is_new) AS new_visitors,
+        uniqIf(visitor_id, NOT is_new) AS returning_visitors
+    FROM (
+        SELECT
+            {% if granularity == "hour" %} toStartOfHour(dce.timestamp, {{ String(timezone, 'UTC') }})
+            {% elif granularity == "month" %}
+                toDateTime64(toStartOfMonth(dce.timestamp, {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
+            {% else %} toDateTime64(toStartOfDay(dce.timestamp, {{ String(timezone, 'UTC') }}), 3)
+            {% end %} AS interval,
+            dce.visitor_id AS visitor_id,
+            (
+                {% if granularity == "hour" %} toStartOfHour(vfs.first_seen, {{ String(timezone, 'UTC') }})
+                {% elif granularity == "month" %}
+                    toDateTime64(toStartOfMonth(vfs.first_seen, {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
+                {% else %} toDateTime64(toStartOfDay(vfs.first_seen, {{ String(timezone, 'UTC') }}), 3)
+                {% end %}
+            ) = interval AS is_new
+        FROM
+            {% if defined(customerId) %} dub_click_events_id AS dce
+            {% else %} dub_click_events_mv AS dce
+            {% end %}
+            {% if defined(customerId) %}
+                PREWHERE dce.event_id IN (
+                    SELECT DISTINCT event_id
+                    FROM dub_lead_events_mv
+                    WHERE customer_id = {{ String(customerId) }}
+                )
+            {% end %}
+        LEFT JOIN visitor_first_seen AS vfs ON dce.visitor_id = vfs.visitor_id
+        WHERE
+            true
+            {% if defined(workspaceId) %} AND dce.workspace_id = {{ workspaceId }} {% end %}
+            {% if defined(linkId) %}
+                {% if defined(linkIdOperator) and String(linkIdOperator) == 'NOT IN' %}
+                    AND dce.link_id NOT IN {{ Array(linkId, 'String') }}
+                {% else %}
+                    AND dce.link_id IN {{ Array(linkId, 'String') }}
+                {% end %}
+            {% elif defined(programId) or defined(partnerId) or defined(groupId) or defined(
+                tenantId
+            ) or defined(folderId) or defined(domain) or defined(
+                tagId
+            ) or defined(root) %} AND dce.link_id in (SELECT link_id from workspace_links)
+            {% end %}
+            {% if defined(region) %} AND dce.region = {{ region }} {% end %}
+            {% if defined(hostname) %} AND dce.hostname = {{ hostname }} {% end %}
+            {% if defined(page) %} AND dce.page = {{ page }} {% end %}
+            {% if defined(entrypage) %} AND dce.entrypage = {{ entrypage }} {% end %}
+            {% if defined(exitlink) %} AND dce.exitlink = {{ exitlink }} {% end %}
+            {% if defined(goal) %} AND dce.event_type = 'goals' AND dce.event_name = {{ String(goal) }} {% end %}
+            {% if defined(start) %} AND dce.timestamp >= {{ DateTime64(start) }} {% end %}
+            {% if defined(end) %} AND dce.timestamp <= {{ DateTime64(end) }} {% end %}
+            {% if defined(filters) %}
+                {% for item in JSON(filters, '[]') %}
+                    {% if item.get('field', '') %}
+                        {% set field = item.get('field', '') %}
+                        {% set operator = item.get('operator', 'IN') %}
+                        {% set values = item.get('values', []) %}
+                        {% if field == 'country' %}
+                            {% if operator == 'IN' %} AND dce.country IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.country NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'city' %}
+                            {% if operator == 'IN' %} AND dce.city IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.city NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'continent' %}
+                            {% if operator == 'IN' %} AND dce.continent IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.continent NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'device' %}
+                            {% if operator == 'IN' %} AND dce.device IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.device NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'browser' %}
+                            {% if operator == 'IN' %} AND dce.browser IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.browser NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'hostname' %}
+                            {% if operator == 'IN' %} AND dce.hostname IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.hostname NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'page' %}
+                            {% if operator == 'IN' %} AND dce.page IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.page NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'entrypage' %}
+                            {% if operator == 'IN' %} AND dce.entrypage IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.entrypage NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'exitlink' %}
+                            {% if operator == 'IN' %} AND dce.exitlink IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.exitlink NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'goal' %}
+                            {% if operator == 'IN' %}
+                                AND dce.event_type = 'goals' AND dce.event_name IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %}
+                                AND NOT (dce.event_type = 'goals' AND dce.event_name IN {{ Array(values, 'String') }})
+                            {% end %}
+                        {% elif field == 'os' %}
+                            {% if operator == 'IN' %} AND dce.os IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.os NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'trigger' %}
+                            {% if operator == 'IN' %} AND dce.trigger IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.trigger NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'referer' %}
+                            {% if operator == 'IN' %} AND dce.referer IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND dce.referer NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'refererUrl' %}
+                            {% if operator == 'IN' %} AND splitByString('?', dce.referer_url)[1] IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND splitByString('?', dce.referer_url)[1] NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'url' %}
+                            {% if operator == 'IN' %} AND splitByString('?', dce.url)[1] IN {{ Array(values, 'String') }}
+                            {% elif operator == 'NOT IN' %} AND splitByString('?', dce.url)[1] NOT IN {{ Array(values, 'String') }}
+                            {% end %}
+                        {% elif field == 'utm_source' %}
+                            {% if operator == 'IN' %}
+                                AND (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% elif operator == 'NOT IN' %}
+                                AND NOT (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_source=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% end %}
+                        {% elif field == 'utm_medium' %}
+                            {% if operator == 'IN' %}
+                                AND (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% elif operator == 'NOT IN' %}
+                                AND NOT (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_medium=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% end %}
+                        {% elif field == 'utm_campaign' %}
+                            {% if operator == 'IN' %}
+                                AND (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% elif operator == 'NOT IN' %}
+                                AND NOT (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_campaign=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% end %}
+                        {% elif field == 'utm_term' %}
+                            {% if operator == 'IN' %}
+                                AND (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% elif operator == 'NOT IN' %}
+                                AND NOT (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_term=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% end %}
+                        {% elif field == 'utm_content' %}
+                            {% if operator == 'IN' %}
+                                AND (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% elif operator == 'NOT IN' %}
+                                AND NOT (0{% for val in values %} OR dce.url LIKE concat('%', 'utm_content=', encodeURLFormComponent({{ String(val) }}), '%'){% end %})
+                            {% end %}
+                        {% elif field == 'domain' %}
+                            {% if operator == 'IN' %} AND dce.link_id IN (SELECT link_id FROM workspace_links WHERE domain IN {{ Array(values, 'String') }})
+                            {% elif operator == 'NOT IN' %} AND dce.link_id NOT IN (SELECT link_id FROM workspace_links WHERE domain IN {{ Array(values, 'String') }})
+                            {% end %}
+                        {% elif field == 'tagId' %}
+                            {% if operator == 'IN' %} AND dce.link_id IN (SELECT link_id FROM workspace_links WHERE arrayIntersect(tag_ids, {{ Array(values, 'String') }}) != [])
+                            {% elif operator == 'NOT IN' %} AND dce.link_id NOT IN (SELECT link_id FROM workspace_links WHERE arrayIntersect(tag_ids, {{ Array(values, 'String') }}) != [])
+                            {% end %}
+                        {% elif field == 'folderId' %}
+                            {% if operator == 'IN' %} AND dce.link_id IN (SELECT link_id FROM workspace_links WHERE folder_id IN {{ Array(values, 'String') }})
+                            {% elif operator == 'NOT IN' %} AND dce.link_id NOT IN (SELECT link_id FROM workspace_links WHERE folder_id IN {{ Array(values, 'String') }})
+                            {% end %}
                         {% end %}
                     {% end %}
                 {% end %}
             {% end %}
-        {% end %}
+    )
     GROUP BY interval
     ORDER BY interval
-
 
 
 NODE timeseries_clicks
 SQL >
 
     %
-        SELECT formatDateTime(interval, '%FT%T.000%z') as groupByField, clicks
-        FROM
-            {% if granularity == "minute" %} minute_intervals
-            {% elif granularity == "hour" %} hour_intervals
-            {% elif granularity == "month" %} month_intervals
-            {% else %} day_intervals
-            {% end %}
-        LEFT JOIN timeseries_clicks_data USING interval
+    SELECT
+        formatDateTime(interval, '%FT%T.000%z') as groupByField,
+        clicks,
+        new_visitors,
+        returning_visitors
+    FROM
+        {% if granularity == "minute" %} minute_intervals
+        {% elif granularity == "hour" %} hour_intervals
+        {% elif granularity == "month" %} month_intervals
+        {% else %} day_intervals
+        {% end %}
+    LEFT JOIN timeseries_clicks_data USING interval
 
 
 NODE timeseries_revenue_data
@@ -271,15 +341,13 @@ SQL >
         {% if granularity == "hour" %}
             toStartOfHour(se.timestamp, {{ String(timezone, 'UTC') }})
         {% elif granularity == "month" %}
-            toDateTime64(
-                toStartOfMonth(se.timestamp, {{ String(timezone, 'UTC') }}),
-                3,
-                {{ String(timezone, 'UTC') }}
-            )
+            toDateTime64(toStartOfMonth(se.timestamp, {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
         {% else %}
             toDateTime64(toStartOfDay(se.timestamp, {{ String(timezone, 'UTC') }}), 3)
         {% end %} AS interval,
-        sum(coalesce(se.revenue, 0)) as revenue
+        sum(coalesce(se.revenue, 0)) as revenue,
+        sumIf(se.revenue, se.revenue > 0) as new_revenue,
+        abs(sumIf(se.revenue, se.revenue < 0)) as refund_amount
     FROM dub_sales_events_mv AS se
     WHERE
         true
@@ -294,9 +362,7 @@ SQL >
             tenantId
         ) or defined(folderId) or defined(domain) or defined(
             tagId
-        ) or defined(
-            root
-        ) %} AND se.link_id in (SELECT link_id from workspace_links)
+        ) or defined(root) %} AND se.link_id in (SELECT link_id from workspace_links)
         {% end %}
         {% if defined(customerId) %} AND se.customer_id = {{ String(customerId) }} {% end %}
         {% if defined(continent) %} AND se.continent = {{ continent }} {% end %}
@@ -422,24 +488,161 @@ NODE timeseries_revenue
 SQL >
 
     %
-        SELECT
-            formatDateTime(interval, '%FT%T.000%z') as groupByField,
-            coalesce(revenue, 0) as revenue
-        FROM
-            {% if granularity == "minute" %} minute_intervals
-            {% elif granularity == "hour" %} hour_intervals
-            {% elif granularity == "month" %} month_intervals
-            {% else %} day_intervals
-            {% end %}
-        LEFT JOIN timeseries_revenue_data USING interval
-        
+    SELECT
+        formatDateTime(interval, '%FT%T.000%z') as groupByField,
+        coalesce(revenue, 0) as revenue,
+        coalesce(new_revenue, 0) as new_revenue,
+        coalesce(refund_amount, 0) as refund_amount
+    FROM
+        {% if granularity == "minute" %} minute_intervals
+        {% elif granularity == "hour" %} hour_intervals
+        {% elif granularity == "month" %} month_intervals
+        {% else %} day_intervals
+        {% end %}
+    LEFT JOIN timeseries_revenue_data USING interval
 
-        
+
+
+
+
+
+
+NODE timeseries_kpi_goal_data
+SQL >
+
+    %
+    SELECT
+        {% if granularity == "hour" %}
+            toStartOfHour(dce.timestamp, {{ String(timezone, 'UTC') }})
+        {% elif granularity == "month" %}
+            toDateTime64(toStartOfMonth(dce.timestamp, {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
+        {% else %}
+            toDateTime64(toStartOfDay(dce.timestamp, {{ String(timezone, 'UTC') }}), 3)
+        {% end %} AS interval,
+        count() as goal_count
+    FROM dub_click_events_mv AS dce
+    WHERE
+        dce.event_type = 'goals'
+        {% if defined(kpiGoalName) %} AND dce.event_name = {{ String(kpiGoalName) }} {% end %}
+        {% if defined(workspaceId) %} AND dce.workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(start) %} AND dce.timestamp >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %} AND dce.timestamp <= {{ DateTime64(end) }} {% end %}
+    GROUP BY interval
+
+
 NODE timeseries_composite
 SQL >
 
-    SELECT dce.groupByField AS groupByField, clicks, leads, sales, amount, saleAmount
-    FROM (SELECT groupByField, clicks FROM timeseries_clicks) AS dce
+    %
+    SELECT
+        c.groupByField AS groupByField,
+        c.clicks AS clicks,
+        c.new_visitors AS new_visitors,
+        c.returning_visitors AS returning_visitors,
+        {% if defined(kpiGoalName) %}
+        coalesce(g.goal_count, 0) AS revenue,
+        0 AS new_revenue,
+        0 AS refund_amount,
+        {% else %}
+        coalesce(r.revenue, 0) AS revenue,
+        coalesce(r.new_revenue, 0) AS new_revenue,
+        coalesce(r.refund_amount, 0) AS refund_amount,
+        {% end %}
+        {% if defined(kpiGoalName) %}
+        if(c.clicks > 0, coalesce(g.goal_count, 0) / c.clicks, 0) AS revenue_per_visitor,
+        if(c.clicks > 0, (coalesce(g.goal_count, 0) > 0) * 100.0 / c.clicks, 0) AS conversion_rate,
+        {% else %}
+        if(c.clicks > 0, coalesce(r.revenue, 0) / c.clicks, 0) AS revenue_per_visitor,
+        if(c.clicks > 0, (coalesce(r.revenue, 0) > 0) * 100.0 / c.clicks, 0) AS conversion_rate,
+        {% end %}
+        coalesce(s.avg_session_duration, 0) AS avg_session_duration,
+        coalesce(s.bounce_rate, 0) AS bounce_rate
+    FROM (SELECT groupByField, clicks, new_visitors, returning_visitors FROM timeseries_clicks) AS c
+    LEFT JOIN (SELECT groupByField, revenue, new_revenue, refund_amount FROM timeseries_revenue) AS r
+        USING groupByField
+    {% if defined(kpiGoalName) %}
+    LEFT JOIN (
+        SELECT
+            formatDateTime(interval, '%FT%T.000%z') AS groupByField,
+            goal_count
+        FROM timeseries_kpi_goal_data
+    ) AS g
+        USING groupByField
+    {% end %}
+    LEFT JOIN (
+        SELECT
+            formatDateTime(interval, '%FT%T.000%z') AS groupByField,
+            avg_session_duration,
+            bounce_rate
+        FROM session_stats
+    ) AS s
+        USING groupByField
+
+
+NODE timeseries_conversion_rate
+SQL >
+
+    SELECT
+        groupByField,
+        clicks,
+        new_visitors,
+        returning_visitors,
+        revenue,
+        new_revenue,
+        refund_amount,
+        revenue_per_visitor,
+        conversion_rate
+    FROM timeseries_composite
+
+
+NODE timeseries_bounce_rate
+SQL >
+
+    SELECT
+        groupByField,
+        clicks,
+        new_visitors,
+        returning_visitors,
+        revenue,
+        new_revenue,
+        refund_amount,
+        revenue_per_visitor,
+        conversion_rate,
+        bounce_rate
+    FROM timeseries_composite
+
+
+NODE timeseries_avg_session_duration
+SQL >
+
+    SELECT
+        groupByField,
+        clicks,
+        new_visitors,
+        returning_visitors,
+        revenue,
+        new_revenue,
+        refund_amount,
+        revenue_per_visitor,
+        conversion_rate,
+        avg_session_duration
+    FROM timeseries_composite
+
+
+NODE timeseries_revenue_per_visitor
+SQL >
+
+    SELECT
+        groupByField,
+        clicks,
+        new_visitors,
+        returning_visitors,
+        revenue,
+        new_revenue,
+        refund_amount,
+        revenue_per_visitor,
+        conversion_rate
+    FROM timeseries_composite
 
 
 NODE endpoint
@@ -449,11 +652,12 @@ SQL >
     %
     SELECT *
     FROM
-        {% if eventType == 'clicks' %} timeseries_clicks
-        {% elif eventType == 'revenue' %} timeseries_revenue
-        {% elif eventType == 'leads' %} timeseries_leads
-        {% elif eventType == 'sales' %} timeseries_sales
+        {% if eventType == 'clicks' %} timeseries_composite
+        {% elif eventType == 'revenue' %} timeseries_composite
+        {% elif eventType == 'conversion_rate' %} timeseries_conversion_rate
+        {% elif eventType == 'bounce_rate' %} timeseries_bounce_rate
+        {% elif eventType == 'avg_session_duration' %} timeseries_avg_session_duration
+        {% elif eventType == 'revenue_per_visitor' %} timeseries_revenue_per_visitor
         {% elif eventType == 'composite' %} timeseries_composite
-        {% else %} timeseries_clicks
+        {% else %} timeseries_composite
         {% end %}
-

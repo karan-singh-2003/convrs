@@ -31,8 +31,6 @@ export const GET = async (req: Request) => {
 
   const session = await getServerSession(authOptions);
 
-
-
   const workspace = await prisma.workspace.findUnique({
     where: isPrefixedWorkspaceId
       ? { id: normalizeWorkspaceId(workspaceIdOrSlug) }
@@ -77,7 +75,10 @@ export const GET = async (req: Request) => {
   const data = await getAnalytics({
     ...parsedParams,
     workspaceId: workspace.id,
-    goalName,  // ← add
+    goalName,
+    currency: workspace.currency,
+    kpiType: workspace.kpiType,
+    kpiEventName: workspace.kpiEventName ?? undefined,   // ← fix
   });
 
   return NextResponse.json({ data });

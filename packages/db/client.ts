@@ -4,7 +4,9 @@ export {
   InvoiceStatus,
   PaymentMethod,
   AttributionStatus,
-  RevenueProvider
+  RevenueProvider,
+  TrackedEventType,
+  TrackedEventTrigger
 } from "@prisma/client";
 export type {
   Workspace,

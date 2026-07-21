@@ -283,3 +283,10 @@ export const EU_COUNTRY_CODES = [
   "SI",
   "SK",
 ];
+
+export const COUNTRY_NAMES_TO_CODES = Object.fromEntries(
+  Object.entries(COUNTRIES).map(([code, name]) => [
+    name.toLowerCase(),
+    code,
+  ])
+) as Record<string, string>;

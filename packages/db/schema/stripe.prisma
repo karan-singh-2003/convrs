@@ -48,3 +48,12 @@ model Integration {
   @@unique([workspaceId, provider])
   @@index([workspaceId])
 }
+
+model ExchangeRate {
+  baseCurrency   String
+  targetCurrency String
+  rate           Decimal  @db.Decimal(18, 8)
+  updatedAt      DateTime @updatedAt
+
+  @@id([baseCurrency, targetCurrency])
+}

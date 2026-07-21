@@ -14,7 +14,6 @@ export function ScrollContainer({
     <div className="relative">
       <div
         className={cn(
-          // clip-path is used to fix a weird bug in WebKit where scrolled-out-of-view content is still interactible
           "scrollbar-hide h-full w-screen overflow-y-scroll [clip-path:inset(0)] sm:w-auto",
           className,
         )}
@@ -23,9 +22,10 @@ export function ScrollContainer({
       >
         {children}
       </div>
+
       {/* Bottom scroll fade */}
       <div
-        className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-16 w-full rounded-b-lg bg-gradient-to-t from-white to-transparent sm:block"
+        className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-16 w-full rounded-b-lg bg-gradient-to-t from-bg-card to-transparent sm:block"
         style={{ opacity: 1 - Math.pow(scrollProgress, 2) }}
       />
     </div>

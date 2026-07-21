@@ -32,18 +32,18 @@ export default function WorkspacePeopleClient() {
     isLoading,
   } = useSWR<WorkspaceUserProps[]>(
     workspaceId &&
-      `/api/workspaces/${workspaceId}/${status === "invited" ? "invites" : "users"}?${new URLSearchParams(
-        {
-          ...(search && { search }),
-        }
-      ).toString()}`,
+    `/api/workspaces/${workspaceId}/${status === "invited" ? "invites" : "users"}?${new URLSearchParams(
+      {
+        ...(search && { search }),
+      }
+    ).toString()}`,
     fetcher,
     {
       keepPreviousData: true,
     }
   );
 
- 
+
 
   const isCurrentUserOwner = role === "owner";
   const columns = useMemo<ColumnDef<WorkspaceUserProps>[]>(
@@ -51,7 +51,7 @@ export default function WorkspacePeopleClient() {
       {
         accessorKey: "name",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             Name
           </span>
         ),
@@ -61,16 +61,17 @@ export default function WorkspacePeopleClient() {
           return (
             <div className="flex items-center gap-3">
               {/* Avatar */}
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-sm font-medium text-neutral-700 ">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bg-subtle text-sm font-medium text-content-default">
                 {user.name.charAt(0).toUpperCase()}
               </div>
 
               {/* Name + Email */}
               <div className="flex flex-col leading-tight">
-                <span className="text-sm font-medium font-display text-neutral-600">
+                <span className="font-display text-sm font-medium text-content-default">
                   {user.name}
                 </span>
-                <span className="text-sm text-neutral-500 font-display">
+
+                <span className="font-display text-sm text-content-subtle">
                   {user.email}
                 </span>
               </div>
@@ -81,7 +82,7 @@ export default function WorkspacePeopleClient() {
       {
         accessorKey: "role",
         header: () => (
-          <span className="text-[13px] font-medium font-display text-neutral-500">
+          <span className="font-display text-[13px] font-medium text-content-subtle">
             Role
           </span>
         ),
@@ -89,7 +90,7 @@ export default function WorkspacePeopleClient() {
           const role = row.original.role;
 
           return (
-            <span className="text-sm font-display text-neutral-700">
+            <span className="font-display text-sm text-content-default">
               {role}
             </span>
           );
@@ -141,14 +142,14 @@ export default function WorkspacePeopleClient() {
     <>
       <InviteWorkspaceUserModal />
       <InviteCodeModal />
-      <div className=" space-y-4 px-3 lg:px-8">
+      <div className=" space-y-4 px-3 bg-bg-emphasis/65 rounded-2xl py-5 lg:px-5">
         {/* Header */}
         <div className="px-1 flex items-center justify-between gap-4">
           <div className="flex flex-col">
-            <h1 className="font-display text-[16px] font-medium text-[#555555]">
+            <h1 className="font-display text-[16px] font-medium text-content-default">
               Members
             </h1>
-            <p className="font-display text-[14.5px] font-medium text-[#727272] opacity-90">
+            <p className="font-display text-[14.5px] font-medium text-content-subtle ">
               Invite people and assign organization roles.
             </p>
           </div>
@@ -157,7 +158,7 @@ export default function WorkspacePeopleClient() {
           <div className="flex items-center gap-2">
             <Button
               text="Invite User"
-              className="text-black/60  bg-[#f3f4f6] h-fit font-display rounded-full text-[12.5px] py-1"
+              className="h-fit w-fit rounded-full border-border-subtle bg-bg-subtle px-3 py-1 text-[12.5px] font-display text-content-default transition-colors hover:bg-bg-emphasis"
               onClick={() => {
                 setShowInviteWorkspaceUserModal(true);
               }}
@@ -166,13 +167,13 @@ export default function WorkspacePeopleClient() {
         </div>
 
         <div className="flex flex-col gap-y-4">
-          <div className=" h-fit  space-y-3 bg-white border border-neutral-200 rounded-2xl">
-            <div className="flex items-start justify-between border-b p-4 border-neutral-200 pb-3">
+          <div className=" h-fit  space-y-3 bg-bg-default border border-border-subtle rounded-2xl">
+            <div className="flex items-start justify-between border-b p-4 border-border-subtle pb-3">
               <div>
-                <h1 className="font-display text-[14.5px] font-medium text-[#555555]">
+                <h1 className="font-display text-[14.5px] font-medium text-content-default">
                   Invite Link
                 </h1>
-                <p className="font-display text-[14px] mb-0.5 font-medium text-[#727272] opacity-90">
+                <p className="font-display text-[14px] mb-0.5 font-medium text-content-subtle ">
                   Allow other people to join your workspace through the link
                   below.
                 </p>
@@ -191,7 +192,7 @@ export default function WorkspacePeopleClient() {
                 required
                 readOnly
                 value={`https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}/invite/${inviteCode || ""}`}
-                className="w-full pr-10 text-sm font-display border border-neutral-200 bg-white text-neutral-600 focus:border-neutral-200 focus:outline-none focus:ring-0"
+                className="w-full pr-10 text-sm font-display border border-border-subtle bg-bg-emphasis/65 text-content-default focus:border-border-subtle focus:outline-none focus:ring-0"
               />
 
               <button
@@ -202,7 +203,7 @@ export default function WorkspacePeopleClient() {
                   );
                   toast.success("Invite link copied to clipboard");
                 }}
-                className="absolute right-8 top-1/2 -translate-y-3/4 text-neutral-500 hover:text-neutral-700"
+                className="absolute right-8 top-1/2 -translate-y-3/4 text-content-subtle hover:text-neutral-700"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -221,9 +222,9 @@ export default function WorkspacePeopleClient() {
               </button>
             </div>
           </div>
-          <div className="bg-[#fafafa] rounded-2xl ">
+          <div className="bg-bg-card rounded-2xl ">
             {/* Table */}
-            <Table table={table} {...tableProps} className="bg-white border border-neutral-200 rounded-2xl"/>
+            <Table table={table} {...tableProps} className="bg-bg-default border border-border-subtle rounded-2xl" />
           </div>
         </div>
       </div>
@@ -275,7 +276,7 @@ function RowMenuButton({
   if (!isCurrentUserOwner && !isCurrentUser) {
     return null;
   }
- 
+
 
   return (
     <>
@@ -288,7 +289,7 @@ function RowMenuButton({
           <div className="">
             <Button
               variant="outline"
-              className="md:w-full text-[13px] h-fit w-fit py-2 font-default justify-start text-neutral-700 hover:bg-neutral-100 rounded-none"
+              className="md:w-full text-[13px] h-fit w-fit py-2 font-default justify-start text-content-subtle hover:bg-bg-card rounded-none"
               onClick={() => {
                 setShowRemoveWorkspaceUserModal(true);
                 setIsOpen(false);
@@ -297,7 +298,7 @@ function RowMenuButton({
             ></Button>
             <Button
               variant="outline"
-              className="md:w-full text-[13px] h-fit w-fit py-2 font-default justify-start text-neutral-700 hover:bg-neutral-100 rounded-none"
+              className="md:w-full text-[13px] h-fit w-fit py-2 font-default justify-start text-content-subtle hover:bg-bg-card rounded-none"
               onClick={() => {
                 setShowWorkspaceUserRoleModal(true);
                 setIsOpen(false);

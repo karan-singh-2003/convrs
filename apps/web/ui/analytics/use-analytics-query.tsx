@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
 export function useAnalyticsQuery({
-  defaultEvent = "clicks",
+  defaultEvent = "composite",
   domain: domainParam,
   workspaceId: workspaceIdParam,
   defaultKey,
