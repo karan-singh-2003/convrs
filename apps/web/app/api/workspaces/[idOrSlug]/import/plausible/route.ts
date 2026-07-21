@@ -1,6 +1,6 @@
-// app/api/workspaces/[workspaceId]/import/plausible/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@repo/db";
+// app/api/workspaces/[idOrSlug]/import/plausible/route.ts
+import { NextResponse } from "next/server";
+import { withWorkspace } from "@/lib/auth";
 import {
   parsePlausibleZip,
   loadEventsIntoTinybird,
@@ -13,15 +13,19 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 300; // seconds — adjust to your plan's ceiling
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { workspaceId: string } }
-) {
-  try {
-    const { workspaceId } = params;
-    if (!workspaceId) {
+// POST /api/workspaces/[idOrSlug]/import/plausible – import a Plausible zip export
+export const POST = withWorkspace(
+  async ({ req, workspace }) => {
+    // Your schema keeps a single `domain` field directly on Workspace
+    // (there's no separate Domain model) — that's what imported traffic
+    // gets attributed to.
+    if (!workspace.domain) {
       return NextResponse.json(
-        { success: false, error: "Missing workspaceId" },
+        {
+          success: false,
+          error:
+            "Workspace has no domain configured to attribute imported data to",
+        },
         { status: 400 }
       );
     }
@@ -32,7 +36,7 @@ export async function POST(
     // your exports can exceed that, upload the zip to object storage from
     // the client first and pass a URL/key in the JSON body instead of the
     // raw file, then fetch it here.
-    const formData = await request.formData();
+    const formData = await req.formData();
     const file = formData.get("file");
 
     if (!file || !(file instanceof File)) {
@@ -57,32 +61,6 @@ export async function POST(
       return NextResponse.json(
         { success: false, error: "File exceeds the 50MB limit" },
         { status: 413 }
-      );
-    }
-
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { id: true, slug: true, domain: true },
-    });
-
-    if (!workspace) {
-      return NextResponse.json(
-        { success: false, error: "Workspace not found" },
-        { status: 404 }
-      );
-    }
-
-    // Your schema keeps a single `domain` field directly on Workspace
-    // (there's no separate Domain model) — that's what imported traffic
-    // gets attributed to.
-    if (!workspace.domain) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Workspace has no domain configured to attribute imported data to",
-        },
-        { status: 400 }
       );
     }
 
@@ -114,43 +92,16 @@ export async function POST(
       rowsImported: rows,
       batches,
     });
-  } catch (error) {
-    console.error("[Plausible Import] Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredPermission: "workspace:write" }
+);
 
-// Optional: let users undo an import (e.g. wrong file, or before they
-// realize it double-counts against existing data).
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { workspaceId: string } }
-) {
-  try {
-    const { workspaceId } = params;
-    if (!workspaceId) {
-      return NextResponse.json(
-        { success: false, error: "Missing workspaceId" },
-        { status: 400 }
-      );
-    }
-
-    await deletePlausibleImport({ workspaceId });
+// DELETE /api/workspaces/[idOrSlug]/import/plausible – undo a Plausible import
+// (e.g. wrong file, or before realizing it double-counts against existing data)
+export const DELETE = withWorkspace(
+  async ({ workspace }) => {
+    await deletePlausibleImport({ workspaceId: workspace.id });
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[Plausible Import Delete] Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { requiredPermission: "workspace:write" }
+);
