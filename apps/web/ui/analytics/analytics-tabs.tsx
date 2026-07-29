@@ -111,8 +111,7 @@ export function AnalyticsTabs({
       ] as Tab[],
     [showConversions]
   );
-
-
+  const kpiConfigured = hasRevenueProvider || (kpiType === "goal" && !!kpiLabel);
 
   return (
     <div className="w-full overflow-x-hidden">
@@ -120,7 +119,7 @@ export function AnalyticsTabs({
         <div className="grid w-full grid-cols-3 gap-0 md:grid-cols-3 xl:grid-cols-7">
           {tabs.map(({ id, label, colorClassName }, idx) => {
             const isLiveVisitorsTab = id === "live_visitors";
-            const isRevenueTab = id === "revenue" || id==="revenue_per_visitor";
+            const isRevenueTab = id === "revenue" || id === "revenue_per_visitor";
             const value = isLiveVisitorsTab
               ? (liveVisitorsCount ?? 0)
               : (totalEvents?.[id] ?? 0);
@@ -130,8 +129,8 @@ export function AnalyticsTabs({
             const isClickable = isLiveVisitorsTab
               ? false
               : isRevenueTab
-                ? hasRevenueProvider
-                : hasData; // clicks, conversion_rate, bounce_rate, avg_session_duration
+                ? kpiConfigured
+                : hasData;
 
 
             const cardContent = (
@@ -156,7 +155,7 @@ export function AnalyticsTabs({
                         >
                           {formatDuration(value)}
                         </div>
-                      ) : isRevenueTab && !hasRevenueProvider ? (
+                      ) : isRevenueTab && !kpiConfigured ? (
                         // ── No payment provider connected ─────────────────────────
                         <div className="flex items-center leading-tight justify-center">
                           <Minus className="h-4 w-4 text-neutral-400" />

@@ -40,7 +40,8 @@
 
 .dark {
   /* Background */
-  --bg-default: 0 0 0;
+
+  --bg-default: 31 31 31;
   --bg-card: 38 38 38;
   --bg-muted: 23 23 23;
   --bg-subtle: 38 38 38;

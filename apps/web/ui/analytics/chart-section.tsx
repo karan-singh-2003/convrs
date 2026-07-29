@@ -249,6 +249,186 @@ type Tab = {
   conversions: boolean;
 };
 
+// export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
+//   const {
+//     totalEvents,
+//     percentageChanges,
+//     requiresUpgrade,
+//     showConversions,
+//     selectedTab,
+//     saleUnit,
+//     view,
+//   } = useContext(AnalyticsContext);
+//   const { integrations, loading, error } = useIntegrations(workspaceId);
+
+
+//   const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();
+//   const hasRevenueProvider = kpiType === "revenue" && integrations.length > 0;
+//   const { queryParams } = useRouterStuff();
+//   const { funnels } = useFunnels({
+//     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
+//   });
+//   const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null);
+//   const handleSelectFunnel = useCallback((funnel: { id: string }) => {
+//     setSelectedFunnelId(funnel.id);
+//   }, []);
+
+//   const selectedFunnel = useMemo(() => {
+//     if (selectedFunnelId) {
+//       return funnels.find((funnel) => funnel.id === selectedFunnelId) ?? null;
+//     }
+//     return funnels[0] ?? null;
+//   }, [funnels, selectedFunnelId]);
+
+//   const hasFunnels = funnels.length > 0;
+
+//   const {
+//     openCreateFunnelModal,
+//     openFunnelListModal,
+//     CreateFunnelEditorModal,
+//     FunnelListModal,
+//   } = useCreateFunnelModal({
+//     onSelectFunnel: handleSelectFunnel,
+//   });
+
+//   const { count: liveVisitorsCount } = useLiveVisitors(projectToken ?? null);
+
+//   const tabs = useMemo(
+//     () =>
+//       [
+//         { id: "clicks", label: "Clicks", colorClassName: "text-blue-500/50", conversions: false },
+//         { id: "revenue", label: "Revenue", colorClassName: "text-teal-400/50", conversions: true },
+//         { id: "conversion_rate", label: "Conversion", colorClassName: "text-purple-500/50", conversions: true },
+//         { id: "bounce_rate", label: "Bounce Rate", colorClassName: "text-red-500/50", conversions: false },
+//         { id: "avg_session_duration", label: "Avg. Session", colorClassName: "text-green-500/50", conversions: false },
+//         { id: "revenue_per_visitor", label: "Revenue/visitor", colorClassName: "text-green-500/50", conversions: false },
+//       ] as Tab[],
+//     [showConversions]
+//   );
+
+//   const tab = tabs.find(({ id }) => id === selectedTab) ?? tabs[0];
+
+//   const showPaywall =
+//     (tab.conversions || view === "funnel") &&
+//     (plan === "free" || plan === "pro");
+
+//   const canShowFunnelView = mode === "private" || hasFunnels;
+
+//   const safeView =
+//     view === "funnel" && !canShowFunnelView ? "timeseries" : view;
+
+//   useEffect(() => {
+//     if (view === "funnel" && !canShowFunnelView) {
+//       queryParams({ set: { view: "timeseries" } });
+//     }
+//   }, [canShowFunnelView, queryParams, view]);
+
+//   if (error) {
+//     toast.error("Error loading analytics data");
+//   }
+//   if (loading) {
+//     return ""
+//   }
+
+//   return (
+//     <>
+//       <CreateFunnelEditorModal />
+//       <FunnelListModal />
+//       <div>
+//         <div className="w-full border-y border-border-subtle bg-bg-card">
+//           <div className="w-full relative  py-2">
+//             {/* CENTER → Tabs */}
+//             <div className="max-w-screen-lg mx-auto flex justify-center ">
+//               {safeView === "timeseries" ? (
+//                 <AnalyticsTabs
+//                   showConversions={showConversions}
+//                   totalEvents={totalEvents}
+//                   percentageChanges={percentageChanges}
+//                   liveVisitorsCount={liveVisitorsCount}
+//                   tab={tab.id}
+//                   tabHref={(id) =>
+//                     queryParams({
+//                       set: { event: id },
+//                       getNewPath: true,
+//                     }) as string
+//                   }
+//                   hasRevenueProvider={hasRevenueProvider}
+//                   saleUnit={saleUnit}
+//                   setSaleUnit={(option) =>
+//                     queryParams({
+//                       set: { saleUnit: option },
+//                     })
+//                   }
+//                   requiresUpgrade={requiresUpgrade}
+//                   showPaywall={showPaywall}
+//                   currency={currency}
+//                   kpiType={kpiType ?? undefined}
+//                   kpiLabel={kpiEventName ?? undefined}
+//                 />
+//               ) : (
+//                 <div className="md:min-h-[134px] min-h-[240px] bg-orange-50" />
+//               )}
+//             </div>
+
+//             {/* RIGHT → Toggle (floating) */}
+//             <div className="absolute right-3 top-2 z-20 flex items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md">
+//               {safeView === "funnel" && hasFunnels && (
+//                 <button
+//                   className="bg-bg-emphasis text-content-default text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
+//                   onClick={() => openFunnelListModal()}
+//                 >
+//                   {selectedFunnel?.name || "Choose funnel"}
+//                 </button>
+//               )}
+
+//               {canShowFunnelView && (
+//                 <ChartViewSwitcher showFunnel={canShowFunnelView} />
+//               )}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="relative">
+//           <div className={cn("relative overflow-hidden sm:rounded-b-xl")}>
+//             {safeView === "timeseries" && (
+//               <div className="h-[444px] bg-bg-card w-full sm:h-[464px]">
+//                 <AnalyticsAreaChart resource={tab.id} demo={showPaywall} />
+//               </div>
+//             )}
+
+//             {safeView === "funnel" && (
+//               <div className="relative h-[444px] border-b bg-bg-card border-border-subtle w-full sm:h-[464px]">
+//                 <div
+//                   className={`h-full w-full transition-opacity ${mode === "private" && funnels.length === 0
+//                     ? "opacity-20"
+//                     : "opacity-100"
+//                     }`}
+//                 >
+//                   <AnalyticsFunnelChart
+//                     selectedFunnel={selectedFunnel}
+//                     demo={funnels.length === 0}
+//                   />
+//                 </div>
+
+//                 {mode === "private" && funnels.length === 0 && (
+//                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+//                     <button
+//                       className="pointer-events-auto bg-black text-white text-sm font-medium font-poppins px-4 py-1.5 rounded-full hover:bg-gray-800 transition shadow-sm"
+//                       onClick={() => openCreateFunnelModal()}
+//                     >
+//                       Create funnel
+//                     </button>
+//                   </div>
+//                 )}
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
 export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
   const {
     totalEvents,
@@ -261,13 +441,13 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
   } = useContext(AnalyticsContext);
   const { integrations, loading, error } = useIntegrations(workspaceId);
 
-  const hasRevenueProvider = integrations.length > 0;
   const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();
-
+  const hasRevenueProvider = kpiType === "revenue" && integrations.length > 0;
   const { queryParams } = useRouterStuff();
-  const { funnels } = useFunnels({
+  const { funnels, loading: funnelsLoading } = useFunnels({
     workspaceId: mode === "public" ? (workspaceId ?? id) : undefined,
   });
+
   const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null);
   const handleSelectFunnel = useCallback((funnel: { id: string }) => {
     setSelectedFunnelId(funnel.id);
@@ -280,7 +460,11 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     return funnels[0] ?? null;
   }, [funnels, selectedFunnelId]);
 
+  // Distinguish "still fetching" from "confirmed zero funnels" — using
+  // funnels.length === 0 alone made the empty-state CTA flash on every load,
+  // even for workspaces that do have funnels.
   const hasFunnels = funnels.length > 0;
+  const noFunnelsConfirmed = !funnelsLoading && !hasFunnels;
 
   const {
     openCreateFunnelModal,
@@ -314,8 +498,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
 
   const canShowFunnelView = mode === "private" || hasFunnels;
 
-  const safeView =
-    view === "funnel" && !canShowFunnelView ? "timeseries" : view;
+  const safeView = view === "funnel" && !canShowFunnelView ? "timeseries" : view;
 
   useEffect(() => {
     if (view === "funnel" && !canShowFunnelView) {
@@ -327,7 +510,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
     toast.error("Error loading analytics data");
   }
   if (loading) {
-    return ""
+    return "";
   }
 
   return (
@@ -344,7 +527,6 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
                   showConversions={showConversions}
                   totalEvents={totalEvents}
                   percentageChanges={percentageChanges}
-                  liveVisitorsCount={liveVisitorsCount}
                   tab={tab.id}
                   tabHref={(id) =>
                     queryParams({
@@ -370,7 +552,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
               )}
             </div>
 
-            {/* RIGHT → Toggle (floating) */}
+
             <div className="absolute right-3 top-2 z-20 flex items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md">
               {safeView === "funnel" && hasFunnels && (
                 <button
@@ -399,18 +581,20 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
             {safeView === "funnel" && (
               <div className="relative h-[444px] border-b bg-bg-card border-border-subtle w-full sm:h-[464px]">
                 <div
-                  className={`h-full w-full transition-opacity ${mode === "private" && funnels.length === 0
-                    ? "opacity-20"
-                    : "opacity-100"
-                    }`}
+                  className={cn(
+                    "h-full w-full transition-opacity",
+                    mode === "private" && noFunnelsConfirmed ? "opacity-20" : "opacity-100"
+                  )}
                 >
                   <AnalyticsFunnelChart
                     selectedFunnel={selectedFunnel}
-                    demo={funnels.length === 0}
+                    // Demo only once we've *confirmed* there's no real funnel data —
+                    // never while the request is still in flight.
+                    demo={noFunnelsConfirmed}
                   />
                 </div>
 
-                {mode === "private" && funnels.length === 0 && (
+                {mode === "private" && noFunnelsConfirmed && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                     <button
                       className="pointer-events-auto bg-black text-white text-sm font-medium font-poppins px-4 py-1.5 rounded-full hover:bg-gray-800 transition shadow-sm"

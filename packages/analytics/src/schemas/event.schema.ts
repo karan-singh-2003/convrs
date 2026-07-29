@@ -132,6 +132,7 @@ export const AnalyticsEventSchema = z
     region: z.string().optional(),
     continent: z.string().optional(),
     vercelRegion: z.string().optional(),
+    cookieless: z.boolean().optional(),
 
     // ── type = "event" ────────────────────────────────────────────────────────
     event_name: z.string().min(1).max(64).optional(),

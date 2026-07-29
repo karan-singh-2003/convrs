@@ -19,6 +19,7 @@
     "@react-email/font": "0.0.10",
     "@react-email/markdown": "^0.0.17",
     "@react-email/render": "^2.0.0",
+    "@react-pdf/renderer": "^4.5.1",
     "@repo/utils": "workspace:*",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.462.0",

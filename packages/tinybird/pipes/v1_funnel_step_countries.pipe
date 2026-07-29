@@ -1,0 +1,101 @@
+DESCRIPTION >
+	Top countries per funnel step
+
+
+TAGS "Dub Endpoints"
+
+NODE parsed_steps
+SQL >
+
+    %
+    SELECT
+        tupleElement(step_tuple, 1) AS step_name,
+        toUInt64(tupleElement(step_tuple, 2)) AS step_index
+    FROM
+        (
+            SELECT arrayJoin(arrayZip(
+                arrayFilter(x -> x != '', splitByChar(',', {{ String(steps, 'signup,user_registered', description="Comma-separated ordered funnel step event names", required=True) }})),
+                arrayEnumerate(arrayFilter(x -> x != '', splitByChar(',', {{ String(steps, 'signup,user_registered', description="Comma-separated ordered funnel step event names", required=True) }})))
+            )) AS step_tuple
+        )
+
+
+NODE per_visitor
+SQL >
+
+    %
+    SELECT
+        e.visitor_id,
+        arrayMap(
+            t -> t.2,
+            arraySort(t -> t.1, groupArray((step_index, step_time)))
+        ) AS step_times
+    FROM
+        (
+            SELECT
+                ev.visitor_id,
+                ps.step_index,
+                minIf(ev.timestamp, ev.event_name = ps.step_name) AS step_time
+            FROM dub_click_events_mv ev
+            CROSS JOIN parsed_steps ps
+            WHERE
+                ev.event_type = 'goals'
+                AND ev.workspace_id = {{ String(workspaceId, 'cl7pj5kq4006835rbjlt2ofka', description="The unique ID for the workspace", required=True) }}
+                AND has(
+                    arrayFilter(x -> x != '', splitByChar(',', {{ String(steps, 'signup,user_registered', description="Comma-separated ordered funnel step event names", required=True) }})),
+                    ev.event_name
+                )
+                AND ev.timestamp >= {{ DateTime(start, '2024-01-01 00:00:00', description="Start datetime UTC") }}
+                AND ev.timestamp <  {{ DateTime(end, '2099-01-01 00:00:00', description="End datetime UTC") }}
+            GROUP BY ev.visitor_id, ps.step_index
+        ) e
+    GROUP BY e.visitor_id
+
+
+NODE step_visitors
+SQL >
+
+    %
+    SELECT
+        pv.visitor_id,
+        ps.step_index,
+        ps.step_name
+    FROM per_visitor pv
+    CROSS JOIN parsed_steps ps
+    WHERE
+        arrayAll(
+            i ->
+                isNotNull(pv.step_times[i])
+                AND if(
+                    i = 1,
+                    isNotNull(pv.step_times[i]),
+                    isNotNull(pv.step_times[i - 1]) AND pv.step_times[i] > pv.step_times[i - 1]
+                ),
+            range(1, ps.step_index + 1)
+        )
+
+
+NODE step_countries
+SQL >
+
+    %
+    SELECT
+        sv.step_name AS step,
+        dce.country AS country,
+        uniq(sv.visitor_id) AS visitors
+    FROM step_visitors sv
+    JOIN dub_click_events_mv dce
+        ON dce.visitor_id = sv.visitor_id
+        AND dce.workspace_id = {{ String(workspaceId, 'cl7pj5kq4006835rbjlt2ofka', description="The unique ID for the workspace", required=True) }}
+    WHERE dce.country != ''
+    GROUP BY sv.step_name, dce.country
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+    %
+    SELECT step, country, visitors
+    FROM step_countries
+    ORDER BY step, visitors DESC    

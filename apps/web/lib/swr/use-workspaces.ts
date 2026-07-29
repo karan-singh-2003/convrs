@@ -4,12 +4,13 @@ import useSWR from "swr";
 import { WorkspaceProps } from "../types";
 
 export default function UseWorkspaces() {
+  
   const { data: session } = useSession();
   const { data: workspaces, error } = useSWR<WorkspaceProps[]>(
-    session?.user && `/api/workspaces`,
+    session?.user && `/api/workspaces/calculate`,
     fetcher,
     {
-      dedupingInterval: 60000,
+      dedupingInterval: 10000,
     }
   );
 

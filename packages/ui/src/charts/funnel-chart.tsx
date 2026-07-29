@@ -17,14 +17,14 @@ export const FUNNEL_COLORS = [
 export type FunnelColor = (typeof FUNNEL_COLORS)[number];
 
 const colorClassMap: Record<FunnelColor, string> = {
-  blue:   "text-blue-500 dark:text-blue-400",
+  blue: "text-blue-500 dark:text-blue-400",
   purple: "text-purple-500 dark:text-purple-400",
-  teal:   "text-teal-500 dark:text-teal-400",
-  amber:  "text-amber-500 dark:text-amber-400",
-  rose:   "text-rose-500 dark:text-rose-400",
-  green:  "text-green-500 dark:text-green-400",
+  teal: "text-teal-500 dark:text-teal-400",
+  amber: "text-amber-500 dark:text-amber-400",
+  rose: "text-rose-500 dark:text-rose-400",
+  green: "text-green-500 dark:text-green-400",
   indigo: "text-indigo-500 dark:text-indigo-400",
-  pink:   "text-pink-500 dark:text-pink-400",
+  pink: "text-pink-500 dark:text-pink-400",
 };
 
 export function getColorClass(color?: FunnelColor | string, index?: number): string {
@@ -56,13 +56,14 @@ type FunnelChartProps = {
   defaultTooltipStepId?: string;
   chartPadding?: number;
   maxSteps?: number;
+  renderTooltip?: (step: NormalizedStep, index: number, maxValue: number) => React.ReactNode;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const layers = [
-  { opacity: 1,    padding: 0  },
-  { opacity: 0.3,  padding: 8  },
+  { opacity: 1, padding: 0 },
+  { opacity: 0.3, padding: 8 },
   { opacity: 0.15, padding: 16 },
 ];
 const maxLayerPadding = 16;
@@ -73,11 +74,11 @@ const formatPercentage = (value: number) =>
     : nFormatter(value, { digits: 2 });
 
 const interpolate = (from: number, to: number) => [
-  { x: 0,   y: from },
+  { x: 0, y: from },
   { x: 0.3, y: from },
   { x: 0.5, y: (from + to) / 2 },
   { x: 0.7, y: to },
-  { x: 1,   y: to },
+  { x: 1, y: to },
 ];
 
 // ─── Public component ─────────────────────────────────────────────────────────
@@ -107,15 +108,16 @@ function FunnelChartInner({
   defaultTooltipStepId,
   chartPadding = 40,
   maxSteps = 8,
+  renderTooltip
 }: { width: number; height: number } & FunnelChartProps) {
   const { isMobile } = useMediaQuery();
 
   const steps: NormalizedStep[] = useMemo(
     () =>
       rawSteps.slice(0, maxSteps).map((s, idx) => ({
-        id:             s.id,
-        label:          s.label,
-        value:          s.value ?? 0,
+        id: s.id,
+        label: s.label,
+        value: s.value ?? 0,
         additionalValue: s.additionalValue,
         colorClassName: s.colorClassName ?? getColorClass(s.color, idx),
       })),
@@ -240,24 +242,28 @@ function FunnelChartInner({
             width: width / steps.length,
           }}
         >
-          <div className="rounded-2xl w-64 bg-bg-emphasis text-base border border-border-subtle">
-            <p className="font-default px-3 py-2 text-sm text-content-default sm:px-4 sm:py-3">
-              {tooltipStep.label}
-            </p>
-            <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 px-3 py-2 text-sm sm:px-4 sm:py-3">
-              <p className="whitespace-nowrap capitalize font-default text-content-subtle">
-                {formatPercentage((tooltipStep.value / maxValue) * 100) + "%"}
+          {renderTooltip ? (
+            renderTooltip(tooltipStep, steps.findIndex(({ id }) => id === tooltipStep.id), maxValue)
+          ) : (
+            <div className="rounded-2xl w-64 bg-bg-emphasis text-base border border-border-subtle">
+              <p className="font-default px-3 py-2 text-sm text-content-default sm:px-4 sm:py-3">
+                {tooltipStep.label}
               </p>
-              <p className="whitespace-nowrap font-medium text-content-emphasis">
-                {nFormatter(tooltipStep.value, { full: true })}
-                {tooltipStep.additionalValue !== undefined && (
-                  <span className="text-content-muted">
-                    {" "}({currencyFormatter(tooltipStep.additionalValue)})
-                  </span>
-                )}
-              </p>
+              <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 px-3 py-2 text-sm sm:px-4 sm:py-3">
+                <p className="whitespace-nowrap capitalize font-default text-content-subtle">
+                  {formatPercentage((tooltipStep.value / maxValue) * 100) + "%"}
+                </p>
+                <p className="whitespace-nowrap font-medium text-content-emphasis">
+                  {nFormatter(tooltipStep.value, { full: true })}
+                  {tooltipStep.additionalValue !== undefined && (
+                    <span className="text-content-muted">
+                      {" "}({currencyFormatter(tooltipStep.additionalValue)})
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>

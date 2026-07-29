@@ -13,8 +13,6 @@ export async function GET(req: Request) {
     select: { workspaceId: true },
   });
 
-  
-
   // batch publish to avoid hitting QStash rate limits in one go
   const BATCH_SIZE = 50;
   for (let i = 0; i < preferences.length; i += BATCH_SIZE) {

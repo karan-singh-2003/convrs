@@ -25,7 +25,7 @@ export default function useIntegrations(workspaceId?: string | null) {
   const { data, error, isLoading, mutate } = useSWR<{
     integrations: Integration[];
   }>(
-    workspaceId ? `/api/integrations?workspaceId=${wsId}` : null,
+    wsId ? `/api/integrations?workspaceId=${wsId}` : null, 
     fetcher,
     {
       dedupingInterval: 30000,

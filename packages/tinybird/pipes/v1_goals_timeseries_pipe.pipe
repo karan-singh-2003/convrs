@@ -1,0 +1,159 @@
+DESCRIPTION >
+	Per-goal timeseries breakdown — one row per (interval, goal) pair
+
+
+TAGS "Dub Endpoints"
+
+NODE month_intervals
+SQL >
+
+    %
+    WITH
+        toStartOfMonth(
+            toDateTime64({{ DateTime64(start, '2024-02-24 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfMonth(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS end,
+        dateDiff('month', start, end) + 1 AS months_diff
+    SELECT
+        arrayJoin(
+            arrayMap(
+                x -> toDateTime64(start + toIntervalMonth(x), 3, {{ String(timezone, 'UTC') }}),
+                range(0, months_diff)
+            )
+        ) as interval
+
+
+NODE day_intervals
+SQL >
+
+    %
+    WITH
+        toStartOfDay(
+            toDateTime64({{ DateTime64(start, '2024-02-24 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfDay(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS end,
+        dateDiff('day', start, end) + 1 AS days_diff
+    SELECT
+        arrayJoin(
+            arrayMap(
+                x -> toDateTime64(start + toIntervalDay(x), 3, {{ String(timezone, 'UTC') }}),
+                range(0, days_diff)
+            )
+        ) as interval
+
+
+NODE hour_intervals
+SQL >
+
+    %
+    WITH
+        toStartOfHour(
+            toDateTime64({{ DateTime64(start, '2024-05-22 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS start,
+        toStartOfHour(
+            toDateTime64({{ DateTime64(end, '2024-05-23 00:00:00.000') }}, 3),
+            {{ String(timezone, 'UTC') }}
+        ) AS end
+    SELECT
+        arrayJoin(
+            arrayMap(x -> toDateTime64(x, 3), range(toUInt32(start), toUInt32(end + 3600), 3600))
+        ) as interval
+
+
+NODE all_goal_names
+SQL >
+
+    %
+    SELECT DISTINCT event_name AS goal
+    FROM dub_click_events_mv AS dce
+    WHERE
+        dce.event_type = 'goals'
+        {% if defined(workspaceId) %} AND dce.workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(linkId) %}
+            {% if defined(linkIdOperator) and String(linkIdOperator) == 'NOT IN' %}
+                AND dce.link_id NOT IN {{ Array(linkId, 'String') }}
+            {% else %}
+                AND dce.link_id IN {{ Array(linkId, 'String') }}
+            {% end %}
+        {% elif defined(programId) or defined(partnerId) or defined(groupId) or defined(
+            tenantId
+        ) or defined(folderId) or defined(domain) or defined(
+            tagId
+        ) or defined(root) %} AND dce.link_id in (SELECT link_id from workspace_links)
+        {% end %}
+        {% if defined(start) %} AND dce.timestamp >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %} AND dce.timestamp <= {{ DateTime64(end) }} {% end %}
+
+
+NODE goal_counts_by_interval
+SQL >
+
+    %
+    SELECT
+        {% if granularity == "hour" %} toStartOfHour(dce.timestamp, {{ String(timezone, 'UTC') }})
+        {% elif granularity == "month" %}
+            toDateTime64(toStartOfMonth(dce.timestamp, {{ String(timezone, 'UTC') }}), 3, {{ String(timezone, 'UTC') }})
+        {% else %} toDateTime64(toStartOfDay(dce.timestamp, {{ String(timezone, 'UTC') }}), 3)
+        {% end %} AS interval,
+        dce.event_name AS goal,
+        uniq(dce.visitor_id) AS count
+    FROM dub_click_events_mv AS dce
+    WHERE
+        dce.event_type = 'goals'
+        {% if defined(workspaceId) %} AND dce.workspace_id = {{ workspaceId }} {% end %}
+        {% if defined(linkId) %}
+            {% if defined(linkIdOperator) and String(linkIdOperator) == 'NOT IN' %}
+                AND dce.link_id NOT IN {{ Array(linkId, 'String') }}
+            {% else %}
+                AND dce.link_id IN {{ Array(linkId, 'String') }}
+            {% end %}
+        {% elif defined(programId) or defined(partnerId) or defined(groupId) or defined(
+            tenantId
+        ) or defined(folderId) or defined(domain) or defined(
+            tagId
+        ) or defined(root) %} AND dce.link_id in (SELECT link_id from workspace_links)
+        {% end %}
+        {% if defined(start) %} AND dce.timestamp >= {{ DateTime64(start) }} {% end %}
+        {% if defined(end) %} AND dce.timestamp <= {{ DateTime64(end) }} {% end %}
+        {% if defined(goalNames) %} AND dce.event_name IN {{ Array(goalNames, 'String') }} {% end %}
+    GROUP BY interval, goal
+
+
+NODE zero_filled
+SQL >
+
+    %
+    SELECT
+        i.interval AS interval,
+        g.goal AS goal,
+        coalesce(d.count, 0) AS count
+    FROM
+        {% if granularity == "hour" %} hour_intervals
+        {% elif granularity == "month" %} month_intervals
+        {% else %} day_intervals
+        {% end %} AS i
+    CROSS JOIN all_goal_names AS g
+    LEFT JOIN goal_counts_by_interval AS d
+        ON d.interval = i.interval AND d.goal = g.goal
+
+
+NODE endpoint
+TYPE endpoint
+SQL >
+
+    %
+    SELECT
+        formatDateTime(interval, '%FT%T.000%z') as groupByField,
+        goal,
+        count
+    FROM zero_filled
+    ORDER BY interval, goal

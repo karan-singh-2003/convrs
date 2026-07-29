@@ -12,6 +12,7 @@ import { z } from "zod";
 
 // GET /api/workspaces - get all workspaces for the authenticated user
 export const GET = withSession(async ({ session }) => {
+  console.log("in get route api/workspaces")
   const workspaces = await prisma.workspace.findMany({
     where: {
       users: {
@@ -35,6 +36,7 @@ export const GET = withSession(async ({ session }) => {
     },
   });
 
+
   return NextResponse.json(
     workspaces.map((workspace) =>
       WorkspaceSchema.parse({
@@ -44,6 +46,7 @@ export const GET = withSession(async ({ session }) => {
     )
   );
 });
+
 
 // POST /api/workspaces - create a new workspace
 export const POST = withSession(async ({ req, session }) => {
@@ -101,7 +104,7 @@ export const POST = withSession(async ({ req, session }) => {
         tierEvents: 0,
         usageLimit: 0,
         //  timezone
-        timezone:detectedTimezone,
+        timezone: detectedTimezone,
         // Tokens
         projectToken: nanoid(32),
         inviteCode: nanoid(24),

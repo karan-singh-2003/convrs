@@ -14,3 +14,5 @@ export {
 export { exportWorkspaceData } from "./export-workspace-data";
 export {parseRawConvrsExport} from "./raw-convrs-import"
 export type { RequestContext, UserAgentInfo, GeoInfo } from "./types";
+export { trackBotEvent } from "./track-bot-event";
+export type { BotTrafficEvent } from "./track-bot-event";

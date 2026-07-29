@@ -8,6 +8,7 @@ const updateScriptConfigSchema = z.object({
   blockedIpAddresses: z.array(z.string()).optional(),
   blockedPages: z.array(z.string()).optional(),
   blockedCountries: z.array(z.string()).optional(),
+  cookielessMode: z.boolean().optional(), // NEW
 });
 
 function normalizeList(values: string[]) {
@@ -28,6 +29,7 @@ export const GET = withWorkspace(
       blockedIpAddresses: workspace.blockedIpAddresses || [],
       blockedPages: workspace.blockedPages || [],
       blockedCountries: workspace.blockedCountries || [],
+      cookielessMode: workspace.cookielessMode ?? false, // NEW
     });
   },
   {
@@ -35,7 +37,7 @@ export const GET = withWorkspace(
   }
 );
 
-// PATCH /api/workspaces/[idOrSlug]/script-config - update tracking filters
+// PATCH /api/workspaces/[idOrSlug]/script-config - update tracking filters + cookieless mode
 export const PATCH = withWorkspace(
   async ({ req, workspace }) => {
     const payload = await updateScriptConfigSchema.parseAsync(await req.json());
@@ -57,6 +59,9 @@ export const PATCH = withWorkspace(
         ...(payload.blockedCountries !== undefined && {
           blockedCountries: normalizeList(payload.blockedCountries),
         }),
+        ...(payload.cookielessMode !== undefined && {
+          cookielessMode: payload.cookielessMode, // NEW
+        }),
       },
       select: {
         domain: true,
@@ -65,6 +70,7 @@ export const PATCH = withWorkspace(
         blockedIpAddresses: true,
         blockedPages: true,
         blockedCountries: true,
+        cookielessMode: true, // NEW
       },
     });
 

@@ -17,14 +17,14 @@ function CreateWorkspaceModal({
       setShowModal={setShowCreateWorkspaceModal}
       className="px-4 py-3 md:px-0 md:py-1.5 max-h-[90vh] md:max-h-[95dvh] md:overflow-y-auto"
     >
-      <div className="space-y-1 md:py-1 md:border-b md:border-[#F0F0F0]">
-        <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-black/65">
+      <div className="space-y-1 md:py-1 md:border-b md:border-border-subtle">
+        <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-content-default">
           Create Workspace
         </h3>
       </div>
 
       <div className="md:py-4 md:px-5 gap-y-5">
-        <p className="text-[13px] mb-5 md:text-[14.5px] font-display text-neutral-500">
+        <p className="text-[13px] mb-5 md:text-[14.5px] font-display text-content-subtle">
           Workspaces help you organize projects, manage teammates, and control
           permissions in one place.
         </p>

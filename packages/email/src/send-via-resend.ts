@@ -1,3 +1,129 @@
+// import type { CreateEmailOptions } from "resend";
+// import { resend } from "./resend";
+// import { VARIANT_TO_FROM_MAP } from "./resend/constants";
+// import { ResendBulkEmailOptions, ResendEmailOptions } from "./resend/types";
+
+// const resendEmailForOptions = (
+//   opts: ResendEmailOptions
+// ): CreateEmailOptions => {
+//   const {
+//     to,
+//     from,
+//     variant = "primary",
+//     bcc,
+//     replyTo,
+//     subject,
+//     text,
+//     react,
+//     scheduledAt,
+//     headers,
+//     tags,
+//     unsubscribeUrl,
+//   } = opts;
+
+//   // Build base options without rendered outputs (react/text)
+//   const baseOptions = {
+//     to,
+//     from:
+//       from ||
+//       VARIANT_TO_FROM_MAP[variant] ||
+//       "BoilerCode <noreply@send.boilercode.dev>",
+//     subject: subject!,
+//     bcc,
+
+//     // if replyTo is set to "noreply", don't set replyTo
+//     // else fallback to support@boilercode.dev
+//     ...(replyTo === "noreply"
+//       ? {}
+//       : { replyTo: replyTo || "support@boilercode.dev" }),
+
+//     scheduledAt,
+//     tags,
+
+//     ...(variant === "marketing"
+//       ? {
+//           headers: {
+//             ...(headers || {}),
+//             "List-Unsubscribe":
+//               unsubscribeUrl || "https://app.boilercode.dev/account/settings",
+//           },
+//         }
+//       : headers && { headers }),
+//   };
+
+//   // At least one of react or text must exist
+//   if (react) {
+//     return { ...baseOptions, react };
+//   }
+
+//   if (text) {
+//     return { ...baseOptions, text };
+//   }
+
+//   return { ...baseOptions, text: "" };
+// };
+
+// // Send single email
+// export const sendEmailViaResend = async (opts: ResendEmailOptions) => {
+//   if (!resend) {
+//     console.info(
+//       "RESEND_API_KEY is not set in the .env. Skipping sending email."
+//     );
+//     return;
+//   }
+
+//   return await resend.emails.send(resendEmailForOptions(opts));
+// };
+
+// // Send batch emails
+// export const sendBatchEmailViaResend = async (
+//   emails: ResendBulkEmailOptions,
+//   options?: { idempotencyKey?: string }
+// ) => {
+//   if (!resend) {
+//     console.info(
+//       "RESEND_API_KEY is not set in the .env. Skipping sending email."
+//     );
+
+//     return {
+//       data: null,
+//       error: null,
+//     };
+//   }
+
+//   if (emails.length === 0) {
+//     return {
+//       data: null,
+//       error: null,
+//     };
+//   }
+
+//   const filteredBatch = emails.reduce(
+//     (acc, email) => {
+//       if (!email?.to) return acc;
+
+//       acc.push(resendEmailForOptions(email));
+//       return acc;
+//     },
+//     [] as ReturnType<typeof resendEmailForOptions>[]
+//   );
+
+//   if (filteredBatch.length === 0) {
+//     return {
+//       data: null,
+//       error: null,
+//     };
+//   }
+
+//   const idempotencyKey = options?.idempotencyKey || undefined;
+
+//   return await resend.batch.send(
+//     filteredBatch,
+//     idempotencyKey ? { idempotencyKey } : undefined
+//   );
+// };
+
+
 import type { CreateEmailOptions } from "resend";
 import { resend } from "./resend";
 import { VARIANT_TO_FROM_MAP } from "./resend/constants";
@@ -19,6 +145,7 @@ const resendEmailForOptions = (
     headers,
     tags,
     unsubscribeUrl,
+    attachments, // ← was missing entirely — this is why the PDF never arrived
   } = opts;
 
   // Build base options without rendered outputs (react/text)
@@ -31,8 +158,6 @@ const resendEmailForOptions = (
     subject: subject!,
     bcc,
 
-    // if replyTo is set to "noreply", don't set replyTo
-    // else fallback to support@boilercode.dev
     ...(replyTo === "noreply"
       ? {}
       : { replyTo: replyTo || "support@boilercode.dev" }),
@@ -40,14 +165,18 @@ const resendEmailForOptions = (
     scheduledAt,
     tags,
 
+    // ← was missing — attachments were built by the caller but silently
+    // dropped here before ever reaching resend.emails.send / resend.batch.send
+    ...(attachments && attachments.length > 0 ? { attachments } : {}),
+
     ...(variant === "marketing"
       ? {
-          headers: {
-            ...(headers || {}),
-            "List-Unsubscribe":
-              unsubscribeUrl || "https://app.boilercode.dev/account/settings",
-          },
-        }
+        headers: {
+          ...(headers || {}),
+          "List-Unsubscribe":
+            unsubscribeUrl || "https://app.boilercode.dev/account/settings",
+        },
+      }
       : headers && { headers }),
   };
 
@@ -116,7 +245,7 @@ export const sendBatchEmailViaResend = async (
   }
 
   const idempotencyKey = options?.idempotencyKey || undefined;
-
+  console.dir(filteredBatch, { depth: null });
   return await resend.batch.send(
     filteredBatch,
     idempotencyKey ? { idempotencyKey } : undefined

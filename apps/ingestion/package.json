@@ -10,6 +10,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@convrs/ai-bot-sdk": "^1.0.1",
     "@paddle/paddle-node-sdk": "^3.8.0",
     "@polar-sh/sdk": "^0.48.1",
     "@repo/analytics": "workspace:*",
@@ -25,7 +26,8 @@
     "react-dom": "^19.2.5",
     "standardwebhooks": "^1.0.0",
     "stripe": "^20.3.1",
-    "ua-parser-js": "^2.0.9"
+    "ua-parser-js": "^2.0.9",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

@@ -25,10 +25,9 @@ const DashboardPage = () => {
 
 
   useEffect(() => {
-    console.log("[DashboardPage] theme →", { theme, resolvedTheme, systemTheme });
-    console.log("[DashboardPage] html data-theme →", document.documentElement.getAttribute("data-theme"));
+
     // If you're using the ThemeScope wrapper approach, also check the scoped div:
-    console.log("[DashboardPage] scoped wrapper class →", document.querySelector('[data-theme-scope]')?.className);
+
   }, [theme, resolvedTheme, systemTheme]);
 
 
@@ -85,7 +84,7 @@ const DashboardPage = () => {
             <div className="relative">
               <Analytics mode="private" workspaceId={id} workspaceName={name} />
 
-              <div className="relative">
+              {/* <div className="relative">
                 <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-border-subtle bg-bg-card  shadow-xl font-display">
                   <div className="flex items-center justify-between">
                     <div>
@@ -164,7 +163,7 @@ const DashboardPage = () => {
                     </>
                   )}
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
         </>

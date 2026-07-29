@@ -17,6 +17,5 @@ export * from "./capitalize";
 export * from "./parse-filter-value"
 export * from "./fetch-with-retry"
 export * from "./hash-string"
-export * from "./domain"
 export * from "./get-days-difference"
 export * from "./truncate"

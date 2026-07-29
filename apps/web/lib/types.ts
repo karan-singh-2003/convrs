@@ -38,6 +38,7 @@ export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
 export interface WorkspaceProps extends Workspace {
   plan: WorkspacePlan;
+  
   users: {
     role: WorkspaceRole;
   }[];

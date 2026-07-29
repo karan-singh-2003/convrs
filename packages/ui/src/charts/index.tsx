@@ -6,3 +6,5 @@ export * from "./time-series-chart";
 export * from "./tooltip-sync";
 export * from "./x-axis";
 export * from "./y-axis";
+export { PieChart } from "./pie-chart";
+export type { PieSlice } from "./pie-chart";

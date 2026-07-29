@@ -94,13 +94,17 @@ model Workspace {
   cancelAtPeriodEnd  Boolean   @default(false)
 
   kpiType      KpiType @default(revenue)
-  kpiEventName String?   // required when kpiType = goal, must match a TrackedEvent.eventName
-
+  kpiEventName String? // required when kpiType = goal, must match a TrackedEvent.eventName
 
   blockedHostnames   String[] @default([])
   blockedIpAddresses String[] @default([])
   blockedPages       String[] @default([])
   blockedCountries   String[] @default([])
+  allowedHostnames   String[] @default([])
+  allowAllDomains    Boolean  @default(false)
+  cookielessMode     Boolean  @default(false) // NEW
+
+  botTrafficRequireAuth Boolean @default(false)
 
   plan     WorkspacePlan @default(free)
   timezone String        @default("UTC")
@@ -118,8 +122,15 @@ model Workspace {
   alerts                 Alert[]
   customers              Customer[]
   payments               Payment[]
-  trackedEvents TrackedEvent[]
+  trackedEvents          TrackedEvent[]
   notificationPreference NotificationPreference?
+  socialIntegrations     SocialIntegration[]
+  socialKeywords         SocialKeyword[]
+  socialMentions         SocialMention[]
+  linkAttributions       LinkAttribution[]
+  workspaceDomains       WorkspaceDomain[]
+  accountBlocklists      AccountBlocklist[]
+  attributionHandles     SocialAttributionHandle[]
 
   @@index([usageLastChecked])
   @@index([dodoSubscriptionId])

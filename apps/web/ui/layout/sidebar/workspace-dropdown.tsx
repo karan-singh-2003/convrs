@@ -15,11 +15,14 @@ import { useCreateWorkspaceModal } from "../../modals/create-workspace-modal";
 
 export function WorkspaceDropdown() {
   const { workspaces} = useWorkspaces();
+  console.log("workspaces",workspaces)
+
   const { data: session, status } = useSession();
   const { slug: currentSlug } = useParams<{ slug: string }>();
   const [openPopover, setOpenPopover] = useState(false);
   const { setShowCreateWorkspaceModal, CreateWorkspaceModal } =
     useCreateWorkspaceModal();
+
   const selected = useMemo(() => {
     const selectedWorkspace = workspaces?.find(
       (workspace) => workspace.slug === currentSlug
@@ -266,9 +269,9 @@ function WorkspaceList({
 
 function WorkspaceDropdownPlaceholder() {
   return (
-    <button className="gap-2 flex items-center bg-bg-emphasis/65 p-1.5 rounded-full w-full justify-between">
+    <button className="gap-2 flex items-center bg-bg-emphasis/65 p-1 h-9 rounded-full w-full justify-between">
       <div className="flex items-center gap-2">
-        <div className="size-6 rounded-full bg-bg-card" />
+        <div className="size-6 w-[150px] rounded-full h-8 bg-bg-card" />
       </div>
     </button>
   );

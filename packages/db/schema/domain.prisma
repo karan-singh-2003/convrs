@@ -1,0 +1,22 @@
+model WorkspaceDomain {
+  id            String            @id @default(cuid())
+  workspaceId   String
+  subdomain     String            @unique
+  status        ProxyDomainStatus @default(pending)
+  cnameTarget   String            @default("proxy.convrs.dev")
+  verification  Json?
+  lastCheckedAt DateTime?
+  activatedAt   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+enum ProxyDomainStatus {
+  pending
+  active
+  error
+}

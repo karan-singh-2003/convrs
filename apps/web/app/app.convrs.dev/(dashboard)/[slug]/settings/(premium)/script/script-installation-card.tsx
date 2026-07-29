@@ -4,26 +4,32 @@ import { useMemo, useState } from "react";
 import { ToggleGroup } from "@repo/ui";
 import CodeSnippet from "./code-snippet";
 
+// script-installation-card.tsx
 export type ScriptConfig = {
   domain: string | null;
   projectToken: string | null;
+  cookielessMode: boolean; // NEW
 };
-
 type ScriptSnippetConfig = ScriptConfig & { allowLocalhostDebugging: boolean };
 
 const buildScriptSnippet = ({
   domain,
   projectToken,
   allowLocalhostDebugging,
+  cookielessMode,
 }: ScriptSnippetConfig) => {
   const snippetDomain = allowLocalhostDebugging
     ? "localhost"
     : domain || "yourdomain.com";
 
+  const scriptSrc = cookielessMode
+    ? "https://convrs.dev/script.cookieless.js"
+    : "https://convrs.dev/script.js";
+
   const lines = [
     "<Script",
     `  data-website-id=\"${projectToken || "your-project-token"}\"`,
-    '  src="https://convrs.dev/script.js"',
+    `  src=\"${scriptSrc}\"`,
     `  data-domain=\"${snippetDomain}\"`,
   ];
 
@@ -42,6 +48,7 @@ const buildScriptSnippet = ({
 const buildNpmInitSnippet = ({
   projectToken,
   allowLocalhostDebugging,
+  cookielessMode,
 }: ScriptSnippetConfig) =>
   `import { initConvrs } from '@convrs/sdk';
 
@@ -60,7 +67,8 @@ export function getAnalytics() {
         typeof window !== "undefined"
           ? window.location.host
           : "localhost",
-      autoCapturePageviews: true,${allowLocalhostDebugging
+      autoCapturePageviews: true,${cookielessMode ? `
+      cookieless: true,` : ""}${allowLocalhostDebugging
     ? `
       apiUrl: "http://localhost:3000/api/track",
       allowLocalhost: true,

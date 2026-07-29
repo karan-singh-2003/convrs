@@ -1,19 +1,125 @@
+// import { Heading, Section, Text } from "@react-email/components";
+// import EmailLayout from "../components/email-layout";
+
+// import React from "react";
+
+// export interface WeeklySummaryStats {
+//   clicks: number;
+//   revenue: number;
+//   conversionRate: number;
+//   bounceRate: number;
+//   clicksChangePct: number | null;
+//   revenueChangePct: number | null;
+//   topLinks: { url: string; clicks: number }[];
+//   topCountries: { country: string; clicks: number }[];
+// }
+
+
+// export default function WeeklySummaryEmail({
+//   workspaceName,
+//   recipientName,
+//   stats,
+// }: {
+//   workspaceName: string;
+//   recipientName?: string | null;
+//   stats: WeeklySummaryStats;
+// }) {
+//   const fmtChange = (pct: number | null) =>
+//     pct === null ? "—" : `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%`;
+
+//   return (
+//     <EmailLayout
+//       preview={`Your weekly analytics report for ${workspaceName}`}
+//       email=""
+//     >
+//       <Heading className="text-xl font-semibold text-black">
+//         Weekly report
+//       </Heading>
+
+//       <Text className="text-sm leading-6 text-neutral-700">
+//         Hi {recipientName ?? "there"},
+//       </Text>
+
+//       <Text className="text-sm leading-6 text-neutral-700">
+//         Here's your analytics summary for <strong>{workspaceName}</strong> over
+//         the last 7 days.
+//       </Text>
+
+//       <Section className="mt-6">
+//         <Heading className="text-base font-semibold text-black">
+//           Overview
+//         </Heading>
+
+//         <Text className="text-sm leading-6 text-black">
+//           • Visitors: <strong>{stats.clicks.toLocaleString()}</strong>{" "}
+//           ({fmtChange(stats.clicksChangePct)})
+//         </Text>
+
+//         <Text className="text-sm leading-6 text-black">
+//           • Revenue:{" "}
+//           <strong>${(stats.revenue / 100).toFixed(2)}</strong>{" "}
+//           ({fmtChange(stats.revenueChangePct)})
+//         </Text>
+//       </Section>
+
+//       <Section className="mt-6">
+//         <Heading className="text-base font-semibold text-black">
+//           Top pages
+//         </Heading>
+
+//         {stats.topLinks.length === 0 ? (
+//           <Text className="text-sm text-neutral-500">
+//             No page data available.
+//           </Text>
+//         ) : (
+//           stats.topLinks.map((page) => (
+//             <Text
+//               key={page.url}
+//               className="text-sm leading-6 text-black"
+//             >
+//               • {page.url} — {page.clicks.toLocaleString()} visitors
+//             </Text>
+//           ))
+//         )}
+//       </Section>
+
+//       <Section className="mt-6">
+//         <Heading className="text-base font-semibold text-black">
+//           Top countries
+//         </Heading>
+
+//         {stats.topCountries.length === 0 ? (
+//           <Text className="text-sm text-neutral-500">
+//             No country data available.
+//           </Text>
+//         ) : (
+//           stats.topCountries.map((country) => (
+//             <Text
+//               key={country.country}
+//               className="text-sm leading-6 text-black"
+//             >
+//               • {country.country} — {country.clicks.toLocaleString()} visitors
+//             </Text>
+//           ))
+//         )}
+//       </Section>
+
+//       <Text className="mt-8 text-sm leading-6 text-neutral-600">
+//         Thanks for using Convrs.
+//       </Text>
+//     </EmailLayout>
+//   );
+// }
+
+
 import { Heading, Section, Text } from "@react-email/components";
 import EmailLayout from "../components/email-layout";
-
 import React from "react";
 
-export interface WeeklySummaryStats {
+export interface WeeklySummaryEmailStats {
   clicks: number;
-  revenue: number;
-  conversionRate: number;
-  bounceRate: number;
   clicksChangePct: number | null;
-  revenueChangePct: number | null;
-  topLinks: { url: string; clicks: number }[];
-  topCountries: { country: string; clicks: number }[];
 }
-
 
 export default function WeeklySummaryEmail({
   workspaceName,
@@ -22,14 +128,14 @@ export default function WeeklySummaryEmail({
 }: {
   workspaceName: string;
   recipientName?: string | null;
-  stats: WeeklySummaryStats;
+  stats: WeeklySummaryEmailStats;
 }) {
   const fmtChange = (pct: number | null) =>
-    pct === null ? "—" : `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%`;
+    pct === null ? "" : ` (${pct > 0 ? "+" : ""}${pct.toFixed(1)}% vs last week)`;
 
   return (
     <EmailLayout
-      preview={`Your weekly analytics report for ${workspaceName}`}
+      preview={`Your weekly analytics report for ${workspaceName} is ready`}
       email=""
     >
       <Heading className="text-xl font-semibold text-black">
@@ -41,67 +147,16 @@ export default function WeeklySummaryEmail({
       </Text>
 
       <Text className="text-sm leading-6 text-neutral-700">
-        Here's your analytics summary for <strong>{workspaceName}</strong> over
-        the last 7 days.
+        Your full analytics report for <strong>{workspaceName}</strong> over
+        the last 7 days is attached as a PDF — devices, browsers, locations,
+        top pages, referrers, and more.
       </Text>
 
-      <Section className="mt-6">
-        <Heading className="text-base font-semibold text-black">
-          Overview
-        </Heading>
-
+      <Section className="mt-6 rounded-lg border border-neutral-200 p-4">
         <Text className="text-sm leading-6 text-black">
-          • Visitors: <strong>{stats.clicks.toLocaleString()}</strong>{" "}
-          ({fmtChange(stats.clicksChangePct)})
+          <strong>{stats.clicks.toLocaleString()}</strong> visitors this week
+          {fmtChange(stats.clicksChangePct)}
         </Text>
-
-        <Text className="text-sm leading-6 text-black">
-          • Revenue:{" "}
-          <strong>${(stats.revenue / 100).toFixed(2)}</strong>{" "}
-          ({fmtChange(stats.revenueChangePct)})
-        </Text>
-      </Section>
-
-      <Section className="mt-6">
-        <Heading className="text-base font-semibold text-black">
-          Top pages
-        </Heading>
-
-        {stats.topLinks.length === 0 ? (
-          <Text className="text-sm text-neutral-500">
-            No page data available.
-          </Text>
-        ) : (
-          stats.topLinks.map((page) => (
-            <Text
-              key={page.url}
-              className="text-sm leading-6 text-black"
-            >
-              • {page.url} — {page.clicks.toLocaleString()} visitors
-            </Text>
-          ))
-        )}
-      </Section>
-
-      <Section className="mt-6">
-        <Heading className="text-base font-semibold text-black">
-          Top countries
-        </Heading>
-
-        {stats.topCountries.length === 0 ? (
-          <Text className="text-sm text-neutral-500">
-            No country data available.
-          </Text>
-        ) : (
-          stats.topCountries.map((country) => (
-            <Text
-              key={country.country}
-              className="text-sm leading-6 text-black"
-            >
-              • {country.country} — {country.clicks.toLocaleString()} visitors
-            </Text>
-          ))
-        )}
       </Section>
 
       <Text className="mt-8 text-sm leading-6 text-neutral-600">

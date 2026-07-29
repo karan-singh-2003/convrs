@@ -13,10 +13,16 @@ export const WorkspaceSchema = z
     id: z.string().describe("The unique ID of the workspace."),
     name: z.string().describe("The name of the workspace."),
     slug: z.string().describe("The slug of the workspace."),
+    cookielessMode: z
+      .boolean()
+      .default(false)
+      .describe("Whether cookieless mode is enabled."),
     timezone: z
       .string()
       .default("UTC")
-      .describe("The IANA timezone identifier for the workspace, e.g. 'UTC', 'Asia/Kolkata', 'America/New_York'."),
+      .describe(
+        "The IANA timezone identifier for the workspace, e.g. 'UTC', 'Asia/Kolkata', 'America/New_York'."
+      ),
     domain: z
       .string()
       .nullable()

@@ -126,7 +126,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <div className="flex items-center justify-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-default border-t-border-default" />
+           <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-subtle border-t-bg-inverted" />
             <span className="text-sm font-display text-content-subtle">
               {text}
             </span>

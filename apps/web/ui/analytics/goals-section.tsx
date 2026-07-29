@@ -1,4 +1,366 @@
-"use client";
+// "use client";
+
+
+
+// import React, {
+//   useCallback,
+//   useContext,
+//   useEffect,
+//   useMemo,
+//   useState,
+// } from "react";
+// import { useRouterStuff } from "@repo/ui";
+// import { AnalyticsCard } from "./analytics-card";
+// import { BarList } from "./bar-list";
+// import { LoadingSpinner } from "@repo/ui";
+// import { AnalyticsContext } from "./analytics-providers";
+// import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+// import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
+// import { useGoalPropertiesModal } from "../modals/goal-property-modal";
+// import useWorkspace from "@/lib/swr/use-workspace";
+// import useIntegrations from "@/lib/swr/use-integration";
+
+// export function LowerGrid() {
+//   const { queryParams, searchParams } = useRouterStuff();
+//   const { selectedTab, totalEvents } = useContext(AnalyticsContext);
+//   const { kpiEventName, kpiType } = useWorkspace()
+//   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+
+//   const [tab, setTab] = useState<"goals">("goals");
+//   const { integrations } = useIntegrations()
+
+//   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+//   const isRevenueKpi =
+//     kpiType === "revenue" && integrations.length > 0;
+//   const kpiConfigured = isRevenueKpi || isGoalKpi;
+
+
+//   const { data } = useAnalyticsFilterOption(tab);
+//   const { data: allData } = useAnalyticsFilterOption(tab, {
+//     omitGroupByFilterKey: true,
+//   });
+
+//   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
+//   const dataKey = "clicks";
+
+//   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+
+//   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+//   useEffect(() => {
+//     setSelectedItems([]);
+//   }, [tab]);
+
+//   const onToggleFilter = useCallback((val: string) => {
+//     setSelectedItems((prev) =>
+//       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+//     );
+//   }, []);
+
+//   const onApplyFilterValues = useCallback(
+//     (values: string[]) => {
+
+//       if (values.length === 0) {
+//         queryParams({ del: singularTabName });
+//       } else {
+//         queryParams({ set: { [singularTabName]: values.join(",") } });
+//       }
+//       setSelectedItems([]);
+//     },
+//     [singularTabName, queryParams]
+//   );
+
+//   const isFilterActive = searchParams.has(singularTabName);
+
+//   const activeFilterValues = useMemo(
+//     () => searchParams.get(singularTabName)?.split(",") ?? [],
+//     [singularTabName, searchParams]
+//   );
+
+//   const onClearFilter = useCallback(() => {
+//     setSelectedItems([]);
+//     if (isFilterActive) queryParams({ del: singularTabName });
+//   }, [singularTabName, queryParams, isFilterActive]);
+
+//   const transformedData = useMemo(
+//     () =>
+//       data
+//         ?.map((d) => ({
+//           title: d[singularTabName] ?? d.goal,
+//           filterValue: d[singularTabName] ?? d.goal,
+//           count: d.clicks || 0,
+//           revenue: d.revenue || 0,
+//         }))
+//         .sort((a, b) => b.count - a.count) ?? [],
+//     [data, singularTabName]
+//   );
+
+//   const transformedAllData = useMemo(
+//     () =>
+//       allData
+//         ?.map((d) => ({
+//           title: d[singularTabName] ?? d.goal,
+//           filterValue: d[singularTabName] ?? d.goal,
+//           count: d.clicks || 0,
+//           revenue: d.revenue || 0,
+//         })) ?? [],
+//     [allData, singularTabName]
+//   );
+
+//   const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();
+
+//   return (
+//     <>
+
+//       <GoalPropertiesModal />
+
+//       <AnalyticsCard
+//         tabs={[{ id: "goals", label: "Goals" }]}
+//         selectedTabId={tab}
+//         onSelectTab={setTab}
+//         expandLimit={8}
+//         dataLength={data?.length}
+//         isFilterActive={isFilterActive}
+//         onClearFilter={onClearFilter}
+//       >
+//         {({ limit, setShowModal }) =>
+//           data ? (
+//             data.length > 0 ? (
+//               <BarList
+//                 tab={singularTabName}
+//                 data={transformedData}
+//                 allData={transformedAllData}
+//                 totalVisitors={totalEvents?.clicks}
+//                 unit={selectedTab}
+//                 maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
+//                 barBackground="bg-purple-100"
+//                 hoverBackground="hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:border-purple-500"
+//                 filterSelectedBackground="bg-purple-600"
+//                 filterSelectedHoverBackground="hover:bg-purple-700"
+//                 filterHoverClass="bg-white border border-purple-200"
+//                 setShowModal={setShowModal}
+//                 selectedFilterValues={selectedItems}
+//                 activeFilterValues={activeFilterValues}
+//                 onToggleFilter={onToggleFilter}
+//                 onClearFilter={onClearFilter}
+//                 onClearSelection={() => setSelectedItems([])}
+//                 onRowFilterItem={(val) => onApplyFilterValues([val])}
+//                 onApplyFilterValues={onApplyFilterValues}
+//                 onExpandRow={(filterValue) => openGoalPropertiesModal(filterValue)}
+//                 {...(limit && { limit })}
+//                 kpiLabel={kpiLabel}      // NEW
+//                 isGoalKpi={isGoalKpi}
+//                 kpiConfigured={kpiConfigured}
+//               />
+//             ) : (
+//               <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
+//                 <p className="text-xs font-poppins text-neutral-500 sm:text-[13px] font-medium">
+//                   No data available
+//                 </p>
+//               </div>
+//             )
+//           ) : (
+//             <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center sm:h-[300px]">
+//               <LoadingSpinner />
+//             </div>
+//           )
+//         }
+//       </AnalyticsCard>
+//     </>
+//   );
+// }
+
+
+// "use client";
+
+// import React, {
+//   useCallback,
+//   useContext,
+//   useEffect,
+//   useMemo,
+//   useState,
+// } from "react";
+// import { useRouterStuff } from "@repo/ui";
+// import { AnalyticsCard } from "./analytics-card";
+// import { BarList } from "./bar-list";
+// import { LoadingSpinner } from "@repo/ui";
+// import { AnalyticsContext } from "./analytics-providers";
+// import { useAnalyticsFilterOption } from "./use-analytics-filter-option";
+// import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
+// import { useGoalPropertiesModal } from "../modals/goal-property-modal";
+// import useWorkspace from "@/lib/swr/use-workspace";
+// import useIntegrations from "@/lib/swr/use-integration";
+// import { useGoalsTimeseries } from "@/lib/swr/use-goals-timeseries";
+// import { GoalsAreaChart } from "./goals-area-chart";
+
+// export function LowerGrid() {
+//   const { queryParams, searchParams } = useRouterStuff();
+//   const { selectedTab, totalEvents } = useContext(AnalyticsContext);
+//   const { kpiEventName, kpiType } = useWorkspace()
+//   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+//   const [selectedGoalFilterValue, setSelectedGoalFilterValue] = useState<string | null>(null);
+//   const { chartData, goalNames, isLoading: chartLoading } = useGoalsTimeseries();
+//   const [tab, setTab] = useState<"goals">("goals");
+//   const { integrations } = useIntegrations()
+
+//   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
+//   const isRevenueKpi =
+//     kpiType === "revenue" && integrations.length > 0;
+//   const kpiConfigured = isRevenueKpi || isGoalKpi;
+
+
+//   const { data } = useAnalyticsFilterOption(tab);
+//   const { data: allData } = useAnalyticsFilterOption(tab, {
+//     omitGroupByFilterKey: true,
+//   });
+
+//   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
+//   const dataKey = "clicks";
+
+//   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
+
+//   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+//   useEffect(() => {
+//     setSelectedItems([]);
+//   }, [tab]);
+
+//   const onToggleFilter = useCallback((val: string) => {
+//     setSelectedItems((prev) =>
+//       prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+//     );
+//   }, []);
+
+//   const onApplyFilterValues = useCallback(
+//     (values: string[]) => {
+
+//       if (values.length === 0) {
+//         queryParams({ del: singularTabName });
+//       } else {
+//         queryParams({ set: { [singularTabName]: values.join(",") } });
+//       }
+//       setSelectedItems([]);
+//     },
+//     [singularTabName, queryParams]
+//   );
+
+//   const isFilterActive = searchParams.has(singularTabName);
+
+//   const activeFilterValues = useMemo(
+//     () => searchParams.get(singularTabName)?.split(",") ?? [],
+//     [singularTabName, searchParams]
+//   );
+
+//   const onClearFilter = useCallback(() => {
+//     setSelectedItems([]);
+//     if (isFilterActive) queryParams({ del: singularTabName });
+//   }, [singularTabName, queryParams, isFilterActive]);
+
+//   const transformedData = useMemo(
+//     () =>
+//       data
+//         ?.map((d) => ({
+//           title: d[singularTabName] ?? d.goal,
+//           filterValue: d[singularTabName] ?? d.goal,
+//           count: d.clicks || 0,
+//           revenue: d.revenue || 0,
+//         }))
+//         .sort((a, b) => b.count - a.count) ?? [],
+//     [data, singularTabName]
+//   );
+
+//   const transformedAllData = useMemo(
+//     () =>
+//       allData
+//         ?.map((d) => ({
+//           title: d[singularTabName] ?? d.goal,
+//           filterValue: d[singularTabName] ?? d.goal,
+//           count: d.clicks || 0,
+//           revenue: d.revenue || 0,
+//         })) ?? [],
+//     [allData, singularTabName]
+//   );
+
+//   const { openGoalPropertiesModal, GoalPropertiesModal } = useGoalPropertiesModal();
+
+//   return (
+//     <>
+
+//       <GoalPropertiesModal />
+
+//       <div>
+//         <div className="flex-1 min-w-0 bg-bg-card border border-border-subtle rounded-2xl p-4">
+//           {chartLoading ? (
+//             <LoadingSpinner />
+//           ) : (
+//             <GoalsAreaChart
+//               chartData={chartData}
+//               goalNames={goalNames}
+//               selectedGoal={selectedGoalFilterValue}
+//             />
+//           )}
+//         </div>
+
+//        <div className="w-[340px] shrink-0">
+//           <AnalyticsCard
+//             tabs={[{ id: "goals", label: "Goals" }]}
+//             selectedTabId={tab}
+//             onSelectTab={setTab}
+//             expandLimit={8}
+//             dataLength={data?.length}
+//             isFilterActive={isFilterActive}
+//             onClearFilter={onClearFilter}
+//           >
+//             {({ limit, setShowModal }) =>
+//               data ? (
+//                 data.length > 0 ? (
+//                   <BarList
+//                     tab={singularTabName}
+//                     data={transformedData}
+//                     allData={transformedAllData}
+//                     totalVisitors={totalEvents?.clicks}
+//                     unit={selectedTab}
+//                     maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
+//                     barBackground="bg-purple-100"
+//                     hoverBackground="hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:border-purple-500"
+//                     filterSelectedBackground="bg-purple-600"
+//                     filterSelectedHoverBackground="hover:bg-purple-700"
+//                     filterHoverClass="bg-white border border-purple-200"
+//                     setShowModal={setShowModal}
+//                     selectedFilterValues={selectedItems}
+//                     activeFilterValues={activeFilterValues}
+//                     onToggleFilter={onToggleFilter}
+//                     onClearFilter={onClearFilter}
+//                     onClearSelection={() => setSelectedItems([])}
+//                     onRowFilterItem={(val) => onApplyFilterValues([val])}
+//                     onApplyFilterValues={onApplyFilterValues}
+//                     onExpandRow={(filterValue) => openGoalPropertiesModal(filterValue)}
+//                     {...(limit && { limit })}
+//                     kpiLabel={kpiLabel}      // NEW
+//                     isGoalKpi={isGoalKpi}
+//                     kpiConfigured={kpiConfigured}
+//                   />
+//                 ) : (
+//                   <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
+//                     <p className="text-xs font-poppins text-neutral-500 sm:text-[13px] font-medium">
+//                       No data available
+//                     </p>
+//                   </div>
+//                 )
+//               ) : (
+//                 <div className="absolute inset-0 flex h-[250px] w-full items-center justify-center sm:h-[300px]">
+//                   <LoadingSpinner />
+//                 </div>
+//               )
+//             }
+//           </AnalyticsCard>
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
+'use client'
 
 import React, {
   useCallback,
@@ -17,59 +379,37 @@ import { SINGULAR_ANALYTICS_ENDPOINTS } from "@/lib/analytics/constants";
 import { useGoalPropertiesModal } from "../modals/goal-property-modal";
 import useWorkspace from "@/lib/swr/use-workspace";
 import useIntegrations from "@/lib/swr/use-integration";
+import { useGoalsTimeseries } from "@/lib/swr/use-goals-timeseries";
+import { GoalsAreaChart } from "./goals-area-chart";
+import { GoalsCard } from "./goals-card";
 
 export function LowerGrid() {
   const { queryParams, searchParams } = useRouterStuff();
   const { selectedTab, totalEvents } = useContext(AnalyticsContext);
-  const { kpiEventName, kpiType } = useWorkspace()
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-
-  const [tab, setTab] = useState<"goals">("goals");
-  const { integrations } = useIntegrations()
+  const { kpiEventName, kpiType } = useWorkspace();
+  const [selectedGoalFilterValue, setSelectedGoalFilterValue] = useState<string | null>(null);
+  const { chartData, goalNames, isLoading: chartLoading } = useGoalsTimeseries();
+  const [tab] = useState<"goals">("goals");
+  const { integrations } = useIntegrations();
 
   const isGoalKpi = kpiType === "goal" && !!kpiEventName;
-  const isRevenueKpi =
-    kpiType === "revenue" && integrations.length > 0;
+  const isRevenueKpi = kpiType === "revenue" && integrations.length > 0;
   const kpiConfigured = isRevenueKpi || isGoalKpi;
 
-
   const { data } = useAnalyticsFilterOption(tab);
-  const { data: allData } = useAnalyticsFilterOption(tab, {
-    omitGroupByFilterKey: true,
-  });
+  const { data: allData } = useAnalyticsFilterOption(tab, { omitGroupByFilterKey: true });
 
   const singularTabName = SINGULAR_ANALYTICS_ENDPOINTS[tab];
   const dataKey = "clicks";
-
   const kpiLabel = isGoalKpi ? kpiEventName! : "Revenue";
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  useEffect(() => {
-    setSelectedItems([]);
-  }, [tab]);
-
   const onToggleFilter = useCallback((val: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
+    setSelectedItems((prev) => (prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]));
   }, []);
 
-  const onApplyFilterValues = useCallback(
-    (values: string[]) => {
-
-      if (values.length === 0) {
-        queryParams({ del: singularTabName });
-      } else {
-        queryParams({ set: { [singularTabName]: values.join(",") } });
-      }
-      setSelectedItems([]);
-    },
-    [singularTabName, queryParams]
-  );
-
   const isFilterActive = searchParams.has(singularTabName);
-
   const activeFilterValues = useMemo(
     () => searchParams.get(singularTabName)?.split(",") ?? [],
     [singularTabName, searchParams]
@@ -95,13 +435,12 @@ export function LowerGrid() {
 
   const transformedAllData = useMemo(
     () =>
-      allData
-        ?.map((d) => ({
-          title: d[singularTabName] ?? d.goal,
-          filterValue: d[singularTabName] ?? d.goal,
-          count: d.clicks || 0,
-          revenue: d.revenue || 0,
-        })) ?? [],
+      allData?.map((d) => ({
+        title: d[singularTabName] ?? d.goal,
+        filterValue: d[singularTabName] ?? d.goal,
+        count: d.clicks || 0,
+        revenue: d.revenue || 0,
+      })) ?? [],
     [allData, singularTabName]
   );
 
@@ -109,61 +448,35 @@ export function LowerGrid() {
 
   return (
     <>
-
       <GoalPropertiesModal />
-
-      <AnalyticsCard
-        tabs={[{ id: "goals", label: "Goals" }]}
-        selectedTabId={tab}
-        onSelectTab={setTab}
-        expandLimit={8}
-        dataLength={data?.length}
+      <GoalsCard
+        chartData={chartData}
+        goalNames={goalNames}
+        chartLoading={chartLoading}
+        selectedGoal={selectedGoalFilterValue}
+        onSelectGoal={setSelectedGoalFilterValue}
+        data={transformedData}
+        allData={transformedAllData}
+        totalVisitors={totalEvents?.clicks}
+        unit={selectedTab}
+        maxValue={Math.max(...(data?.map((d) => d[dataKey] ?? 0) ?? [0]))}
         isFilterActive={isFilterActive}
+        selectedItems={selectedItems}
+        activeFilterValues={activeFilterValues}
+        onToggleFilter={onToggleFilter}
         onClearFilter={onClearFilter}
-      >
-        {({ limit, setShowModal }) =>
-          data ? (
-            data.length > 0 ? (
-              <BarList
-                tab={singularTabName}
-                data={transformedData}
-                allData={transformedAllData}
-                totalVisitors={totalEvents?.clicks}
-                unit={selectedTab}
-                maxValue={Math.max(...data.map((d) => d[dataKey] ?? 0)) ?? 0}
-                barBackground="bg-purple-100"
-                hoverBackground="hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent hover:border-purple-500"
-                filterSelectedBackground="bg-purple-600"
-                filterSelectedHoverBackground="hover:bg-purple-700"
-                filterHoverClass="bg-white border border-purple-200"
-                setShowModal={setShowModal}
-                selectedFilterValues={selectedItems}
-                activeFilterValues={activeFilterValues}
-                onToggleFilter={onToggleFilter}
-                onClearFilter={onClearFilter}
-                onClearSelection={() => setSelectedItems([])}
-                onRowFilterItem={(val) => onApplyFilterValues([val])}
-                onApplyFilterValues={onApplyFilterValues}
-                onExpandRow={(filterValue) => openGoalPropertiesModal(filterValue)}
-                {...(limit && { limit })}
-                kpiLabel={kpiLabel}      // NEW
-                isGoalKpi={isGoalKpi}
-                kpiConfigured={kpiConfigured}
-              />
-            ) : (
-              <div className="flex h-[250px] items-center justify-center sm:h-[300px]">
-                <p className="text-xs font-poppins text-neutral-500 sm:text-[13px] font-medium">
-                  No data available
-                </p>
-              </div>
-            )
-          ) : (
-            <div className="absolute inset-0 flex h-[250px] w-full items-center justify-centersm:h-[300px]">
-              <LoadingSpinner />
-            </div>
-          )
-        }
-      </AnalyticsCard>
+        onClearSelection={() => setSelectedItems([])}
+        // onRowFilterItem={(val) => {
+        //   setSelectedGoalFilterValue(val); // isolate the chart to this goal
+        //   openGoalPropertiesModal(val);
+        // }}
+        // onExpandRow={(val) => openGoalPropertiesModal(val)}
+        kpiLabel={kpiLabel}
+        isGoalKpi={isGoalKpi}
+        kpiConfigured={kpiConfigured}
+        barBackground="bg-bg-bar-primary"
+        hoverBackground="hover:bg-bg-subtle"
+      />
     </>
   );
 }

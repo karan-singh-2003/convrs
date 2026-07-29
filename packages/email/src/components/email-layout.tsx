@@ -78,8 +78,7 @@ export default function EmailLayout({
                     "Google Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif",
                 }}
               >
-                © {new Date().getFullYear()} Boilercode.dev — Production-ready
-                SaaS boilerplates.
+                © {new Date().getFullYear()} Convrs — Privacy First Analytics.
               </Text>
             </Section>
           </Container>

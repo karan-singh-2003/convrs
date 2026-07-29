@@ -101,9 +101,9 @@ function PropertyGroup({
 
   return (
     <div>
-      {/* <p className="mb-2 text-[11px] font-display font-medium uppercase tracking-widest text-neutral-500">
+      <p className="mb-2 text-[11px] font-display font-medium uppercase tracking-widest text-neutral-500">
         {propKey}
-      </p> */}
+      </p>
       <div className="space-y-0">
         {values.map(({ value, count }) => (
           <div key={value} className="group relative flex items-center">

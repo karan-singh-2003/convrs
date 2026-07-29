@@ -1,0 +1,267 @@
+// ============================================================
+// ADD these enums + models to your schema.prisma
+// ============================================================
+
+enum SocialPlatform {
+    x
+    reddit
+}
+
+enum SocialIntegrationStatus {
+    active
+    expired
+    revoked
+    error
+}
+
+enum SocialPostStatus {
+    active
+    deleted
+    suspended
+}
+
+enum DiscoveredVia {
+    link_discovery
+    keyword_search
+    both
+}
+
+enum SocialKeywordMatchType {
+    exact_phrase
+    handle
+    hashtag
+    broad
+}
+
+enum AttributionConfidence {
+    high
+    medium
+    low
+}
+
+enum AttributionMatchMethod {
+    exact_url
+    fuzzy_url
+    link_in_bio
+}
+
+enum SyncJobType {
+    link_discovery
+    mention_search
+    metadata_refresh
+    historical_backfill
+    attribution_reconciliation
+}
+
+enum SyncJobStatus {
+    pending
+    running
+    completed
+    failed
+    rate_limited
+}
+
+// ------------------------------------------------------------
+// Workspace's own connection to X / Reddit (OAuth credentials)
+// ------------------------------------------------------------
+model SocialIntegration {
+    id             String                  @id @default(cuid())
+    workspaceId    String
+    platform       SocialPlatform
+    accessToken    String?
+    refreshToken   String?
+    tokenExpiresAt DateTime?
+    scopes         String[]                @default([])
+    status         SocialIntegrationStatus @default(active)
+    lastSyncedAt   DateTime?
+    createdAt      DateTime                @default(now())
+    updatedAt      DateTime                @updatedAt
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+    @@unique([workspaceId, platform])
+    @@index([workspaceId])
+}
+
+// ------------------------------------------------------------
+// A discovered third-party account (author of a tweet/post).
+// Global/shared — NOT scoped to a workspace.
+// ------------------------------------------------------------
+model SocialAccount {
+    id               String         @id @default(cuid())
+    platform         SocialPlatform
+    externalId       String
+    handle           String
+    displayName      String?
+    avatarUrl        String?
+    followerCount    Int?
+    isVerified       Boolean        @default(false)
+    firstSeenAt      DateTime       @default(now())
+    lastSeenAt       DateTime       @default(now())
+    metricsUpdatedAt DateTime?
+
+    posts        SocialPost[]
+    attributions LinkAttribution[] // ← add this line
+
+    @@unique([platform, externalId])
+    @@index([handle])
+}
+
+model SocialAttributionHandle {
+    id          String         @id @default(cuid())
+    workspaceId String
+    platform    SocialPlatform
+    handle      String
+    createdAt   DateTime       @default(now())
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+    @@unique([workspaceId, platform, handle])
+    @@index([workspaceId])
+}
+
+// ------------------------------------------------------------
+// A discovered tweet/Reddit post. Shared between link-attribution
+// discovery and keyword-mention discovery.
+// ------------------------------------------------------------
+model SocialPost {
+    id               String           @id @default(cuid())
+    platform         SocialPlatform
+    externalId       String
+    socialAccountId  String
+    content          String
+    url              String
+    extractedUrls    String[]         @default([])
+    quotedPostId     String?
+    postedAt         DateTime
+    likeCount        Int              @default(0)
+    replyCount       Int              @default(0)
+    shareCount       Int              @default(0)
+    viewCount        Int?
+    metricsUpdatedAt DateTime?
+    status           SocialPostStatus @default(active)
+    discoveredVia    DiscoveredVia    @default(link_discovery)
+    createdAt        DateTime         @default(now())
+    updatedAt        DateTime         @updatedAt
+
+    socialAccount SocialAccount     @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+    quotedPost    SocialPost?       @relation("QuotedPost", fields: [quotedPostId], references: [id])
+    quotedBy      SocialPost[]      @relation("QuotedPost")
+    mentions      SocialMention[]
+    attributions  LinkAttribution[]
+
+    @@unique([platform, externalId])
+    @@index([socialAccountId])
+    @@index([extractedUrls], type: Gin)
+}
+
+// ------------------------------------------------------------
+// User-defined tracked keyword, per workspace.
+// ------------------------------------------------------------
+model SocialKeyword {
+    id          String                 @id @default(cuid())
+    workspaceId String
+    term        String
+    matchType   SocialKeywordMatchType @default(broad)
+    platforms   SocialPlatform[]       @default([x, reddit])
+    isActive    Boolean                @default(true)
+    createdAt   DateTime               @default(now())
+    updatedAt   DateTime               @updatedAt
+
+    workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    mentions  SocialMention[]
+
+    @@unique([workspaceId, term, matchType])
+    @@index([workspaceId])
+}
+
+// ------------------------------------------------------------
+// Join between a keyword match and a discovered post, per workspace.
+// ------------------------------------------------------------
+model SocialMention {
+    id                String   @id @default(cuid())
+    workspaceId       String
+    socialPostId      String
+    matchedKeywordIds String[] @default([])
+    spamScore         Float?
+    isHidden          Boolean  @default(false)
+    firstMatchedAt    DateTime @default(now())
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+
+    workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    socialPost      SocialPost     @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+    socialKeyword   SocialKeyword? @relation(fields: [socialKeywordId], references: [id])
+    socialKeywordId String?
+
+    @@unique([workspaceId, socialPostId])
+    @@index([workspaceId, firstMatchedAt])
+}
+
+// ------------------------------------------------------------
+// The core attribution linkage: one Tinybird click event ->
+// one discovered post. This is the thin join described in the
+// architecture doc — Tinybird stays the source of truth for the
+// click itself; this table just says "this click came from this tweet."
+// ------------------------------------------------------------
+model LinkAttribution {
+    id              String                 @id @default(cuid())
+    workspaceId     String
+    eventId         String
+    visitorId       String
+    socialAccountId String
+    socialPostId    String?
+    confidence      AttributionConfidence  @default(medium)
+    confidenceScore Float                  @default(0.5)
+    matchMethod     AttributionMatchMethod @default(exact_url)
+    matchedAt       DateTime               @default(now())
+
+    workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    socialAccount SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+    socialPost    SocialPost?   @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+
+    @@unique([eventId])
+    @@index([workspaceId, socialPostId])
+    @@index([workspaceId, socialAccountId])
+    @@index([workspaceId, visitorId])
+    @@index([workspaceId, matchedAt])
+}
+
+// ------------------------------------------------------------
+// Tracks background sync job state (discovery, backfill, etc.)
+// ------------------------------------------------------------
+model SocialSyncJob {
+    id          String          @id @default(cuid())
+    workspaceId String?
+    jobType     SyncJobType
+    platform    SocialPlatform?
+    status      SyncJobStatus   @default(pending)
+    cursor      String?
+    startedAt   DateTime?
+    completedAt DateTime?
+    error       String?
+    stats       Json?
+    createdAt   DateTime        @default(now())
+
+    @@index([workspaceId, jobType, status])
+}
+
+// ------------------------------------------------------------
+// Domains a workspace wants X-discovery to search for.
+// ------------------------------------------------------------
+
+// ------------------------------------------------------------
+// Accounts a workspace has manually blocked from mention matching.
+// ------------------------------------------------------------
+model AccountBlocklist {
+    id                       String         @id @default(cuid())
+    workspaceId              String
+    platform                 SocialPlatform
+    blockedAccountExternalId String
+    createdAt                DateTime       @default(now())
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+    @@unique([workspaceId, platform, blockedAccountExternalId])
+    @@index([workspaceId])
+}

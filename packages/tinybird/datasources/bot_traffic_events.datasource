@@ -1,0 +1,23 @@
+TOKEN "convrs_tinybird_token" APPEND
+
+SCHEMA >
+    `event_id` UUID `json:$.event_id`,
+    `timestamp` DateTime64(3) `json:$.timestamp`,
+    `workspace_id` String `json:$.workspace_id`,
+    `domain` LowCardinality(String) `json:$.domain`,
+    `url` String `json:$.url`,
+    `hostname` LowCardinality(String) `json:$.hostname`,
+    `page` String `json:$.page`,
+    `vendor` LowCardinality(String) `json:$.vendor`,
+    `agent_name` LowCardinality(String) `json:$.agent_name`,
+    `category` LowCardinality(String) `json:$.category`,
+    `user_agent` String `json:$.user_agent`,
+    `ip` Nullable(String) `json:$.ip`,
+    `country` LowCardinality(String) `json:$.country`,
+    `status_code` Nullable(UInt16) `json:$.status_code`,
+    `referrer` Nullable(String) `json:$.referrer`,
+    `source` LowCardinality(String) `json:$.source`
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "timestamp, workspace_id, category, vendor"

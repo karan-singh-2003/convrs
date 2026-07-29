@@ -1,0 +1,17 @@
+TAGS "Convrs Bot Detection"
+
+NODE endpoint
+TYPE endpoint
+SQL >
+%
+SELECT
+    category,
+    COUNT(*) AS requests
+FROM bot_traffic_events
+WHERE
+    workspace_id = {{ String(workspaceId) }}
+    {% if defined(domain) %} AND domain = {{ String(domain) }} {% end %}
+    AND timestamp >= {{ DateTime64(start) }}
+    AND timestamp <= {{ DateTime64(end) }}
+GROUP BY category
+ORDER BY requests DESC

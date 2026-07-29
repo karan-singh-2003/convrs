@@ -7,8 +7,10 @@ export const sendViaNodeMailer = async ({
   subject,
   text,
   react,
+  attachments
 }: Pick<CreateEmailOptions, "subject" | "text" | "react"> & {
   to: string;
+  attachments?: nodemailer.SendMailOptions["attachments"];
 }) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -28,16 +30,17 @@ export const sendViaNodeMailer = async ({
 
 
     const html = react ? await render(react as React.ReactElement) : undefined;
-
+    console.dir({ to, subject, text, html, attachments }, { depth: null });
     const result = await transporter.sendMail({
       from: "noreply@example.com",
       to,
       subject,
       text,
       html,
+      attachments,
     });
-
- 
+    console.log("in mailer")
+    console.dir(result, { depth: null });
     return result;
   } catch (error) {
     console.error("[nodemailer] Failed to send email:", error);

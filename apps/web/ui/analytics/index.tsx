@@ -10,6 +10,7 @@ import { PagesSection } from "./pages-section";
 import { SourcesSection } from "./sources-section";
 import { useContext } from "react";
 import { LoadingSpinner } from "@repo/ui";
+import BotFilteringCard from "./bot-filtering-card";
 
 export default function Analytics({ mode, workspaceId, workspaceName }) {
   return (
@@ -44,7 +45,7 @@ function AnalyticsContent({
     <>
       <div className="my-2 space-y-4">
         <div className="max-w-screen-lg mx-auto overflow-hidden rounded-md py-3 text-sm">
-          <AnalyticsToggle mode={mode}  workspaceName={workspaceName} />
+          <AnalyticsToggle mode={mode} workspaceName={workspaceName} />
         </div>
 
         <div className="space-y-[4rem]">
@@ -57,6 +58,11 @@ function AnalyticsContent({
             <LowerGrid />
           </div>
         )}
+        <div className="max-w-screen-lg mx-auto">
+          <BotFilteringCard />
+        </div>
+
+
       </div>
     </>
   );
@@ -65,8 +71,9 @@ function AnalyticsContent({
 function StatsGrid() {
   return (
     <div className="grid grid-cols-1 max-w-screen-lg mx-auto gap-5  md:grid-cols-2">
-      <PagesSection />
       <SourcesSection />
+      <PagesSection />
+
       <LocationSection />
       <DeviceSection />
     </div>

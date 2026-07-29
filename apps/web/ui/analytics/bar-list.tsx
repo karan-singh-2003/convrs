@@ -113,6 +113,8 @@ export function BarList({
     activeFilterValues ?? []
   );
 
+  console.log("kpi configured in barlist and is it goalkpi", kpiConfigured, isGoalKpi)
+
   useEffect(() => {
     if (!limit) {
       setModalSelectedValues(activeFilterValues ?? []);

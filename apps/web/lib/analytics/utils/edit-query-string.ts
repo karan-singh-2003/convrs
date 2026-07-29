@@ -15,3 +15,9 @@ export const editQueryString = (
 
   return searchParams.toString();
 };
+
+
+export function toBotFilteringApiPath(baseApiPath?: string): string | undefined {
+  if (!baseApiPath) return undefined;
+  return `${baseApiPath}/bot-filtering`;
+}
