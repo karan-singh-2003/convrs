@@ -61,7 +61,7 @@ export default function ScriptSettingsContent() {
           allowLocalhostDebugging={enabled}
         />
 
-        <div className="bg-bg-emphasis/65 rounded-xl p-3">
+        <div className="bg-bg-card border border-border-subtle rounded-xl p-3">
           <div className="flex items-center justify-between font-display text-content-default font-medium text-sm">
             <div>
               <h1>Cookieless / Privacy mode</h1>
@@ -80,7 +80,7 @@ export default function ScriptSettingsContent() {
           </div>
         </div>
 
-        <div className="bg-bg-emphasis/65 rounded-xl p-3">
+        <div className="bg-bg-card border-border-subtle rounded-xl p-3">
           <div className="flex items-center justify-between font-display text-content-default font-medium text-sm">
             <div>
               <h1>Allow Localhost debugging</h1>

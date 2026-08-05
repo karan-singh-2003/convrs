@@ -105,7 +105,7 @@ export default function ScriptInstallationCard({
   );
 
   return (
-    <div className="bg-bg-emphasis/65 p-3 rounded-xl space-y-4">
+    <div className="bg-bg-card border-border-subtle p-3 rounded-xl space-y-4">
       <div className="flex items-center justify-between gap-3">
         {/* <p className="font-display font-medium text-sm text-gray-500">
           Install Signal analytics using a script tag or the npm SDK.
@@ -175,7 +175,7 @@ export default function ScriptInstallationCard({
 
       {mode === "script" ? (
         <>
-          <p className="font-display text-sm text-gray-500">
+          <p className="font-display text-sm text-content-subtle">
             Add this to the{" "}
             <code className="text-xs bg-bg-emphasis px-1.5 py-0.5 rounded font-mono text-content-default">
               &lt;head&gt;
