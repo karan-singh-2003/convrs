@@ -225,7 +225,7 @@ import useSWR, { mutate } from "swr";
 import { fetcher } from "@repo/utils";
 import { toast } from "sonner";
 import useWorkspace from "@/lib/swr/use-workspace";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type Keyword = { id: string; term: string; isActive: boolean };
 type AttributionHandle = { id: string; platform: "x" | "reddit"; handle: string };
@@ -258,6 +258,8 @@ export default function SocialIntegrationSettingsCard() {
   const isXConnected = integrationsData?.data.x ?? false;
   const keywords = keywordsData?.data ?? [];
   const handles = handlesData?.data ?? [];
+
+
 
   async function addKeyword() {
     const term = keywordInput.trim();
@@ -354,6 +356,7 @@ export default function SocialIntegrationSettingsCard() {
       </div>
     );
   }
+
   return (
     <div className="bg-bg-card border border-border-subtle rounded-2xl">
       <div className="px-5 py-4 border-b border-border-subtle">

@@ -33,6 +33,11 @@ export const WorkspaceSchema = z
       .nullable()
       .optional()
       .describe("The current plan of the workspace."),
+    planFamily: z
+      .string()
+      .nullable()
+      .optional()
+      .describe("The family of the current plan."),
     planTier: z
       .number()
       .nullable()
