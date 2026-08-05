@@ -225,7 +225,7 @@ import useSWR, { mutate } from "swr";
 import { fetcher } from "@repo/utils";
 import { toast } from "sonner";
 import useWorkspace from "@/lib/swr/use-workspace";
-import router from "next/router";
+import {useRouter} from "next/navigation";
 
 type Keyword = { id: string; term: string; isActive: boolean };
 type AttributionHandle = { id: string; platform: "x" | "reddit"; handle: string };
@@ -236,6 +236,7 @@ type Tab = (typeof TABS)[number];
 
 export default function SocialIntegrationSettingsCard() {
   const { slug } = useParams() as { slug: string };
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("Mentions");
   const [keywordInput, setKeywordInput] = useState("");
   const [handleInput, setHandleInput] = useState("");
