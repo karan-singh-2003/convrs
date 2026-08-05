@@ -224,6 +224,8 @@ import { useParams } from "next/navigation";
 import useSWR, { mutate } from "swr";
 import { fetcher } from "@repo/utils";
 import { toast } from "sonner";
+import useWorkspace from "@/lib/swr/use-workspace";
+import router from "next/router";
 
 type Keyword = { id: string; term: string; isActive: boolean };
 type AttributionHandle = { id: string; platform: "x" | "reddit"; handle: string };
@@ -237,6 +239,7 @@ export default function SocialIntegrationSettingsCard() {
   const [activeTab, setActiveTab] = useState<Tab>("Mentions");
   const [keywordInput, setKeywordInput] = useState("");
   const [handleInput, setHandleInput] = useState("");
+  const { planFamily } = useWorkspace()
 
   const { data: integrationsData } = useSWR<{ data: IntegrationStatus }>(
     `/api/workspaces/${slug}/social/integrations`,
@@ -309,7 +312,47 @@ export default function SocialIntegrationSettingsCard() {
     await fetch(`/api/workspaces/${slug}/social/attribution-handles/${id}`, { method: "DELETE" });
     mutate(`/api/workspaces/${slug}/social/attribution-handles`);
   }
+  if (planFamily !== "growth") {
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-bg-card overflow-hidden">
+        <div className="border-b border-border-subtle px-5 py-4">
+          <div className="flex items-center gap-4 justify-between">
+            <div>
+              <h3 className="font-display text-[15px] font-medium text-content-default">
+                Twitter / X
+              </h3>
 
+              <p className="mt-1 text-[13px] font-display text-content-subtle">
+                Connect your X account to monitor mentions, discover conversations,
+                and attribute traffic from social media.
+              </p>
+            </div>
+
+            {/* <span className="rounded-full bg-amber-100 px-3 py-1 text-[11px] font-medium font-display text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+              Growth
+            </span> */}
+          </div>
+        </div>
+
+        <div className="p-8">
+          <div className="mx-auto max-w-lg text-center">
+            <button
+              className="mt-0 inline-flex h-10 items-center justify-center rounded-lg bg-bg-inverted px-5 text-[13.5px] font-display font-medium text-content-inverted transition hover:opacity-90"
+              onClick={() => {
+                router.push(`/${slug}/settings/billing`)
+              }}
+            >
+              Upgrade to Growth
+            </button>
+
+            <p className="mt-3 text-[13px] font-display text-content-subtle">
+              Unlock X monitoring and every other Growth feature.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-bg-card border border-border-subtle rounded-2xl">
       <div className="px-5 py-4 border-b border-border-subtle">
@@ -322,16 +365,14 @@ export default function SocialIntegrationSettingsCard() {
               A workspace's SocialIntegration row is created out-of-band
               (currently: manually, until a real connect flow exists). */}
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-display font-medium ${
-              isXConnected
-                ? "bg-bg-success text-content-success"
-                : "bg-bg-subtle text-content-subtle"
-            }`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-display font-medium ${isXConnected
+              ? "bg-bg-success text-content-success"
+              : "bg-bg-subtle text-content-subtle"
+              }`}
           >
             <span
-              className={`size-1.5 rounded-full ${
-                isXConnected ? "bg-content-success" : "bg-content-subtle"
-              }`}
+              className={`size-1.5 rounded-full ${isXConnected ? "bg-content-success" : "bg-content-subtle"
+                }`}
             />
             {isXConnected ? "Connected" : "Not connected"}
           </span>
@@ -349,11 +390,10 @@ export default function SocialIntegrationSettingsCard() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 font-display text-[14px] font-medium transition-colors ${
-              activeTab === tab
-                ? "text-content-default border-b-2 border-content-default -mb-px"
-                : "text-content-subtle hover:text-content-default"
-            }`}
+            className={`px-4 py-2.5 font-display text-[14px] font-medium transition-colors ${activeTab === tab
+              ? "text-content-default border-b-2 border-content-default -mb-px"
+              : "text-content-subtle hover:text-content-default"
+              }`}
           >
             {tab}
           </button>

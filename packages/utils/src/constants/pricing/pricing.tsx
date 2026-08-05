@@ -341,6 +341,47 @@ export type PlanDetails = {
 
 // ─── Standard family — Dodo product IDs (unchanged from before) ──────────────
 
+// const STANDARD_PRODUCT_IDS = {
+//   starter: {
+//     monthly: "pdt_0NiLtXHVn7qIbuSApa1CC", // 10K Events
+//     yearly: "pdt_0NiLtWsbcVuqlRyhHtTzy",
+//   },
+//   basic: {
+//     monthly: "pdt_0NiLtWB8q7cdPiloC3TSS", // 25K Events
+//     yearly: "pdt_0NiLtWYJkCIvrsH9XHuXX",
+//   },
+//   pro: {
+//     monthly: "pdt_0NiLtBPEZgwM3avEYH8f0", // 100K Events
+//     yearly: "pdt_0NiLtVnipCBTJUqRqwmK4",
+//   },
+//   growth: {
+//     monthly: "pdt_0NiLtVYKgLhikplp5jgfC", // 500K Events
+//     yearly: "pdt_0NiLtV8V3pnqd5sUE6pMK",
+//   },
+//   business: {
+//     monthly: "pdt_0NiLtUdYuBeLpqQnksJmP", // 1M Events
+//     yearly: "pdt_0NiLtTPArf4ImG9HzbqMo",
+//   },
+//   scale: {
+//     monthly: "pdt_0NiLtT6RjBPWSsCI5H5X4", // 5M Events
+//     yearly: "pdt_0NiLtAirntr5Ej5KQTQFf",
+//   },
+//   pro_plus: {
+//     monthly: "pdt_0NiLtSllfCPniyzeMunga", // 10M Events
+//     yearly: "pdt_0NiLtSU9GnqmyK9fbL68W",
+//   },
+//   enterprise: {
+//     monthly: "pdt_0NiLtCiIkLK6mQ2EpFDGN", // 15M Events
+//     yearly: "pdt_0NiLtDXtOCPsj4kyuMksX",
+//   },
+//   ultimate: {
+//     monthly: "pdt_0NiLtCDmHaCr0ZQ3CIDFZ", // 25M Events
+//     yearly: "pdt_0NiLtBokX11QHoqjpUDAf",
+//   },
+// } as const;
+
+
+// prodution 
 const STANDARD_PRODUCT_IDS = {
   starter: {
     monthly: "pdt_0NiLtXHVn7qIbuSApa1CC", // 10K Events
@@ -386,45 +427,85 @@ const STANDARD_PRODUCT_IDS = {
 // this family can actually be purchased. Checkout will fail with "Invalid
 // plan" until these are replaced.
 
+// const GROWTH_PRODUCT_IDS = {
+//   starter: {
+//     monthly: "pdt_0NkMZfj9YP0AoZv8kBUUu", // 10K Events
+//     yearly: "pdt_0NkMZxGEsgd2vhFoTfteD",
+//   },
+//   basic: {
+//     monthly: "pdt_0NkMaN7eVN138J2NP269H", // 25K Events
+//     yearly: "pdt_0NkMaSyfV0OtgOWttVTwR",
+//   },
+//   pro: {
+//     monthly: "pdt_0NkMaZxwX5bRAJ1VOAk1e", // 100K Events
+//     yearly: "pdt_0NkMaf2zFm7OJ5RMmPHCU",
+//   },
+//   growth: {
+//     monthly: "pdt_0NkMak49hTAfWPqrSddoZ", // 500K Events
+//     yearly: "pdt_0NkMapVdz97Z9sZ6fI2EY",
+//   },
+//   business: {
+//     monthly: "pdt_0NkMauos3FvpOv97tOgmC", // 1M Events
+//     yearly: "pdt_0NkMb1mCCzxefB3HpdBJZ",
+//   },
+//   scale: {
+//     monthly: "pdt_0NkMb7nSX5hJs9BiH4dGB", // 5M Events
+//     yearly: "pdt_0NkMbCNluetTK6Ulm7Gug",
+//   },
+//   pro_plus: {
+//     monthly: "pdt_0NkMbI7P6EZ60LfKy03b4", // 10M Events
+//     yearly: "pdt_0NkMbQPDoU5hLVYdq310V",
+//   },
+//   enterprise: {
+//     monthly: "pdt_0NkMbZC3BjYTHKQHEZzQ1", // 15M Events
+//     yearly: "pdt_0NkMbeEgGKAwfUZrlgpwT",
+//   },
+//   ultimate: {
+//     monthly: "pdt_0NkMbjyUm7juHFCLCigTU", // 25M Events
+//     yearly: "pdt_0NkMboY14l0UVQTG9lDdN",
+//   },
+// } as const;
+
+
+// production
 const GROWTH_PRODUCT_IDS = {
   starter: {
-    monthly: "pdt_0NkMZfj9YP0AoZv8kBUUu", // 10K Events
-    yearly: "pdt_0NkMZxGEsgd2vhFoTfteD",
+    monthly: "pdt_0NkjC6vB9KUDcyrVeDveY", // 10K Events
+    yearly: "pdt_0NkjC6JxCfsKnsfw9fx0B",
   },
   basic: {
-    monthly: "pdt_0NkMaN7eVN138J2NP269H", // 25K Events
-    yearly: "pdt_0NkMaSyfV0OtgOWttVTwR",
+    monthly: "pdt_0NkjC5aIR8X8DeYSnTQUQ", // 25K Events
+    yearly: "pdt_0NkjC4qjj4GUVPh8BlUMU",
   },
   pro: {
-    monthly: "pdt_0NkMaZxwX5bRAJ1VOAk1e", // 100K Events
-    yearly: "pdt_0NkMaf2zFm7OJ5RMmPHCU",
+    monthly: "pdt_0NkjC44HFDPmMIbIkdUP4", // 100K Events
+    yearly: "pdt_0NkjC3Tr6xYavmReD19ym",
   },
   growth: {
-    monthly: "pdt_0NkMak49hTAfWPqrSddoZ", // 500K Events
-    yearly: "pdt_0NkMapVdz97Z9sZ6fI2EY",
+    monthly: "pdt_0NkjC2qt7gKqvfP4uua4b", // 500K Events
+    yearly: "pdt_0NkjC1xzjk6q6IWzzkaXZ",
   },
   business: {
-    monthly: "pdt_0NkMauos3FvpOv97tOgmC", // 1M Events
-    yearly: "pdt_0NkMb1mCCzxefB3HpdBJZ",
+    monthly: "pdt_0NkjBzUFD3kTvDcrjlmyO", // 1M Events
+    yearly: "pdt_0NkjByzAlGBN3WWbRbmbb",
   },
   scale: {
-    monthly: "pdt_0NkMb7nSX5hJs9BiH4dGB", // 5M Events
-    yearly: "pdt_0NkMbCNluetTK6Ulm7Gug",
+    monthly: "pdt_0NkjByTf7I9MEQRiFuPKY", // 5M Events
+    yearly: "pdt_0NkjBxusEe1mGW2q4z6Rk",
   },
   pro_plus: {
-    monthly: "pdt_0NkMbI7P6EZ60LfKy03b4", // 10M Events
-    yearly: "pdt_0NkMbQPDoU5hLVYdq310V",
+    monthly: "pdt_0NkjBxBYdb9cKJ9RFSezl", // 10M Events
+    yearly: "pdt_0NkjBwWiJNlThqEO6LEZn",
   },
   enterprise: {
-    monthly: "pdt_0NkMbZC3BjYTHKQHEZzQ1", // 15M Events
-    yearly: "pdt_0NkMbeEgGKAwfUZrlgpwT",
+    monthly: "pdt_0NkjBvx33Cswkxh5j77aU", // 15M Events
+    yearly: "pdt_0NkjBvStDjoWByY1cwz4A",
   },
   ultimate: {
-    monthly: "pdt_0NkMbjyUm7juHFCLCigTU", // 25M Events
-    yearly: "pdt_0NkMboY14l0UVQTG9lDdN",
+    monthly: "pdt_0NkjBueZA9NnBBeKt4FCe", // 25M Events
+    yearly: "pdt_0NkjBtgwbwHKcqeAKYuTs",
   },
 } as const;
-
 // ─── Shared feature lists ─────────────────────────────────────────────────────
 
 const CORE_FEATURES: PlanFeatures[] = [
