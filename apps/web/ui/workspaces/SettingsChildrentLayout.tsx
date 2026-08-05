@@ -17,7 +17,7 @@ export default function SettingsChildrenLayout({
   return (
     <div
       className={cn(
-        "flex flex-col gap-y-4 p-3 bg-bg-emphasis/65 rounded-2xl",
+        "flex flex-col gap-y-4 p-3 bg-bg-card border border-border-subtle rounded-2xl",
         className
       )}
     >

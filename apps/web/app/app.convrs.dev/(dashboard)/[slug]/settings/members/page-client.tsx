@@ -142,7 +142,7 @@ export default function WorkspacePeopleClient() {
     <>
       <InviteWorkspaceUserModal />
       <InviteCodeModal />
-      <div className=" space-y-4 px-3 bg-bg-emphasis/65 rounded-2xl py-5 lg:px-5">
+      <div className=" space-y-4 px-3 bg-bg-card border-border-subtle rounded-2xl py-5 lg:px-5">
         {/* Header */}
         <div className="px-1 flex items-center justify-between gap-4">
           <div className="flex flex-col">
