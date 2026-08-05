@@ -1,5 +1,5 @@
 // packages/analytics/src/utils/tracked-event-registry.ts
-import { redis } from "../lib/redis"; // swap for your actual client
+import { redis } from "../lib/redis.js"; // swap for your actual client
 import { prisma } from "@repo/db";
 import { TrackedEventType, TrackedEventTrigger } from "@repo/db/client";
 
