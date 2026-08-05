@@ -211,6 +211,10 @@ model LinkAttribution {
     visitorId       String
     socialAccountId String
     socialPostId    String?
+    /// The raw referer URL string from Tinybird (e.g. "t.co/AbCdEf") stored
+    /// at write time so analytics can join attributions to grouped refererUrl
+    /// rows without resolving short links on the read path.
+    refererUrl      String?
     confidence      AttributionConfidence  @default(medium)
     confidenceScore Float                  @default(0.5)
     matchMethod     AttributionMatchMethod @default(exact_url)
@@ -225,6 +229,7 @@ model LinkAttribution {
     @@index([workspaceId, socialAccountId])
     @@index([workspaceId, visitorId])
     @@index([workspaceId, matchedAt])
+    @@index([workspaceId, refererUrl])
 }
 
 // ------------------------------------------------------------

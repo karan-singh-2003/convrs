@@ -53,6 +53,11 @@ enum KpiType {
   goal
 }
 
+enum PricingFamily {
+  standard
+  growth
+}
+
 model Workspace {
   id String @id @default(cuid())
 
@@ -87,6 +92,7 @@ model Workspace {
   dodoSubscriptionId String?            @unique
   subscriptionStatus SubscriptionStatus @default(inactive)
   billingInterval    BillingInterval?
+  planFamily         PricingFamily      @default(standard)
 
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
@@ -109,6 +115,9 @@ model Workspace {
   plan     WorkspacePlan @default(free)
   timezone String        @default("UTC")
   currency Currency      @default(USD)
+
+  lastXSyncAt      DateTime?
+  lastRedditSyncAt DateTime?
 
   integrations Integration[]
 

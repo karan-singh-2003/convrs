@@ -49,7 +49,7 @@ const createTrackedEventSchema = z.object({
 
 export const POST = withWorkspace(
   async ({ req, workspace }) => {
-    console.log("POST in tracked event route", workspace.id);
+  
     const body = await req.json();
     const { eventName } = createTrackedEventSchema.parse(body);
 

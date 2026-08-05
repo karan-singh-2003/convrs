@@ -3,7 +3,7 @@ import { prisma } from "@repo/db";
 
 export async function updateExchangeRates() {
   const res = await fetch("https://api.frankfurter.app/latest?from=USD");
-  console.log("fetched res in updateexchangerate", res)
+
   const { rates } = await res.json();
 
   await Promise.all(

@@ -30,6 +30,12 @@ SELECT
         {{ String(groupBy) }} = 'entrypage',     entrypage,
         {{ String(groupBy) }} = 'exitlink',      exitlink,
         {{ String(groupBy) }} = 'triggers',      trigger,
+        {{ String(groupBy) }} = 'campaigns',
+            if(
+                position(assumeNotNull(url), '?') > 0,
+                concat('?', arrayElement(splitByString('?', assumeNotNull(url)), 2)),
+                '(none)'
+            ),
         ''
     ) AS groupByField,
     {% if String(groupBy) == 'cities' %}   country, CONCAT(country, '-', region) as region, {% end %}
@@ -39,9 +45,11 @@ SELECT
     COUNT(DISTINCT if(event_type = 'goals', visitor_id, NULL)) AS conversions
 FROM dub_click_events_mv
 WHERE
-    (
+ (
         {% if String(groupBy) == 'goals' %}
             event_name != '' AND event_name != 'Unknown' AND event_type = 'goals'
+        {% elif String(groupBy) == 'campaigns' %}
+            1  -- campaigns intentionally keeps '(none)' rows; no non-empty filter applies
         {% else %}
             multiIf(
                 {{ String(groupBy) }} = 'event_type',    event_type,
@@ -107,6 +115,9 @@ WHERE
     {% if defined(url) %}            AND splitByString('?', url)[1] = {{ url }} {% end %}
     {% if defined(start) %}          AND timestamp >= {{ DateTime64(start) }} {% end %}
     {% if defined(end) %}            AND timestamp <= {{ DateTime64(end) }}   {% end %}
+    {% if defined(campaign) %}
+    AND concat('?', arrayElement(splitByString('?', assumeNotNull(url)), 2)) = {{ String(campaign) }}
+{% end %}
     {% if defined(kpiGoalName) %}
         AND event_type = 'goals' AND event_name = {{ String(kpiGoalName) }}
     {% end %}
@@ -240,11 +251,17 @@ SELECT
         {{ String(groupBy) }} = 'entrypage',     entrypage,
         {{ String(groupBy) }} = 'exitlink',      exitlink,
         {{ String(groupBy) }} = 'triggers',      trigger,
+        {{ String(groupBy) }} = 'campaigns',
+            if(
+                position(assumeNotNull(url), '?') > 0,
+                concat('?', arrayElement(splitByString('?', assumeNotNull(url)), 2)),
+                '(none)'
+            ),
         ''
     ) AS groupByField,
     {% if String(groupBy) == 'cities' %}   country, CONCAT(country, '-', region) as region, {% end %}
     {% if String(groupBy) == 'regions' %}  country, {% end %}
-    SUM(revenue) AS total_revenue          -- ← fixed: matches ORDER BY and group_by_metrics
+    SUM(revenue) AS total_revenue
 FROM dub_click_events_mv
 WHERE
     event_type = 'revenue'
@@ -267,6 +284,9 @@ WHERE
     {% if defined(url) %}            AND splitByString('?', url)[1] = {{ url }} {% end %}
     {% if defined(start) %}          AND timestamp >= {{ DateTime64(start) }} {% end %}
     {% if defined(end) %}            AND timestamp <= {{ DateTime64(end) }}   {% end %}
+    {% if defined(campaign) %}
+    AND concat('?', arrayElement(splitByString('?', assumeNotNull(url)), 2)) = {{ String(campaign) }}
+{% end %}
     -- keep utm_* / filters block identical to group_by_clicks, unchanged
 GROUP BY
     groupByField

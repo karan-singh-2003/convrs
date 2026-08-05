@@ -877,7 +877,7 @@ function OperatorFilterPill({
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex max-w-full items-center divide-x divide-border-subtle rounded-full border border-border-subtle bg-bg-card px-2 text-[15px] font-display text-content-default"
+      className="flex max-w-full items-center divide-x divide-border-subtle rounded-xl border border-border-subtle bg-bg-card px-2 text-[13.5px] font-alexandria text-content-default"
     >
       <div className="flex min-w-0 items-center gap-2.5 px-3 py-2">
         {filter.icon && (
@@ -903,7 +903,7 @@ function OperatorFilterPill({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] transition-colors hover:bg-bg-subtle md:text-sm",
+                  "flex w-full items-center  px-3 py-2 text-left text-[13px] transition-colors hover:bg-bg-subtle md:text-sm",
                   !operator.includes("NOT") && "bg-bg-emphasis"
                 )}
                 onClick={() => {
@@ -918,7 +918,7 @@ function OperatorFilterPill({
               <button
                 type="button"
                 className={cn(
-                  "flex w-full items-center rounded-md px-3 py-2 text-left text-[13px] transition-colors hover:bg-bg-subtle md:text-sm",
+                  "flex w-full items-center  px-3 py-2 text-left text-[13px] transition-colors hover:bg-bg-subtle md:text-sm",
                   operator.includes("NOT") && "bg-bg-emphasis"
                 )}
                 onClick={() => {
@@ -958,16 +958,16 @@ function OperatorFilterPill({
           <div>
             <AnimatedSizeContainer width height className="rounded-[inherit]">
               <Command loop shouldFilter={false}>
-                <div className="flex items-center overflow-hidden rounded-t-xl border-b border-border-subtle">
+                <div className="flex items-center overflow-hidden rounded-t-lg border-b border-border-subtle">
                   <Command.Input
                     placeholder={`${filter.label}...`}
                     value={search}
                     onValueChange={setSearch}
-                    className="grow border-0 bg-transparent py-3 pl-4 pr-2 text-content-default outline-none placeholder:text-content-subtle focus:ring-0 sm:text-sm"
+                    className="grow border-0 bg-transparent py-2 pl-4 pr-2 text-content-default outline-none placeholder:text-content-subtle focus:ring-0 sm:text-sm"
                     autoCapitalize="none"
                   />
                 </div>
-                <div className="scrollbar-hide max-h-[50vh] overflow-y-scroll">
+                <div className="scrollbar-hide max-h-[40vh] overflow-y-scroll">
                   <Command.List className="flex w-full min-w-[180px] flex-col gap-1 p-1">
                     {(() => {
                       const filteredOptions =

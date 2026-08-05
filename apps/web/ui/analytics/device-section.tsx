@@ -18,7 +18,7 @@ export function DeviceSection() {
   const { queryParams, searchParams } = useRouterStuff();
   const { kpiEventName, kpiType } = useWorkspace()
   const { integrations } = useIntegrations()
-  console.log("integrations", integrations)
+
   const { selectedTab, saleUnit, currency } = useContext(AnalyticsContext);
   const dataKey = selectedTab === "revenue" ? "revenue" : "count";
 

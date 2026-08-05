@@ -113,7 +113,6 @@ export function BarList({
     activeFilterValues ?? []
   );
 
-  console.log("kpi configured in barlist and is it goalkpi", kpiConfigured, isGoalKpi)
 
   useEffect(() => {
     if (!limit) {
@@ -256,7 +255,7 @@ export function BarList({
     </div>
   ) : (
     <NumberFlowGroup>
-      <div className="relative grid h-full auto-rows-min grid-cols-1">
+      <div className="relative grid h-full auto-rows-min grid-cols-1 w-full">
         {virtualize ? (
           <AutoSizer>
             {({ width, height }) => (
@@ -280,8 +279,8 @@ export function BarList({
     </NumberFlowGroup>
   );
 
-  if (limit) {
-    return bars;
+if (limit) {
+  return <div className="w-full">{bars}</div>;
   } else {
     return (
       <>
@@ -710,6 +709,51 @@ export function LineItem({
   //   }
   // }
 
+  // const PRIMARY_MAX = 50;
+  // const SECONDARY_MAX = 50;
+  // const FULL_WIDTH = 100;
+
+  // const hasClicks = safeCount > 0 && maxCount > 0;
+  // const hasRevenue = safeRevenue > 0 && maxRevenue > 0;
+
+  // let clicksWidth = 0;
+  // let revenueWidth = 0;
+
+  // let clicksLeft = 0;
+  // let revenueLeft = 0;
+
+  // if (!kpiConfigured) {
+  //   // No revenue provider AND no valid goal KPI set up for this workspace —
+  //   // there's no second metric to share space with, so clicks always gets the full track.
+  //   clicksWidth = hasClicks ? (safeCount / maxCount) * FULL_WIDTH : 0;
+  //   clicksLeft = 0;
+  // } else {
+  //   // KPI (revenue or goal) is configured for the workspace — keep the 50/50 split,
+  //   // active metric first. Note: this now applies even if THIS row's revenue happens
+  //   // to be 0, since the workspace-level metric is what determines layout, not the row.
+  //   if (isRevenueActive) {
+  //     revenueWidth = hasRevenue
+  //       ? (safeRevenue / maxRevenue) * PRIMARY_MAX
+  //       : 0;
+  //     revenueLeft = 0;
+
+  //     clicksLeft = revenueWidth;
+  //     clicksWidth = hasClicks
+  //       ? (safeCount / maxCount) * SECONDARY_MAX
+  //       : 0;
+  //   } else {
+  //     clicksWidth = hasClicks
+  //       ? (safeCount / maxCount) * PRIMARY_MAX
+  //       : 0;
+  //     clicksLeft = 0;
+
+  //     revenueLeft = clicksWidth;
+  //     revenueWidth = hasRevenue
+  //       ? (safeRevenue / maxRevenue) * SECONDARY_MAX
+  //       : 0;
+  //   }
+  // }
+
   const PRIMARY_MAX = 50;
   const SECONDARY_MAX = 50;
   const FULL_WIDTH = 100;
@@ -724,34 +768,26 @@ export function LineItem({
   let revenueLeft = 0;
 
   if (!kpiConfigured) {
-    // No revenue provider AND no valid goal KPI set up for this workspace —
-    // there's no second metric to share space with, so clicks always gets the full track.
+    // No KPI configured — clicks bar owns the full track
     clicksWidth = hasClicks ? (safeCount / maxCount) * FULL_WIDTH : 0;
     clicksLeft = 0;
   } else {
-    // KPI (revenue or goal) is configured for the workspace — keep the 50/50 split,
-    // active metric first. Note: this now applies even if THIS row's revenue happens
-    // to be 0, since the workspace-level metric is what determines layout, not the row.
+    // KPI configured — track is a FIXED 50/50 split.
+    // Left half (0–50%) = active metric, right half (50–100%) = inactive metric.
+    // Each bar's width is scaled within its own half only — it never depends
+    // on how wide the other bar happens to be.
     if (isRevenueActive) {
-      revenueWidth = hasRevenue
-        ? (safeRevenue / maxRevenue) * PRIMARY_MAX
-        : 0;
+      revenueWidth = hasRevenue ? (safeRevenue / maxRevenue) * PRIMARY_MAX : 0;
       revenueLeft = 0;
 
-      clicksLeft = revenueWidth;
-      clicksWidth = hasClicks
-        ? (safeCount / maxCount) * SECONDARY_MAX
-        : 0;
+      clicksWidth = hasClicks ? (safeCount / maxCount) * SECONDARY_MAX : 0;
+      clicksLeft = PRIMARY_MAX; // fixed anchor at 50%, not revenueWidth
     } else {
-      clicksWidth = hasClicks
-        ? (safeCount / maxCount) * PRIMARY_MAX
-        : 0;
+      clicksWidth = hasClicks ? (safeCount / maxCount) * PRIMARY_MAX : 0;
       clicksLeft = 0;
 
-      revenueLeft = clicksWidth;
-      revenueWidth = hasRevenue
-        ? (safeRevenue / maxRevenue) * SECONDARY_MAX
-        : 0;
+      revenueWidth = hasRevenue ? (safeRevenue / maxRevenue) * SECONDARY_MAX : 0;
+      revenueLeft = PRIMARY_MAX; // fixed anchor at 50%, not clicksWidth
     }
   }
 
@@ -771,8 +807,7 @@ export function LineItem({
       onMouseEnter={handleRowMouseEnter}
       onMouseLeave={handleRowMouseLeave}
       className={cn(
-        "group relative block min-w-0 p-0 border-l-0 border-transparent py-0.5 sm:py-1 transition-all",
-
+        "group relative block w-full min-w-0 p-0 border-l-0 border-transparent py-0.5 sm:py-1 transition-all",
       )}
     >
       <div

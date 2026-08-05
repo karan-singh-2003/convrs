@@ -29,7 +29,7 @@ export function getGeoData(req: Request): GeoData {
   // Check if we're running on Vercel
   const isVercel = process.env.VERCEL === "1";
 
-  console.log(`[getGeoData] IP: ${ip}, isVercel: ${isVercel}`);
+
 
   if (isVercel) {
     // Use Vercel headers when available

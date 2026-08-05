@@ -1,5 +1,4 @@
 import { Modal } from "@repo/ui";
-
 import { useCallback, useMemo, useState } from "react";
 import { UpgradePlanPricingCard } from "@/ui/upgrade-plan-pricing-card";
 
@@ -22,7 +21,10 @@ function UpgradePlanModal({
   );
 }
 
-export function useCreateWorkspaceModal() {
+// Was named useCreateWorkspaceModal before this refactor — a copy-paste
+// leftover from adapting the workspace-creation modal's pattern. Renamed
+// since it wraps UpgradePlanModal, not workspace creation.
+export function useUpgradePlanModal() {
   const [showUpgradePlanModal, setShowUpgradePlanModal] = useState(false);
 
   const UpgradePlanModalCallback = useCallback(() => {

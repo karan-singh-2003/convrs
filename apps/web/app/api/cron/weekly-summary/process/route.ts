@@ -138,7 +138,7 @@ export const maxDuration = 60;
 
 async function handler(req: Request) {
   const { workspaceId } = await req.json();
-  console.log("workspaceId", workspaceId);
+
 
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },

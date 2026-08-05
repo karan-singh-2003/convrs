@@ -6,7 +6,6 @@ import { tb } from "../tinybird";
 
 export const getGoalsTimeseries = async (params: AnalyticsFilters & { goalNames?: string[] }) => {
   const { workspaceId, interval, start, end, timezone = "UTC", dataAvailableFrom, goalNames } = params;
-  console.log("params in getgoals ",params)
 
   if(!workspaceId){
     return null

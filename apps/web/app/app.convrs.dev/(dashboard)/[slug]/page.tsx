@@ -60,13 +60,13 @@ const DashboardPage = () => {
             <div className="relative">
               <div className="justify-center max-w-screen-lg mx-auto px-4 h-[500px]" />
 
-              <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+              <div className="absolute inset-0 flex items-center justify-center bg-bg-default">
                 <div className="space-y-4">
                   <div className="flex flex-col gap-y-1 text-center">
-                    <h1 className="font-default text-base font-medium text-neutral-600">
+                    <h1 className="font-default text-base font-medium text-content-default">
                       You dont have an active subscription
                     </h1>
-                    <h1 className="font-default text-[14.5px] font-medium text-neutral-500">
+                    <h1 className="font-default text-[14.5px] font-medium text-content-subtle">
                       Pick a plan to view analytics for your websites
                     </h1>
                   </div>

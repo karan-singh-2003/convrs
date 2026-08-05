@@ -78,7 +78,7 @@ import { sendBatchEmailViaResend, sendEmailViaResend } from "./send-via-resend";
 export * from "./pdf/generate-weekly-report";
 
 export const sendEmail = async (opts: ResendEmailOptions) => {
-  console.log("apikey :resend", process.env.RESEND_API_KEY)
+
 
   if (resend) {
     return await sendEmailViaResend(opts);
@@ -107,7 +107,7 @@ export const sendBatchEmail = async (
   emails: ResendBulkEmailOptions,
   options?: { idempotencyKey?: string }
 ) => {
-  console.log("apikey :resend", process.env.RESEND_API_KEY)
+ 
   if (resend) {
     return await sendBatchEmailViaResend(emails, options);
   }

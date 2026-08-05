@@ -21,7 +21,7 @@ export default function ReportsSettingsPage() {
     fetcher
   );
 
-  console.log("data in reports", data)
+
 
   const [pendingKey, setPendingKey] = useState<string | null>(null);
 

@@ -421,6 +421,7 @@ export function parseEventsQuery(searchParams: Record<string, string>) {
 
 // Analytics filter params for Tinybird endpoints
 export const analyticsFilterTB = z.object({
+  campaign: z.string().optional(),
   goalName: z.string().optional(),  // ← add
   eventType: analyticsEvents,
   kpiGoalName: z.string().optional(),

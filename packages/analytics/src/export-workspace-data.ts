@@ -76,8 +76,7 @@ async function fetchAllEvents({
   if (!apiUrl || !apiKey) {
     throw new Error("Missing TINYBIRDS_API_URL / TINYBIRDS_API_KEY");
   }
-  console.log("apiUrl", apiUrl);
-  console.log("apiKey", apiKey);
+
   const all: RawEvent[] = [];
   let offset = 0;
 

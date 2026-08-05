@@ -94,7 +94,7 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
   const integration = await prisma.integration.findUnique({
     where: { workspaceId_provider: { workspaceId, provider: "stripe" } },
   });
-  console.log("integration",integration)
+
   if (!integration?.webhookSecret) return res.status(404).json({ error: "Integration not found" });
 
   let event: Stripe.Event;

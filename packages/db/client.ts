@@ -17,4 +17,5 @@ export type {
   Token,
   RestrictedToken,
   Webhook,
+  PricingFamily
 } from "@prisma/client";

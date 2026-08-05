@@ -14,6 +14,14 @@ type XTweet = {
   text: string;
   author_id: string;
   created_at: string;
+  entities?: {
+    urls?: {
+      url: string;
+      expanded_url?: string;
+      unwound_url?: string;
+      display_url?: string;
+    }[];
+  };
   public_metrics?: {
     like_count?: number;
     reply_count?: number;
@@ -60,8 +68,12 @@ export class XRateLimitError extends Error {
   }
 }
 
+// const SEARCH_FIELDS =
+//   "tweet.fields=public_metrics,created_at,author_id" +
+//   "&expansions=author_id" +
+//   "&user.fields=username,name,profile_image_url,verified,public_metrics";
 const SEARCH_FIELDS =
-  "tweet.fields=public_metrics,created_at,author_id" +
+  "tweet.fields=public_metrics,created_at,author_id,entities" +
   "&expansions=author_id" +
   "&user.fields=username,name,profile_image_url,verified,public_metrics";
 
@@ -80,6 +92,7 @@ export async function searchRecentTweets(params: {
   if (params.nextToken) searchParams.set("next_token", params.nextToken);
 
   const result = await xFetch(`/tweets/search/recent?${searchParams}&${SEARCH_FIELDS}`);
+
 
   return {
     tweets: result.data ?? [],

@@ -1,4 +1,4 @@
-// FILE: app/api/[slug]/social/activity-timeline/route.ts
+// FILE: app/api/workspaces/[idOrSlug]/social/activity-timeline/route.ts
 import { withWorkspace } from "@/lib/auth";
 import { prisma } from "@repo/db";
 import { z } from "zod";
@@ -58,6 +58,9 @@ function touchAccount(bucket: DateBucket, accountId: string, handle: string, ava
 
 export const GET = withWorkspace(
   async ({ searchParams, workspace }) => {
+
+
+
     const { start: startParam, end: endParam } = activityTimelineQuerySchema.parse(searchParams);
 
     const start = new Date(startParam);

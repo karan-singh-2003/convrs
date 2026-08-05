@@ -15,7 +15,7 @@ import { useCreateWorkspaceModal } from "../../modals/create-workspace-modal";
 
 export function WorkspaceDropdown() {
   const { workspaces} = useWorkspaces();
-  console.log("workspaces",workspaces)
+
 
   const { data: session, status } = useSession();
   const { slug: currentSlug } = useParams<{ slug: string }>();

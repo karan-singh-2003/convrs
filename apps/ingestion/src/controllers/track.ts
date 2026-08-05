@@ -612,10 +612,10 @@ function computeCookielessVisitorId(ip: string, userAgent: string, hostname: str
 export async function trackClickController(req: Request, res: Response) {
   try {
     const rawBody = req.body ?? {};
-    console.log("[Track Controller] Raw body:", rawBody);
+ 
 
     const normalized = normalizeTrackPayload(rawBody);
-    console.log("[Track Controller] Normalized:", normalized);
+    
 
     const parsed = AnalyticsEventSchema.safeParse(normalized);
     if (!parsed.success) {
@@ -785,12 +785,7 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    console.log("[Track Controller] Geo data:", {
-      geo,
-      region,
-      continent,
-      vercelRegion,
-    });
+
 
     // ── UA PARSING ───────────────────────────────────────────────────────────
     // CHANGED — reuse uaHeader instead of re-reading req.headers["user-agent"]
@@ -810,13 +805,13 @@ export async function trackClickController(req: Request, res: Response) {
 
     // ── IDENTIFY ─────────────────────────────────────────────────────────────
     let customer = null;
-    console.log("parsed data type", parsed.data.type);
+
 
     // CHANGED — identify is not meaningful in cookieless mode (no persistent
     // visitor to attach traits to), so it's skipped entirely rather than
     // upserting a customer keyed to a same-day-only pseudonymous hash.
     if (parsed.data.type === "identify" && !isCookielessPayload) {
-      console.log("adding customer");
+
       customer = await upsertCustomer({
         workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
@@ -830,7 +825,7 @@ export async function trackClickController(req: Request, res: Response) {
     // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
     // CHANGED — uses effectiveVisitorId instead of parsed.data.visitor_id
     else if (parsed.data.type === "pageview" && effectiveVisitorId) {
-      console.log("inserting anonymous customer");
+
       customer = await upsertAnonymousCustomer({
         workspaceId: workspace.id,
         visitorId: effectiveVisitorId,
@@ -885,7 +880,7 @@ export async function trackClickController(req: Request, res: Response) {
       vercelRegion: vercelRegion ?? "Unknown",
     };
 
-    console.log("[Track Controller] Enriched payload:", enrichedPayload);
+
 
     const recordedEvent = await recordEvent({
       req: nativeReq,

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const workspaceIdentifier =
         typeof workspaceId === "string" ? workspaceId.trim() : "";
     const normalizedWorkspaceId = normalizeWorkspaceId(workspaceIdentifier)
-    console.log("normalized workspace id", normalizedWorkspaceId)
+
 
     if (!normalizedApiKey || !normalizedOrganizationId) {
         return NextResponse.json(

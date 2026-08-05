@@ -35,10 +35,11 @@ export async function getRecentShortLinkReferers(
     LIMIT 2000
     FORMAT JSON
   `;
-
+ 
   const response = await fetch(`${apiUrl}/v0/sql?q=${encodeURIComponent(sql)}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
   });
+ 
 
   if (!response.ok) {
     throw new Error(`Tinybird query error ${response.status}: ${await response.text()}`);

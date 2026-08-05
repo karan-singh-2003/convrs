@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 
 // GET /api/workspaces - get all workspaces for the authenticated user
 export const GET = withSession(async ({ session }) => {
-  console.log("in get route api/workspaces")
+
   const workspaces = await prisma.workspace.findMany({
     where: {
       users: {

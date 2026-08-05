@@ -67,6 +67,8 @@ export const VALID_ANALYTICS_ENDPOINTS = [
   "goals",
   "goal_properties",
   "event_type",
+
+  "campaigns"
 ] as const;
 
 export const SINGULAR_ANALYTICS_ENDPOINTS = {
@@ -105,6 +107,7 @@ export const SINGULAR_ANALYTICS_ENDPOINTS = {
   goals: "goal",
   revenue: "revenue",
   goal_properties: "goal_property",
+    campaigns: "campaign",
 };
 
 export const VALID_ANALYTICS_FILTERS = [
@@ -134,6 +137,7 @@ export const VALID_ANALYTICS_FILTERS = [
   // deprecated filters, but keeping for now for backwards compatibility
   "tagIds",
   "qr",
+  "campaign",
 
   "hostname",
   "page",

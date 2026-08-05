@@ -21,8 +21,7 @@ const IncomingBotEventSchema = z.object({
 });
 
 export async function trackAICrawlerController(req: Request, res: Response) {
-  console.log("RAW BODY:", req.body);
-  console.log("CONTENT-TYPE HEADER:", req.headers["content-type"]);
+
   try {
     const parsed = IncomingBotEventSchema.safeParse(req.body);
     if (!parsed.success) {

@@ -10,9 +10,9 @@ export function FreeTrialBanner() {
   const trial = getFreeTrialInfo(freeTrialEndDate ?? new Date());
 
   const banner = (message: React.ReactNode) => (
-    <div className="fixed left-0 top-0 z-40 w-full border-b border-neutral-200 bg-neutral-50">
+    <div className="fixed left-0 top-0 z-40 w-full border-b border-border-subtle   bg-bg-card">
       <div className="mx-auto flex h-11 max-w-screen-lg items-center justify-center px-4 text-center font-display">
-        <p className="text-sm font-medium text-neutral-600">
+        <p className="text-sm font-medium text-content-default">
           {message}
         </p>
       </div>

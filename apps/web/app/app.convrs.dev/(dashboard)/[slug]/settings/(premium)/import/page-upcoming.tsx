@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
+import useWorkspace from "@/lib/swr/use-workspace";
 
 type UploadStatus =
   | { state: "idle" }
@@ -110,7 +111,8 @@ function FileUploadCard({
   );
 }
 
-export default function Import({ workspaceId }: { workspaceId: string }) {
+export default function Import() {
+  const { id: workspaceId } = useWorkspace()
   return (
     <PageWidthWrapper>
       <SettingsChildrenLayout

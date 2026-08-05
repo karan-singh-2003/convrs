@@ -258,11 +258,7 @@ export default function BotFilteringCard() {
     fetcher
   );
 
-  console.log("request url is ", `${botApiPath}?${editQueryString(queryString, {
-    groupBy: "providers",
-    category,
-  })}`)
-  console.log(response, "response");
+
 
   const providers = useMemo(() => {
     if (!response?.data) return [];

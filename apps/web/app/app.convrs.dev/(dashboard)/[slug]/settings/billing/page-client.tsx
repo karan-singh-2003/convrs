@@ -179,7 +179,7 @@ import useSWR from "swr";
 import { fetcher } from "@repo/utils";
 import { getFormattedBillingPeriod } from "@repo/utils";
 import { toast } from "sonner";
-import { useCreateWorkspaceModal } from "@/ui/modals/upgrade-plan-modal";
+import { useUpgradePlanModal } from "@/ui/modals/upgrade-plan-modal";
 
 type BillingData = {
   billingCycle: "monthly" | "yearly";
@@ -210,7 +210,7 @@ const BillingClient = () => {
   } = useWorkspace();
 
   const { setShowUpgradePlanModal, UpgradePlanModal } =
-    useCreateWorkspaceModal();
+    useUpgradePlanModal();
 
   const planName = workspacePlan ?? "Free";
 

@@ -79,7 +79,7 @@ export function ChannelBreakdown() {
             // }
             renderTooltip={(slice) => (
               <div className="w-48 space-y-1.5 rounded-xl border border-border-subtle bg-bg-emphasis px-3 py-2 shadow-lg">
-                <p className="truncate font-alexandria text-[13px] font-medium text-content-default">
+                <p className="truncate font-alexandria text-[12.5px] font-medium text-content-default">
                   {slice.label}
                 </p>
                 <div className="flex font-alexandria items-center justify-between text-[13px]">

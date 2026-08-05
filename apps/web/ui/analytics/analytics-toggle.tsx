@@ -575,7 +575,7 @@ export function AnalyticsToggle({
           onRemoveAll={onRemoveAll}
           onToggleOperator={onToggleOperator}
           isAdvancedFilter
-          className="w-full overflow-x-hidden rounded-full"
+          className="w-full overflow-x-hidden rounded-lg"
         />
       </div>
     </div>
