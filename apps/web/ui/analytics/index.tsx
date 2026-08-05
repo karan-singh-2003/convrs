@@ -58,9 +58,9 @@ function AnalyticsContent({
             <LowerGrid />
           </div>
         )}
-        <div className="max-w-screen-lg mx-auto">
+        {/* <div className="max-w-screen-lg mx-auto">
           <BotFilteringCard />
-        </div>
+        </div> */}
 
 
       </div>
