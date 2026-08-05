@@ -189,7 +189,7 @@ export default function KPI() {
 
                             {kpi === "Revenue" && (
                                 <RadioGroup value="revenue">
-                                    <div className="flex items-center rounded-2xl bg-bg-emphasis/65 px-4 py-3 gap-4">
+                                    <div className="flex items-center rounded-2xl bg-bg-card border border-border-subtle px-4 py-2 gap-4">
                                         <RadioGroupItem value="revenue" id="option-revenue" />
                                         <div>
                                             <Label
