@@ -5,13 +5,33 @@
       "path": "/api/cron/update-exchange-rates",
       "schedule": "0 3 * * *"
     },
-      {
+    {
       "path": "/api/cron/weekly-summary",
       "schedule": "0 9 * * 1"
     },
     {
       "path": "/api/cron/traffic-spike",
-        "schedule": "0 12 * * *"
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/social/x-discovery",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/social/x-mentions",
+      "schedule": "10 0 * * *"
+    },
+    {
+      "path": "/api/cron/social/reddit-mentions",
+      "schedule": "20 0 * * *"
+    },
+    {
+      "path": "/api/cron/social/link-resolution",
+      "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/cron/social/attribution-reconciliation",
+      "schedule": "40 0 * * *"
     }
   ]
 }
