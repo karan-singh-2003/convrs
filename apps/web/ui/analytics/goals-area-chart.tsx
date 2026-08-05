@@ -110,7 +110,7 @@ export function GoalsAreaChart({
           data={chartData}
           series={series}
           tooltipContent={(d) => (
-            <div className="w-[200px] py-3 px-3 space-y-1.5 font-alexandria">
+            <div className="w-fit py-3 px-3 space-y-1.5 font-alexandria">
               <p className="border-b border-border-subtle pb-1 text-[12px] text-content-subtle">
                 {formatDateTooltip(d.date, { interval, start, end, dataAvailableFrom })}
               </p>
