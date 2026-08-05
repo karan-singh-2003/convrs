@@ -4,7 +4,7 @@ import { prisma } from "@repo/db";
 import { z } from "zod";
 
 const activityQuerySchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD"),
+  date: z.string().min(1, "date is required"),
 });
 
 function getTimezoneOffsetMs(date: Date, timeZone: string): number {
@@ -37,7 +37,17 @@ function getTimezoneOffsetMs(date: Date, timeZone: string): number {
 }
 
 function getUtcRangeForLocalDate(dateStr: string, timeZone: string) {
-  const naiveStart = new Date(`${dateStr}T00:00:00.000Z`);
+  // Extract YYYY-MM-DD if ISO string is passed
+  const cleanDateStr = dateStr.includes("T")
+    ? new Intl.DateTimeFormat("en-CA", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(dateStr))
+    : dateStr;
+
+  const naiveStart = new Date(`${cleanDateStr}T00:00:00.000Z`);
   const offsetMs = getTimezoneOffsetMs(naiveStart, timeZone);
   const start = new Date(naiveStart.getTime() - offsetMs);
   const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);

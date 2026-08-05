@@ -983,7 +983,11 @@
 
 import { formatDateTooltip } from "./format-date-tooltip";
 import { AnalyticsResponseOptions } from "@/lib/analytics/types";
-import { editQueryString } from "@/lib/analytics/utils";
+import {
+  editQueryString,
+  getAnalyticsBucketKey,
+  getStartEndDates,
+} from "@/lib/analytics/utils";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { Areas, TimeSeriesChart, XAxis, YAxis } from "@repo/ui";
 import { fetcher, formatCurrency, nFormatter } from "@repo/utils";
@@ -1152,23 +1156,33 @@ export function AnalyticsAreaChart({
     fetcher
   );
 
-  // Only fetch the social overlay when it's actually shown (clicks tab).
-  // Uses resolveDateRange() instead of raw start/end since those are only
-  // set for a literal custom date range — this makes the overlay work for
-  // preset intervals (24h/7d/30d/...) too, not just custom ranges.
-  const effectiveRange = useMemo(
-    () => resolveDateRange(start, end, interval),
-    [start, end, interval]
+  const { granularity } = useMemo(
+    () =>
+      getStartEndDates({
+        interval,
+        start,
+        end,
+        dataAvailableFrom,
+        timezone,
+      }),
+    [interval, start, end, dataAvailableFrom, timezone]
   );
 
+  const activityTimelineParams = useMemo(() => {
+    const params = new URLSearchParams();
+    if (interval) params.set("interval", interval);
+    if (start) params.set("start", new Date(start).toISOString());
+    if (end) params.set("end", new Date(end).toISOString());
+    if (timezone) params.set("timezone", timezone);
+    return params.toString();
+  }, [interval, start, end, timezone]);
+
   const { data: activityResponse } = useSWR<{ data: ActivityDayRow[] }>(
-    !demo && resource === "clicks" && slug && effectiveRange
-      ? `/api/workspaces/${slug}/social/activity-timeline?start=${effectiveRange.start.toISOString()}&end=${effectiveRange.end.toISOString()}`
+    !demo && resource === "clicks" && slug
+      ? `/api/workspaces/${slug}/social/activity-timeline?${activityTimelineParams}`
       : null,
     fetcher
   );
-
-
 
   const activityByDate = useMemo(() => {
     const map = new Map<string, ActivityDayRow>();
@@ -1314,7 +1328,7 @@ export function AnalyticsAreaChart({
               const netRevenue = (d.values.new_revenue ?? 0) - (d.values.refund_amount ?? 0);
               const isGoal = kpiType === "goal";
 
-              const dateKey = getLocalDateKey(d.date, timezone);
+              const dateKey = getAnalyticsBucketKey(d.date, granularity, timezone);
               const activityDay = activityByDate.get(dateKey);
               const previewItems = activityDay?.previewItems.slice(0, 2) ?? [];
               const hasMoreActivity = activityDay

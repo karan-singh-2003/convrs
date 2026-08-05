@@ -1,21 +1,15 @@
 // FILE: app/api/workspaces/[idOrSlug]/social/activity-timeline/route.ts
 import { withWorkspace } from "@/lib/auth";
+import { getAnalyticsBucketKey, getStartEndDates } from "@/lib/analytics/utils";
 import { prisma } from "@repo/db";
 import { z } from "zod";
 
 const activityTimelineQuerySchema = z.object({
-  start: z.string().datetime(),
-  end: z.string().datetime(),
+  interval: z.string().optional(),
+  start: z.string().optional(),
+  end: z.string().optional(),
+  timezone: z.string().optional(),
 });
-
-function getLocalDateKey(date: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
 
 type PreviewItem = {
   kind: "attribution" | "mention";
@@ -58,17 +52,25 @@ function touchAccount(bucket: DateBucket, accountId: string, handle: string, ava
 
 export const GET = withWorkspace(
   async ({ searchParams, workspace }) => {
+    const {
+      interval,
+      start: startParam,
+      end: endParam,
+      timezone: tzParam,
+    } = activityTimelineQuerySchema.parse(searchParams);
 
+    const timezone = tzParam || workspace.timezone || "UTC";
 
-
-    const { start: startParam, end: endParam } = activityTimelineQuerySchema.parse(searchParams);
-
-    const start = new Date(startParam);
-    const end = new Date(endParam);
+    const { startDate, endDate, granularity } = getStartEndDates({
+      interval,
+      start: startParam,
+      end: endParam,
+      timezone,
+    });
 
     const [attributions, mentions] = await Promise.all([
       prisma.linkAttribution.findMany({
-        where: { workspaceId: workspace.id, matchedAt: { gte: start, lte: end } },
+        where: { workspaceId: workspace.id, matchedAt: { gte: startDate, lte: endDate } },
         orderBy: { matchedAt: "desc" },
         include: { socialAccount: true, socialPost: true },
         take: 5000,
@@ -77,7 +79,7 @@ export const GET = withWorkspace(
         where: {
           workspaceId: workspace.id,
           isHidden: false,
-          firstMatchedAt: { gte: start, lte: end },
+          firstMatchedAt: { gte: startDate, lte: endDate },
         },
         orderBy: { firstMatchedAt: "desc" },
         include: { socialPost: { include: { socialAccount: true } } },
@@ -88,7 +90,7 @@ export const GET = withWorkspace(
     const byDate = new Map<string, DateBucket>();
 
     for (const attribution of attributions) {
-      const dateKey = getLocalDateKey(attribution.matchedAt, workspace.timezone);
+      const dateKey = getAnalyticsBucketKey(attribution.matchedAt, granularity, timezone);
       const bucket = byDate.get(dateKey) ?? newBucket();
       byDate.set(dateKey, bucket);
 
@@ -113,7 +115,7 @@ export const GET = withWorkspace(
     for (const mention of mentions) {
       const post = mention.socialPost;
       const account = post.socialAccount;
-      const dateKey = getLocalDateKey(mention.firstMatchedAt, workspace.timezone);
+      const dateKey = getAnalyticsBucketKey(mention.firstMatchedAt, granularity, timezone);
       const bucket = byDate.get(dateKey) ?? newBucket();
       byDate.set(dateKey, bucket);
 

@@ -77,6 +77,35 @@ export const GET = withWorkspace(
   { requiredPermission: "analytics.read" }
 );
 
+// export const POST = withWorkspace(
+
+//   async ({ req, workspace }) => {
+//     if (!workspaceHasSocialAttribution(workspace)) {
+//       return upgradeRequiredResponse(
+//         "Link attribution requires the Growth plan."
+//       );
+//     }
+
+//     const body = await req.json();
+//     const { handle: rawHandle, platform } = createHandleSchema.parse(body);
+//     const handle = rawHandle.replace(/^@/, "").toLowerCase();
+
+//     const created = await prisma.socialAttributionHandle.upsert({
+//       where: {
+//         workspaceId_platform_handle: { workspaceId: workspace.id, platform, handle },
+//       },
+//       update: {},
+//       create: { workspaceId: workspace.id, platform, handle },
+//     });
+
+//     return new Response(JSON.stringify({ data: created }), {
+//       status: 201,
+//       headers: { "Content-Type": "application/json" },
+//     });
+//   },
+//   { requiredPermission: "workspace:write" }
+// );
+
 export const POST = withWorkspace(
   async ({ req, workspace }) => {
     if (!workspaceHasSocialAttribution(workspace)) {
@@ -89,13 +118,40 @@ export const POST = withWorkspace(
     const { handle: rawHandle, platform } = createHandleSchema.parse(body);
     const handle = rawHandle.replace(/^@/, "").toLowerCase();
 
-    const created = await prisma.socialAttributionHandle.upsert({
-      where: {
-        workspaceId_platform_handle: { workspaceId: workspace.id, platform, handle },
-      },
-      update: {},
-      create: { workspaceId: workspace.id, platform, handle },
-    });
+    const [, created] = await prisma.$transaction([
+      prisma.socialIntegration.upsert({
+        where: {
+          workspaceId_platform: {
+            workspaceId: workspace.id,
+            platform,
+          },
+        },
+        update: {
+          status: "active",
+        },
+        create: {
+          workspaceId: workspace.id,
+          platform,
+          status: "active",
+        },
+      }),
+
+      prisma.socialAttributionHandle.upsert({
+        where: {
+          workspaceId_platform_handle: {
+            workspaceId: workspace.id,
+            platform,
+            handle,
+          },
+        },
+        update: {},
+        create: {
+          workspaceId: workspace.id,
+          platform,
+          handle,
+        },
+      }),
+    ]);
 
     return new Response(JSON.stringify({ data: created }), {
       status: 201,
