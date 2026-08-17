@@ -149,7 +149,7 @@ export function AnalyticsTabs({
                       id === "avg_session_duration" ? (
                         <div
                           className={cn(
-                            "text-lg text-content-default font-medium font-bricolageGrotesque sm:text-xl md:text-[26px]",
+                            "text-lg text-content-default font-medium font-bricolageGrotesque sm:text-xl md:text-[32px]",
                             showPaywall && "opacity-30"
                           )}
                         >
@@ -191,7 +191,7 @@ export function AnalyticsTabs({
                           }
                           locales="en-US"
                           className={cn(
-                            "text-lg text-content-default font-medium font-alexandria sm:text-xl md:text-[26px]",
+                            "text-lg text-content-default font-medium font-alexandria sm:text-xl md:text-[30px]",
                             showPaywall && "opacity-30"
                           )}
                         />

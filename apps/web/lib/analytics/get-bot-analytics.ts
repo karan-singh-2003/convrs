@@ -148,13 +148,32 @@ export async function getBotFilteringAnalytics(params: BotFilteringParams) {
   };
 
   switch (groupBy) {
+    // case "timeseries": {
+    //   const response = await timeseriesPipe({
+    //     ...commonParams,
+    //     ...(category && { category }),
+    //     granularity: granularity ?? computedGranularity,
+    //   });
+    //   return pivotTimeseriesByVendor(response.data);
+    // }
     case "timeseries": {
+      const effectiveGranularity = (granularity ?? computedGranularity) as
+        | "hour"
+        | "day"
+        | "week";
+
       const response = await timeseriesPipe({
         ...commonParams,
         ...(category && { category }),
-        granularity: granularity ?? computedGranularity,
+        granularity: effectiveGranularity,
       });
-      return pivotTimeseriesByVendor(response.data);
+
+      return pivotTimeseriesByVendor(
+        response.data,
+        startDate,
+        endDate,
+        effectiveGranularity
+      );
     }
     case "providers": {
       const response = await providersPipe({
@@ -188,15 +207,60 @@ export async function getBotFilteringAnalytics(params: BotFilteringParams) {
  * Vendor keys are derived dynamically, so adding a new bot to the SDK's
  * registry automatically shows up here with no code change required.
  */
+// function pivotTimeseriesByVendor(
+//   rows: Array<{ bucket_start: string; vendor: string; category: string; requests: number }>
+// ) {
+//   const byBucket = new Map<string, Record<string, number | string>>();
+
+//   for (const row of rows) {
+//     const key = row.bucket_start;
+//     if (!byBucket.has(key)) {
+//       byBucket.set(key, { start: row.bucket_start });
+//     }
+//     const bucket = byBucket.get(key)!;
+//     const vendorKey = normalizeVendorKey(row.vendor);
+//     bucket[vendorKey] = (Number(bucket[vendorKey]) || 0) + row.requests;
+//   }
+
+//   return Array.from(byBucket.values()).sort(
+//     (a, b) => new Date(a.start as string).getTime() - new Date(b.start as string).getTime()
+//   );
+// }
+
 function pivotTimeseriesByVendor(
-  rows: Array<{ bucket_start: string; vendor: string; category: string; requests: number }>
+  rows: Array<{ bucket_start: string; vendor: string; category: string; requests: number }>,
+  startDate: Date,
+  endDate: Date,
+  granularity: "hour" | "day" | "week"
 ) {
+  // Which vendors actually appeared in the result set
+  const vendorKeys = new Set<string>();
+  for (const row of rows) vendorKeys.add(normalizeVendorKey(row.vendor));
+
   const byBucket = new Map<string, Record<string, number | string>>();
 
+  // Seed every bucket in [startDate, endDate] with 0s for each vendor.
+  // This is the important part: without it, a vendor with traffic on only
+  // one day produces a single-point series, and a line/area curve
+  // (curveMonotoneX) can't draw a line through a single point — you just
+  // get an isolated dot instead of a continuous line. Zero-filling
+  // guarantees every series has enough points to render properly, no
+  // matter how sparse the underlying traffic is.
+  for (const bucket of generateBuckets(startDate, endDate, granularity)) {
+    const key = formatUTCDateTimeClickhouse(bucket);
+    const entry: Record<string, number | string> = { start: key };
+    for (const vendorKey of vendorKeys) entry[vendorKey] = 0;
+    byBucket.set(key, entry);
+  }
+
   for (const row of rows) {
-    const key = row.bucket_start;
+    // Align each row to its bucket's canonical key so it lands on a
+    // seeded bucket instead of creating a duplicate/misaligned entry.
+    const bucketDate = floorToGranularity(new Date(row.bucket_start.replace(" ", "T") + "Z"), granularity);
+    const key = formatUTCDateTimeClickhouse(bucketDate);
+
     if (!byBucket.has(key)) {
-      byBucket.set(key, { start: row.bucket_start });
+      byBucket.set(key, { start: key });
     }
     const bucket = byBucket.get(key)!;
     const vendorKey = normalizeVendorKey(row.vendor);
@@ -206,6 +270,39 @@ function pivotTimeseriesByVendor(
   return Array.from(byBucket.values()).sort(
     (a, b) => new Date(a.start as string).getTime() - new Date(b.start as string).getTime()
   );
+}
+
+function floorToGranularity(date: Date, granularity: "hour" | "day" | "week"): Date {
+  const d = new Date(date);
+  d.setUTCMinutes(0, 0, 0);
+  if (granularity === "hour") return d;
+
+  d.setUTCHours(0);
+  if (granularity === "day") return d;
+
+  // week: floor to Monday UTC
+  const day = d.getUTCDay(); // 0 = Sun ... 6 = Sat
+  const diffFromMonday = day === 0 ? 6 : day - 1;
+  d.setUTCDate(d.getUTCDate() - diffFromMonday);
+  return d;
+}
+
+function generateBuckets(start: Date, end: Date, granularity: "hour" | "day" | "week"): Date[] {
+  const stepMs =
+    granularity === "hour" ? 60 * 60 * 1000 :
+    granularity === "week" ? 7 * 24 * 60 * 60 * 1000 :
+    24 * 60 * 60 * 1000; // day
+
+  let cursor = floorToGranularity(start, granularity);
+  const flooredEnd = floorToGranularity(end, granularity);
+  const buckets: Date[] = [];
+
+  while (cursor.getTime() <= flooredEnd.getTime()) {
+    buckets.push(new Date(cursor));
+    cursor = new Date(cursor.getTime() + stepMs);
+  }
+
+  return buckets;
 }
 
 function withPercentages<T extends { requests: number }>(rows: T[]) {

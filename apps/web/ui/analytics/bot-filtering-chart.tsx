@@ -344,162 +344,165 @@
 
 
 
-"use client";
+  "use client";
 
-import { useContext, useMemo } from "react";
-import useSWR from "swr";
-import { Areas, TimeSeriesChart, XAxis, YAxis } from "@repo/ui";
-import { fetcher, nFormatter } from "@repo/utils";
-import { formatDateTooltip } from "./format-date-tooltip";
-import { AnalyticsContext } from "./analytics-providers";
-import { editQueryString, toBotFilteringApiPath } from "@/lib/analytics/utils";
-import { getVendorIcon, getVendorLabel, normalizeVendorKey } from "@/lib/bot/bot-vendor-icons";
+  import { useContext, useMemo } from "react";
+  import useSWR from "swr";
+  import { Areas, TimeSeriesChart, XAxis, YAxis } from "@repo/ui";
+  import { fetcher, nFormatter } from "@repo/utils";
+  import { formatDateTooltip } from "./format-date-tooltip";
+  import { AnalyticsContext } from "./analytics-providers";
+  import { editQueryString, toBotFilteringApiPath } from "@/lib/analytics/utils";
+  import { getVendorColor, getVendorIcon, getVendorLabel, normalizeVendorKey } from "@/lib/bot/bot-vendor-icons";
 
-const VENDOR_COLORS = [
-  "text-[#10A37F]",
-  "text-[#3186FF]",
-  "text-[#D97757]",
-  "text-[#DE5833]",
-  "text-[#8B5CF6]",
-  "text-[#F59E0B]",
-  "text-[#EC4899]",
-  "text-[#14B8A6]",
-];
+  const VENDOR_COLORS = [
+    "text-[#10A37F]",
+    "text-[#3186FF]",
+    "text-[#D97757]",
+    "text-[#DE5833]",
+    "text-[#8B5CF6]",
+    "text-[#F59E0B]",
+    "text-[#EC4899]",
+    "text-[#14B8A6]",
+  ];
 
-function lowercaseAmPm(value: string) {
-  return value.replace(/\bAM\b/g, "am").replace(/\bPM\b/g, "pm");
-}
+  function lowercaseAmPm(value: string) {
+    return value.replace(/\bAM\b/g, "am").replace(/\bPM\b/g, "pm");
+  }
 
-type BotTimeseriesRow = {
-  start: string;
-  [vendorKey: string]: string | number;
-};
+  type BotTimeseriesRow = {
+    start: string;
+    [vendorKey: string]: string | number;
+  };
 
-export function BotFilteringAreaChart({ category }: { category?: string }) {
-  const { baseApiPath, queryString, start, end, interval } = useContext(AnalyticsContext);
+  export function BotFilteringAreaChart({ category }: { category?: string }) {
+    const { baseApiPath, queryString, start, end, interval } = useContext(AnalyticsContext);
 
-  const botApiPath = useMemo(() => toBotFilteringApiPath(baseApiPath), [baseApiPath]);
+    const botApiPath = useMemo(() => toBotFilteringApiPath(baseApiPath), [baseApiPath]);
 
-  const { data: response, isLoading } = useSWR<{ data: BotTimeseriesRow[] }>(
-    botApiPath &&
+    const { data: response, isLoading } = useSWR<{ data: BotTimeseriesRow[] }>(
+      botApiPath &&
       `${botApiPath}?${editQueryString(queryString, {
         groupBy: "timeseries",
         ...(category && { category }),
       })}`,
-    fetcher
-  );
-
-  const chartData = useMemo(() => {
-    if (!response?.data) return [];
-    return response.data
-      .map((row) => {
-        const { start: startStr, ...vendorValues } = row;
-        const date = new Date(startStr);
-        if (Number.isNaN(date.getTime())) return null;
-        return { date, values: vendorValues as Record<string, number> };
-      })
-      .filter((row): row is { date: Date; values: Record<string, number> } => row !== null);
-  }, [response]);
-
-  const vendorKeys = useMemo(() => {
-    const keys = new Set<string>();
-    for (const row of chartData) {
-      for (const key of Object.keys(row.values)) keys.add(key);
-    }
-    return Array.from(keys).sort(
-      (a, b) =>
-        chartData.reduce((sum, r) => sum + (r.values[b] ?? 0), 0) -
-        chartData.reduce((sum, r) => sum + (r.values[a] ?? 0), 0)
+      fetcher
     );
-  }, [chartData]);
 
-  const series = vendorKeys.map((key, index) => ({
-    id: key,
-    valueAccessor: (d: { values: Record<string, number> }) => d.values[key] ?? 0,
-    isActive: true,
-    colorClassName: VENDOR_COLORS[index % VENDOR_COLORS.length],
-  }));
+    console.log("response fo category",category,response)
 
-  // Loading skeleton: show whenever we don't yet have series to render,
-  // regardless of whether SWR's isLoading flag has flipped false yet.
-  if (series.length === 0) {
+    const chartData = useMemo(() => {
+      if (!response?.data) return [];
+      return response.data
+        .map((row) => {
+          const { start: startStr, ...vendorValues } = row;
+          const date = new Date(startStr);
+          if (Number.isNaN(date.getTime())) return null;
+          return { date, values: vendorValues as Record<string, number> };
+        })
+        .filter((row): row is { date: Date; values: Record<string, number> } => row !== null);
+    }, [response]);
+  console.log("char data ",chartData)
+    const vendorKeys = useMemo(() => {
+      const keys = new Set<string>();
+      for (const row of chartData) {
+        for (const key of Object.keys(row.values)) keys.add(key);
+      }
+      return Array.from(keys).sort(
+        (a, b) =>
+          chartData.reduce((sum, r) => sum + (r.values[b] ?? 0), 0) -
+          chartData.reduce((sum, r) => sum + (r.values[a] ?? 0), 0)
+      );
+    }, [chartData]);
+
+    const series = vendorKeys.map((key, index) => ({
+      id: key,
+      valueAccessor: (d: { values: Record<string, number> }) => d.values[key] ?? 0,
+      isActive: true,
+      // colorClassName: VENDOR_COLORS[index % VENDOR_COLORS.length],
+      colorClassName: getVendorColor(key),
+    }));
+  console.log("series",series)
+    // Loading skeleton: show whenever we don't yet have series to render,
+    // regardless of whether SWR's isLoading flag has flipped false yet.
+    if (series.length === 0) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          {isLoading ? (
+            <span className="rounded-full bg-bg-subtle px-2.5 py-1 text-[11px] font-alexandria text-content-subtle">
+              Loading…
+            </span>
+          ) : (
+            <p className="text-sm font-default text-content-subtle">
+              No bot traffic recorded yet.
+            </p>
+          )}
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-full items-center justify-center">
-        {isLoading ? (
-          <span className="rounded-full bg-bg-subtle px-2.5 py-1 text-[11px] font-alexandria text-content-subtle">
-            Loading…
-          </span>
-        ) : (
-          <p className="text-sm font-default text-content-subtle">
-            No bot traffic recorded yet.
-          </p>
-        )}
+      <div className="relative flex h-full w-full items-center justify-center">
+        <TimeSeriesChart
+          key={queryString}
+          data={chartData}
+          series={series}
+          tooltipClassName="p-0 px-6 bg-bg-default"
+          tooltipContent={(d) => {
+            const dateLabel = lowercaseAmPm(
+              formatDateTooltip(d.date, { interval, start, end })
+            );
+            const total = vendorKeys.reduce((sum, key) => sum + (d.values[key] ?? 0), 0);
+
+            return (
+              <div className="w-[220px] font-alexandria py-3 px-1 space-y-2">
+                <p className="pb-1 border-b font-alexandria border-border-subtle text-[12px] text-content-subtle font-medium">
+                  {dateLabel}
+                </p>
+                <div className="space-y-1.5">
+                  {vendorKeys.map((key) => {
+                    const Icon = getVendorIcon(key);
+                    const value = d.values[key] ?? 0;
+                    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+
+                    return (
+                      <div key={key} className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1.5 text-content-subtle">
+                          <Icon className="size-3.5 shrink-0" />
+                          {getVendorLabel(key)}
+                        </span>
+                        <span className="flex items-center gap-1 font-medium text-content-default">
+                          {nFormatter(value)}
+                          <span className="text-[11px] text-content-subtle font-normal">
+                            ({pct}%)
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex justify-between text-sm pt-1 border-t border-border-subtle">
+                  <span className="font-medium text-content-subtle">Total</span>
+                  <span className="font-medium text-content-default">{nFormatter(total)}</span>
+                </div>
+              </div>
+            );
+          }}
+        >
+          <XAxis tickFormat={(d) => lowercaseAmPm(formatDateTooltip(d, { interval, start, end }))} />
+          <YAxis showGridLines tickFormat={(val) => nFormatter(val)} />
+          <Areas
+            showLatestValueCircle={true}
+            seriesStyles={series.map(({ id }) => ({
+              id,
+              areaFill: "currentColor",
+              areaOpacity: 0.12,
+              lineStroke: "currentColor",
+            }))}
+          />
+        </TimeSeriesChart>
       </div>
     );
   }
 
-  return (
-    <div className="relative flex h-full w-full items-center justify-center">
-      <TimeSeriesChart
-        key={queryString}
-        data={chartData}
-        series={series}
-        tooltipClassName="p-0 px-6 bg-bg-default"
-        tooltipContent={(d) => {
-          const dateLabel = lowercaseAmPm(
-            formatDateTooltip(d.date, { interval, start, end })
-          );
-          const total = vendorKeys.reduce((sum, key) => sum + (d.values[key] ?? 0), 0);
-
-          return (
-            <div className="w-[220px] font-alexandria py-3 px-1 space-y-2">
-              <p className="pb-1 border-b font-alexandria border-border-subtle text-[12px] text-content-subtle font-medium">
-                {dateLabel}
-              </p>
-              <div className="space-y-1.5">
-                {vendorKeys.map((key) => {
-                  const Icon = getVendorIcon(key);
-                  const value = d.values[key] ?? 0;
-                  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-
-                  return (
-                    <div key={key} className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-1.5 text-content-subtle">
-                        <Icon className="size-3.5 shrink-0" />
-                        {getVendorLabel(key)}
-                      </span>
-                      <span className="flex items-center gap-1 font-medium text-content-default">
-                        {nFormatter(value)}
-                        <span className="text-[11px] text-content-subtle font-normal">
-                          ({pct}%)
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex justify-between text-sm pt-1 border-t border-border-subtle">
-                <span className="font-medium text-content-subtle">Total</span>
-                <span className="font-medium text-content-default">{nFormatter(total)}</span>
-              </div>
-            </div>
-          );
-        }}
-      >
-        <XAxis tickFormat={(d) => lowercaseAmPm(formatDateTooltip(d, { interval, start, end }))} />
-        <YAxis showGridLines tickFormat={(val) => nFormatter(val)} />
-        <Areas
-          showLatestValueCircle={false}
-          seriesStyles={series.map(({ id }) => ({
-            id,
-            areaFill: "currentColor",
-            areaOpacity: 0.12,
-            lineStroke: "currentColor",
-          }))}
-        />
-      </TimeSeriesChart>
-    </div>
-  );
-}
-
-export { normalizeVendorKey };
+  export { normalizeVendorKey };

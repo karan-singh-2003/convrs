@@ -234,6 +234,10 @@ type ProviderRow = {
 };
 
 const TABS = ["AI Answers", "Indexing", "Training"] as const;
+// const TABS = ["AI Answers"] as const;
+// const TABS = [ "Training"] as const;
+
+
 type Tab = (typeof TABS)[number];
 
 const TAB_TO_CATEGORY: Record<Tab, string> = {
@@ -243,7 +247,7 @@ const TAB_TO_CATEGORY: Record<Tab, string> = {
 };
 
 export default function BotFilteringCard() {
-  const [activeTab, setActiveTab] = useState<Tab>("AI Answers");
+  const [activeTab, setActiveTab] = useState<Tab>("Training");
   const { baseApiPath, queryString, interval, start, end } = useContext(AnalyticsContext);
 
   const category = TAB_TO_CATEGORY[activeTab];
