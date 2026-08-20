@@ -490,6 +490,8 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     results.map(async (item) => ({
       ...item,
       revenue: await convertCurrency(item.revenue, "USD", currency),
+      new_revenue: await convertCurrency(item.new_revenue, "USD", currency),
+      refund_amount: await convertCurrency(item.refund_amount, "USD", currency),
       ...("saleAmount" in item
         ? { saleAmount: await convertCurrency(item.saleAmount, "USD", currency) }
         : {}),
