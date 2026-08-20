@@ -2,6 +2,7 @@ export const APP_HOSTNAMES = new Set([
   `app.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
   `preview.${process.env.NEXT_PUBLIC_APP_DOMAIN}`,
   "localhost:8888",
+  "localhost:8899", // apps/e2e web server port (.env.e2e E2E_WEB_PORT) — avoids colliding with a real dev server on 8888
   "localhost",
 ]);
 

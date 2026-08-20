@@ -67,6 +67,7 @@ export const SignUpEmail = () => {
           Email
         </Label>
         <Input
+          id="email"
           placeholder="panic@thedis.com"
           autoComplete="email"
           autoFocus={!isMobile}
@@ -84,6 +85,7 @@ export const SignUpEmail = () => {
           Password
         </Label>
         <Input
+          id="password"
           type="password"
           placeholder="Create a password"
           autoComplete="new-password"

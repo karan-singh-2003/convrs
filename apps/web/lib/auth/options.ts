@@ -11,7 +11,7 @@ import { jackson } from "../jackson";
 import { decode, encode } from "next-auth/jwt";
 import { cookies } from "next/headers";
 import { TWO_FA_COOKIE_NAME } from "./constants";
-import { getTOTPInstance } from "./totp";
+import { decryptTwoFactorSecret, getTOTPInstance } from "./totp";
 import PasskeyProvider from "@teamhanko/passkeys-next-auth-provider";
 import hanko from "../hanko";
 import {
@@ -240,7 +240,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.passwordHash) {
-          throw new Error("Invalid email or password.");
+          throw new Error("invalid-credentials");
         }
 
         const passwordMatch = await validatePassword(
@@ -248,7 +248,7 @@ export const authOptions: NextAuthOptions = {
           user.passwordHash
         );
         if (!passwordMatch) {
-          throw new Error("Invalid email or password.");
+          throw new Error("invalid-credentials");
         }
 
         if (!user.emailVerified) {
@@ -339,7 +339,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         const totp = getTOTPInstance({
-          secret: user.twoFactorSecret,
+          secret: decryptTwoFactorSecret(user.twoFactorSecret),
         });
 
         const delta = totp.validate({

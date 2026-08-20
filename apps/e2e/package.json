@@ -1,0 +1,25 @@
+{
+  "name": "e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:tinybird": "playwright test --grep @tinybird",
+    "install-browsers": "playwright install chromium",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "@repo/analytics": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.15.3",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^16.6.1",
+    "otpauth": "^9.5.0",
+    "stripe": "^20.3.1",
+    "typescript": "5.9.2"
+  }
+}
