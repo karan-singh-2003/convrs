@@ -1,6 +1,7 @@
 "use server";
 
 import { generateTOTPSecret, getTOTPInstance } from "@/lib/auth/totp";
+import { encrypt } from "@repo/analytics";
 import { prisma } from "@repo/db";
 import { authUserActionClient } from "../safe-action";
 
@@ -32,7 +33,7 @@ export const enableTwoFactorAuthAction = authUserActionClient.action(
         id: user.id,
       },
       data: {
-        twoFactorSecret: secret,
+        twoFactorSecret: encrypt(secret),
       },
     });
 

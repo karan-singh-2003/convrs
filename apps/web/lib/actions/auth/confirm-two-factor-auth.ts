@@ -1,6 +1,6 @@
 "use server";
 
-import { getTOTPInstance } from "@/lib/auth/totp";
+import { decryptTwoFactorSecret, getTOTPInstance } from "@/lib/auth/totp";
 import { sendEmail } from "@repo/email";
 import TwoFactorEnabled from "@repo/email/templates/two-factor-enabled";
 import { prisma } from "@repo/db";
@@ -38,7 +38,7 @@ export const confirmTwoFactorAuthAction = authUserActionClient
     }
 
     const totp = getTOTPInstance({
-      secret: currentUser.twoFactorSecret,
+      secret: decryptTwoFactorSecret(currentUser.twoFactorSecret),
     });
 
     const delta = totp.validate({

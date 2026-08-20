@@ -238,6 +238,7 @@ model LinkAttribution {
 model SocialSyncJob {
     id          String          @id @default(cuid())
     workspaceId String?
+    workspace   Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
     jobType     SyncJobType
     platform    SocialPlatform?
     status      SyncJobStatus   @default(pending)

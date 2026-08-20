@@ -18,32 +18,21 @@ export const detectBot = (req: Request) => {
   // Check ua
   const uaString = req.headers.get("user-agent") || "";
   const ua = parseUserAgent(uaString);
-
-  if (ua) {
-    return ua.isBot || UA_BOTS.some((bot) => new RegExp(bot, "i").test(ua.ua));
-  }
+  const isUaBot =
+    ua.isBot || UA_BOTS.some((bot) => new RegExp(bot, "i").test(ua.ua));
 
   // Check referer
   const referer = req.headers.get("referer");
-  if (
-    referer &&
-    REFERRER_BOTS.some((bot) => new RegExp(bot, "i").test(referer))
-  ) {
-    return true;
-  }
+  const isRefererBot =
+    !!referer &&
+    REFERRER_BOTS.some((bot) => new RegExp(bot, "i").test(referer));
 
   // Check ip
-  let ip = getIpAddress(req);
+  const ip = getIpAddress(req);
+  const isIpBot =
+    !!ip &&
+    (IP_BOTS.includes(ip) ||
+      IP_RANGES_BOTS.some((range) => isIpInRange(ip, range)));
 
-  if (!ip) {
-    return false;
-  }
-
-  // Check exact IP matches
-  if (IP_BOTS.includes(ip)) {
-    return true;
-  }
-
-  // Check CIDR ranges
-  return IP_RANGES_BOTS.some((range) => isIpInRange(ip, range));
+  return isUaBot || isRefererBot || isIpBot;
 };

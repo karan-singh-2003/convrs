@@ -1,11 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import type { WeeklySummaryStats } from "../../../../apps/web/lib/analytics/weekly-summary";
-// ^ adjust this import path to wherever WeeklySummaryStats actually resolves
-// from in your monorepo — if @repo/email can't reach that app-level path,
-// move the WeeklySummaryStats type into a shared package (e.g. @repo/types)
-// and import from there instead. Flagging this because I don't have your
-// tsconfig paths/workspace layout to confirm the correct relative import.
+import type { WeeklySummaryStats } from "./types";
 
 const styles = StyleSheet.create({
   page: {

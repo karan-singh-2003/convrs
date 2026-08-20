@@ -124,6 +124,13 @@ export const AnalyticsEventSchema = z
     entrypage: z.string().nullable().optional(),
     exitlink: z.string().nullable().optional(),
 
+    // ── UTM / campaign attribution ──────────────────────────────────────────
+    utm_source: z.string().nullable().optional(),
+    utm_medium: z.string().nullable().optional(),
+    utm_campaign: z.string().nullable().optional(),
+    utm_content: z.string().nullable().optional(),
+    utm_term: z.string().nullable().optional(),
+
     // ── Geo (optional, enriched upstream) ───────────────────────────────────
     country: z.string().optional(),
     city: z.string().optional(),
@@ -133,6 +140,9 @@ export const AnalyticsEventSchema = z
     continent: z.string().optional(),
     vercelRegion: z.string().optional(),
     cookieless: z.boolean().optional(),
+
+    // ── Idempotency (optional — absent for older cached tracker builds) ─────
+    event_id: z.string().min(1).max(128).optional(),
 
     // ── type = "event" ────────────────────────────────────────────────────────
     event_name: z.string().min(1).max(64).optional(),

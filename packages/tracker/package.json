@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "dist/analytics.js",
   "scripts": {
-    "build": "tsup src/analytics.js --format iife --minify --out-dir dist && node -e \"require('fs').renameSync('dist/analytics.global.js', 'dist/analytics.js')\""
+    "build": "tsup src/analytics.js src/cookieless-analytics.js --format iife --minify --out-dir dist && node -e \"const fs=require('fs'); fs.renameSync('dist/analytics.global.js','dist/analytics.js'); fs.renameSync('dist/cookieless-analytics.global.js','dist/cookieless-analytics.js');\""
   },
   "devDependencies": {
     "tsup": "^7.0.0",

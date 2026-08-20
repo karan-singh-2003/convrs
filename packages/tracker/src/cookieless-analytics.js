@@ -176,6 +176,9 @@
       viewport: { width: window.innerWidth || 0, height: window.innerHeight || 0 },
       sessionId: getSessionId(),
       cookieless: true,
+      // Fresh per-send ID so the server can dedupe a replayed/duplicated
+      // delivery of this specific event.
+      eventId: uuid(),
     };
   }
 

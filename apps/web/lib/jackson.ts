@@ -7,12 +7,12 @@ import type {
 import samlJackson from "@boxyhq/saml-jackson";
 import { APP_DOMAIN_WITH_NGROK } from "@repo/utils";
 
-export const samlAudience = "https://saml.boilercode.dev";
+export const samlAudience = `https://saml.${process.env.NEXT_PUBLIC_APP_DOMAIN}`;
 
 const opts: JacksonOption = {
   externalUrl:
     process.env.NODE_ENV === "production"
-      ? "https://api.boilercode.dev"
+      ? `https://api.${process.env.NEXT_PUBLIC_APP_DOMAIN}`
       : APP_DOMAIN_WITH_NGROK,
   samlPath:
     process.env.NODE_ENV === "production"

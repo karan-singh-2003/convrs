@@ -1,576 +1,3 @@
-// import { Request, Response } from "express";
-// import {
-//   AnalyticsEventSchema,
-//   recordEvent,
-//   sendAlertsForEvent,
-//   upsertCustomer,
-//   upsertAnonymousCustomer,
-// } from "@repo/analytics";
-// import { prisma } from "@repo/db";
-// import email from "@repo/email";
-// import UsageLimitWarningEmailModule from "@repo/email/templates/usage-limit-warning";
-// import * as UAParserLib from "ua-parser-js";
-// import React from "react";
-// import {
-//   getGeoData,
-//   getGeoRegion,
-//   getVercelRegion,
-//   getContinent,
-// } from "./get-geo-data.js";
-// import { COUNTRIES, COUNTRY_NAMES_TO_CODES } from "@repo/utils";
-// import { registerTrackedEvent } from "./register-tracked-event.js";
-
-
-// export async function trackClickController(req: Request, res: Response) {
-//   try {
-//     const rawBody = req.body ?? {};
-//     console.log("[Track Controller] Raw body:", rawBody);
-
-//     const normalized = normalizeTrackPayload(rawBody);
-//     console.log("[Track Controller] Normalized:", normalized);
-
-//     const parsed = AnalyticsEventSchema.safeParse(normalized);
-//     if (!parsed.success) {
-//       console.warn("[Track POST] Invalid payload:", parsed.error.flatten());
-//       return res.status(400).json({
-//         success: false,
-//         error: "Invalid tracking payload",
-//         details: parsed.error.flatten(),
-//       });
-//     }
-
-//     // ── IP EXTRACTION (GEO handled in recordEvent) ──────────────────────────────
-//     // Geo is now centralized in recordEvent() → getGeoData()
-//     // IP is extracted once here and passed through (no splitting)
-//     const ip =
-//       ((req.headers["x-forwarded-for"] as string | undefined)
-//         ?.split(",")[0]
-//         ?.trim() ??
-//         "") ||
-//       req.socket?.remoteAddress ||
-//       req.ip ||
-//       "";
-
-//     // ── ENFORCE TRACKING FILTERS ─────────────────────────────────────────────
-//     const websiteId = parsed.data.website_id;
-//     if (!websiteId) {
-//       return res.status(400).json({
-//         success: false,
-//         error: "Missing website ID in payload",
-//       });
-//     }
-
-//     const workspace = await prisma.workspace.findUnique({
-//       where: { projectToken: websiteId },
-//       select: {
-//         id: true,
-//         name: true,
-//         slug: true,
-//         domain: true,
-//         blockedHostnames: true,
-//         blockedIpAddresses: true,
-//         blockedPages: true,
-//         blockedCountries: true,
-//         subscriptionStatus: true,
-//         usage: true,
-//         usageLimit: true,
-//         allowedHostnames: true,
-//         allowAllDomains: true
-//       },
-//     });
-
-//     const workspaceOwner = await prisma.workspaceUsers.findFirst({
-//       where: { workspaceId: workspace?.id, role: "owner" },
-//       select: { user: { select: { id: true } } },
-//     });
-
-//     const userId = workspaceOwner?.user?.id ?? null;
-
-//     if (!workspace) {
-//       return res.status(404).json({
-//         success: false,
-//         error: "Workspace not found",
-//       });
-//     }
-
-//     if (workspace.subscriptionStatus === "inactive") {
-//       return res.status(403).json({
-//         success: false,
-//         error: "Subscription inactive",
-//       });
-//     }
-
-//     // const eventHostname = (parsed.data.hostname || "").toLowerCase();
-//     const eventPage = (safePath(parsed.data.url) || "").toLowerCase();
-
-
-
-//     const eventHostname = (parsed.data.hostname || "").toLowerCase();
-//     const isKnownHost =
-//       workspace.allowAllDomains ||
-//       workspace.allowedHostnames.some((h) => h.toLowerCase() === eventHostname) ||
-//       (!!workspace.domain &&
-//         (eventHostname === workspace.domain || eventHostname.endsWith(`.${workspace.domain}`)));
-        
-//     if (!isKnownHost) {
-//       // log/flag but don't hard-block — a misconfigured allowlist shouldn't
-//       // silently drop legitimate traffic; decide based on your risk tolerance
-//       console.warn("[Track] Event from unrecognized hostname", eventHostname);
-//     }
-
-//     // Hostname filter
-//     if (
-//       workspace.blockedHostnames &&
-//       workspace.blockedHostnames.length > 0 &&
-//       workspace.blockedHostnames.some(
-//         (h: string) => h && eventHostname === h.toLowerCase()
-//       )
-//     ) {
-//       return res.status(403).json({
-//         success: false,
-//         error: "Blocked by hostname filter",
-//       });
-//     }
-
-//     // IP filter (now supports CIDR via ip-range-check)
-//     if (
-//       workspace.blockedIpAddresses &&
-//       workspace.blockedIpAddresses.length > 0
-//     ) {
-//       const ipRangeCheck = (await import("ip-range-check")).default;
-//       if (
-//         workspace.blockedIpAddresses.some((blocked: string) =>
-//           ipRangeCheck(ip, blocked)
-//         )
-//       ) {
-//         return res.status(403).json({
-//           success: false,
-//           error: "Blocked by IP filter",
-//         });
-//       }
-//     }
-
-//     // Page filter — blocks pages starting with the blocked path
-//     if (
-//       workspace.blockedPages &&
-//       workspace.blockedPages.length > 0 &&
-//       workspace.blockedPages.some(
-//         (p: string) => p && eventPage.startsWith(p.toLowerCase())
-//       )
-//     ) {
-//       return res.status(403).json({
-//         success: false,
-//         error: "Blocked by page filter",
-//       });
-//     }
-
-
-
-//     const usageLimit = workspace.usageLimit ?? 0;
-//     const usage = workspace.usage ?? 0;
-
-//     if (usageLimit > 0 && usage >= usageLimit) {
-//       return res.status(403).json({
-//         success: false,
-//         error: "Usage limit exceeded",
-//         code: "exceeded_limit",
-//       });
-//     }
-//     const nativeReq = toNativeRequest(req);
-//     const geo = getGeoData(nativeReq);
-//     const region = getGeoRegion(nativeReq);
-//     const vercelRegion = getVercelRegion();
-//     const continent = getContinent(nativeReq);
-
-//     // Country filter
-//     const visitorCountry = (geo.country ?? "").toUpperCase();
-
-//     const isBlocked =
-//       workspace.blockedCountries?.some((country) => {
-//         const value = country.trim();
-
-//         // User entered an ISO code (US, IN, CN)
-//         if (COUNTRIES[value.toUpperCase()]) {
-//           return value.toUpperCase() === visitorCountry;
-//         }
-
-//         // User entered a country name (United States, India)
-//         const code = COUNTRY_NAMES_TO_CODES[value.toLowerCase()];
-//         return code === visitorCountry;
-//       }) ?? false;
-
-//     if (isBlocked) {
-//       return res.status(403).json({
-//         success: false,
-//         error: "Blocked by country filter",
-//       });
-//     }
-
-//     console.log("[Track Controller] Geo data:", {
-//       geo,
-//       region,
-//       continent,
-//       vercelRegion,
-//     });
-
-//     // ── UA PARSING ───────────────────────────────────────────────────────────
-//     const ua = (req.headers["user-agent"] as string) || "";
-//     const parsedUA = new UAParserLib.UAParser(ua).getResult();
-
-//     // helper → NEVER send undefined/null to Tinybird for String fields
-//     const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
-
-//     const deviceName = safe(parsedUA.device.type || "desktop");
-//     const browserName = safe(parsedUA.browser.name);
-
-//     // ── IDENTIFY ─────────────────────────────────────────────────────────────
-//     let customer = null;
-//     console.log("parsed data type", parsed.data.type)
-
-//     if (parsed.data.type === "identify") {
-//       console.log("adding customer")
-//       customer = await upsertCustomer({
-//         workspaceId: workspace.id,
-//         traits: (parsed.data.traits ?? {}) as Record<string, any>,
-//         visitorId: parsed.data.visitor_id ?? undefined,
-//         geo: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
-//         device: deviceName,
-//         browser: browserName,
-//       });
-//     }
-
-//     // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
-//     else if (parsed.data.type === "pageview" && parsed.data.visitor_id) {
-//       console.log("inserting anonymous customer")
-//       customer = await upsertAnonymousCustomer({
-//         workspaceId: workspace.id,
-//         visitorId: parsed.data.visitor_id,
-//         country: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
-//         device: deviceName,
-//         browser: browserName,
-//       });
-//     }
-
-//     // ── ENRICH PAYLOAD ───────────────────────────────────────────────────────
-//     const enrichedPayload = {
-//       ...parsed.data,
-
-//       workspace_id: workspace.id,
-//       user_id: userId || "",
-//       // Identity
-//       customer_id: customer?.id ?? null,
-
-//       // 🔥 REQUIRED FIX: timestamp format for DateTime64
-//       timestamp: parsed.data.timestamp
-//         ? parsed.data.timestamp.replace("T", " ").replace("Z", "")
-//         : new Date().toISOString().replace("T", " ").replace("Z", ""),
-
-//       // Raw UA
-//       ua,
-
-//       // Device
-//       device: deviceName,
-//       device_model: safe(parsedUA.device.model),
-//       device_vendor: safe(parsedUA.device.vendor),
-
-//       // Browser
-//       browser: browserName,
-//       browser_version: safe(parsedUA.browser.version),
-
-//       // OS
-//       os: safe(parsedUA.os.name),
-//       os_version: safe(parsedUA.os.version),
-
-//       // Engine
-//       engine: safe(parsedUA.engine.name),
-//       engine_version: safe(parsedUA.engine.version),
-
-//       // CPU
-//       cpu_architecture: safe(parsedUA.cpu.architecture),
-
-//       // Geo / infra
-//       ip: ip ?? null,
-
-//       //  MUST be string
-//       event_properties: JSON.stringify(parsed.data.props ?? {}),
-
-//       //  ensure bot is UInt8
-//       bot: 0,
-
-//       country: geo.country ?? "Unknown",
-//       city: geo.city ?? "Unknown",
-//       latitude: geo.latitude ?? "Unknown",
-//       longitude: geo.longitude ?? "Unknown",
-//       region: region ?? "Unknown",
-//       continent: continent ?? "Unknown",
-//       vercelRegion: vercelRegion ?? "Unknown",
-//     };
-
-//     console.log("[Track Controller] Enriched payload:", enrichedPayload);
-
-//     const recordedEvent = await recordEvent({
-//       req: nativeReq,
-//       payload: {
-//         ...enrichedPayload,
-//         customer_id: customer?.id ?? "",
-//         workspace_id: workspace.id,
-//       },
-//       logger: console as any,
-//     });
-
-//     if (recordedEvent) {
-//       const updatedWorkspace = await prisma.workspace.update({
-//         where: { id: workspace.id },
-//         data: { usage: { increment: 1 } },
-//         select: { usage: true, usageLimit: true, slug: true },
-//       });
-
-//       void registerTrackedEvent({
-//         workspaceId: workspace.id,
-//         eventName: parsed.data.event_name ?? parsed.data.type ?? "unknown",
-//         eventType: recordedEvent.event_type,
-//         trigger: recordedEvent.trigger,
-//       });
-
-
-//       void maybeSendUsageLimitWarning({
-//         workspaceId: workspace.id,
-//         workspaceName: workspace.name,
-//         workspaceSlug: updatedWorkspace.slug ?? workspace.slug,
-//         usageBefore: usage,
-//         usageAfter: updatedWorkspace.usage,
-//         usageLimit: updatedWorkspace.usageLimit,
-//       }).catch((error) => {
-//         console.error("[Track POST] Failed to send usage warning", error);
-//       });
-
-//       void sendAlertsForEvent({
-//         workspaceId: workspace.id,
-//         eventName: parsed.data.event_name ?? parsed.data.type ?? "event",
-//         event: {
-//           ...recordedEvent,
-//           workspaceName: workspace.name,
-//         },
-//       });
-//     }
-
-//     return res.json({ success: true, recorded: true });
-//   } catch (error) {
-//     console.error("[Track POST] Error:", error);
-//     return res.status(500).json({
-//       success: false,
-//       error: error instanceof Error ? error.message : "Unknown error",
-//     });
-//   }
-// }
-
-// function normalizeTrackPayload(raw: Record<string, any>) {
-//   const websiteId = raw.website_id || raw.websiteId;
-//   const visitorId = raw.visitor_id || raw.visitorId;
-//   const sessionId = raw.session_id || raw.sessionId;
-//   const href = raw.url || raw.href;
-//   const hostname = raw.hostname || raw.domain || safeHostname(href);
-
-//   // ── UTM params from URL ──────────────────────────────────────────────────
-//   let utmParams: Record<string, string | null> = {
-//     utm_source: null,
-//     utm_medium: null,
-//     utm_campaign: null,
-//     utm_content: null,
-//     utm_term: null,
-//   };
-//   try {
-//     const urlObj = new URL(href);
-//     utmParams = {
-//       utm_source: urlObj.searchParams.get("utm_source"),
-//       utm_medium: urlObj.searchParams.get("utm_medium"),
-//       utm_campaign: urlObj.searchParams.get("utm_campaign"),
-//       utm_content: urlObj.searchParams.get("utm_content"),
-//       utm_term: urlObj.searchParams.get("utm_term"),
-//     };
-//   } catch { }
-
-//   const normalized: Record<string, any> = {
-//     website_id: websiteId,
-//     visitor_id: visitorId,
-//     session_id: sessionId,
-//     url: href,
-//     hostname,
-//     entrypage: raw.entrypage ?? null,
-//     page: safePath(href),
-//     referrer: raw.referrer ?? null,
-//     language: raw.language ?? "",
-//     timezone: raw.timezone ?? "",
-//     screen_w: raw.screen_w ?? raw.screenWidth ?? 0,
-//     screen_h: raw.screen_h ?? raw.screenHeight ?? 0,
-//     viewport_w: raw.viewport_w ?? raw.viewport?.width ?? 0,
-//     viewport_h: raw.viewport_h ?? raw.viewport?.height ?? 0,
-//     timestamp: raw.timestamp || new Date().toISOString(),
-//     ...utmParams,
-//   };
-
-//   // ── Pageview ─────────────────────────────────────────────────────────────
-//   if (raw.type === "pageview") {
-//     normalized.type = "pageview";
-//     normalized.event_type = "pageview";
-//     normalized.event_name = "pageview";
-//     normalized.props = {};
-//     normalized.trigger = "page";
-//   }
-
-//   // ── Custom event ─────────────────────────────────────────────────────────
-//   else if (raw.type === "custom") {
-//     const customEventName =
-//       raw.event_name ??
-//       raw.eventName ??
-//       raw.extraData?.eventName ??
-//       "unknown_event";
-
-//     const customProps: Record<string, any> = {};
-//     if (raw.extraData && typeof raw.extraData === "object") {
-//       Object.assign(customProps, raw.extraData);
-//     }
-//     if (raw.props && typeof raw.props === "object") {
-//       Object.assign(customProps, raw.props);
-//     }
-//     delete customProps.eventName;
-//     delete customProps.event_name;
-
-//     normalized.type = "event";
-//     normalized.event_type = "goals";
-//     normalized.event_name = customEventName;
-//     normalized.props = customProps;
-//     normalized.trigger = "goal";
-//     normalized.entrypage = raw.entrypage ?? null;
-//   }
-
-//   // ── Identify ──────────────────────────────────────────────────────────────
-//   else if (raw.type === "identify") {
-//     normalized.type = "identify";
-//     normalized.event_type = "identify";
-//     normalized.event_name = "identify";
-//     normalized.traits = raw.traits ?? {};
-//     normalized.props = {};
-//     normalized.trigger = null;
-//   }
-
-//   // exit link event
-//   else if (raw.type === "exitlink") {
-//     normalized.type = "exitlink";
-//     normalized.event_type = "pageview"; // or a dedicated "exitlink" event_type if you want it filterable separately
-//     normalized.event_name = "exitlink";
-//     normalized.exitlink = raw.exitlink ?? null;
-//     normalized.entrypage = raw.entrypage ?? null;
-//     normalized.props = {};
-//     normalized.trigger = "exitlink";
-//   }
-
-//   // ── Generic event ─────────────────────────────────────────────────────────
-//   else if (raw.type === "event") {
-//     normalized.type = "event";
-//     normalized.event_name = raw.event_name ?? "unknown_event";
-//     normalized.props = raw.props ?? {};
-//     normalized.trigger = "goal";
-//   }
-
-//   return normalized;
-// }
-
-// // ── Convert Express req → native Web API Request for recordEvent ────────────
-// function toNativeRequest(req: Request): globalThis.Request {
-//   const protocol = req.protocol || "http";
-//   const host = req.headers.host || "localhost";
-//   const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-
-//   const headers = new Headers();
-//   for (const [key, value] of Object.entries(req.headers)) {
-//     if (value) headers.set(key, Array.isArray(value) ? value[0] : value);
-//   }
-
-//   return new globalThis.Request(fullUrl, {
-//     method: req.method,
-//     headers,
-//   });
-// }
-
-// function safeHostname(url?: string): string | undefined {
-//   if (!url) return undefined;
-//   try {
-//     return new URL(url).hostname;
-//   } catch {
-//     return undefined;
-//   }
-// }
-
-// function safePath(url?: string): string | null {
-//   if (!url) return null;
-//   try {
-//     return new URL(url).pathname;
-//   } catch {
-//     return null;
-//   }
-// }
-
-// const UsageLimitWarningEmail =
-//   (UsageLimitWarningEmailModule as any).default ?? UsageLimitWarningEmailModule;
-
-// async function maybeSendUsageLimitWarning({
-//   workspaceId,
-//   workspaceName,
-//   workspaceSlug,
-//   usageBefore,
-//   usageAfter,
-//   usageLimit,
-// }: {
-//   workspaceId: string;
-//   workspaceName: string;
-//   workspaceSlug: string;
-//   usageBefore: number;
-//   usageAfter: number;
-//   usageLimit: number;
-// }) {
-//   if (!usageLimit || usageLimit <= 0) return;
-
-//   const warningThreshold = Math.ceil(usageLimit * 0.95);
-//   if (usageBefore >= warningThreshold || usageAfter < warningThreshold) return;
-
-//   const existingEmail = await prisma.sentEmail.findFirst({
-//     where: { workspaceId, type: "usage_limit_95" },
-//     select: { id: true },
-//   });
-
-//   if (existingEmail) return;
-
-//   const owner = await prisma.workspaceUsers.findFirst({
-//     where: { workspaceId, role: "owner" },
-//     select: { user: { select: { email: true, name: true } } },
-//   });
-
-//   const recipientEmail = owner?.user?.email ?? null;
-//   if (!recipientEmail) return;
-
-//   const upgradeUrl = `https://app.boilercode.dev/${workspaceSlug}/settings/billing`;
-//   const ownerName = owner?.user?.name ?? null;
-
-//   await email.sendEmail({
-//     to: recipientEmail,
-//     subject: `You're at 95% of your ${workspaceName} event limit`,
-//     react: React.createElement(UsageLimitWarningEmail, {
-//       email: recipientEmail,
-//       workspaceName,
-//       ownerName,
-//       usage: usageAfter,
-//       usageLimit,
-//       upgradeUrl,
-//     }),
-//   });
-
-//   await prisma.sentEmail.create({
-//     data: { type: "usage_limit_95", workspaceId },
-//   });
-// }
-
-
 import { Request, Response } from "express";
 import crypto from "crypto"; // NEW
 import {
@@ -593,20 +20,54 @@ import {
 } from "./get-geo-data.js";
 import { COUNTRIES, COUNTRY_NAMES_TO_CODES } from "@repo/utils";
 import { registerTrackedEvent } from "./register-tracked-event.js";
+import { redisWithTimeout } from "../lib/redis.js";
 
 // NEW — cookieless pseudonymous visitor ID
 function getDailySalt(): string {
   const utcDate = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
   const secret = process.env.COOKIELESS_SALT_SECRET;
   if (!secret) {
-    console.warn("[Track] COOKIELESS_SALT_SECRET not set — using weak fallback salt");
+    // Fail closed: a hardcoded fallback salt would make "cookieless" visitor
+    // IDs trivially reversible from (ip, ua, hostname, date), defeating the
+    // privacy guarantee. Only cookieless requests hit this path — the
+    // caller's try/catch turns this into a 500 without affecting other traffic.
+    throw new Error(
+      "COOKIELESS_SALT_SECRET is not set — refusing to compute a cookieless visitor ID with a public fallback salt"
+    );
   }
-  return `${utcDate}:${secret || "convrs-fallback-salt"}`;
+  return `${utcDate}:${secret}`;
 }
 
 function computeCookielessVisitorId(ip: string, userAgent: string, hostname: string): string {
   const raw = `${ip}|${userAgent}|${hostname}|${getDailySalt()}`;
   return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
+// NEW — idempotency check for client-generated event IDs
+const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24; // 24h — matches register-tracked-event.ts's cache window
+
+async function isDuplicateTrackEvent(
+  workspaceId: string,
+  eventId: string
+): Promise<boolean> {
+  const key = `idem:track:${workspaceId}:${eventId}`;
+  try {
+    // NX + EX is atomic: only the first caller to see this key gets "OK" back.
+    const result = await redisWithTimeout.set(key, "1", {
+      nx: true,
+      ex: IDEMPOTENCY_TTL_SECONDS,
+    });
+    return result === null; // null = key already existed = duplicate
+  } catch (error) {
+    // Fail open — same posture as the revocation check in
+    // apps/web/lib/auth/options.ts and the cache in register-tracked-event.ts:
+    // a Redis blip should never block tracking.
+    console.error("[Track POST] Idempotency check failed, proceeding", {
+      key,
+      error,
+    });
+    return false;
+  }
 }
 
 export async function trackClickController(req: Request, res: Response) {
@@ -803,6 +264,26 @@ export async function trackClickController(req: Request, res: Response) {
       ? computeCookielessVisitorId(ip, uaHeader, eventHostname || workspace.domain || "")
       : parsed.data.visitor_id;
 
+    // ── IDEMPOTENCY ──────────────────────────────────────────────────────────
+    // Dedupe a replayed/duplicated delivery of the same client-generated
+    // event (e.g. a captured request resent to inflate usage or pollute
+    // analytics). Older cached tracker builds don't send event_id — skip the
+    // check for them rather than reject, so they keep working unchanged.
+    if (parsed.data.event_id) {
+      const isDuplicate = await isDuplicateTrackEvent(
+        workspace.id,
+        parsed.data.event_id
+      );
+      if (isDuplicate) {
+        return res.json({
+          success: true,
+          recorded: false,
+          duplicate: true,
+          ...(isCookielessPayload && { visitorId: effectiveVisitorId }),
+        });
+      }
+    }
+
     // ── IDENTIFY ─────────────────────────────────────────────────────────────
     let customer = null;
 
@@ -950,6 +431,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
   const href = raw.url || raw.href;
   const hostname = raw.hostname || raw.domain || safeHostname(href);
   const cookieless = raw.cookieless === true; // NEW
+  const eventId = raw.event_id || raw.eventId; // NEW — idempotency key, absent on older cached tracker builds
 
   let utmParams: Record<string, string | null> = {
     utm_source: null,
@@ -986,6 +468,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     viewport_h: raw.viewport_h ?? raw.viewport?.height ?? 0,
     timestamp: raw.timestamp || new Date().toISOString(),
     cookieless, // NEW — carried through AnalyticsEventSchema, read in the controller above
+    event_id: eventId, // NEW — carried through AnalyticsEventSchema, read in the controller below
     ...utmParams,
   };
 
@@ -1115,7 +598,7 @@ async function maybeSendUsageLimitWarning({
   const recipientEmail = owner?.user?.email ?? null;
   if (!recipientEmail) return;
 
-  const upgradeUrl = `https://app.boilercode.dev/${workspaceSlug}/settings/billing`;
+  const upgradeUrl = `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN || "convrs.dev"}/${workspaceSlug}/settings/billing`;
   const ownerName = owner?.user?.name ?? null;
 
   await email.sendEmail({

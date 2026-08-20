@@ -1177,6 +1177,9 @@
         height: viewportHeight,
       },
       sessionId: sessionId,
+      // Fresh per-send ID so the server can dedupe a replayed/duplicated
+      // delivery of this specific event.
+      eventId: uuid(),
     };
   }
 

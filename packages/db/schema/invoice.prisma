@@ -16,7 +16,7 @@ model Invoice {
   failedAttempts       Int            @default(0)
   createdAt            DateTime       @default(now())
   paidAt               DateTime?
-  workspace            Workspace      @relation(fields: [workspaceId], references: [id])
+  workspace            Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([programId])
   @@index([workspaceId])

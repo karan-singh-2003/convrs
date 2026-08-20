@@ -140,6 +140,7 @@ model Workspace {
   workspaceDomains       WorkspaceDomain[]
   accountBlocklists      AccountBlocklist[]
   attributionHandles     SocialAttributionHandle[]
+  socialSyncJobs         SocialSyncJob[]
 
   @@index([usageLastChecked])
   @@index([dodoSubscriptionId])

@@ -76,6 +76,7 @@ import { sendBatchEmailViaResend, sendEmailViaResend } from "./send-via-resend";
 
 
 export * from "./pdf/generate-weekly-report";
+export type { WeeklySummaryStats } from "./pdf/types";
 
 export const sendEmail = async (opts: ResendEmailOptions) => {
 

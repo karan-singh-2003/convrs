@@ -1,6 +1,6 @@
 import { cn } from "@repo/utils";
 import { VariantProps, cva } from "class-variance-authority";
-import { Calendar, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { ComponentProps, forwardRef } from "react";
 
 const triggerStyles = cva(

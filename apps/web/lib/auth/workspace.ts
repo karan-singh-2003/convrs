@@ -87,7 +87,7 @@ export const withWorkspace = (
       })) as WorkspaceProps | null;
 
       // workspace does not exists
-      if (!workspace || !workspace.users || workspace.users.length === 0) {
+      if (!workspace) {
         return new Response(JSON.stringify({ error: "Workspace not found" }), {
           status: 404,
           headers: { "Content-Type": "application/json" },
