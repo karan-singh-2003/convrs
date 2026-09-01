@@ -233,7 +233,7 @@ export function Timezone() {
           trigger={
             <button
               type="button"
-              className="flex w-full items-center justify-between font-display rounded-lg border border-border-subtle bg-bg-emphasis/65 px-4 py-2 text-[14.5px] text-content-default transition hover:bg-bg-default"
+              className="flex w-full items-center justify-between font-display rounded-lg border border-border-subtle bg-transparent px-4 py-2 text-[14.5px] text-content-default transition hover:bg-bg-default"
             >
               <span className="truncate">{current?.label ?? "Select timezone"}</span>
               <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" />

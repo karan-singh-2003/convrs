@@ -75,7 +75,7 @@ export function AdditionalDomains() {
         </div>
       )}
 
-      <div className="mt-4 rounded-xl border border-border-subtle bg-bg-subtle p-3 sm:p-3">
+      <div className="mt-4 rounded-xl border border-border-subtle bg-bg-subtle p-3 sm:p-2.5 sm:px-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
             <h3 className="font-display text-sm font-medium text-content-default">Allow all domains</h3>

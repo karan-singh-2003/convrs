@@ -52,7 +52,7 @@ const Form = ({
                 required
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-full font-display  text-neutral-600"
+                className="w-full font-display bg-transparent text-neutral-600"
               />
 
               {value && (
