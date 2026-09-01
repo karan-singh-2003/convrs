@@ -1359,7 +1359,7 @@ export default function RevenueSettingsPage() {
         title="Revenue"
         description="Connect a payment provider to attribute revenue back to visitors and sessions."
       >
-        <div className=" rounded-2xl flex flex-col gap-5 bg-bg-default p-5">
+        <div className=" rounded-2xl flex flex-col gap-5 bg-bg-card p-5">
           <ProviderSelector
             provider={provider}
             setProvider={setProvider}
@@ -1419,12 +1419,16 @@ export default function RevenueSettingsPage() {
         {error ? <p className="mt-3 text-sm font-display text-red-500">{error}</p> : null}
       </SettingsChildrenLayout>
       <SettingsChildrenLayout
-        title="Currency"
-        description="Used for all revenue and payment conversions"
+        title=""
+        description=""
         className="mt-5"
       >
-        <div className="flex h-full flex-col gap-6 rounded-2xl bg-bg-default ">
-          <div className="px-6 pt-4">
+        <div className="flex h-full flex-col gap-6 rounded-2xl bg-bg-card ">
+          <div className="px-6 pt-4 flex flex-col gap-4">
+            <div className="flex flex-col">
+              <h1 className="font-display text-content-default text-base font-medium">Currency</h1>
+              <h1 className="font-display text-content-subtle text-[13.5px]">Used for all revenue and payment conversions</h1>
+            </div>
             <Currency
               value={pendingCurrency}
               onChange={setPendingCurrency}

@@ -16,7 +16,7 @@ const Theme = () => {
     }
     return (
 
-        <SettingsChildrenLayout title='   Theme' description='   Customize your workspace appearance' className='w-full px-6'>
+        <SettingsChildrenLayout title='   Theme' description='   Customize your workspace appearance' className='w-full p-4 px-6 bg-bg-card'>
             <div className="grid grid-cols-2 gap-4 w-full max-w-[450px] mt-2">
                 {/* Light Theme Box */}
                 <div

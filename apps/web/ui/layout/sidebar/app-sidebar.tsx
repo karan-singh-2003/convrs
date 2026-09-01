@@ -44,7 +44,7 @@ const NAV_AREAS = {
         items: [
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
-          { title: "Billing", href: `/${slug}/settings/billing` },
+          // { title: "Billing", href: `/${slug}/settings/billing` },
           { title: "Theme", href: `/${slug}/settings/theme` },
           ...(premiumAccess
             ? [
@@ -52,8 +52,8 @@ const NAV_AREAS = {
               { title: "Alerts", href: `/${slug}/settings/alerts` },
               { title: "Exclusions", href: `/${slug}/settings/exclusions` },
               { title: "Integrations", href: `/${slug}/settings/integrations` },
-              // { title: "Reports", href: `/${slug}/settings/reports` },
-              // { title: "Import", href: `/${slug}/settings/import` },
+              { title: "Reports", href: `/${slug}/settings/reports` },
+              { title: "Import", href: `/${slug}/settings/import` },
               // { title: "Export", href: `/${slug}/settings/export` },
             ]
             : []),

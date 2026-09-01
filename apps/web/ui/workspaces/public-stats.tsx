@@ -53,7 +53,7 @@ export default function PublicStats() {
       : "";
 
   return (
-    <div className="space-y-2 rounded-2xl border border-border-subtle bg-bg-default p-4">
+    <div className="space-y-2 rounded-2xl border border-border-subtle bg-bg-card p-4">
       <div className="relative flex w-full items-center justify-between">
         <div className="space-y-0.5 font-display">
           <h2 className="text-sm font-medium text-content-default">

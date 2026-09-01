@@ -142,7 +142,7 @@ export default function WorkspacePeopleClient() {
     <>
       <InviteWorkspaceUserModal />
       <InviteCodeModal />
-      <div className=" space-y-4 px-3 bg-bg-card border-border-subtle rounded-2xl py-5 lg:px-5">
+      <div className=" space-y-4 p   rounded-2xl ">
         {/* Header */}
         <div className="px-1 flex items-center justify-between gap-4">
           <div className="flex flex-col">
@@ -167,7 +167,7 @@ export default function WorkspacePeopleClient() {
         </div>
 
         <div className="flex flex-col gap-y-4">
-          <div className=" h-fit  space-y-3 bg-bg-default border border-border-subtle rounded-2xl">
+          <div className=" h-fit  space-y-3 bg-bg-card border border-border-subtle rounded-2xl">
             <div className="flex items-start justify-between border-b p-4 border-border-subtle pb-3">
               <div>
                 <h1 className="font-display text-[14.5px] font-medium text-content-default">
@@ -192,7 +192,7 @@ export default function WorkspacePeopleClient() {
                 required
                 readOnly
                 value={`https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}/invite/${inviteCode || ""}`}
-                className="w-full pr-10 text-sm font-display border border-border-subtle bg-bg-emphasis/65 text-content-default focus:border-border-subtle focus:outline-none focus:ring-0"
+                className="w-full pr-10 text-sm font-display border border-border-subtle bg-transparent text-content-default focus:border-border-subtle focus:outline-none focus:ring-0"
               />
 
               <button
@@ -224,7 +224,7 @@ export default function WorkspacePeopleClient() {
           </div>
           <div className="bg-bg-card rounded-2xl ">
             {/* Table */}
-            <Table table={table} {...tableProps} className="bg-bg-default border border-border-subtle rounded-2xl" />
+            <Table table={table} {...tableProps} className="bg-bg-card border border-border-subtle rounded-2xl" />
           </div>
         </div>
       </div>

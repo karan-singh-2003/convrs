@@ -24,7 +24,7 @@ export function DodoConnectForm({
     <div className="space-y-5">
       <div>
         <h2 className="font-display text-[15px] font-medium text-neutral-900">
-          Connect your Dodo Payments account
+          2.Connect your Dodo Payments account
         </h2>
         <p className="mt-0.5 font-display text-sm text-neutral-500">
           Dodo doesn't yet list Convrs in its integration marketplace, so
@@ -90,10 +90,21 @@ export function DodoConnectForm({
           </p>
         </div>
       </div>
-
       <Button
         text="Connect"
-        className="h-11 w-full rounded-lg"
+        variant={"settings"}
+        className="
+    h-11
+    w-full
+    rounded-xl
+    font-display
+    font-medium
+    transition-all
+    hover:opacity-90
+    active:scale-[0.99]
+    disabled:opacity-50
+    disabled:hover:opacity-50
+  "
         onClick={onConnect}
         loading={connecting}
         disabled={!isValid || connecting}

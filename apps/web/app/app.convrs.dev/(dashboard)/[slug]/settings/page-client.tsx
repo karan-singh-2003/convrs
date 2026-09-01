@@ -25,7 +25,7 @@ export default function WorkspaceSettingsClient() {
         className=""
       >
         <div className="space-y-7">
-          <UpdateWorkspaceName />
+          {/* <UpdateWorkspaceName /> */}
           {/* <UpdateWorkspaceSlug /> */}
           {/* <UploadLogo /> */}
           <Domain />

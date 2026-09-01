@@ -117,7 +117,7 @@ export default function DashboardPageClient() {
                   </div>
 
                   {/* Graph */}
-                  <DashboardGraph workspaceId={workspace.id} />
+                  {/* <DashboardGraph workspaceId={workspace.id} /> */}
                 </Link>
               ))}
 

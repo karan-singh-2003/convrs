@@ -58,7 +58,7 @@ export function SecurityFilterCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-default">
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-card">
       <div className="space-y-3 p-4">
         <div className="space-y-0.5">
           <h3 className="text-sm font-medium font-display text-content-default">
@@ -76,7 +76,7 @@ export function SecurityFilterCard({
               onChange={(event) => setInputValue(event.target.value)}
               placeholder={placeholder}
               disabled={loading || saving}
-              className="h-10 w-full rounded-none border border-border-subtle bg-bg-emphasis/65 pl-3 pr-24 text-[14px] font-display text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-300 focus:outline-none"
+              className="h-10 w-full rounded-none border border-border-subtle bg-transparent pl-3 pr-24 text-[14px] font-display text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-300 focus:outline-none"
             />
 
             <Button

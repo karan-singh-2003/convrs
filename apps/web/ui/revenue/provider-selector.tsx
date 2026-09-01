@@ -18,7 +18,8 @@ export function ProviderSelector({
   const selected = PROVIDERS.find((p) => p.value === provider)!;
 
   return (
-    <div className="flex items-center justify-between rounded-xl bg-bg-card p-0">
+    <div className="flex flex-col  justify-between rounded-xl gap-2 bg-bg-card p-0">
+    <h1 className="font-display text-content-default text-base items-center gap-2">1. Choose a revenue attribution partner</h1>
       <Popover
         openPopover={openPopover}
         setOpenPopover={setOpenPopover}
@@ -47,7 +48,7 @@ export function ProviderSelector({
       >
         <button className="flex h-10 w-full font-display items-center gap-1.5 rounded-xl border justify-between border-border-subtle bg-bg-emphasis/65 px-4 text-[15px] font-medium text-content-default">
           <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center">{selected.img}</div>
+            {/* <div className="flex size-8 items-center justify-center">{selected.img}</div> */}
             <p className="">  {selected.label}</p>
           </div>
           <ChevronDown className="h-3.5 w-3.5" />

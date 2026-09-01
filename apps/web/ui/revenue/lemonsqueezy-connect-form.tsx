@@ -23,7 +23,7 @@ export function LemonSqueezyConnectForm({
     <div className="space-y-5">
       <div>
         <h2 className="font-display text-[15px] font-medium text-content-default">
-          Connect your Lemon Squeezy account
+          2. Connect your Lemon Squeezy account
         </h2>
         <p className="mt-0.5  font-medium font-display text-sm text-content-subtle">
           Find your Store ID and create an API key, then paste them below.
@@ -71,6 +71,7 @@ export function LemonSqueezyConnectForm({
 
       <Button
         text="Connect"
+        variant={"settings"}
         className="
     h-11
     w-full
@@ -78,8 +79,6 @@ export function LemonSqueezyConnectForm({
     font-display
     font-medium
     transition-all
-    bg-bg-inverted
-    text-content-inverted
     hover:opacity-90
     active:scale-[0.99]
     disabled:opacity-50

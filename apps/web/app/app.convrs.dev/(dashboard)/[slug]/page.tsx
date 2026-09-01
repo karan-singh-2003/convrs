@@ -82,7 +82,7 @@ const DashboardPage = () => {
             </div>
           ) : (
             <div className="relative">
-              <Analytics mode="private" workspaceId={id} workspaceName={name} />
+              {/* <Analytics mode="private" workspaceId={id} workspaceName={name} /> */}
 
               {/* <div className="relative">
                 <div className="fixed bottom-5 px-5 py-3.5 left-5 z-30 w-[430px] rounded-xl border border-border-subtle bg-bg-card  shadow-xl font-display">

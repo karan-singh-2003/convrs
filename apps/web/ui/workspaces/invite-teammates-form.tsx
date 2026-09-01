@@ -49,19 +49,19 @@ function RoleDropdown({
   return (
     <div
       ref={ref}
-      className="relative shrink-0 border-l z-60 border-neutral-200"
+      className="relative shrink-0 border-l z-60 border-border-subtle"
     >
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="font-display flex items-center gap-1 h-10 px-3 text-[13px] text-neutral-500 hover:bg-neutral-50 transition whitespace-nowrap"
+        className="font-display flex items-center gap-1 h-10 px-3 text-[13px] text-content-subtle hover:bg-bg-subtle transition whitespace-nowrap"
       >
         {role}
         <ChevronDown className="size-3" />
       </button>
 
       {open && (
-        <div className="absolute right-0 md:left-0 top-full mt-1.5 w-60 sm:w-[18rem] border border-neutral-200 bg-white shadow-lg rounded-none z-50">
+        <div className="absolute right-0 md:left-0 top-full mt-1.5 w-60 sm:w-[18rem] border border-border-subtle bg-bg-card shadow-lg rounded-none z-50">
           {ROLES.map((r) => (
             <button
               key={r.value}
@@ -71,14 +71,14 @@ function RoleDropdown({
                 setOpen(false);
               }}
               className={cn(
-                "font-display w-full text-left px-4 py-2.5 hover:bg-neutral-50 transition first:rounded-t-md last:rounded-b-md",
-                role === r.value && "bg-neutral-50"
+                "font-display w-full text-left px-4 py-2.5 hover:bg-bg-subtle transition first:rounded-t-md last:rounded-b-md",
+                role === r.value && "bg-bg-subtle"
               )}
             >
-              <div className="text-[13px] font-medium font-display text-neutral-600">
+              <div className="text-[13px] font-medium font-display text-content-default">
                 {r.label}
               </div>
-              <div className="text-[13.5px] mt-1 font-default font-medium text-neutral-500">
+              <div className="text-[13.5px] mt-1 font-default font-medium text-content-subtle">
                 {r.description}
               </div>
             </button>
@@ -170,13 +170,13 @@ export const InviteTeammatesForm = ({
       <div className="space-y-2 w-full">
         {fields.map((field, index) => (
           <div key={field.id} className="relative">
-            <div className="flex w-full border border-neutral-200 bg-white rounded-none">
+            <div className="flex w-full border border-border-subtle bg-bg-card rounded-none">
               <input
                 type="email"
                 placeholder="member@email.com"
                 autoFocus={index === 0 && !isMobile}
                 autoComplete="off"
-                className="font-display flex-1 min-w-0 w-full h-10 px-3 text-sm text-neutral-700 placeholder-neutral-400 bg-transparent border-0 outline-none focus:ring-0"
+                className="font-display flex-1 min-w-0 w-full h-10 px-3 text-sm text-content-default placeholder-content-muted bg-transparent border-0 outline-none focus:ring-0"
                 {...register(`teammates.${index}.email`, {
                   required: index === 0,
                 })}
@@ -192,7 +192,7 @@ export const InviteTeammatesForm = ({
               <button
                 type="button"
                 onClick={() => remove(index)}
-                className="absolute -top-2 -right-2 size-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs shadow-sm"
+                className="absolute -top-2 -right-2 size-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs shadow-sm dark:bg-red-600"
               >
                 <X className="size-3" />
               </button>
@@ -202,7 +202,7 @@ export const InviteTeammatesForm = ({
 
         <button
           type="button"
-          className="font-display w-full h-9 text-[13px] text-neutral-500 font-medium bg-white hover:bg-neutral-50 transition rounded-none disabled:cursor-not-allowed disabled:opacity-50"
+          className="font-display w-full h-9 text-[13px] text-content-subtle font-medium bg-bg-card hover:bg-bg-subtle transition rounded-none disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => append({ email: "", role: "member" })}
         >
           Add more members
@@ -210,7 +210,7 @@ export const InviteTeammatesForm = ({
       </div>
 
       <Button
-        className="font-display w-full h-9 mt-5 rounded-[3px] bg-black/90 text-white text-sm"
+        className="font-display w-full h-9 mt-5 rounded-[3px] border-none bg-bg-inverted text-content-inverted text-sm"
         text={`Send ${pluralize("invite", fields.length)}`}
         disabled={loading || isSubmitting || isSubmitSuccessful}
         loading={isSubmitting || isSubmitSuccessful}

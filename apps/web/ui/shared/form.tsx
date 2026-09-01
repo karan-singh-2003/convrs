@@ -25,7 +25,7 @@ const Form = ({
 
   return (
     <TooltipProvider>
-      <div className="bg-bg-default border border-border-subtle rounded-xl p-4">
+      <div className="bg-bg-card border border-border-subtle rounded-xl p-4">
         <form
           onSubmit={async (e) => {
             e.preventDefault();

@@ -220,9 +220,9 @@ export function Timezone() {
 
 
   return (
-    <div className="overflow-hidden rounded-xl space-y-3 border border-border-subtle  py-3 bg-bg-default">
-      <div className="px-4">
-        <label className="text-sm font-display font-medium text-neutral-600">Time zone</label>
+    <div className="overflow-hidden rounded-xl space-y-3 border border-border-subtle  py-3 bg-bg-card">
+      <div className="px-4 space-y-2">
+        <label className="text-sm font-display font-medium text-content-default ">Time zone</label>
 
         <Combobox
           selected={current}

@@ -161,13 +161,13 @@ export default function KPI() {
     return (
         <>
             <AddGoalModal />
-            <div className="bg-bg-default border border-border-subtle rounded-xl p-4">
+            <div className="bg-bg-card border border-border-subtle rounded-xl p-4">
                 <div className="space-y-3">
                     <div className="space-y-0.5">
-                        <h2 className="font-display text-sm font-medium text-neutral-600">
+                        <h2 className="font-display text-sm font-medium text-content-default">
                             KPI
                         </h2>
-                        <p className="font-display text-[14px] text-neutral-500">
+                        <p className="font-display text-[14px] text-content-subtle">
                             What's the most important metric for this workspace?
                         </p>
                     </div>

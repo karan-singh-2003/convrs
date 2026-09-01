@@ -21,7 +21,7 @@ export function StripeConnectForm({
     <div className=" space-y-5 rounded-2xl  ">
       <div>
         <h2 className="font-display text-[15px] font-medium text-content-default">
-          Connect your Stripe account
+          2. Connect your Stripe account
         </h2>
         <p className="mt-0.5 font-medium font-display text-sm text-content-subtle">
           Create a restricted API key in your <Link href={CONNECT_URLS.stripe} target="_blank" rel="noopener noreferrer" className="text-content-default underline underline-offset-2" > Stripe Dashboard </Link>, then paste it below.
@@ -44,8 +44,9 @@ export function StripeConnectForm({
 
       </div>
 
-      <Button
+          <Button
         text="Connect"
+        variant={"settings"}
         className="
     h-11
     w-full
@@ -53,8 +54,6 @@ export function StripeConnectForm({
     font-display
     font-medium
     transition-all
-    bg-bg-inverted
-    text-content-inverted
     hover:opacity-90
     active:scale-[0.99]
     disabled:opacity-50

@@ -3,7 +3,7 @@ import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 
 export default function WorkspacePeople() {
   return (
-    <PageWidthWrapper size="md">
+    <PageWidthWrapper >
       <WorkspacePeopleClient />
     </PageWidthWrapper>
   );

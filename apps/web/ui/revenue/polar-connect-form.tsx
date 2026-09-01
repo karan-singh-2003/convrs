@@ -21,7 +21,7 @@ export function PolarConnectForm({
     <div className="space-y-5">
       <div>
         <h2 className="font-display text-[15px] font-medium text-content-default">
-          Connect your Polar account
+          2. Connect your Polar account
         </h2>
         <p className="mt-0.5 font-medium font-display text-sm text-content-subtle">
           Enter your Organization ID and Access Token to connect Polar.
@@ -73,6 +73,7 @@ export function PolarConnectForm({
 
       <Button
         text="Connect"
+        variant={"settings"}
         className="
     h-11
     w-full
@@ -80,8 +81,6 @@ export function PolarConnectForm({
     font-display
     font-medium
     transition-all
-    bg-bg-inverted
-    text-content-inverted
     hover:opacity-90
     active:scale-[0.99]
     disabled:opacity-50

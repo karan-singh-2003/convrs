@@ -25,7 +25,8 @@ export const buttonVariants = cva("transition-all duration-200", {
 
       "danger-outline":
         "border border-border-subtle bg-bg-card text-red-600 hover:bg-red-600 hover:text-white",
-
+      settings:
+        " bg-[#5D5D5D] text-[#FFFFFF] hover:opacity-90",
       auth:
         "w-full rounded-none border border-border-default bg-bg-subtle text-content-emphasis hover:bg-bg-muted font-medium",
     },
@@ -126,7 +127,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <div className="flex items-center justify-center gap-2">
-           <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-subtle border-t-bg-inverted" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-subtle border-t-bg-inverted" />
             <span className="text-sm font-display text-content-subtle">
               {text}
             </span>

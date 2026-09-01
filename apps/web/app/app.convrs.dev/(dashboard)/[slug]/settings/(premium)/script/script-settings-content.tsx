@@ -55,7 +55,7 @@ export default function ScriptSettingsContent() {
 
   return (
     <div className="space-y-5">
-      <div className="bg-bg-default rounded-xl border border-border-subtle p-4 px-5 space-y-4">
+      <div className="bg-bg-card rounded-xl border border-border-subtle p-4 px-5 space-y-4">
         <ScriptInstallationCard
           scriptConfig={scriptConfig}
           allowLocalhostDebugging={enabled}

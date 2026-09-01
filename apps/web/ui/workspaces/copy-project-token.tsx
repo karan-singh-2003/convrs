@@ -7,7 +7,7 @@ export default function ProjectToken() {
   const { projectToken } = useWorkspace();
 
   return (
-    <div className="relative w-full rounded-2xl border border-border-subtle bg-bg-default p-4 space-y-2">
+    <div className="relative w-full rounded-2xl border border-border-subtle bg-bg-card p-4 space-y-2">
       <div className="space-y-0.5 font-display">
         <h2 className="text-sm font-medium text-content-default">
           Your Project Token
@@ -20,12 +20,15 @@ export default function ProjectToken() {
       </div>
 
       {projectToken ? (
-        <div className="flex w-full max-w-full items-center justify-between rounded-none border border-border-subtle bg-bg-emphasis/70 px-3 py-1.5">
+        <div className="flex w-full max-w-full items-center justify-between rounded-lg border border-border-subtle bg-bg-emphasis/70 px-3 py-1.5">
           <p className="font-display text-[14.5px] text-content-default">
             {projectToken}
           </p>
 
-          <CopyButton value={projectToken} className="rounded-none" />
+          <CopyButton
+            value={projectToken}
+            className="rounded-none text-content-default"
+          />
         </div>
       ) : (
         <div className="h-[2.35rem] w-full max-w-md animate-pulse rounded-none bg-bg-emphasis" />

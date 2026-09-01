@@ -132,7 +132,7 @@ export function Table<T>({
         </div>
       ) : (
         !loading && (
-          <div className="flex flex-col items-center font-display justify-center py-16 text-center">
+          <div className="flex flex-col bg-bg-card  items-center font-display justify-center py-16 text-center">
             {emptyState || (
               <>
                 <p className="text-sm font-medium font-display text-content-default">

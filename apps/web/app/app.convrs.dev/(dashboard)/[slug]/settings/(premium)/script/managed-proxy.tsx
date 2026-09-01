@@ -358,7 +358,7 @@ export default function ManagedProxyCard() {
 
   return (
     <TooltipProvider>
-      <div className="bg-bg-default border border-border-subtle rounded-xl space-y-4">
+      <div className="bg-bg-card border border-border-subtle rounded-xl space-y-4">
         <div className="flex items-start justify-between px-4 pt-4">
           <div className="space-y-0.5">
             <h2 className="font-medium text-sm font-display text-content-default">Managed Proxy</h2>

@@ -21,7 +21,7 @@ export function PaddleConnectForm({
     <div className="space-y-5">
       <div>
         <h2 className="font-display text-[15px] font-medium text-content-default">
-          Connect your Paddle account
+          2. Connect your Paddle account
         </h2>
         <p className="mt-0.5 font-medium font-display text-sm text-content-subtle">
           Create an API key in your Paddle dashboard, then paste it below.
@@ -51,6 +51,7 @@ export function PaddleConnectForm({
 
       <Button
         text="Connect"
+        variant={"settings"}
         className="
     h-11
     w-full
@@ -58,8 +59,6 @@ export function PaddleConnectForm({
     font-display
     font-medium
     transition-all
-    bg-bg-inverted
-    text-content-inverted
     hover:opacity-90
     active:scale-[0.99]
     disabled:opacity-50
