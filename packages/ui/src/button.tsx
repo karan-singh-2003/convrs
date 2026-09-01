@@ -21,7 +21,7 @@ export const buttonVariants = cva("transition-all duration-200", {
         "border-blue-600 bg-blue-600 text-white hover:bg-blue-700",
 
       danger:
-        "border border-transparent bg-red-600 text-white hover:bg-red-700",
+        " bg-[#B52C2C] text-white hover:bg-[#B52C2C]",
 
       "danger-outline":
         "border border-border-subtle bg-bg-card text-red-600 hover:bg-red-600 hover:text-white",

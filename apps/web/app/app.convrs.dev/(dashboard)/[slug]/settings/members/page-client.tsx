@@ -168,7 +168,7 @@ export default function WorkspacePeopleClient() {
 
         <div className="flex flex-col gap-y-4">
           <div className=" h-fit  space-y-3 bg-bg-card border border-border-subtle rounded-2xl">
-            <div className="flex items-start justify-between border-b p-4 border-border-subtle pb-3">
+            <div className="flex items-start justify-between border-b p-3 px-5 border-border-subtle pb-3">
               <div>
                 <h1 className="font-display text-[14.5px] font-medium text-content-default">
                   Invite Link
@@ -192,7 +192,7 @@ export default function WorkspacePeopleClient() {
                 required
                 readOnly
                 value={`https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN}/invite/${inviteCode || ""}`}
-                className="w-full pr-10 text-sm font-display border border-border-subtle bg-transparent text-content-default focus:border-border-subtle focus:outline-none focus:ring-0"
+                className="w-full pr-10 rounded-lg text-sm font-display border border-border-subtle bg-transparent text-content-default focus:border-border-subtle focus:outline-none focus:ring-0"
               />
 
               <button

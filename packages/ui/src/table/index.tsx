@@ -61,6 +61,11 @@ export function Table<T>({
   }, [table]);
   const rows = table.getPaginationRowModel().rows;
   const hasMultipleRows = rows.length > 1;
+
+  const visibleColumns = table.getVisibleLeafColumns();
+  const skeletonRowCount = table.getState().pagination.pageSize || 5;
+  const showSkeleton = loading && !hasData;
+
   return (
     <div className={cn("relative rounded-none  ", className)}>
       {/* TABLE */}
@@ -77,7 +82,7 @@ export function Table<T>({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-5 py-3 text-left rounded-none text-[12.5px] font-display font-medium text-[#ececed]/60 border-b border-border-subtle"
+                      className="px-5 py-3 text-left rounded-none text-[12.5px] font-display font-medium text-content-subtle border-b border-border-subtle"
                     >
                       {header.isPlaceholder
                         ? null
@@ -105,14 +110,14 @@ export function Table<T>({
                       hasMultipleRows &&
                         !isLastRow &&
                         "border-b border-border-subtle",
-                      onRowClick && "cursor-pointer hover:bg-bg-surface/50"
+                      onRowClick && "cursor-pointer hover:bg-bg-subtle/60"
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
                         className={cn(
-                          "px-5 py-2.5 font-default text-[#ececed]/80 align-middle",
+                          "px-5 py-2.5 font-default text-content-default align-middle",
                           hasMultipleRows &&
                             !isLastRow &&
                             "border-b border-border-subtle"
@@ -127,6 +132,56 @@ export function Table<T>({
                   </tr>
                 );
               })}
+            </tbody>
+          </table>
+        </div>
+      ) : showSkeleton ? (
+        <div className="overflow-x-auto rounded-xl">
+          <table
+            className="w-full border-separate border-spacing-0 text-sm"
+            style={{ minWidth: tableWidth }}
+          >
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="px-5 py-3 text-left text-[12.5px] font-display font-medium text-content-subtle border-b border-border-subtle"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+                <tr key={rowIndex}>
+                  {visibleColumns.map((column, colIndex) => (
+                    <td
+                      key={column.id}
+                      className={cn(
+                        "px-5 py-3 align-middle",
+                        rowIndex !== skeletonRowCount - 1 &&
+                          "border-b border-border-subtle"
+                      )}
+                    >
+                      <div
+                        className="h-3.5 animate-pulse rounded bg-bg-emphasis"
+                        style={{
+                          width: `${colIndex === 0 ? 55 : 35 + ((colIndex * 17) % 40)}%`,
+                        }}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -154,14 +209,14 @@ export function Table<T>({
             <Button
               variant="secondary"
               text="Previous"
-              className="h-8 px-3 font-display rounded-full text-[12px] text-neutral-700/80"
+              className="h-8 px-3 font-display rounded-full text-[12px] text-content-subtle"
               onClick={() => table.previousPage()}
               disabled={table.getState().pagination.pageIndex === 0}
             ></Button>
             <Button
               variant="secondary"
               text="Next"
-              className="h-8 px-3 font-display rounded-full text-[12px] text-neutral-700/80"
+              className="h-8 px-3 font-display rounded-full text-[12px] text-content-subtle"
               onClick={() => table.nextPage()}
               disabled={
                 table.getState().pagination.pageIndex ===
@@ -172,11 +227,11 @@ export function Table<T>({
         </div>
       )}
 
-      {/* LOADING OVERLAY */}
+      {/* LOADING OVERLAY (only while refreshing existing data) */}
       <AnimatePresence>
-        {loading && (
+        {loading && hasData && (
           <motion.div
-            className="absolute top-10 inset-0 flex items-center justify-center  backdrop-blur-sm"
+            className="absolute inset-0 flex items-start justify-center bg-bg-card/60 pt-16 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -187,10 +242,13 @@ export function Table<T>({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center gap-3 rounded-full  px-4 py-2"
+              className="flex items-center gap-3 rounded-full border border-border-subtle bg-bg-card px-4 py-2 shadow-sm"
             >
               {/* Spinner */}
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-border-default border-t-content-emphasis" />
+              <span className="font-display text-[12.5px] text-content-subtle">
+                Loading…
+              </span>
             </motion.div>
           </motion.div>
         )}

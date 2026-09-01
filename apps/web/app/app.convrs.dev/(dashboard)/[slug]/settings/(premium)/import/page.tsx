@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PageWidthWrapper } from "@/ui/layout/page-width-wrapper";
 import SettingsChildrenLayout from "@/ui/workspaces/SettingsChildrentLayout";
 import useWorkspace from "@/lib/swr/use-workspace";
+import { Button } from "@repo/ui";
 
 type UploadStatus =
   | { state: "idle" }
@@ -53,17 +54,10 @@ function FileUploadCard({
   }
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-bg-card p-4 sm:p-4">
-      <div className="w-full space-y-5">
-        <div>
-          <h2 className="font-display text-[15px] font-medium text-content-default">
-            {title}
-          </h2>
-
-          <p className="mt-0.5 font-display text-[14px] text-content-subtle">
-            {description}
-          </p>
-        </div>
+    <div className="rounded-2xl  bg-bg-card p-4 sm:p-4">
+      <div className="w-full space-y-3">
+        <h1 className="font-medium font-display text-sm text-content-subtle">1. Export your data from Plausible</h1>
+        <h1 className="font-medium font-display text-sm text-content-subtle">2. Upload the zip file below</h1>
 
         <label className="flex h-11 cursor-pointer items-center justify-between gap-3 rounded-lg border border-border-subtle bg-bg-subtle px-2 pl-4 transition hover:bg-bg-emphasis">
           <span className="flex-1 truncate font-display text-[13.5px] text-content-subtle">
@@ -82,14 +76,14 @@ function FileUploadCard({
           />
         </label>
 
-        <button
+        <Button
           type="button"
+          variant={"settings"}
           disabled={!file || status.state === "uploading"}
           onClick={handleImport}
-          className="flex h-11 w-full items-center justify-center rounded-lg bg-bg-inverted font-display text-sm font-medium text-content-inverted transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {status.state === "uploading" ? "Importing…" : buttonLabel}
-        </button>
+          text={status.state === "uploading" ? "Importing…" : buttonLabel}
+          className="rounded-xl font-display "
+        />
 
         {status.state === "success" && (
           <p className="font-display text-xs text-green-600">

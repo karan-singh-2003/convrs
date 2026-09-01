@@ -317,7 +317,7 @@ export default function SocialIntegrationSettingsCard() {
   }
   if (planFamily !== "growth") {
     return (
-      <div className="rounded-2xl border border-border-subtle bg-bg-card overflow-hidden">
+      <div className="rounded-2xl  bg-bg-card overflow-hidden">
         <div className="border-b border-border-subtle px-5 py-4">
           <div className="flex items-center gap-4 justify-between">
             <div>
@@ -340,7 +340,7 @@ export default function SocialIntegrationSettingsCard() {
         <div className="p-8">
           <div className="mx-auto max-w-lg text-center">
             <button
-              className="mt-0 inline-flex h-10 items-center justify-center rounded-lg bg-bg-inverted px-5 text-[13.5px] font-display font-medium text-content-inverted transition hover:opacity-90"
+              className="mt-0 inline-flex h-10 items-center justify-center rounded-lg bg-bg-inverted px-5 text-[14px] font-display font-medium text-content-inverted transition hover:opacity-90"
               onClick={() => {
                 router.push(`/${slug}/settings/billing`)
               }}
@@ -348,7 +348,7 @@ export default function SocialIntegrationSettingsCard() {
               Upgrade to Growth
             </button>
 
-            <p className="mt-3 text-[13px] font-display text-content-subtle">
+            <p className="mt-3 text-[13.5px] font-display text-content-subtle">
               Unlock X monitoring and every other Growth feature.
             </p>
           </div>
@@ -358,7 +358,7 @@ export default function SocialIntegrationSettingsCard() {
   }
 
   return (
-    <div className="bg-bg-card border border-border-subtle rounded-2xl">
+    <div className="bg-bg-card rounded-2xl">
       <div className="px-5 py-4 border-b border-border-subtle">
         <div className="flex items-center justify-between">
           <h3 className="font-display font-medium text-[15px] text-content-default">
