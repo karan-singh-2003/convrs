@@ -175,7 +175,7 @@ export default function KPI() {
                     {kpiLoading ? (
                         <div className="h-10 animate-pulse rounded-lg bg-bg-card" />
                     ) : (
-                        <>
+                        <div className="space-y-3">
                             <ToggleGroup
                                 options={[
                                     { value: "Revenue", label: "Revenue" },
@@ -189,7 +189,7 @@ export default function KPI() {
 
                             {kpi === "Revenue" && (
                                 <RadioGroup value="revenue">
-                                    <div className="flex items-center rounded-2xl bg-bg-card border border-border-subtle px-4 pb-2 pt-[0.4rem]">
+                                    <div className="flex items-center rounded-2xl bg-bg-card border border-border-subtle px-4 pb-2 gap-4 pt-[0.4rem]">
                                         <RadioGroupItem value="revenue" id="option-revenue" />
                                         <div>
                                             <Label
@@ -265,7 +265,7 @@ export default function KPI() {
                                 {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                                 {saving ? "Saving..." : "Save KPI"}
                             </button>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
