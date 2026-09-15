@@ -30,6 +30,7 @@ model Customer {
 
   workspace              Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   payments               Payment[]
+  subscriptions          CustomerSubscription[]
 
   @@unique([workspaceId, externalId])
   @@index([workspaceId, email])

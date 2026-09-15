@@ -178,6 +178,7 @@ import { APP_DOMAIN, cn, getPlanDetails, isDowngradePlan, type PricingFamily } f
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { BILLING_V2 } from "@/lib/billing/flags";
 
 type Props = {
   plan: string;
@@ -207,6 +208,8 @@ export function UpgradePlanButton({
 
   const {
     slug,
+    id: workspaceId,
+    subscription,
     plan: currentPlanName,
     planFamily: currentPlanFamily,
     billingInterval: currentInterval,
@@ -249,6 +252,53 @@ export function UpgradePlanButton({
   async function performUpgrade(): Promise<string | null> {
     const queryString = searchParams.toString();
     const baseUrl = `${APP_DOMAIN}${pathname}${queryString ? `?${queryString}` : ""}`;
+    const onboarding = searchParams.get("workspace") ? "true" : "false";
+
+    // Deploy 3b: talk to the new subscription endpoints. An already-covered
+    // workspace changes plan in place; an uncovered one gets a checkout URL.
+    if (BILLING_V2) {
+      const targetTier = targetPlan?.tier;
+      if (!targetTier) throw new Error("Unknown plan");
+
+      const covered =
+        subscription?.id &&
+        ["active", "trialing", "past_due"].includes(subscription.status);
+
+      if (covered) {
+        const res = await fetch(`/api/subscriptions/${subscription!.id}/change-plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            targetFamily: family,
+            targetTier,
+            targetInterval: period,
+          }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.error || "Upgrade failed");
+        }
+        return null;
+      }
+
+      const res = await fetch(`/api/subscriptions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          intent: family,
+          tier: targetTier,
+          interval: period,
+          targetWorkspaceId: workspaceId,
+          onboarding: onboarding === "true",
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || "Upgrade failed");
+      }
+      const data = await res.json();
+      return data.checkoutUrl ?? null;
+    }
 
     const res = await fetch(`/api/workspaces/${slug}/billing/upgrade`, {
       method: "POST",
@@ -258,7 +308,7 @@ export function UpgradePlanButton({
         family,
         period,
         baseUrl,
-        onboarding: searchParams.get("workspace") ? "true" : "false",
+        onboarding,
       }),
     });
 

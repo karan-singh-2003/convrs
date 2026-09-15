@@ -5,6 +5,8 @@ export const updateKpiSchema = z
   .object({
     kpiType: z.enum(["revenue", "goal"]),
     kpiEventName: z.string().trim().min(1).optional(),
+    // Only meaningful when kpiType is "revenue".
+    kpiRevenueMetric: z.enum(["revenue", "mrr"]).optional(),
   })
   .refine((v) => v.kpiType === "revenue" || !!v.kpiEventName, {
     message: "kpiEventName is required when kpiType is 'goal'",

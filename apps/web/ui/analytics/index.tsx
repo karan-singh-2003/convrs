@@ -9,8 +9,9 @@ import { LowerGrid } from "./goals-section";
 import { PagesSection } from "./pages-section";
 import { SourcesSection } from "./sources-section";
 import { useContext } from "react";
-import { LoadingSpinner } from "@repo/ui";
 import BotFilteringCard from "./bot-filtering-card";
+import { DashboardSkeleton } from "./dashboard-skeleton";
+import { useDashboardCards } from "@/lib/analytics/use-dashboard-cards";
 
 export default function Analytics({ mode, workspaceId, workspaceName }) {
   return (
@@ -32,13 +33,10 @@ function AnalyticsContent({
   workspaceName: string;
 }) {
   const { selectedTab, totalEventsLoading } = useContext(AnalyticsContext);
+  const { settings: dashboardCardSettings } = useDashboardCards(workspaceId);
 
   if (totalEventsLoading) {
-    return (
-      <div className="flex items-center justify-center h-[500px]">
-        <LoadingSpinner />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -58,9 +56,11 @@ function AnalyticsContent({
             <LowerGrid />
           </div>
         )}
-        <div className="max-w-screen-lg mx-auto">
-          <BotFilteringCard />
-        </div>
+        {dashboardCardSettings.botFiltering && (
+          <div className="max-w-screen-lg mx-auto">
+            <BotFilteringCard />
+          </div>
+        )}
 
 
       </div>

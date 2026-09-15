@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { randomUUID, createHash } from "crypto";
 import * as z from "zod/v4";
 import { classifyBotUserAgent } from "@convrs/ai-bot-sdk";
-import { trackBotEvent } from "@repo/analytics";
+import { trackBotEvent, isWorkspaceEntitled } from "@repo/analytics";
 import { prisma } from "@repo/db";
 
 // ── Incoming payload from @convrs/ai-bot-sdk's sendBotEvent() ────────────────
@@ -53,6 +53,8 @@ export async function trackAICrawlerController(req: Request, res: Response) {
         blockedCountries: true,
         botTrafficRequireAuth: true,
         subscriptionStatus: true,
+        freeTrialEndDate: true,
+        paymentFailedAt: true,
       },
     });
 
@@ -60,7 +62,8 @@ export async function trackAICrawlerController(req: Request, res: Response) {
       return res.status(404).json({ success: false, error: "Workspace not found" });
     }
 
-    if (workspace.subscriptionStatus === "inactive") {
+    // D6: same entitlement policy as apps/web's dashboard and track.ts.
+    if (!isWorkspaceEntitled(workspace)) {
       return res.status(403).json({ success: false, error: "Subscription inactive" });
     }
 

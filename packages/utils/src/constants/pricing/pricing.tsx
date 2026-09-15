@@ -1,325 +1,205 @@
-// /**
-//  * packages/utils/src/pricing.ts
-//  */
-
-// export type PlanFeatures = {
-//   id: string;
-//   name: string;
-// };
-
-// export type PlanDetails = {
-//   name: string;
-//   price: {
-//     monthly: number | null;
-//     yearly: number | null;
-//     ids?: {
-//       monthly: string;
-//       yearly: string;
-//     };
-//   };
-//   limits: {
-//     events: number;
-//   };
-//   featureTitle?: string;
-//   features?: PlanFeatures[];
-// };
-
-// // ─── Dodo testing Product IDs ─────────────────────────────────────────────────────────
-
-// // const PRODUCT_IDS = {
-// //   starter: {
-// //     monthly: "pdt_0NdQZEKYFbEhiC2G1iuxI",
-// //     yearly:  "pdt_0NdQZKlr1ulxmSL4H2pLm",
-// //   },
-// //   basic: {
-// //     monthly: "pdt_0Ne6T12o5m5JRQ3dxIC9c",
-// //     yearly:  "pdt_0Ne6T7wV7CK2jcSgL1tQ5",
-// //   },
-// //   pro: {
-// //     monthly: "pdt_0NdQZe5tfdWWGVyBbEzMC",
-// //     yearly:  "pdt_0NdQZj9gYH2urESRYKdbd",
-// //   },
-// //   growth: {
-// //     monthly: "pdt_0NdQZocJrfVDBby2RMhs4",
-// //     yearly:  "pdt_0NdQdnhULy6GydM4QmtWs",
-// //   },
-// //   business: {
-// //     monthly: "pdt_0NdQZvCbP0tQpbhnmUTIp",
-// //     yearly:  "pdt_0NdQa4CQrqsCFvt9B3dhH",
-// //   },
-// //   scale: {
-// //     monthly: "pdt_0NdQa8Vc6T6NGnVx2DfPd",
-// //     yearly:  "pdt_0NdQaDEbN58MSda9aDwwt",
-// //   },
-// //   pro_plus: {
-// //     monthly: "pdt_0NdQaHQ5se9vGGkR44nds",
-// //     yearly:  "pdt_0NdQaNTXSjo8UlZYx9ga5",
-// //   },
-// //   enterprise: {
-// //     monthly: "pdt_0Ne6UOmg3pCcJljShHRP1",
-// //     yearly:  "pdt_0Ne6UJ3vHbjeY1J1613hD",
-// //   },
-// //   ultimate: {
-// //     monthly: "pdt_0Ne6UbBxxmN9VJ2SRLUfN",
-// //     yearly:  "pdt_0Ne6UXcHfmTprzFe5905p",
-// //   },
-// // } as const;
-
-
-// // prodcution pricing ids
-// const PRODUCT_IDS = {
-//   starter: {
-//     monthly: "pdt_0NiLtXHVn7qIbuSApa1CC", // 10K Events
-//     yearly: "pdt_0NiLtWsbcVuqlRyhHtTzy",
-//   },
-//   basic: {
-//     monthly: "pdt_0NiLtWB8q7cdPiloC3TSS", // 25K Events
-//     yearly: "pdt_0NiLtWYJkCIvrsH9XHuXX",
-//   },
-//   pro: {
-//     monthly: "pdt_0NiLtBPEZgwM3avEYH8f0", // 100K Events
-//     yearly: "pdt_0NiLtVnipCBTJUqRqwmK4",
-//   },
-//   growth: {
-//     monthly: "pdt_0NiLtVYKgLhikplp5jgfC", // 500K Events
-//     yearly: "pdt_0NiLtV8V3pnqd5sUE6pMK",
-//   },
-//   business: {
-//     monthly: "pdt_0NiLtUdYuBeLpqQnksJmP", // 1M Events
-//     yearly: "pdt_0NiLtTPArf4ImG9HzbqMo",
-//   },
-//   scale: {
-//     monthly: "pdt_0NiLtT6RjBPWSsCI5H5X4", // 5M Events
-//     yearly: "pdt_0NiLtAirntr5Ej5KQTQFf",
-//   },
-//   pro_plus: {
-//     monthly: "pdt_0NiLtSllfCPniyzeMunga", // 10M Events
-//     yearly: "pdt_0NiLtSU9GnqmyK9fbL68W",
-//   },
-//   enterprise: {
-//     monthly: "pdt_0NiLtCiIkLK6mQ2EpFDGN", // 15M Events
-//     yearly: "pdt_0NiLtDXtOCPsj4kyuMksX",
-//   },
-//   ultimate: {
-//     monthly: "pdt_0NiLtCDmHaCr0ZQ3CIDFZ", // 25M Events
-//     yearly: "pdt_0NiLtBokX11QHoqjpUDAf",
-//   },
-// } as const;
-
-// // ─── Common features ──────────────────────────────────────────────────────────
-
-// const CORE_FEATURES: PlanFeatures[] = [
-//   { id: "analytics", name: "Full analytics dashboard" },
-//   { id: "api", name: "API access" },
-//   { id: "webhooks", name: "Webhook events" },
-//   { id: "export", name: "Data export" },
-//   { id: "support", name: "Email support" },
-//   { id: "realtime", name: "Real-time event tracking" },
-//   { id: "retention", name: "90-day data retention" },
-// ];
-
-// // ─── Plans ────────────────────────────────────────────────────────────────────
-
-// export const PLANS: PlanDetails[] = [
-//   {
-//     name: "Starter",
-//     price: { monthly: 9, yearly: 84, ids: PRODUCT_IDS.starter },
-//     limits: { events: 10_000 },
-//     featureTitle: "Includes:",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Basic",
-//     price: { monthly: 24, yearly: 230, ids: PRODUCT_IDS.basic },
-//     limits: { events: 25_000 },
-//     featureTitle: "Everything in Starter +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Pro",
-//     price: { monthly: 48, yearly: 461, ids: PRODUCT_IDS.pro },
-//     limits: { events: 100_000 },
-//     featureTitle: "Everything in Basic +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Growth",
-//     price: { monthly: 79, yearly: 758, ids: PRODUCT_IDS.growth },
-//     limits: { events: 500_000 },
-//     featureTitle: "Everything in Pro +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Business",
-//     price: { monthly: 149, yearly: 1_430, ids: PRODUCT_IDS.business },
-//     limits: { events: 1_000_000 },
-//     featureTitle: "Everything in Growth +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Scale",
-//     price: { monthly: 249, yearly: 2_390, ids: PRODUCT_IDS.scale },
-//     limits: { events: 5_000_000 },
-//     featureTitle: "Everything in Business +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Pro Plus",
-//     price: { monthly: 399, yearly: 3_830, ids: PRODUCT_IDS.pro_plus },
-//     limits: { events: 10_000_000 },
-//     featureTitle: "Everything in Scale +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Enterprise",
-//     price: { monthly: 569, yearly: 5_462, ids: PRODUCT_IDS.enterprise },
-//     limits: { events: 15_000_000 },
-//     featureTitle: "Everything in Pro Plus +",
-//     features: CORE_FEATURES,
-//   },
-//   {
-//     name: "Ultimate",
-//     price: { monthly: 899, yearly: 8_630, ids: PRODUCT_IDS.ultimate },
-//     limits: { events: 25_000_000 },
-//     featureTitle: "Everything in Enterprise +",
-//     features: CORE_FEATURES,
-//   },
-// ];
-
-// // ─── Named exports ────────────────────────────────────────────────────────────
-
-// export const Starter_Plan = PLANS[0];
-// export const Basic_Plan = PLANS[1];
-// export const Pro_Plan = PLANS[2];
-// export const Growth_Plan = PLANS[3];
-// export const Business_Plan = PLANS[4];
-// export const Scale_Plan = PLANS[5];
-// export const ProPlus_Plan = PLANS[6];
-// export const Enterprise_Plan = PLANS[7];
-// export const Ultimate_Plan = PLANS[8];
-
-// export const SELF_SERVE_PLANS = PLANS;
-// // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-// /**
-//  * Find a plan AND billing interval from a Dodo product ID.
-//  *
-//  * Searches both ids.monthly and ids.yearly on every plan so webhook
-//  * handlers can do a single lookup and know exactly what was purchased.
-//  *
-//  * Replaces getPlanFromPriceId — same call signature, richer return value.
-//  */
-// export const getPlanFromProductId = (
-//   productId: string
-// ): { plan: PlanDetails | null; interval: "monthly" | "yearly" | null } => {
-//   for (const plan of PLANS) {
-//     if (!plan.price.ids) continue;
-//     if (plan.price.ids.monthly === productId) return { plan, interval: "monthly" };
-//     if (plan.price.ids.yearly === productId) return { plan, interval: "yearly" };
-//   }
-//   return { plan: null, interval: null };
-// };
-
-// /** Find a plan by name (case-insensitive). */
-// export const getPlanDetails = ({
-//   plan,
-// }: {
-//   plan: string;
-// }): { plan: PlanDetails | null } => {
-//   const found = PLANS.find((p) => p.name.toLowerCase() === plan.toLowerCase());
-//   return { plan: found ?? null };
-// };
-
-// /**
-//  * Get the correct Dodo product ID for a plan + billing interval.
-//  * Used in the upgrade route when creating a checkout session or changing plan.
-//  */
-// export const getProductId = ({
-//   planName,
-//   interval,
-// }: {
-//   planName: string;
-//   interval: "monthly" | "yearly";
-// }): string | null => {
-//   const { plan } = getPlanDetails({ plan: planName });
-//   if (!plan?.price.ids) return null;
-//   return plan.price.ids[interval];
-// };
-
-// /** Get the next plan up from the current one. Returns last plan if already at top. */
-// export const getNextPlan = (planName?: string | null): PlanDetails => {
-//   if (!planName) return Starter_Plan;
-//   const idx = PLANS.findIndex(
-//     (p) => p.name.toLowerCase() === planName.toLowerCase()
-//   );
-//   if (idx === -1) return Starter_Plan;
-//   return PLANS[Math.min(idx + 1, PLANS.length - 1)];
-// };
-
-// /** Returns true if switching from currentPlan to newPlan is a downgrade. */
-// export const isDowngradePlan = ({
-//   currentPlan,
-//   newPlan,
-// }: {
-//   currentPlan: string;
-//   newPlan: string;
-// }): boolean => {
-//   const currentIdx = PLANS.findIndex(
-//     (p) => p.name.toLowerCase() === currentPlan.toLowerCase()
-//   );
-//   const newIdx = PLANS.findIndex(
-//     (p) => p.name.toLowerCase() === newPlan.toLowerCase()
-//   );
-//   return newIdx < currentIdx;
-// };
-
-// /** Format event limit for display (e.g. 1_000_000 → "1M events/mo"). */
-// export const formatEventLimit = (events: number): string => {
-//   if (events >= 1_000_000) return `${events / 1_000_000}M events/mo`;
-//   if (events >= 1_000) return `${events / 1_000}K events/mo`;
-//   return `${events} events/mo`;
-// };
-
-// /**
-//  * @deprecated Use getPlanFromProductId instead.
-//  * Kept so any remaining call-sites don't break at compile time.
-//  */
-// export const getPlanFromPriceId = getPlanFromProductId as unknown as (args: {
-//   priceId: string;
-// }) => { plan: PlanDetails | null; interval: "monthly" | "yearly" | null };
-
-
-
-// ------------------------------------------------------------------------------------
-// -------------------------------------version 2--------------------------------------
-// ------------------------------------------------------------------------------------
-
-
 /**
- * packages/utils/src/pricing.ts
+ * packages/utils/src/constants/pricing/pricing.tsx
  *
- * Two pricing FAMILIES now exist, each with the same event-tier ladder:
- *   - "standard": your original pricing (unchanged product IDs/prices)
- *   - "growth":   same tiers, higher price, unlocks X/Reddit attribution
+ * The Convrs subscription-billing catalog — the single source of truth for
+ * tiers, prices, event allowances, and Dodo product ids. Consumed by
+ * `apps/web/lib/billing/*` (Deploy 2/3), the billing UI, and
+ * `apps/web/scripts/dodo/dodo-product-audit.ts` (which verifies these ids
+ * against the live Dodo catalog).
  *
- * NAMING COLLISION WARNING: the Standard family already has a tier named
- * "Growth" (500K events, exported as Growth_Plan below). That tier name and
- * the new "growth" FAMILY are two different axes that happen to share a
- * word. A workspace can be on "Growth tier, Standard family" or "Growth
- * tier, Growth family" — always log/display BOTH `plan` and `planFamily`
- * together, never `plan` alone, or these two are indistinguishable in
- * anything but the DB. Strongly consider renaming the family (e.g. to
- * "attribution" or "pro") before this ships broadly.
+ * ── Model (docs/billing-architecture-final.md + docs/billing-invariants.md) ──
+ *   - Two FAMILIES: "standard" (1 workspace/subscription) and "growth"
+ *     (up to 30 workspaces, unlocks X/Reddit attribution).
+ *   - Nine event TIERS, identified by a stable key `t10k … t10m_plus`.
+ *     `name` is a display label only; `tier` is the machine identity.
+ *   - Prices are transcribed VERBATIM from docs/billing-invariants.md §1.
+ *     NEVER recompute or "correct" them — in particular Growth-yearly t100k
+ *     and t200k are BOTH $390 on purpose (D10).
+ *   - `t10m_plus` is a flat-price, effectively uncapped tier: its
+ *     `limits.events` is `UNCAPPED` (2,000,000,000 — see below) so the
+ *     ingestion usage gate never trips in practice (I-10). Display code
+ *     should special-case it.
  */
 
 export type PricingFamily = "standard" | "growth";
+
+/**
+ * The tier ladder, ascending. Index = tier rank (used for up/downgrade
+ * comparison). `TierKey` is derived from this tuple so the two can never drift.
+ */
+export const TIER_KEYS = [
+  "t10k",
+  "t100k",
+  "t200k",
+  "t500k",
+  "t1m",
+  "t2m",
+  "t5m",
+  "t10m",
+  "t10m_plus",
+] as const;
+
+export type TierKey = (typeof TIER_KEYS)[number];
+
+/** Max workspaces a subscription of each family may cover (I-1 / I-2). */
+export const FAMILY_LIMITS: Record<PricingFamily, number> = {
+  standard: 1,
+  growth: 30,
+};
+
+// NOT Number.MAX_SAFE_INTEGER: `tierEvents`/`usageLimit` are Postgres `Int`
+// (32-bit, max 2,147,483,647) columns on Subscription/Workspace. Writing
+// MAX_SAFE_INTEGER (9,007,199,254,740,991) into them throws "Value out of
+// range for the type: ... integer" — verified against the dev DB — which
+// would crash every checkout, webhook, and fan-out for the t10m_plus tier.
+// 2 billion stays safely under the Int32 ceiling (with headroom for the
+// 0.95x usage-warning threshold math) while remaining astronomically larger
+// than any real "10M+ events" customer, and than `Workspace.usage` itself
+// could ever reach (it's the same Int32 type) — still "uncapped" for every
+// practical purpose.
+const UNCAPPED = 2_000_000_000;
+
+/** Event allowance per tier. `t10m_plus` is uncapped. */
+export const TIER_EVENTS: Record<TierKey, number> = {
+  t10k: 10_000,
+  t100k: 100_000,
+  t200k: 200_000,
+  t500k: 500_000,
+  t1m: 1_000_000,
+  t2m: 2_000_000,
+  t5m: 5_000_000,
+  t10m: 10_000_000,
+  t10m_plus: UNCAPPED,
+};
+
+/** Display label per tier (matches the "Events" column of the approved table). */
+export const TIER_LABEL: Record<TierKey, string> = {
+  t10k: "10K",
+  t100k: "100K",
+  t200k: "200K",
+  t500k: "500K",
+  t1m: "1M",
+  t2m: "2M",
+  t5m: "5M",
+  t10m: "10M",
+  t10m_plus: "10M+",
+};
+
+// ── Approved prices in whole US dollars — docs/billing-invariants.md §1 ──────
+// Do not change without an explicit product-owner instruction.
+const PRICES: Record<PricingFamily, Record<TierKey, { monthly: number; yearly: number }>> = {
+  standard: {
+    t10k: { monthly: 9, yearly: 90 },
+    t100k: { monthly: 19, yearly: 190 },
+    t200k: { monthly: 29, yearly: 290 },
+    t500k: { monthly: 49, yearly: 490 },
+    t1m: { monthly: 69, yearly: 690 },
+    t2m: { monthly: 89, yearly: 890 },
+    t5m: { monthly: 129, yearly: 1_290 },
+    t10m: { monthly: 169, yearly: 1_690 },
+    t10m_plus: { monthly: 199, yearly: 1_990 },
+  },
+  growth: {
+    t10k: { monthly: 19, yearly: 190 },
+    t100k: { monthly: 39, yearly: 390 },
+    t200k: { monthly: 59, yearly: 390 }, // intentionally == t100k yearly (D10)
+    t500k: { monthly: 99, yearly: 990 },
+    t1m: { monthly: 139, yearly: 1_390 },
+    t2m: { monthly: 179, yearly: 1_790 },
+    t5m: { monthly: 259, yearly: 2_590 },
+    t10m: { monthly: 339, yearly: 3_390 },
+    t10m_plus: { monthly: 399, yearly: 3_990 },
+  },
+};
+
+// ── Dodo product ids ────────────────────────────────────────────────────────
+// ACTIVE catalog is Live Mode (PRODUCT_IDS below). Source of record:
+// apps/web/scripts/dodo/products.created.live.json — kept in sync by
+// apps/web/lib/billing/plan-resolver.test.ts (36-way equality assertion) and
+// verified against the live Dodo catalog by scripts/dodo/dodo-product-audit.ts
+// (DODO_PAYMENTS_ENVIRONMENT=live_mode).
+//
+// Test Mode ids (kept for reference — NOT used by pricing.tsx). Source of
+// record: apps/web/scripts/dodo/products.created.json. To switch back to Test
+// Mode, uncomment TEST_PRODUCT_IDS below and set `const PRODUCT_IDS = TEST_PRODUCT_IDS`
+// (and repoint plan-resolver.test.ts's import at products.created.json).
+// const TEST_PRODUCT_IDS: Record<PricingFamily, Record<TierKey, { monthly: string; yearly: string }>> = {
+//   standard: {
+//     t10k: { monthly: "pdt_0Nn6GJyQ9lgrVYLcclEhY", yearly: "pdt_0Nn6GJzW8OMr6Hgvb6eCp" },
+//     t100k: { monthly: "pdt_0Nn6GK1Kjmp7YQSLWrzFF", yearly: "pdt_0Nn6GK2PxTo2QZi5utbIU" },
+//     t200k: { monthly: "pdt_0Nn6GK3GofTQgEeTtjR0a", yearly: "pdt_0Nn6GK49DryeN28Ym42ex" },
+//     t500k: { monthly: "pdt_0Nn6GK58R0iQUAKSl9UnB", yearly: "pdt_0Nn6GK5zI9PEEQrZYegd6" },
+//     t1m: { monthly: "pdt_0Nn6GK6riBXG36Ap8gRvF", yearly: "pdt_0Nn6GK80iS8v9xqugFDyH" },
+//     t2m: { monthly: "pdt_0Nn6GKAjBcEAiaOdajxTc", yearly: "pdt_0Nn6GKG6KbLB9htaZpmv1" },
+//     t5m: { monthly: "pdt_0Nn6GKHjb1CXYV9rXR9sN", yearly: "pdt_0Nn6GKJnEjENrtU45MFAH" },
+//     t10m: { monthly: "pdt_0Nn6GKKkCHAVP4207vKuB", yearly: "pdt_0Nn6GKLbp4Mq89nAS5Eoi" },
+//     t10m_plus: { monthly: "pdt_0Nn6GKN6kYMHIM0HXItld", yearly: "pdt_0Nn6GKOhhUiQFwyeHeHu1" },
+//   },
+//   growth: {
+//     t10k: { monthly: "pdt_0Nn6GKQqgnBxksLse7Xyb", yearly: "pdt_0Nn6GKUDBRt68alX8ZXTn" },
+//     t100k: { monthly: "pdt_0Nn6GKVrvac0f94MehXDs", yearly: "pdt_0Nn6GKWlqk0aV4sYq4CY8" },
+//     t200k: { monthly: "pdt_0Nn6GKXsYeQyafvhfsmCu", yearly: "pdt_0Nn6GKYzKTrDDuC2E4AbY" },
+//     t500k: { monthly: "pdt_0Nn6GKbBIebA0D4z3pfXr", yearly: "pdt_0Nn6GKbwAibklOKCWgPr2" },
+//     t1m: { monthly: "pdt_0Nn6GKck0b2ZgiZLOn7Am", yearly: "pdt_0Nn6GKdX8AsrLcGCT5CQC" },
+//     t2m: { monthly: "pdt_0Nn6GKeLicEgnZWCivDIX", yearly: "pdt_0Nn6GKfsAfcv6IO5oH4UC" },
+//     t5m: { monthly: "pdt_0Nn6GKgyvinSvuF3HzMXS", yearly: "pdt_0Nn6GKiBgcNWaS7sODsmh" },
+//     t10m: { monthly: "pdt_0Nn6GKj46qVilJHIb5p7e", yearly: "pdt_0Nn6GKknMfBSYe2mGtqo3" },
+//     t10m_plus: { monthly: "pdt_0Nn6GKn8PYk3Vxvn1M7MY", yearly: "pdt_0Nn6GKoSlUyJTKwKFaQFX" },
+//   },
+// };
+const PRODUCT_IDS: Record<PricingFamily, Record<TierKey, { monthly: string; yearly: string }>> = {
+  standard: {
+    t10k: { monthly: "pdt_0NnaF2ozKD4anTieZvxfz", yearly: "pdt_0NnaF2pwFTPByyxJuq4kY" },
+    t100k: { monthly: "pdt_0NnaF2qtCRGsd0R3TB37G", yearly: "pdt_0NnaF2rw973co9NSikH4F" },
+    t200k: { monthly: "pdt_0NnaF2tBE6VdsWPhpH8W1", yearly: "pdt_0NnaF2u2qc1yIBMhLqH3j" },
+    t500k: { monthly: "pdt_0NnaF2vzkdIAaX8Y4LFue", yearly: "pdt_0NnaF2wnZuldJeuKtu14U" },
+    t1m: { monthly: "pdt_0NnaF2xxKuMGM1yxQYkH0", yearly: "pdt_0NnaF2z8cTqe6KXmQUtEQ" },
+    t2m: { monthly: "pdt_0NnaF305XwqGQj6X40ZxV", yearly: "pdt_0NnaF318Y0MUk2v184bwM" },
+    t5m: { monthly: "pdt_0NnaF32jVK4yFEyTxuaKr", yearly: "pdt_0NnaF33yYvAGq9t6vBSNq" },
+    t10m: { monthly: "pdt_0NnaF34nxCGaaRQoXAvTW", yearly: "pdt_0NnaF35h4ayPHnpUfmWeA" },
+    t10m_plus: { monthly: "pdt_0NnaF36bkcTGlX7MebjH7", yearly: "pdt_0NnaF37XuxiWiVAcL8XJl" },
+  },
+  growth: {
+    t10k: { monthly: "pdt_0NnaF38YbfUNTuXxkv7in", yearly: "pdt_0NnaF39PUcCt5JzJWuWL2" },
+    t100k: { monthly: "pdt_0NnaF3AWEYjg2vo8sIBLi", yearly: "pdt_0NnaF3Bd0JKdSSIyAgaY3" },
+    t200k: { monthly: "pdt_0NnaF3CSNexJKIIhQ7cNK", yearly: "pdt_0NnaF3DT3XXtSnGg9QZKI" },
+    t500k: { monthly: "pdt_0NnaF3EZ4KMGEsYAgT5He", yearly: "pdt_0NnaF3FjZyViP2jf8Kba5" },
+    t1m: { monthly: "pdt_0NnaF3GlmxgXDCveQiyqn", yearly: "pdt_0NnaF3Hkz8rmnDM0dyuvy" },
+    t2m: { monthly: "pdt_0NnaF3IdOGJrJUmuPaPcE", yearly: "pdt_0NnaF3JQUr0jyI4JwBlBK" },
+    t5m: { monthly: "pdt_0NnaF3KIsDM69niv6lGNR", yearly: "pdt_0NnaF3L8Hq9c2Xa707JXC" },
+    t10m: { monthly: "pdt_0NnaF3MCjEGhKdApb5PZq", yearly: "pdt_0NnaF3N26k2NUNG7aBUYA" },
+    t10m_plus: { monthly: "pdt_0NnaF3Nw0JdfBc3XGXPpB", yearly: "pdt_0NnaF3OqgAbEzyCIyxe4h" },
+  },
+};
+
+// ── Shared feature lists ────────────────────────────────────────────────────
 
 export type PlanFeatures = {
   id: string;
   name: string;
 };
 
+const CORE_FEATURES: PlanFeatures[] = [
+  { id: "analytics", name: "Full analytics dashboard" },
+  { id: "bot", name: "AI-crawler / bot traffic detection" },
+  { id: "attribution", name: "Marketing / revenue attribution" },
+  { id: "api", name: "API, CLI & MCP access" },
+  { id: "webhooks", name: "Webhook events" },
+  { id: "export", name: "Data export" },
+  { id: "retention", name: "5+ years of data retention" },
+];
+
+const GROWTH_FEATURES: PlanFeatures[] = [
+  ...CORE_FEATURES,
+  { id: "social_attribution", name: "X / Reddit link attribution & mentions" },
+];
+
+// ── Plan shape ──────────────────────────────────────────────────────────────
+
 export type PlanDetails = {
+  /** stable machine identity */
+  tier: TierKey;
+  /** display label, e.g. "100K" */
   name: string;
   family: PricingFamily;
   price: {
@@ -331,375 +211,39 @@ export type PlanDetails = {
     };
   };
   limits: {
+    /** event allowance; UNCAPPED (2_000_000_000, Int32-safe) for the uncapped t10m_plus tier */
     events: number;
   };
-  /** Drives feature-gating — see lib/billing/entitlements.ts */
+  /** true for every Growth-family tier — drives lib/billing/entitlement.ts */
   unlocksSocialAttribution: boolean;
   featureTitle?: string;
   features?: PlanFeatures[];
 };
 
-// ─── Standard family — Dodo product IDs (unchanged from before) ──────────────
+function buildFamily(family: PricingFamily): PlanDetails[] {
+  return TIER_KEYS.map((tier, i) => ({
+    tier,
+    name: TIER_LABEL[tier],
+    family,
+    price: {
+      monthly: PRICES[family][tier].monthly,
+      yearly: PRICES[family][tier].yearly,
+      ids: PRODUCT_IDS[family][tier],
+    },
+    limits: { events: TIER_EVENTS[tier] },
+    unlocksSocialAttribution: family === "growth",
+    featureTitle:
+      i === 0
+        ? family === "growth"
+          ? "Everything in Standard +"
+          : "Includes:"
+        : `Everything in ${TIER_LABEL[TIER_KEYS[i - 1]]} +`,
+    features: family === "growth" ? GROWTH_FEATURES : CORE_FEATURES,
+  }));
+}
 
-// const STANDARD_PRODUCT_IDS = {
-//   starter: {
-//     monthly: "pdt_0NiLtXHVn7qIbuSApa1CC", // 10K Events
-//     yearly: "pdt_0NiLtWsbcVuqlRyhHtTzy",
-//   },
-//   basic: {
-//     monthly: "pdt_0NiLtWB8q7cdPiloC3TSS", // 25K Events
-//     yearly: "pdt_0NiLtWYJkCIvrsH9XHuXX",
-//   },
-//   pro: {
-//     monthly: "pdt_0NiLtBPEZgwM3avEYH8f0", // 100K Events
-//     yearly: "pdt_0NiLtVnipCBTJUqRqwmK4",
-//   },
-//   growth: {
-//     monthly: "pdt_0NiLtVYKgLhikplp5jgfC", // 500K Events
-//     yearly: "pdt_0NiLtV8V3pnqd5sUE6pMK",
-//   },
-//   business: {
-//     monthly: "pdt_0NiLtUdYuBeLpqQnksJmP", // 1M Events
-//     yearly: "pdt_0NiLtTPArf4ImG9HzbqMo",
-//   },
-//   scale: {
-//     monthly: "pdt_0NiLtT6RjBPWSsCI5H5X4", // 5M Events
-//     yearly: "pdt_0NiLtAirntr5Ej5KQTQFf",
-//   },
-//   pro_plus: {
-//     monthly: "pdt_0NiLtSllfCPniyzeMunga", // 10M Events
-//     yearly: "pdt_0NiLtSU9GnqmyK9fbL68W",
-//   },
-//   enterprise: {
-//     monthly: "pdt_0NiLtCiIkLK6mQ2EpFDGN", // 15M Events
-//     yearly: "pdt_0NiLtDXtOCPsj4kyuMksX",
-//   },
-//   ultimate: {
-//     monthly: "pdt_0NiLtCDmHaCr0ZQ3CIDFZ", // 25M Events
-//     yearly: "pdt_0NiLtBokX11QHoqjpUDAf",
-//   },
-// } as const;
-
-
-// prodution 
-const STANDARD_PRODUCT_IDS = {
-  starter: {
-    monthly: "pdt_0NiLtXHVn7qIbuSApa1CC", // 10K Events
-    yearly: "pdt_0NiLtWsbcVuqlRyhHtTzy",
-  },
-  basic: {
-    monthly: "pdt_0NiLtWB8q7cdPiloC3TSS", // 25K Events
-    yearly: "pdt_0NiLtWYJkCIvrsH9XHuXX",
-  },
-  pro: {
-    monthly: "pdt_0NiLtBPEZgwM3avEYH8f0", // 100K Events
-    yearly: "pdt_0NiLtVnipCBTJUqRqwmK4",
-  },
-  growth: {
-    monthly: "pdt_0NiLtVYKgLhikplp5jgfC", // 500K Events
-    yearly: "pdt_0NiLtV8V3pnqd5sUE6pMK",
-  },
-  business: {
-    monthly: "pdt_0NiLtUdYuBeLpqQnksJmP", // 1M Events
-    yearly: "pdt_0NiLtTPArf4ImG9HzbqMo",
-  },
-  scale: {
-    monthly: "pdt_0NiLtT6RjBPWSsCI5H5X4", // 5M Events
-    yearly: "pdt_0NiLtAirntr5Ej5KQTQFf",
-  },
-  pro_plus: {
-    monthly: "pdt_0NiLtSllfCPniyzeMunga", // 10M Events
-    yearly: "pdt_0NiLtSU9GnqmyK9fbL68W",
-  },
-  enterprise: {
-    monthly: "pdt_0NiLtCiIkLK6mQ2EpFDGN", // 15M Events
-    yearly: "pdt_0NiLtDXtOCPsj4kyuMksX",
-  },
-  ultimate: {
-    monthly: "pdt_0NiLtCDmHaCr0ZQ3CIDFZ", // 25M Events
-    yearly: "pdt_0NiLtBokX11QHoqjpUDAf",
-  },
-} as const;
-
-// ─── Growth family — PLACEHOLDER product IDs ─────────────────────────────────
-// You must create 9 new subscription products in the Dodo dashboard (one per
-// tier x monthly/yearly = 18 products) and paste the real IDs in here before
-// this family can actually be purchased. Checkout will fail with "Invalid
-// plan" until these are replaced.
-
-// const GROWTH_PRODUCT_IDS = {
-//   starter: {
-//     monthly: "pdt_0NkMZfj9YP0AoZv8kBUUu", // 10K Events
-//     yearly: "pdt_0NkMZxGEsgd2vhFoTfteD",
-//   },
-//   basic: {
-//     monthly: "pdt_0NkMaN7eVN138J2NP269H", // 25K Events
-//     yearly: "pdt_0NkMaSyfV0OtgOWttVTwR",
-//   },
-//   pro: {
-//     monthly: "pdt_0NkMaZxwX5bRAJ1VOAk1e", // 100K Events
-//     yearly: "pdt_0NkMaf2zFm7OJ5RMmPHCU",
-//   },
-//   growth: {
-//     monthly: "pdt_0NkMak49hTAfWPqrSddoZ", // 500K Events
-//     yearly: "pdt_0NkMapVdz97Z9sZ6fI2EY",
-//   },
-//   business: {
-//     monthly: "pdt_0NkMauos3FvpOv97tOgmC", // 1M Events
-//     yearly: "pdt_0NkMb1mCCzxefB3HpdBJZ",
-//   },
-//   scale: {
-//     monthly: "pdt_0NkMb7nSX5hJs9BiH4dGB", // 5M Events
-//     yearly: "pdt_0NkMbCNluetTK6Ulm7Gug",
-//   },
-//   pro_plus: {
-//     monthly: "pdt_0NkMbI7P6EZ60LfKy03b4", // 10M Events
-//     yearly: "pdt_0NkMbQPDoU5hLVYdq310V",
-//   },
-//   enterprise: {
-//     monthly: "pdt_0NkMbZC3BjYTHKQHEZzQ1", // 15M Events
-//     yearly: "pdt_0NkMbeEgGKAwfUZrlgpwT",
-//   },
-//   ultimate: {
-//     monthly: "pdt_0NkMbjyUm7juHFCLCigTU", // 25M Events
-//     yearly: "pdt_0NkMboY14l0UVQTG9lDdN",
-//   },
-// } as const;
-
-
-// production
-const GROWTH_PRODUCT_IDS = {
-  starter: {
-    monthly: "pdt_0NkjC6vB9KUDcyrVeDveY", // 10K Events
-    yearly: "pdt_0NkjC6JxCfsKnsfw9fx0B",
-  },
-  basic: {
-    monthly: "pdt_0NkjC5aIR8X8DeYSnTQUQ", // 25K Events
-    yearly: "pdt_0NkjC4qjj4GUVPh8BlUMU",
-  },
-  pro: {
-    monthly: "pdt_0NkjC44HFDPmMIbIkdUP4", // 100K Events
-    yearly: "pdt_0NkjC3Tr6xYavmReD19ym",
-  },
-  growth: {
-    monthly: "pdt_0NkjC2qt7gKqvfP4uua4b", // 500K Events
-    yearly: "pdt_0NkjC1xzjk6q6IWzzkaXZ",
-  },
-  business: {
-    monthly: "pdt_0NkjBzUFD3kTvDcrjlmyO", // 1M Events
-    yearly: "pdt_0NkjByzAlGBN3WWbRbmbb",
-  },
-  scale: {
-    monthly: "pdt_0NkjByTf7I9MEQRiFuPKY", // 5M Events
-    yearly: "pdt_0NkjBxusEe1mGW2q4z6Rk",
-  },
-  pro_plus: {
-    monthly: "pdt_0NkjBxBYdb9cKJ9RFSezl", // 10M Events
-    yearly: "pdt_0NkjBwWiJNlThqEO6LEZn",
-  },
-  enterprise: {
-    monthly: "pdt_0NkjBvx33Cswkxh5j77aU", // 15M Events
-    yearly: "pdt_0NkjBvStDjoWByY1cwz4A",
-  },
-  ultimate: {
-    monthly: "pdt_0NkjBueZA9NnBBeKt4FCe", // 25M Events
-    yearly: "pdt_0NkjBtgwbwHKcqeAKYuTs",
-  },
-} as const;
-// ─── Shared feature lists ─────────────────────────────────────────────────────
-
-const CORE_FEATURES: PlanFeatures[] = [
-  { id: "analytics", name: "Full analytics dashboard" },
-  { id: "api", name: "API access" },
-  { id: "webhooks", name: "Webhook events" },
-  { id: "export", name: "Data export" },
-  { id: "support", name: "Email support" },
-  { id: "realtime", name: "Real-time event tracking" },
-  { id: "retention", name: "90-day data retention" },
-];
-
-const GROWTH_FEATURES: PlanFeatures[] = [
-  ...CORE_FEATURES,
-  { id: "social_attribution", name: "X/Reddit link attribution & mentions" },
-];
-
-// ─── Standard family plans (prices unchanged) ────────────────────────────────
-
-export const STANDARD_PLANS: PlanDetails[] = [
-  {
-    name: "Starter",
-    family: "standard",
-    price: { monthly: 9, yearly: 84, ids: STANDARD_PRODUCT_IDS.starter },
-    limits: { events: 10_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Includes:",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Basic",
-    family: "standard",
-    price: { monthly: 24, yearly: 230, ids: STANDARD_PRODUCT_IDS.basic },
-    limits: { events: 25_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Starter +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Pro",
-    family: "standard",
-    price: { monthly: 48, yearly: 461, ids: STANDARD_PRODUCT_IDS.pro },
-    limits: { events: 100_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Basic +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Growth", // tier name — see collision warning at top of file
-    family: "standard",
-    price: { monthly: 79, yearly: 758, ids: STANDARD_PRODUCT_IDS.growth },
-    limits: { events: 500_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Pro +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Business",
-    family: "standard",
-    price: { monthly: 149, yearly: 1_430, ids: STANDARD_PRODUCT_IDS.business },
-    limits: { events: 1_000_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Growth +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Scale",
-    family: "standard",
-    price: { monthly: 249, yearly: 2_390, ids: STANDARD_PRODUCT_IDS.scale },
-    limits: { events: 5_000_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Business +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Pro Plus",
-    family: "standard",
-    price: { monthly: 399, yearly: 3_830, ids: STANDARD_PRODUCT_IDS.pro_plus },
-    limits: { events: 10_000_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Scale +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Enterprise",
-    family: "standard",
-    price: { monthly: 569, yearly: 5_462, ids: STANDARD_PRODUCT_IDS.enterprise },
-    limits: { events: 15_000_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Pro Plus +",
-    features: CORE_FEATURES,
-  },
-  {
-    name: "Ultimate",
-    family: "standard",
-    price: { monthly: 899, yearly: 8_630, ids: STANDARD_PRODUCT_IDS.ultimate },
-    limits: { events: 25_000_000 },
-    unlocksSocialAttribution: false,
-    featureTitle: "Everything in Enterprise +",
-    features: CORE_FEATURES,
-  },
-];
-
-// ─── Growth family plans — same tiers, illustrative price deltas ─────────────
-// Deltas roughly follow the "+$10 / +$20 / +$50" example given: small tiers
-// +$10/mo, mid tiers +$20/mo, top tiers +$50/mo. Yearly delta uses the same
-// ~20% annual discount the Standard family's own numbers imply. Adjust these
-// to your real business model — they're placeholders, not a pricing strategy.
-
-export const GROWTH_PLANS: PlanDetails[] = [
-  {
-    name: "Starter",
-    family: "growth",
-    price: { monthly: 19, yearly: 180, ids: GROWTH_PRODUCT_IDS.starter },
-    limits: { events: 10_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Starter +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Basic",
-    family: "growth",
-    price: { monthly: 34, yearly: 326, ids: GROWTH_PRODUCT_IDS.basic },
-    limits: { events: 25_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Basic +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Pro",
-    family: "growth",
-    price: { monthly: 68, yearly: 653, ids: GROWTH_PRODUCT_IDS.pro },
-    limits: { events: 100_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Pro +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Growth",
-    family: "growth",
-    price: { monthly: 99, yearly: 950, ids: GROWTH_PRODUCT_IDS.growth },
-    limits: { events: 500_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Growth +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Business",
-    family: "growth",
-    price: { monthly: 169, yearly: 1_622, ids: GROWTH_PRODUCT_IDS.business },
-    limits: { events: 1_000_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Business +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Scale",
-    family: "growth",
-    price: { monthly: 299, yearly: 2_870, ids: GROWTH_PRODUCT_IDS.scale },
-    limits: { events: 5_000_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Scale +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Pro Plus",
-    family: "growth",
-    price: { monthly: 449, yearly: 4_310, ids: GROWTH_PRODUCT_IDS.pro_plus },
-    limits: { events: 10_000_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Pro Plus +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Enterprise",
-    family: "growth",
-    price: { monthly: 619, yearly: 5_942, ids: GROWTH_PRODUCT_IDS.enterprise },
-    limits: { events: 15_000_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Enterprise +",
-    features: GROWTH_FEATURES,
-  },
-  {
-    name: "Ultimate",
-    family: "growth",
-    price: { monthly: 949, yearly: 9_110, ids: GROWTH_PRODUCT_IDS.ultimate },
-    limits: { events: 25_000_000 },
-    unlocksSocialAttribution: true,
-    featureTitle: "Everything in Standard Ultimate +",
-    features: GROWTH_FEATURES,
-  },
-];
-
-// ─── Family registry ──────────────────────────────────────────────────────────
+export const STANDARD_PLANS: PlanDetails[] = buildFamily("standard");
+export const GROWTH_PLANS: PlanDetails[] = buildFamily("growth");
 
 export const PRICING_FAMILIES: Record<PricingFamily, PlanDetails[]> = {
   standard: STANDARD_PLANS,
@@ -709,59 +253,58 @@ export const PRICING_FAMILIES: Record<PricingFamily, PlanDetails[]> = {
 const ALL_PLANS: PlanDetails[] = [...STANDARD_PLANS, ...GROWTH_PLANS];
 
 /**
- * @deprecated Prefer PRICING_FAMILIES.standard / PRICING_FAMILIES.growth.
- * Kept for backward compatibility with existing call-sites that imported
- * PLANS expecting a flat array — now spans BOTH families, so tier names
- * (e.g. "starter") appear twice. Fine for enum validation (z.enum dedupes
- * naturally via Set below); NOT fine for any code assuming 1 entry per name.
+ * @deprecated Prefer PRICING_FAMILIES.standard / PRICING_FAMILIES.growth, or
+ * getPlanByTier. Flat array spanning BOTH families — tier labels appear twice.
  */
 export const PLANS: PlanDetails[] = ALL_PLANS;
 
-// ─── Backward-compatible named exports (Standard family only, as before) ────
+export const SELF_SERVE_PLANS = STANDARD_PLANS;
 
+// ── Back-compat named exports (Standard family, ascending by tier) ───────────
 export const Starter_Plan = STANDARD_PLANS[0];
 export const Basic_Plan = STANDARD_PLANS[1];
 export const Pro_Plan = STANDARD_PLANS[2];
-export const Growth_Plan = STANDARD_PLANS[3]; // the TIER, not the family — see warning
+export const Growth_Plan = STANDARD_PLANS[3];
 export const Business_Plan = STANDARD_PLANS[4];
 export const Scale_Plan = STANDARD_PLANS[5];
 export const ProPlus_Plan = STANDARD_PLANS[6];
 export const Enterprise_Plan = STANDARD_PLANS[7];
 export const Ultimate_Plan = STANDARD_PLANS[8];
 
-export const SELF_SERVE_PLANS = STANDARD_PLANS;
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const PRODUCT_INDEX: Record<
+  string,
+  { plan: PlanDetails; interval: "monthly" | "yearly"; family: PricingFamily }
+> = {};
+for (const plan of ALL_PLANS) {
+  if (!plan.price.ids) continue;
+  PRODUCT_INDEX[plan.price.ids.monthly] = { plan, interval: "monthly", family: plan.family };
+  PRODUCT_INDEX[plan.price.ids.yearly] = { plan, interval: "yearly", family: plan.family };
+}
 
-/**
- * Find a plan, family, AND billing interval from a Dodo product ID.
- * Searches both ids.monthly/ids.yearly across BOTH families.
- */
+/** Resolve a Dodo product id → plan, family, interval. Nulls for an unknown id. */
 export const getPlanFromProductId = (
-  productId: string
+  productId: string,
 ): {
   plan: PlanDetails | null;
   interval: "monthly" | "yearly" | null;
   family: PricingFamily | null;
 } => {
-  for (const plan of ALL_PLANS) {
-    if (!plan.price.ids) continue;
-    if (plan.price.ids.monthly === productId) {
-      return { plan, interval: "monthly", family: plan.family };
-    }
-    if (plan.price.ids.yearly === productId) {
-      return { plan, interval: "yearly", family: plan.family };
-    }
-  }
-  return { plan: null, interval: null, family: null };
+  const hit = PRODUCT_INDEX[productId];
+  return hit ? { plan: hit.plan, interval: hit.interval, family: hit.family } : { plan: null, interval: null, family: null };
 };
 
-/**
- * Find a plan by name WITHIN a specific family (case-insensitive).
- * Family defaults to "standard" for backward compatibility with call-sites
- * written before families existed — but plan tier names collide across
- * families, so anywhere you know the workspace's actual family, pass it.
- */
+/** Look up a plan by TIER KEY within a family. */
+export const getPlanByTier = ({
+  tier,
+  family = "standard",
+}: {
+  tier: TierKey;
+  family?: PricingFamily;
+}): PlanDetails | null => PRICING_FAMILIES[family].find((p) => p.tier === tier) ?? null;
+
+/** Look up a plan by NAME/label within a family (case-insensitive). Also accepts a tier key. */
 export const getPlanDetails = ({
   plan,
   family = "standard",
@@ -769,14 +312,27 @@ export const getPlanDetails = ({
   plan: string;
   family?: PricingFamily;
 }): { plan: PlanDetails | null } => {
+  const key = plan.toLowerCase();
   const found = PRICING_FAMILIES[family].find(
-    (p) => p.name.toLowerCase() === plan.toLowerCase()
+    (p) => p.name.toLowerCase() === key || p.tier === key,
   );
   return { plan: found ?? null };
 };
 
+/** Dodo product id for a tier + family + interval. */
+export const getProductIdByTier = ({
+  tier,
+  family = "standard",
+  interval,
+}: {
+  tier: TierKey;
+  family?: PricingFamily;
+  interval: "monthly" | "yearly";
+}): string | null => getPlanByTier({ tier, family })?.price.ids?.[interval] ?? null;
+
 /**
- * Get the correct Dodo product ID for a plan + family + billing interval.
+ * Dodo product id for a plan NAME/label + family + interval.
+ * Kept for callers written before tier keys existed.
  */
 export const getProductId = ({
   planName,
@@ -786,34 +342,30 @@ export const getProductId = ({
   planName: string;
   family?: PricingFamily;
   interval: "monthly" | "yearly";
-}): string | null => {
-  const { plan } = getPlanDetails({ plan: planName, family });
-  if (!plan?.price.ids) return null;
-  return plan.price.ids[interval];
-};
+}): string | null => getPlanDetails({ plan: planName, family }).plan?.price.ids?.[interval] ?? null;
 
-/** Get the next plan up within a family. Returns last plan if already at top. */
+/** Next tier up within a family. Returns the top tier if already there. */
 export const getNextPlan = (
   planName?: string | null,
-  family: PricingFamily = "standard"
+  family: PricingFamily = "standard",
 ): PlanDetails => {
   const plans = PRICING_FAMILIES[family];
   if (!planName) return plans[0];
-  const idx = plans.findIndex((p) => p.name.toLowerCase() === planName.toLowerCase());
+  const idx = plans.findIndex(
+    (p) => p.name.toLowerCase() === planName.toLowerCase() || p.tier === planName.toLowerCase(),
+  );
   if (idx === -1) return plans[0];
   return plans[Math.min(idx + 1, plans.length - 1)];
 };
 
 /**
- * Returns true if switching from currentPlan to newPlan is a downgrade.
+ * True when moving current → next is a downgrade.
  *
- * REWRITTEN: was index-position-based, which only worked because there was
- * exactly one plan array. With two families sharing tier names, comparing
- * by array position is meaningless (index 3 in "standard" and index 3 in
- * "growth" aren't comparable tiers of the same ladder). Price is the only
- * cross-family-safe signal — a Growth-family plan always costs more than
- * its Standard-family counterpart, so switching families at "the same"
- * tier name correctly resolves as an upgrade, not a no-op or downgrade.
+ * Price is the primary signal (Growth always costs more than Standard at the
+ * same tier, so a cross-family "same tier" move is an upgrade). When the
+ * monthly price is EQUAL (only Growth-yearly t100k ↔ t200k), the tier rank
+ * breaks the tie — so t100k → t200k is NOT a downgrade (more events, same
+ * price) and t200k → t100k IS. See docs/billing-invariants.md §1.1.
  */
 export const isDowngradePlan = ({
   currentPlan,
@@ -829,20 +381,17 @@ export const isDowngradePlan = ({
   const current = getPlanDetails({ plan: currentPlan, family: currentFamily }).plan;
   const next = getPlanDetails({ plan: newPlan, family: newFamily }).plan;
   if (!current || !next) return false;
-  return (next.price.monthly ?? 0) < (current.price.monthly ?? 0);
+  const cp = current.price.monthly ?? 0;
+  const np = next.price.monthly ?? 0;
+  if (np < cp) return true;
+  if (np > cp) return false;
+  return TIER_KEYS.indexOf(next.tier) < TIER_KEYS.indexOf(current.tier);
 };
 
-/** Format event limit for display (e.g. 1_000_000 → "1M events/mo"). */
+/** Format an event allowance for display (10_000 → "10K events/mo", uncapped → "10M+ events/mo"). */
 export const formatEventLimit = (events: number): string => {
+  if (events >= UNCAPPED) return "10M+ events/mo";
   if (events >= 1_000_000) return `${events / 1_000_000}M events/mo`;
   if (events >= 1_000) return `${events / 1_000}K events/mo`;
   return `${events} events/mo`;
 };
-
-/**
- * @deprecated Use getPlanFromProductId instead.
- * Kept so any remaining call-sites don't break at compile time.
- */
-export const getPlanFromPriceId = getPlanFromProductId as unknown as (args: {
-  priceId: string;
-}) => { plan: PlanDetails | null; interval: "monthly" | "yearly" | null; family: PricingFamily | null };

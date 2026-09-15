@@ -36,9 +36,24 @@ export const ONBOARDING_STEPS = [
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
+export interface WorkspaceSubscriptionSummary {
+  id: string;
+  planFamily: string;
+  planTier: string;
+  billingInterval: string | null;
+  status: string;
+  workspaceCount: number;
+  maxWorkspaces: number;
+  currentPeriodEnd: Date | string | null;
+  trialEndsAt: Date | string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
 export interface WorkspaceProps extends Workspace {
   plan: WorkspacePlan;
-  
+  /** the Subscription covering this workspace (null = uncovered) */
+  subscription?: WorkspaceSubscriptionSummary | null;
+
   users: {
     role: WorkspaceRole;
   }[];

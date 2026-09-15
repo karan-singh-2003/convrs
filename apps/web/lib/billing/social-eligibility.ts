@@ -50,6 +50,10 @@ export async function getEligiblePlatformsByWorkspace(
     where: {
       id: { in: Array.from(new Set(workspaceIds)) },
       planFamily: "growth",
+      // I-11 / entitlement: only workspaces whose covering subscription is
+      // currently access-granting. A trialing/active Growth workspace counts;
+      // inactive / past_due / canceled do not.
+      subscriptionStatus: { in: ["active", "trialing"] },
     },
     select: {
       id: true,

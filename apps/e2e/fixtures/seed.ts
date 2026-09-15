@@ -181,6 +181,46 @@ export async function createTrackingWorkspace(namePrefix: string) {
 }
 
 /**
+ * Like createTrackingWorkspace, but for billing-enforcement specs that need
+ * to control the denormalized billing cache directly (D6/D1/usage-limit
+ * tests) without going through a real Subscription/webhook/fan-out — those
+ * fields are exactly what fanOutSubscription would have written, so seeding
+ * them directly is equivalent from track.ts's point of view.
+ */
+export async function createBillingTestWorkspace(
+  namePrefix: string,
+  overrides: {
+    subscriptionStatus?:
+      | "inactive"
+      | "trialing"
+      | "active"
+      | "past_due"
+      | "canceling"
+      | "canceled"
+      | "expired";
+    usage?: number;
+    usageLimit?: number;
+    freeTrialEndDate?: Date | null;
+    paymentFailedAt?: Date | null;
+  } = {}
+) {
+  const ws = await createWorkspace({
+    name: `${namePrefix} ${randomToken("ws")}`,
+    slug: randomToken("e2e-billing").toLowerCase(),
+  });
+  return prisma.workspace.update({
+    where: { id: ws.id },
+    data: {
+      subscriptionStatus: overrides.subscriptionStatus ?? "active",
+      usage: overrides.usage ?? 0,
+      usageLimit: overrides.usageLimit ?? 0,
+      freeTrialEndDate: overrides.freeTrialEndDate ?? null,
+      paymentFailedAt: overrides.paymentFailedAt ?? null,
+    },
+  });
+}
+
+/**
  * Seeds a Stripe Integration row with a known webhookSecret (used to sign
  * test payloads) and a placeholder encrypted API key (never actually called
  * — the controller only uses it to construct a Stripe SDK client, and the

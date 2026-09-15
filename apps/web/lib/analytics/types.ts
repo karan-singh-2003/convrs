@@ -58,6 +58,9 @@ export type AnalyticsFilters = Partial<
   currency?: string; // workspace's target currency, e.g. "INR"
   kpiType?: "revenue" | "goal";
   kpiEventName?: string;
+  // When kpiType is "revenue": "revenue" = plain revenue, "mrr" = Monthly
+  // Recurring Revenue (computed from CustomerSubscription).
+  revenueMetric?: "revenue" | "mrr";
   // Accept plain string (from partner-profile/cron routes) or ParsedFilter (from API schema)
   // partnerId?: string | ParsedFilter;
   // linkId?: string | ParsedFilter;

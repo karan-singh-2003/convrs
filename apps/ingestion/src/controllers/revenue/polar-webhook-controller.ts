@@ -2,7 +2,40 @@
 import { Request, Response } from "express";
 import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
 import { prisma } from "@repo/db";
+import type { SubscriptionInterval } from "@repo/analytics";
 import { handlePaymentEvent } from "../shared/handle-payment.js";
+import { handleSubscriptionEvent } from "../shared/handle-subscription.js";
+
+type SubStatus = "active" | "trialing" | "past_due" | "paused" | "canceled";
+
+function mapPolarStatus(status: string | undefined, ended: boolean): SubStatus {
+  if (ended) return "canceled";
+  switch (status) {
+    case "active":
+      return "active";
+    case "trialing":
+      return "trialing";
+    case "past_due":
+      return "past_due";
+    case "canceled":
+    case "revoked":
+      return "canceled";
+    default:
+      return "active";
+  }
+}
+
+function normalizePolarInterval(interval: unknown): SubscriptionInterval {
+  return interval === "year" || interval === "day" || interval === "week"
+    ? interval
+    : "month";
+}
+
+function toDate(value: unknown): Date | null {
+  if (!value) return null;
+  const d = new Date(value as string);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 function flattenHeaders(headers: Request["headers"]): Record<string, string> {
   const flat: Record<string, string> = {};
@@ -52,6 +85,46 @@ export const polarWebhookController = async (req: Request, res: Response) => {
         customerEmail: order.customer?.email ?? null,
         visitorId: metadataToString(order.metadata?.convrs_visitor_id),
         sessionId: metadataToString(order.metadata?.convrs_session_id),
+      });
+    } else if (
+      event.type === "subscription.created" ||
+      event.type === "subscription.updated" ||
+      event.type === "subscription.active" ||
+      event.type === "subscription.canceled" ||
+      event.type === "subscription.revoked" ||
+      event.type === "subscription.uncanceled"
+    ) {
+      const sub = event.data as any;
+      const ended =
+        event.type === "subscription.revoked" || Boolean(sub.endedAt);
+
+      await handleSubscriptionEvent({
+        workspaceId,
+        provider: "polar",
+        event:
+          event.type === "subscription.created"
+            ? "created"
+            : event.type === "subscription.canceled" ||
+                event.type === "subscription.revoked"
+              ? "canceled"
+              : "updated",
+        externalId: sub.id,
+        externalCustomerId: sub.customerId ?? sub.customer?.id ?? null,
+        status: mapPolarStatus(sub.status, ended),
+        amount: sub.amount ?? sub.price?.priceAmount ?? sub.recurringAmount ?? 0,
+        currency: sub.currency ?? "usd",
+        interval: normalizePolarInterval(
+          sub.recurringInterval ?? sub.recurring_interval
+        ),
+        intervalCount: 1,
+        plan: sub.product?.name ?? sub.productPrice?.product?.name ?? null,
+        startedAt: toDate(sub.startedAt) ?? toDate(sub.createdAt),
+        canceledAt: toDate(sub.canceledAt) ?? toDate(sub.endedAt),
+        currentPeriodStart: toDate(sub.currentPeriodStart),
+        currentPeriodEnd: toDate(sub.currentPeriodEnd),
+        customerEmail: sub.customer?.email ?? null,
+        visitorId: metadataToString(sub.metadata?.convrs_visitor_id),
+        sessionId: metadataToString(sub.metadata?.convrs_session_id),
       });
     } else {
       console.log("[polar/webhook] Unhandled event:", event.type);

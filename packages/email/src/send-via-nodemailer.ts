@@ -30,14 +30,21 @@ export const sendViaNodeMailer = async ({
 
 
     const html = react ? await render(react as React.ReactElement) : undefined;
-    console.dir({ to, subject, text, html, attachments }, { depth: null });
+    // attachments arrive with base64-encoded `content` strings (Resend's
+    // format); nodemailer treats a string `content` as utf-8 unless told
+    // otherwise, which would corrupt binary attachments like the PDF report.
+    const normalizedAttachments = attachments?.map((attachment) =>
+      typeof attachment.content === "string" && !attachment.encoding
+        ? { ...attachment, encoding: "base64" as const }
+        : attachment
+    );
     const result = await transporter.sendMail({
       from: "noreply@example.com",
       to,
       subject,
       text,
       html,
-      attachments,
+      attachments: normalizedAttachments,
     });
     console.log("in mailer")
     console.dir(result, { depth: null });

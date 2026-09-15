@@ -114,14 +114,26 @@ function CodeSnippet({ code, loading }: { code: string; loading?: boolean }) {
 export default function ScriptSettingsPage() {
   const searchParams = useSearchParams();
   const workspace = searchParams.get("workspace");
+  const domainParam = searchParams.get("domain");
+  const projectTokenParam = searchParams.get("projectToken");
 
-  const [loading, setLoading] = useState(true);
+  // When the previous step hands us the domain + public project token directly
+  // (Domain + Timezone → Script), render the snippet immediately: no fetch and
+  // no token-loading screen. The fetch below stays as a fallback for direct
+  // navigation / refresh where the params aren't present.
+  const hasInlineConfig = Boolean(domainParam && projectTokenParam);
+
+  const [loading, setLoading] = useState(!hasInlineConfig);
   const [scriptConfig, setScriptConfig] = useState<ScriptConfig>({
-    domain: null,
-    projectToken: null,
+    domain: domainParam,
+    projectToken: projectTokenParam,
   });
 
   useEffect(() => {
+    if (hasInlineConfig) {
+      return;
+    }
+
     if (!workspace) {
       setLoading(false);
       return;
@@ -143,7 +155,7 @@ export default function ScriptSettingsPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [workspace]);
+  }, [workspace, hasInlineConfig]);
 
   return (
     <CodeSnippet

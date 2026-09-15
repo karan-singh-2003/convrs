@@ -39,30 +39,31 @@ export const WorkspaceSchema = z
       .optional()
       .describe("The family of the current plan."),
     planTier: z
-      .number()
-      .nullable()
-      .default(0)
-      .describe("The tier of the workspace's plan."),
-    stripeId: z
       .string()
       .nullable()
       .optional()
-      .describe("The Stripe customer ID of the workspace."),
-    stripeCustomerId: z
+      .describe("The event tier key of the workspace's subscription (e.g. 't10k')."),
+    subscriptionId: z
       .string()
       .nullable()
       .optional()
-      .describe("The Stripe customer ID of the workspace."),
-    stripeSubscriptionId: z
-      .string()
+      .describe("The id of the Subscription covering this workspace (null = uncovered)."),
+    subscription: z
+      .object({
+        id: z.string(),
+        planFamily: z.string(),
+        planTier: z.string(),
+        billingInterval: z.string().nullable(),
+        status: z.string(),
+        workspaceCount: z.number(),
+        maxWorkspaces: z.number(),
+        currentPeriodEnd: z.union([z.date(), z.string()]).nullable(),
+        trialEndsAt: z.union([z.date(), z.string()]).nullable(),
+        cancelAtPeriodEnd: z.boolean(),
+      })
       .nullable()
       .optional()
-      .describe("The Stripe subscription ID of the workspace."),
-    billingCycleStart: z
-      .number()
-      .nullable()
-      .optional()
-      .describe("The day of month the billing cycle starts."),
+      .describe("Summary of the Subscription covering this workspace."),
     billingInterval: z
       .string()
       .nullable()
@@ -127,6 +128,7 @@ export const WorkspaceSchema = z
       .describe("The display currency for revenue metrics (ISO 4217 code, e.g. 'USD', 'INR')."),
     kpiType: z.string(),
     kpiEventName: z.string().nullable(),
+    kpiRevenueMetric: z.string().default("revenue"),
     users: z
       .array(
         z.object({

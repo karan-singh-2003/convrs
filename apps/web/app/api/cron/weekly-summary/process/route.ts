@@ -127,7 +127,8 @@
 import { prisma } from "@repo/db";
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { computeWeeklySummary } from "@/lib/analytics/weekly-summary";
-import { sendBatchEmail, sendEmail } from "@repo/email";
+import { getLiveStats } from "@/lib/analytics/live-visitors";
+import { sendEmail } from "@repo/email";
 import { generateWeeklyReportPdf } from "@repo/email";
 import WeeklySummaryEmail from "@repo/email/templates/weekly-summary";
 
@@ -173,40 +174,28 @@ async function handler(req: Request) {
   const pdfBase64 = pdfBuffer.toString("base64");
   const pdfFilename = `${workspace.slug}-weekly-report-${weekOf}.pdf`;
 
-  // await sendBatchEmail(
-  //   workspace.users.map(({ user }) => ({
-  //     to: user.email!,
-  //     subject: `Your weekly report for ${workspace.name}`,
-  //     react: WeeklySummaryEmail({
-  //       workspaceName: workspace.name,
-  //       recipientName: user.name,
-  //       stats: { clicks: stats.clicks, clicksChangePct: stats.clicksChangePct },
-  //     }),
-  //     // NOTE: assumes sendBatchEmail/your email provider (Resend-style)
-  //     // accepts { filename, content: base64String } per email. If your
-  //     // @repo/email implementation expects a different shape (raw Buffer,
-  //     // different key names), adjust this block to match — share
-  //     // sendBatchEmail's signature and I'll fix it exactly.
-  //     attachments: [
-  //       {
-  //         filename: pdfFilename,
-  //         content: pdfBase64,
-  //       },
-  //     ],
-  //   })),
-  //   { idempotencyKey: `weekly-${workspaceId}-${weekOf}` }
-  // );
+  // snapshot of visitors active right now — separate real-time source
+  // (Redis) from the historical Tinybird stats computed above
+  const liveStats = await getLiveStats(workspaceId);
 
   for (const { user } of workspace.users) {
-    const result = await sendEmail({
+    await sendEmail({
       to: user.email!,
       subject: `Your weekly report for ${workspace.name}`,
       react: WeeklySummaryEmail({
         workspaceName: workspace.name,
+        workspaceSlug: workspace.slug,
         recipientName: user.name,
+        recipientEmail: user.email,
         stats: {
           clicks: stats.clicks,
           clicksChangePct: stats.clicksChangePct,
+          revenue: stats.revenue,
+          bounceRate: stats.bounceRate,
+          liveVisitors: liveStats.count,
+          currency: stats.currency,
+          weekStart: stats.weekStart,
+          weekEnd: stats.weekEnd,
         },
       }),
       attachments: [
@@ -216,15 +205,12 @@ async function handler(req: Request) {
         },
       ],
     });
-
-    console.dir(result, { depth: null });
   }
 
   await prisma.notificationPreference.update({
     where: { workspaceId },
     data: { lastWeeklySentAt: new Date() },
   });
-  console.log("after email sending")
 
   return Response.json({
     sent: true,

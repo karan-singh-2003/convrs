@@ -28,6 +28,15 @@ export function Areas({
 
   const { tooltipData } = useChartTooltipContext();
 
+  // Series ids double as SVG element ids (mask / gradient) and as `url(#…)`
+  // references. Series ids that carry spaces, colons, etc. — e.g. a goal named
+  // "Outbound Link: Click" — produce an invalid id, the `url(#…)` reference
+  // fails to resolve, the mask never applies, and the area renders as a solid
+  // fill instead of the intended top-fade. Sanitise to a valid id fragment and
+  // suffix the series index so distinct names can't collide.
+  const svgId = (rawId: string, index: number) =>
+    `${rawId.replace(/[^a-zA-Z0-9_-]/g, "-")}-${index}`;
+
   // Data with all values set to zero to animate from
   const zeroedData = useMemo(() => {
     return data.map((d) => ({
@@ -40,9 +49,11 @@ export function Areas({
     <Group left={margin.left} top={margin.top}>
       <AnimatePresence>
         {series
-          .filter(({ isActive }) => isActive)
-          .map((s) => {
+          .map((s, index) => ({ s, index }))
+          .filter(({ s }) => s.isActive)
+          .map(({ s, index }) => {
             const seriesStyle = seriesStyles?.find(({ id }) => id === s.id);
+            const uid = svgId(s.id, index);
             return (
               // Prevent ugly x-scale animations when start/end dates change with unique key
               <motion.g
@@ -54,7 +65,7 @@ export function Areas({
               >
                 {/* Area background mask gradient */}
                 <LinearGradient
-                  id={`${s.id}-mask-gradient`}
+                  id={`${uid}-mask-gradient`}
                   from="white"
                   to="white"
                   fromOpacity={0.2}
@@ -64,11 +75,11 @@ export function Areas({
                   y1={0}
                   y2={1}
                 />
-                <mask id={`${s.id}-mask`} maskContentUnits="objectBoundingBox">
+                <mask id={`${uid}-mask`} maskContentUnits="objectBoundingBox">
                   <rect
                     width="1"
                     height="1"
-                    fill={`url(#${s.id}-mask-gradient)`}
+                    fill={`url(#${uid}-mask-gradient)`}
                   />
                 </mask>
 
@@ -89,7 +100,7 @@ export function Areas({
                           s.colorClassName ?? "text-[#7D53E0]",
                           seriesStyle?.lineClassName
                         )}
-                        mask={`url(#${s.id}-mask)`}
+                        mask={`url(#${uid}-mask)`}
                         fill={seriesStyle?.areaFill ?? "currentColor"}
                       />
                     );

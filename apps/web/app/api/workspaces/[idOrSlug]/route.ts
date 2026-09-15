@@ -25,10 +25,29 @@ const updateWorkspaceSchema = createWorkspaceSchema
 // GET /api/workspaces/[idOrSlug] – get a specific workspace by id or slug
 export const GET = withWorkspace(
   async ({ workspace }) => {
+    const subscription = workspace.subscriptionId
+      ? await prisma.subscription.findUnique({
+          where: { id: workspace.subscriptionId },
+          select: {
+            id: true,
+            planFamily: true,
+            planTier: true,
+            billingInterval: true,
+            status: true,
+            workspaceCount: true,
+            maxWorkspaces: true,
+            currentPeriodEnd: true,
+            trialEndsAt: true,
+            cancelAtPeriodEnd: true,
+          },
+        })
+      : null;
+
     return NextResponse.json({
       ...WorkspaceSchema.parse({
         ...workspace,
         id: prefixWorkspaceId(workspace.id),
+        subscription,
       }),
     });
   },

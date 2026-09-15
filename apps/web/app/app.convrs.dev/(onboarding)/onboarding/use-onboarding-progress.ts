@@ -41,6 +41,7 @@ export const useOnboardingProgress = () => {
         ...(PRE_WORKSPACE_STEPS.includes(step)
           ? {}
           : { workspace: (providedSlug || slug)! }),
+        ...(params ?? {}),
       });
       router.push(`/onboarding/${step}?${queryParams}`);
     },

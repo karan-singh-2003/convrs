@@ -22,13 +22,19 @@ model User {
 
   freeTrialUsedAt DateTime?
 
-  updatedAt DateTime @updatedAt @default(now())
+  // Convrs's own subscription billing (Dodo). The buyer's Dodo customer id —
+  // one per user, shared across all of their Subscription rows. See
+  // docs/billing-invariants.md I-11. Backfilled in Deploy 1.5.
+  dodoCustomerId String? @unique
+
+  updatedAt DateTime @default(now()) @updatedAt
 
   accounts         Account[]
   restrictedTokens RestrictedToken[]
   sessions         Session[]
   tokens           Token[]
   workspaceUsers   WorkspaceUsers[]
+  subscriptions    Subscription[]
 }
 
 model Account {

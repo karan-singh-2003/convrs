@@ -108,6 +108,7 @@ export const GET = async (req: Request) => {
     currency: workspace.currency,
     kpiType: workspace.kpiType,
     kpiEventName: workspace.kpiEventName ?? undefined,
+    revenueMetric: workspace.kpiRevenueMetric ?? "revenue",
   });
 
   return NextResponse.json({ data });

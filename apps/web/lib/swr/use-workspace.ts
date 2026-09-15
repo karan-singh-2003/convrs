@@ -24,7 +24,11 @@ export default function useWorkspace({
 
   return {
     ...workspace,
-    subscription:workspace?.subscriptionStatus,
+    // `subscription` is the Subscription summary object covering this workspace
+    // (null = uncovered), passed straight through from the workspace payload.
+    // Deploy 3b: was previously overridden with the status string — use
+    // `subscriptionStatus` for that.
+    subscription: workspace?.subscription ?? null,
     role: (workspace?.users && workspace.users[0]?.role) || "member",
     isOwner: workspace?.users && workspace.users[0]?.role === "owner",
     error,

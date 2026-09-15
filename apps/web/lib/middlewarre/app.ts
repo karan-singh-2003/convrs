@@ -100,7 +100,11 @@ export async function AppMiddleware(req: NextRequest) {
   }
 
   // otherwise, rewrite the path to /app
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", path);
+
   return NextResponse.rewrite(
-    new URL(`/app.convrs.dev${fullPath}`, req.url)
+    new URL(`/app.convrs.dev${fullPath}`, req.url),
+    { request: { headers: requestHeaders } }
   );
 }

@@ -3,17 +3,19 @@
 import { ErrorCodes } from "@/lib/api/error-codes";
 import useWorkspace from "@/lib/swr/use-workspace";
 import LayoutLoader from "@/ui/layout/layout-loader";
-import { notFound, redirect, useParams } from "next/navigation";
+import { DashboardSkeleton } from "@/ui/analytics/dashboard-skeleton";
+import { notFound, redirect, usePathname, useParams } from "next/navigation";
 import { ReactNode } from "react";
 
 export default function WorkspaceAuth({ children }: { children: ReactNode }) {
   const { slug } = useParams();
+  const pathname = usePathname();
   const { loading, error, } = useWorkspace();
 
- 
+  const isOverviewRoute = pathname === `/${slug}`;
 
   if (loading) {
-    return <LayoutLoader />;
+    return isOverviewRoute ? <DashboardSkeleton /> : <LayoutLoader />;
   }
 
   if (error) {

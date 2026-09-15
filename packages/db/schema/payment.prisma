@@ -33,6 +33,21 @@
 //   @@index([attributionStatus])
 // }
 
+enum CustomerSubscriptionStatus {
+  active
+  trialing
+  past_due
+  paused
+  canceled
+}
+
+enum SubscriptionInterval {
+  day
+  week
+  month
+  year
+}
+
 model Payment {
   id                     String            @id @default(cuid())
   workspaceId            String
@@ -47,6 +62,13 @@ model Payment {
   amount                 Int               // in cents (smallest currency unit)
   currency               String
   customerEmail          String?
+
+  // Recurring-payment tagging (set when the payment settles a subscription).
+  // MRR itself is computed from CustomerSubscription, not from these — these
+  // exist so "recurring vs one-off" revenue can be split in the event stream.
+  isRecurring            Boolean               @default(false)
+  billingInterval        SubscriptionInterval?
+  plan                   String?
 
   // Attribution
   attributionStatus      AttributionStatus @default(pending)
@@ -72,4 +94,52 @@ model Payment {
   @@index([customerId])
   @@index([visitorId])
   @@index([attributionStatus])
+}
+
+// A customer's recurring subscription with a revenue provider (Stripe, Polar,
+// Paddle, Dodo, LemonSqueezy). Upserted from provider webhook lifecycle events
+// and used as the source of truth for Monthly Recurring Revenue: for any point
+// in time, MRR = sum over subscriptions active at that point of `amount`
+// normalized to a monthly figure (see monthlyAmount() in @repo/analytics).
+model CustomerSubscription {
+  id                     String                     @id @default(cuid())
+  workspaceId            String
+  customerId             String
+  provider               RevenueProvider
+
+  externalId             String                     // provider-side subscription id
+  externalCustomerId     String?
+
+  status                 CustomerSubscriptionStatus @default(active)
+
+  amount                 Int                        // per-period price, smallest currency unit
+  currency               String
+  interval               SubscriptionInterval       @default(month)
+  intervalCount          Int                        @default(1)
+  plan                   String?
+
+  startedAt              DateTime
+  canceledAt             DateTime?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+
+  // Attribution (mirrors Payment)
+  attributionStatus      AttributionStatus          @default(pending)
+  attributedAt           DateTime?
+  lastAttributionAttempt DateTime?
+  visitorId              String?
+  sessionId              String?
+
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+
+  workspace              Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customer               Customer                   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, externalId])
+  @@index([workspaceId])
+  @@index([customerId])
+  @@index([workspaceId, status])
+  @@index([workspaceId, startedAt])
+  @@index([visitorId])
 }

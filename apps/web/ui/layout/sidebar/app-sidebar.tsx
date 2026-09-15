@@ -4,19 +4,15 @@ import { useSession } from "next-auth/react";
 import useWorkspaces from "@/lib/swr/use-workspaces";
 import { useEffect, useMemo } from "react";
 import { SidebarNav } from "./sidebar-nav";
-import useWorkspace from "@/lib/swr/use-workspace";
+import { BILLING_V2 } from "@/lib/billing/flags";
 
 const NAV_AREAS = {
   default: ({
     slug,
-    pathname,
-    queryString,
-    premiumAccess,
   }: {
     slug?: string;
     pathname: string;
     queryString?: string;
-    premiumAccess: boolean;
   }) => ({
     title: "",
     content: [
@@ -29,12 +25,10 @@ const NAV_AREAS = {
 
   workspaceSettings: ({
     slug,
-    premiumAccess,
   }: {
     slug?: string;
     pathname: string;
     queryString?: string;
-    premiumAccess: boolean;
   }) => ({
     title: "Back to Workspace",
     backHref: `/${slug}`,
@@ -44,28 +38,21 @@ const NAV_AREAS = {
         items: [
           { title: "General", href: `/${slug}/settings`, exact: true },
           { title: "Members", href: `/${slug}/settings/members` },
-          // { title: "Billing", href: `/${slug}/settings/billing` },
+          // { title: "Billing", href: `/${slug}/billing` },
           { title: "Theme", href: `/${slug}/settings/theme` },
-          ...(premiumAccess
-            ? [
-              { title: "Revenue", href: `/${slug}/settings/revenue` },
-              { title: "Alerts", href: `/${slug}/settings/alerts` },
-              { title: "Exclusions", href: `/${slug}/settings/exclusions` },
-              { title: "Integrations", href: `/${slug}/settings/integrations` },
-              { title: "Reports", href: `/${slug}/settings/reports` },
-              { title: "Import", href: `/${slug}/settings/import` },
-              // { title: "Export", href: `/${slug}/settings/export` },
-            ]
-            : []),
+          { title: "Dashboard", href: `/${slug}/settings/dashboard` },
+          { title: "Revenue", href: `/${slug}/settings/revenue` },
+          { title: "Alerts", href: `/${slug}/settings/alerts` },
+          { title: "Exclusions", href: `/${slug}/settings/exclusions` },
+          { title: "Integrations", href: `/${slug}/settings/integrations` },
+          { title: "Reports", href: `/${slug}/settings/reports` },
+          { title: "Import", href: `/${slug}/settings/import` },
+          // { title: "Export", href: `/${slug}/settings/export` },
         ],
       },
       {
         heading: "Developer",
-        items: [
-          ...(premiumAccess
-            ? [{ title: "Script", href: `/${slug}/settings/script` }]
-            : []),
-        ],
+        items: [{ title: "Script", href: `/${slug}/settings/script` }],
       },
     ],
   }),
@@ -76,13 +63,15 @@ const NAV_AREAS = {
     slug?: string;
     pathname: string;
     queryString?: string;
-    premiumAccess: boolean;
   }) => ({
     title: "Account Settings",
     backHref: `/${slug}`,
     content: [
       { title: "Profile", href: `/account/settings`, exact: true },
       { title: "Security", href: `/account/settings/security` },
+      ...(BILLING_V2
+        ? [{ title: "Subscriptions", href: `/account/subscriptions` }]
+        : []),
     ],
   }),
 };
@@ -96,10 +85,6 @@ export function AppSidebar({
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const { workspaces } = useWorkspaces();
-  const { subscriptionStatus } = useWorkspace();
-
-  const hasPremiumAccess =
-    subscriptionStatus === "active" || subscriptionStatus === "trialing";
 
   // Store the current workspace slug in session storage so we can remember it on the account settings page
   useEffect(() => {
@@ -161,7 +146,6 @@ export function AppSidebar({
         slug,
         pathname,
         queryString: "",
-        premiumAccess: hasPremiumAccess,
       }}
     />
   );

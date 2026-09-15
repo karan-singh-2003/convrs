@@ -12,6 +12,43 @@ import { cn } from "@repo/utils";
 import { ChevronDown, Plus } from "lucide-react";
 import { useScrollProgress } from "@repo/ui";
 import { useCreateWorkspaceModal } from "../../modals/create-workspace-modal";
+import { BILLING_V2 } from "@/lib/billing/flags";
+
+/** Deploy 3b — small coverage/family chip beside each workspace in the switcher. */
+function WorkspaceCoverageBadge({
+  status,
+  planFamily,
+}: {
+  status?: string | null;
+  planFamily?: string | null;
+}) {
+  let label: string | null = null;
+  let tone = "bg-bg-emphasis text-content-subtle";
+
+  if (status === "trialing") {
+    label = "Trial";
+    tone = "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300";
+  } else if (status === "past_due") {
+    label = "Past due";
+    tone = "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300";
+  } else if (!status || ["inactive", "canceled", "expired"].includes(status)) {
+    label = "Inactive";
+  } else if (planFamily === "growth") {
+    label = "Growth";
+  }
+
+  if (!label) return null;
+  return (
+    <span
+      className={cn(
+        "ml-1 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-display font-medium leading-none",
+        tone,
+      )}
+    >
+      {label}
+    </span>
+  );
+}
 
 export function WorkspaceDropdown() {
   const { workspaces} = useWorkspaces();
@@ -164,7 +201,7 @@ function WorkspaceList({
                 Projects
               </p>
               <div className="flex flex-col ">
-                {workspaces.map(({ id, name, slug, logo }) => {
+                {workspaces.map(({ id, name, slug, logo, subscriptionStatus, planFamily }) => {
                   const isActive = selected.slug === slug;
                   return (
                     <Link
@@ -190,6 +227,12 @@ function WorkspaceList({
                       <span className="block truncate font-medium font-default leading-5 text-content-default sm:max-w-[140px] text-[13px] sm:text-[14px]">
                         {name}
                       </span>
+                      {BILLING_V2 && (
+                        <WorkspaceCoverageBadge
+                          status={subscriptionStatus}
+                          planFamily={planFamily}
+                        />
+                      )}
                       {selected.slug === slug ? (
                         <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-content-default">
                           <Check2 className="size-4" aria-hidden="true" />

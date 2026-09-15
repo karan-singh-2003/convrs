@@ -12,6 +12,11 @@ import { Font } from "@react-email/font";
 import React from "react";
 import Logo from "./Logo";
 
+export const POPPINS_FONT_FAMILY =
+  "Poppins, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif";
+export const ALEXANDRIA_FONT_FAMILY =
+  "Alexandria, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif";
+
 export default function EmailLayout({
   preview,
   children,
@@ -25,21 +30,63 @@ export default function EmailLayout({
     <Html>
       <Head>
         <Font
-          fontFamily="Inter"
+          fontFamily="Poppins"
           fallbackFontFamily="Arial"
           webFont={{
-            url: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTcviYwY.woff2",
-            format: "woff2",
-          }}
-        />
-        <Font
-          fontFamily="Google Sans"
-          fallbackFontFamily="Arial"
-          webFont={{
-            url: "https://fonts.gstatic.com/s/googlesans/v29/4UasrENHsxJlGDuGo1OIlJfC6mGS6vF2.woff2",
+            url: "https://fonts.gstatic.com/s/poppins/v24/pxiEyp8kv8JHgFVrJJfecg.woff2",
             format: "woff2",
           }}
           fontWeight={400}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Poppins"
+          fallbackFontFamily="Arial"
+          webFont={{
+            url: "https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2",
+            format: "woff2",
+          }}
+          fontWeight={600}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Poppins"
+          fallbackFontFamily="Arial"
+          webFont={{
+            url: "https://fonts.gstatic.com/s/poppins/v24/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2",
+            format: "woff2",
+          }}
+          fontWeight={700}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Alexandria"
+          fallbackFontFamily="Arial"
+          webFont={{
+            url: "https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeai3dAw.woff2",
+            format: "woff2",
+          }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Alexandria"
+          fallbackFontFamily="Arial"
+          webFont={{
+            url: "https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeai3dAw.woff2",
+            format: "woff2",
+          }}
+          fontWeight={600}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Alexandria"
+          fallbackFontFamily="Arial"
+          webFont={{
+            url: "https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeai3dAw.woff2",
+            format: "woff2",
+          }}
+          fontWeight={700}
           fontStyle="normal"
         />
       </Head>
@@ -47,10 +94,7 @@ export default function EmailLayout({
 
       <Tailwind >
         <Body
-          style={{
-            fontFamily:
-              "Google Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif",
-          }}
+          style={{ fontFamily: POPPINS_FONT_FAMILY }}
           className="bg-white font-display mx-auto my-0"
         >
           <Container className="mx-auto my-10 max-w-[600px] border border-neutral-200 px-10 py-6">
@@ -61,10 +105,7 @@ export default function EmailLayout({
             <Section className="mt-10 border-t border-neutral-200 pt-6">
               <Text
                 className="text-xs leading-6 text-neutral-500"
-                style={{
-                  fontFamily:
-                    "Google Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif",
-                }}
+                style={{ fontFamily: POPPINS_FONT_FAMILY }}
               >
                 This email was sent to{" "}
                 <span style={{ color: "#000" }}>{email}</span>. If you weren’t
@@ -73,10 +114,7 @@ export default function EmailLayout({
 
               <Text
                 className="text-xs leading-6 text-neutral-500"
-                style={{
-                  fontFamily:
-                    "Google Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif",
-                }}
+                style={{ fontFamily: POPPINS_FONT_FAMILY }}
               >
                 © {new Date().getFullYear()} Convrs — Privacy First Analytics.
               </Text>

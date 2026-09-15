@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Directory layout
 
-- `app/app.convrs.dev/` — the actual dashboard/marketing UI, route-grouped: `(auth)`, `(dashboard)`, `(invites)`, `(onboarding)`, `(shared)`. Workspace-scoped pages live under `(dashboard)/[slug]/...`; `(premium)` sub-routes are plan-gated.
+- `app/app.convrs.dev/` — the actual dashboard/marketing UI, route-grouped: `(auth)`, `(dashboard)`, `(invites)`, `(onboarding)`, `(shared)`. Workspace-scoped pages live under `(dashboard)/[slug]/...`; subscription gating for the whole workspace subtree happens once in `(dashboard)/[slug]/layout.tsx` (redirects to `[slug]/billing` when inactive) rather than a `(premium)` route group.
 - `app/api/` — REST API routes (webhooks, cron endpoints, integrations, public API under `tokens`/`scim`). Prefer a server action over a new REST route for anything called only from this app's own UI; use `app/api` for webhooks, cron, third-party callbacks, and the public/token-authenticated API.
 - `lib/` — almost all business logic; UI components rarely contain logic directly. Key subfolders: `actions/` (next-safe-action mutations), `api/` (REST route handlers' shared logic, including `rbac/permissions.ts` + `rbac/resources.ts`), `auth/`, `billing/`, `swr/` (data-fetching hooks), `zod/schemas/` (validation schemas, one file per domain), `middlewarre/` (hostname routing — note the misspelling is intentional/existing).
 - `ui/` — app-specific React components (as opposed to the shared design system in `packages/ui`).

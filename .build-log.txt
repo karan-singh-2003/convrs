@@ -1,0 +1,214 @@
+
+> web@0.1.0 build C:\projects\convrs\apps\web
+> pnpm prisma:generate && next build
+
+
+> web@0.1.0 prisma:generate C:\projects\convrs\apps\web
+> dotenv-flow -e .env -- pnpm --filter=@repo/db prisma:generate
+
+
+> @repo/db@0.0.0 prisma:generate C:\projects\convrs\packages\db
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from schema.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.3.0 -> 8.0.0-rc.15                  │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+✔ Generated Prisma Client (v7.3.0) to .\..\..\node_modules\.pnpm\@prisma+client@7.3.0_prisma@7.3.0_typescript@5.9.2\node_modules\@prisma\client in 180ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+⚠ Invalid next.config.js options detected: 
+⚠     Unrecognized key(s) in object: 'serverComponentsExternalPackages' at "experimental"
+⚠     Unrecognized key(s) in object: 'turboPack'
+⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+⚠ `experimental.serverComponentsExternalPackages` has been moved to `serverExternalPackages`. Please update your next.config.js file accordingly.
+▲ Next.js 16.1.4 (Turbopack)
+- Environments: .env
+- Experiments (use with caution):
+  · optimizePackageImports
+  · serverActions
+  ? serverComponentsExternalPackages (invalid experimental key)
+
+  Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+./apps/web
+Failed to find font override values for font `Google Sans`
+Skipping generating a fallback font.
+
+
+✓ Compiled successfully in 31.9s
+  Running TypeScript ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/58) ...
+  Generating static pages using 19 workers (14/58) 
+  Generating static pages using 19 workers (28/58) 
+  Generating static pages using 19 workers (43/58) 
+✓ Generating static pages using 19 workers (58/58) in 1188.3ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /_not-found
+├ ƒ /api/account/passkey
+├ ƒ /api/account/password
+├ ƒ /api/account/sessions
+├ ƒ /api/account/source
+├ ƒ /api/analytics
+├ ƒ /api/analytics.js
+├ ƒ /api/analytics/[eventtype]
+├ ƒ /api/analytics/[eventtype]/[endpoint]
+├ ƒ /api/analytics/bot-filtering
+├ ƒ /api/analytics/goals-timeseries
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/auth/reset-password
+├ ƒ /api/auth/saml/authorize
+├ ƒ /api/auth/saml/callback
+├ ƒ /api/auth/saml/token
+├ ƒ /api/auth/saml/userinfo
+├ ƒ /api/auth/saml/verify
+├ ƒ /api/auth/session-public
+├ ƒ /api/billing/context
+├ ƒ /api/cron/billing/reconcile
+├ ƒ /api/cron/billing/usage-reset
+├ ƒ /api/cron/social/attribution-reconciliation
+├ ƒ /api/cron/social/link-resolution
+├ ƒ /api/cron/social/reddit-mentions
+├ ƒ /api/cron/social/x-discovery
+├ ƒ /api/cron/social/x-mentions
+├ ƒ /api/cron/traffic-spike
+├ ƒ /api/cron/traffic-spike/process
+├ ƒ /api/cron/update-exchange-rates
+├ ƒ /api/cron/weekly-summary
+├ ƒ /api/cron/weekly-summary/process
+├ ƒ /api/dashboard
+├ ƒ /api/dodo/webhook
+├ ƒ /api/integrations
+├ ƒ /api/integrations/[provider]
+├ ƒ /api/integrations/dodo/connect
+├ ƒ /api/integrations/lemonsqueezy/connect
+├ ƒ /api/integrations/paddle/connect
+├ ƒ /api/integrations/polar/connect
+├ ƒ /api/integrations/stripe/connect
+├ ƒ /api/live/count
+├ ƒ /api/live/heartbeat
+├ ƒ /api/scim/v2.0/[...directory]
+├ ƒ /api/subscriptions
+├ ƒ /api/subscriptions/[id]/cancel
+├ ƒ /api/subscriptions/[id]/change-plan
+├ ƒ /api/subscriptions/[id]/resume
+├ ƒ /api/tokens
+├ ƒ /api/tokens/[tokenId]
+├ ƒ /api/track
+├ ƒ /api/user
+├ ƒ /api/webhooks
+├ ƒ /api/webhooks/[webhookId]
+├ ƒ /api/webhooks/[webhookId]/events
+├ ƒ /api/webhooks/callback
+├ ƒ /api/workspaces
+├ ƒ /api/workspaces/[idOrSlug]
+├ ƒ /api/workspaces/[idOrSlug]/alerts
+├ ƒ /api/workspaces/[idOrSlug]/alerts/[alertId]
+├ ƒ /api/workspaces/[idOrSlug]/allowed-domains
+├ ƒ /api/workspaces/[idOrSlug]/analytics
+├ ƒ /api/workspaces/[idOrSlug]/analytics/funnel
+├ ƒ /api/workspaces/[idOrSlug]/analytics/goals-timeseries
+├ ƒ /api/workspaces/[idOrSlug]/analytics/group
+├ ƒ /api/workspaces/[idOrSlug]/analytics/timeseries
+├ ƒ /api/workspaces/[idOrSlug]/attribution-status
+├ ƒ /api/workspaces/[idOrSlug]/billing
+├ ƒ /api/workspaces/[idOrSlug]/billing/attach
+├ ƒ /api/workspaces/[idOrSlug]/billing/detach
+├ ƒ /api/workspaces/[idOrSlug]/billing/invoices
+├ ƒ /api/workspaces/[idOrSlug]/billing/manage
+├ ƒ /api/workspaces/[idOrSlug]/billing/payment-methods
+├ ƒ /api/workspaces/[idOrSlug]/billing/start-free-trial
+├ ƒ /api/workspaces/[idOrSlug]/billing/upgrade
+├ ƒ /api/workspaces/[idOrSlug]/customers
+├ ƒ /api/workspaces/[idOrSlug]/customers/[customerId]
+├ ƒ /api/workspaces/[idOrSlug]/customers/[customerId]/activity
+├ ƒ /api/workspaces/[idOrSlug]/export
+├ ƒ /api/workspaces/[idOrSlug]/funnels
+├ ƒ /api/workspaces/[idOrSlug]/funnels/[funnelId]
+├ ƒ /api/workspaces/[idOrSlug]/import/convrs
+├ ƒ /api/workspaces/[idOrSlug]/import/plausible
+├ ƒ /api/workspaces/[idOrSlug]/invite-code
+├ ƒ /api/workspaces/[idOrSlug]/invites
+├ ƒ /api/workspaces/[idOrSlug]/invites/accept
+├ ƒ /api/workspaces/[idOrSlug]/kpi
+├ ƒ /api/workspaces/[idOrSlug]/notification-preferences
+├ ƒ /api/workspaces/[idOrSlug]/proxy-domain
+├ ƒ /api/workspaces/[idOrSlug]/proxy-domain/verify
+├ ƒ /api/workspaces/[idOrSlug]/saml
+├ ƒ /api/workspaces/[idOrSlug]/scim
+├ ƒ /api/workspaces/[idOrSlug]/script-config
+├ ƒ /api/workspaces/[idOrSlug]/social/activity
+├ ƒ /api/workspaces/[idOrSlug]/social/activity-timeline
+├ ƒ /api/workspaces/[idOrSlug]/social/attribution-handles
+├ ƒ /api/workspaces/[idOrSlug]/social/attribution-handles/[id]
+├ ƒ /api/workspaces/[idOrSlug]/social/integrations
+├ ƒ /api/workspaces/[idOrSlug]/social/keywords
+├ ƒ /api/workspaces/[idOrSlug]/social/keywords/[id]
+├ ƒ /api/workspaces/[idOrSlug]/tracked-events
+├ ƒ /api/workspaces/[idOrSlug]/users
+├ ƒ /api/workspaces/calculate
+├ ƒ /api/workspaces/check-workspace-slug
+├ ƒ /app.convrs.dev/[slug]
+├ ƒ /app.convrs.dev/[slug]/billing
+├ ƒ /app.convrs.dev/[slug]/customers
+├ ƒ /app.convrs.dev/[slug]/customers/details
+├ ƒ /app.convrs.dev/[slug]/invite
+├ ƒ /app.convrs.dev/[slug]/realtime
+├ ƒ /app.convrs.dev/[slug]/settings
+├ ƒ /app.convrs.dev/[slug]/settings/alerts
+├ ƒ /app.convrs.dev/[slug]/settings/dashboard
+├ ƒ /app.convrs.dev/[slug]/settings/exclusions
+├ ƒ /app.convrs.dev/[slug]/settings/import
+├ ƒ /app.convrs.dev/[slug]/settings/integrations
+├ ƒ /app.convrs.dev/[slug]/settings/members
+├ ƒ /app.convrs.dev/[slug]/settings/reports
+├ ƒ /app.convrs.dev/[slug]/settings/revenue
+├ ƒ /app.convrs.dev/[slug]/settings/script
+├ ƒ /app.convrs.dev/[slug]/settings/security
+├ ƒ /app.convrs.dev/[slug]/settings/theme
+├ ƒ /app.convrs.dev/[slug]/settings/tokens
+├ ƒ /app.convrs.dev/[slug]/settings/webhooks/[webhookId]
+├ ƒ /app.convrs.dev/[slug]/settings/webhooks/[webhookId]/edit
+├ ƒ /app.convrs.dev/[slug]/settings/webhooks/new
+├ ○ /app.convrs.dev/account/settings
+├ ○ /app.convrs.dev/account/settings/security
+├ ○ /app.convrs.dev/account/subscriptions
+├ ƒ /app.convrs.dev/auth/confirm-email-change/[token]
+├ ƒ /app.convrs.dev/auth/reset-password/[token]
+├ ○ /app.convrs.dev/auth/saml
+├ ○ /app.convrs.dev/dashboard
+├ ○ /app.convrs.dev/forgot-password
+├ ƒ /app.convrs.dev/invites/[code]
+├ ○ /app.convrs.dev/login
+├ ƒ /app.convrs.dev/onboarding/billing
+├ ○ /app.convrs.dev/onboarding/invite
+├ ƒ /app.convrs.dev/onboarding/new
+├ ○ /app.convrs.dev/onboarding/script
+├ ○ /app.convrs.dev/onboarding/source
+├ ○ /app.convrs.dev/onboarding/workspace
+├ ○ /app.convrs.dev/register
+├ ƒ /app.convrs.dev/shared/[id]
+├ ƒ /app.convrs.dev/shared/[id]/realtime
+└ ƒ /app.convrs.dev/two-factor-challenge
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -1,117 +1,97 @@
 import { withWorkspace } from "@/lib/auth";
-import { stripe } from "@/lib/stripe";
+import { dodo } from "@/lib/dodo";
 import { NextResponse } from "next/server";
-import * as z from "zod/v4";
+import { createCustomerPortalSession, appUrl } from "@/lib/billing/dodo-checkout";
+import { requireBillingOwnerDodoCustomerId, BillingIdentityError } from "@/lib/billing/billing-identity";
 
-
-const addPaymentMethodSchema = z.object({
-  cardNumber: z.string().min(13).max(19),
-  expMonth: z.number().min(1).max(12),
-  expYear: z.number().min(2024),
-  cvc: z.string().min(3).max(4),
-  fullName: z.string().min(1),
-  email: z.string().email().optional(),
-  address: z
-    .object({
-      line1: z.string().optional(),
-      line2: z.string().optional(),
-      city: z.string().optional(),
-      state: z.string().optional(),
-      postal_code: z.string().optional(),
-      country: z.string().optional(),
-    })
-    .optional(),
-});
-
-// POST /api/workspaces/[idOrSlug]/billing/payment-methods – add a payment method
-export const POST = withWorkspace(
-  async ({ req, workspace }) => {
-    if (!workspace.dodoCustomerId) {
-      return NextResponse.json(
-        {
-          error: "No Dodo customer found. Please subscribe to a plan first.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const body = addPaymentMethodSchema.parse(await req.json());
-
+// GET — the subscription owner's saved payment methods on Dodo (D9).
+export const GET = withWorkspace(
+  async ({ workspace, session }) => {
+    let cid: string | null;
     try {
-      // Create a payment method via Stripe
-      const paymentMethod = await stripe.paymentMethods.create({
-        type: "card",
-        card: {
-          number: body.cardNumber,
-          exp_month: body.expMonth,
-          exp_year: body.expYear,
-          cvc: body.cvc,
-        },
-        billing_details: {
-          name: body.fullName,
-          email: body.email,
-          address: body.address,
-        },
-      });
-
-      // Attach to customer
-      await stripe.paymentMethods.attach(paymentMethod.id, {
-        customer: workspace.dodoCustomerId,
-      });
-
-      // Set as default payment method
-      await stripe.customers.update(workspace.dodoCustomerId, {
-        invoice_settings: {
-          default_payment_method: paymentMethod.id,
-        },
-      });
-
-      return NextResponse.json({
-        id: paymentMethod.id,
-        brand: paymentMethod.card?.brand ?? "unknown",
-        last4: paymentMethod.card?.last4 ?? "????",
-        expMonth: paymentMethod.card?.exp_month ?? 0,
-        expYear: paymentMethod.card?.exp_year ?? 0,
-        name: body.fullName,
-        isDefault: true,
-      });
-    } catch (err: any) {
-      console.error("Error creating payment method:", err);
+      cid = await requireBillingOwnerDodoCustomerId(workspace.id, session.user.id);
+    } catch (err) {
+      if (err instanceof BillingIdentityError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      throw err;
+    }
+    if (!cid) return NextResponse.json([]);
+    try {
+      const res = (await dodo.customers.retrievePaymentMethods(cid)) as {
+        items: Array<{
+          payment_method_id: string;
+          payment_method_type?: string | null;
+          recurring_enabled?: boolean;
+          card?: {
+            card_holder_name?: string;
+            card_network?: string;
+            last4_digits?: string;
+            expiry_month?: string;
+            expiry_year?: string;
+          };
+        }>;
+      };
       return NextResponse.json(
-        { error: err?.message ?? "Failed to add payment method" },
-        { status: 400 }
+        (res.items ?? []).map((m) => ({
+          id: m.payment_method_id,
+          brand: m.card?.card_network ?? m.payment_method_type ?? "card",
+          last4: m.card?.last4_digits ?? "????",
+          expMonth: Number(m.card?.expiry_month ?? 0),
+          expYear: Number(m.card?.expiry_year ?? 0),
+          name: m.card?.card_holder_name ?? "",
+          recurring: Boolean(m.recurring_enabled),
+        })),
       );
+    } catch (err) {
+      console.error("[billing/payment-methods GET]", err);
+      return NextResponse.json({ error: "Failed to fetch payment methods" }, { status: 500 });
     }
   },
-  {
-    requiredPermission: "billing:write",
-  }
+  { requiredPermission: "billing:read" },
 );
 
-// DELETE /api/workspaces/[idOrSlug]/billing/payment-methods – remove a payment method
-export const DELETE = withWorkspace(
-  async ({ req, workspace }) => {
-    if (!workspace.dodoCustomerId) {
-      return NextResponse.json(
-        { error: "No Dodo customer found" },
-        { status: 400 }
-      );
-    }
-
-    const { paymentMethodId } = await req.json();
-
+// POST — Dodo has no raw-card API (PCI); direct the user to the hosted portal.
+export const POST = withWorkspace(
+  async ({ workspace, session }) => {
+    let cid: string | null;
     try {
-      await stripe.paymentMethods.detach(paymentMethodId);
-      return NextResponse.json({ success: true });
-    } catch (err: any) {
-      console.error("Error removing payment method:", err);
-      return NextResponse.json(
-        { error: err?.message ?? "Failed to remove payment method" },
-        { status: 400 }
-      );
+      cid = await requireBillingOwnerDodoCustomerId(workspace.id, session.user.id);
+    } catch (err) {
+      if (err instanceof BillingIdentityError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      throw err;
+    }
+    if (!cid) {
+      return NextResponse.json({ error: "No billing account yet. Subscribe to a plan first." }, { status: 400 });
+    }
+    try {
+      const { link } = await createCustomerPortalSession(cid, appUrl(`/${workspace.slug}/billing`));
+      return NextResponse.json({ portalUrl: link, message: "Add or update payment methods in the billing portal." });
+    } catch (err) {
+      console.error("[billing/payment-methods POST]", err);
+      return NextResponse.json({ error: "Failed to open the billing portal" }, { status: 500 });
     }
   },
-  {
-    requiredPermission: "billing:write",
-  }
+  { requiredPermission: "billing:write" },
+);
+
+// DELETE — same: payment-method removal happens in the hosted portal.
+export const DELETE = withWorkspace(
+  async ({ workspace, session }) => {
+    let cid: string | null;
+    try {
+      cid = await requireBillingOwnerDodoCustomerId(workspace.id, session.user.id);
+    } catch (err) {
+      if (err instanceof BillingIdentityError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      throw err;
+    }
+    if (!cid) return NextResponse.json({ error: "No billing account found" }, { status: 400 });
+    const { link } = await createCustomerPortalSession(cid, appUrl(`/${workspace.slug}/billing`));
+    return NextResponse.json({ portalUrl: link, message: "Remove payment methods in the billing portal." });
+  },
+  { requiredPermission: "billing:write" },
 );

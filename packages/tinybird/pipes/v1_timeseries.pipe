@@ -32,7 +32,11 @@ SQL >
     %
     SELECT
         interval,
-        avgIf(session_duration, session_duration > 0) AS avg_session_duration,
+        -- Average over ALL sessions, counting single-pageview (bounce) visits
+        -- as 0 seconds — matches Plausible/GA "visit duration" and v1_count's
+        -- avg(coalesce(session_duration_seconds, 0)). Do NOT filter to > 0
+        -- (that reports the average of engaged sessions only and runs high).
+        avg(session_duration) AS avg_session_duration,
         if(count() > 0, countIf(event_count = 1) * 100.0 / count(), 0) AS bounce_rate
     FROM (
         SELECT

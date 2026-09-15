@@ -10,6 +10,7 @@ export const GET = withWorkspace(
       data: {
         kpiType: workspace.kpiType,
         kpiEventName: workspace.kpiEventName,
+        kpiRevenueMetric: workspace.kpiRevenueMetric,
       },
     });
   },
@@ -18,7 +19,9 @@ export const GET = withWorkspace(
 
 export const PATCH = withWorkspace(
   async ({ req, workspace }) => {
-    const { kpiType, kpiEventName } = updateKpiSchema.parse(await req.json());
+    const { kpiType, kpiEventName, kpiRevenueMetric } = updateKpiSchema.parse(
+      await req.json()
+    );
 
     // Optional but worth it: make sure the goal they're pinning actually exists
     // (or let it through if you want to support "goal that will fire soon")
@@ -48,8 +51,14 @@ export const PATCH = withWorkspace(
       data: {
         kpiType,
         kpiEventName: kpiType === "goal" ? kpiEventName : null,
+        kpiRevenueMetric:
+          kpiType === "revenue" ? (kpiRevenueMetric ?? "revenue") : "revenue",
       },
-      select: { kpiType: true, kpiEventName: true },
+      select: {
+        kpiType: true,
+        kpiEventName: true,
+        kpiRevenueMetric: true,
+      },
     });
 
     return NextResponse.json({ data: updated });

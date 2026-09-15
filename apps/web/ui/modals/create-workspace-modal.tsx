@@ -3,6 +3,7 @@ import { CreateWorkspaceForm } from "../workspaces/create-workspace-form";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { BILLING_V2 } from "@/lib/billing/flags";
 function CreateWorkspaceModal({
   showCreateWorkspaceModal,
   setShowCreateWorkspaceModal,
@@ -31,7 +32,11 @@ function CreateWorkspaceModal({
 
         <CreateWorkspaceForm
           onSuccess={({ slug }) => {
-            {
+            // Deploy 3b: a new workspace starts uncovered under BILLING_V2 —
+            // send the user straight to the billing choice step.
+            if (BILLING_V2) {
+              router.push(`/${slug}/billing?new=1`);
+            } else {
               router.push(`/${slug}`);
               toast.success("Successfully created workspace!");
             }

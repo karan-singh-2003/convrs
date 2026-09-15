@@ -98,7 +98,7 @@ No global client state library (no Redux/Zustand/Jotai) — server state is fetc
 - `authActionClient` — requires a session *and* a `workspaceId` in the input; resolves and attaches the caller's `WorkspaceUsers` role to context
 
 ### Frontend
-Next.js 16 App Router. Route groups under `apps/web/app/app.convrs.dev/`: `(auth)`, `(dashboard)`, `(invites)`, `(onboarding)`, `(shared)`. Workspace-scoped dashboard pages live under `(dashboard)/[slug]/...`, with a `(premium)` sub-group gated by plan. Styling is Tailwind CSS 3 via `packages/tailwind-config`, extended per-app; shared components live in `packages/ui` (tsup build, class-variance-authority).
+Next.js 16 App Router. Route groups under `apps/web/app/app.convrs.dev/`: `(auth)`, `(dashboard)`, `(invites)`, `(onboarding)`, `(shared)`. Workspace-scoped dashboard pages live under `(dashboard)/[slug]/...`; subscription gating for the whole subtree is enforced once in `(dashboard)/[slug]/layout.tsx` (redirects to `[slug]/billing` when inactive) rather than a `(premium)` route group. Styling is Tailwind CSS 3 via `packages/tailwind-config`, extended per-app; shared components live in `packages/ui` (tsup build, class-variance-authority).
 
 **React version mismatch**: `apps/web` pins `react`/`react-dom` `^18.3.1`, while `apps/ingestion` and several packages (`analytics`, `email`, `utils`) use React `^19.x`. Be deliberate about which app/package you're editing when touching React APIs.
 

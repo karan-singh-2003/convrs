@@ -449,6 +449,9 @@ importers:
 
   packages/email:
     dependencies:
+      '@react-email/button':
+        specifier: ^0.2.0
+        version: 0.2.0(react@19.2.5)
       '@react-email/components':
         specifier: ^1.0.2
         version: 1.0.2(react-dom@19.2.5)(react@19.2.5)

@@ -12,7 +12,6 @@ import { z } from "zod";
 
 // GET /api/workspaces - get all workspaces for the authenticated user
 export const GET = withSession(async ({ session }) => {
-
   const workspaces = await prisma.workspace.findMany({
     where: {
       users: {
@@ -36,7 +35,6 @@ export const GET = withSession(async ({ session }) => {
     },
   });
 
-
   return NextResponse.json(
     workspaces.map((workspace) =>
       WorkspaceSchema.parse({
@@ -47,15 +45,15 @@ export const GET = withSession(async ({ session }) => {
   );
 });
 
-
 // POST /api/workspaces - create a new workspace
 export const POST = withSession(async ({ req, session }) => {
   let name: string;
   let slug: string;
   let domain: string;
+  let timezone: string | undefined;
 
   try {
-    ({ name, slug, domain } = await createWorkspaceSchema.parseAsync(
+    ({ name, slug, domain, timezone } = await createWorkspaceSchema.parseAsync(
       await req.json()
     ));
   } catch (error) {
@@ -87,7 +85,10 @@ export const POST = withSession(async ({ req, session }) => {
   }
 
   try {
-    const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "Asia/Kolkata"
+    // Prefer the timezone the client picked during onboarding; fall back to
+    // server-side detection for callers that don't send one.
+    const detectedTimezone =
+      timezone || Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "Asia/Kolkata"
 
     const workspace = await prisma.workspace.create({
       data: {

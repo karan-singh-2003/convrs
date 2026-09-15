@@ -211,6 +211,11 @@ export interface ProcessPaymentOptions {
   customerEmail?: string | null;
   visitorId?: string;
   sessionId?: string;
+  // Recurring-payment tagging (does not affect MRR, which is computed from
+  // CustomerSubscription — this only splits recurring vs one-off revenue).
+  isRecurring?: boolean;
+  billingInterval?: "day" | "week" | "month" | "year" | null;
+  plan?: string | null;
 }
 
 export async function processPayment(opts: ProcessPaymentOptions): Promise<void> {
@@ -227,6 +232,9 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
     customerEmail,
     visitorId,
     sessionId,
+    isRecurring,
+    billingInterval,
+    plan,
   } = opts;
 
   // ── 1. Idempotency guard ────────────────────────────────────────────────────
@@ -274,6 +282,9 @@ export async function processPayment(opts: ProcessPaymentOptions): Promise<void>
       visitorId: visitorId ?? null,
       sessionId: sessionId ?? null,
       attributionStatus: AttributionStatus.pending,
+      isRecurring: isRecurring ?? false,
+      billingInterval: billingInterval ?? null,
+      plan: plan ?? null,
     },
   });
 

@@ -1128,7 +1128,17 @@ export function AnalyticsAreaChart({
     interval,
     kpiType,
     kpiLabel,
+    kpiRevenueMetric,
   } = useContext(AnalyticsContext);
+
+  // Label for the revenue series/tab: the goal name in goal-KPI mode, otherwise
+  // "MRR" or "Revenue" depending on the workspace's revenue-metric setting.
+  const revenueLabel =
+    kpiType === "goal"
+      ? (kpiLabel ?? "Goal")
+      : kpiRevenueMetric === "mrr"
+        ? "MRR"
+        : "Revenue";
 
   const { data: response, isLoading } = useSWR<{
     data: Array<{
@@ -1287,7 +1297,7 @@ export function AnalyticsAreaChart({
 
   const tooltipLabel =
     resource === "clicks" ? "Visitors"
-      : resource === "revenue" ? (kpiType === "goal" ? (kpiLabel ?? "Goal") : "Revenue")
+      : resource === "revenue" ? revenueLabel
         : resource === "conversion_rate" ? "Conversion"
           : resource === "bounce_rate" ? "Bounce Rate"
             : resource === "revenue_per_visitor" ? "Revenue/visitor"
@@ -1499,6 +1509,7 @@ export function AnalyticsAreaChart({
             if (resource === "revenue") {
               const netRevenue = (d.values.new_revenue ?? 0) - (d.values.refund_amount ?? 0);
               const isGoal = kpiType === "goal";
+              const isMrr = !isGoal && kpiRevenueMetric === "mrr";
               return (
                 <div className="w-[210px] sm:w-[220px] space-y-2 px-2 py-3 font-alexandria">
                   <p className="border-b border-border-subtle pb-1 text-[12px] font-medium text-content-subtle">
@@ -1508,17 +1519,19 @@ export function AnalyticsAreaChart({
                   <div className="space-y-1 border-b border-border-subtle pb-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-content-subtle">
-                        {isGoal ? (kpiLabel ?? "Goal") : "Revenue"}
+                        {revenueLabel}
                       </span>
 
                       <span className="font-medium text-content-default">
                         {isGoal
                           ? nFormatter(d.values.revenue ?? 0)
-                          : formatCurrency(netRevenue, currency)}
+                          : isMrr
+                            ? formatCurrency(d.values.revenue ?? 0, currency)
+                            : formatCurrency(netRevenue, currency)}
                       </span>
                     </div>
 
-                    {!isGoal && (
+                    {!isGoal && !isMrr && (
                       <p className="text-xs text-content-subtle">
                         {formatCurrency(d.values.new_revenue ?? 0, currency)} New and{" "}
                         {formatCurrency(d.values.refund_amount ?? 0, currency)} refunds
@@ -1526,7 +1539,7 @@ export function AnalyticsAreaChart({
                     )}
                   </div>
 
-                  {!isGoal && (
+                  {!isGoal && !isMrr && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-content-subtle">
                         Revenue/visitor

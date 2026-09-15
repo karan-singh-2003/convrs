@@ -1,12 +1,13 @@
 model NotificationPreference {
-  id               String    @id @default(cuid())
-  workspaceId      String    @unique
-  weeklySummary    Boolean   @default(false)
-  trafficSpikes    Boolean   @default(false)
-  lastWeeklySentAt DateTime?
-  lastSpikeSentAt  DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  workspaceId           String    @unique
+  weeklySummary         Boolean   @default(false)
+  trafficSpikes         Boolean   @default(true)
+  trafficSpikeThreshold Int       @default(100)
+  lastWeeklySentAt      DateTime?
+  lastSpikeSentAt       DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 

@@ -53,6 +53,11 @@ enum KpiType {
   goal
 }
 
+enum KpiRevenueMetric {
+  revenue
+  mrr
+}
+
 enum PricingFamily {
   standard
   growth
@@ -88,8 +93,14 @@ model Workspace {
 
   projectToken String? @unique
 
-  dodoCustomerId     String?            @unique
-  dodoSubscriptionId String?            @unique
+  // ── Legacy inline billing columns ────────────────────────────────────────
+  // Source of truth until Deploy 6; dual-written by the new webhook path
+  // during the transition, then dropped in Deploy 7. The @unique attributes
+  // are removed in Deploy 1 (a Growth Subscription fans the same
+  // dodoSubscriptionId / dodoCustomerId out to up to 30 Workspace rows).
+  // Plain @@index on both is retained below.
+  dodoCustomerId     String?
+  dodoSubscriptionId String?
   subscriptionStatus SubscriptionStatus @default(inactive)
   billingInterval    BillingInterval?
   planFamily         PricingFamily      @default(standard)
@@ -99,8 +110,21 @@ model Workspace {
   freeTrialEndDate   DateTime?
   cancelAtPeriodEnd  Boolean   @default(false)
 
-  kpiType      KpiType @default(revenue)
-  kpiEventName String? // required when kpiType = goal, must match a TrackedEvent.eventName
+  // ── New billing model (Deploy 1+) ────────────────────────────────────────
+  // The Subscription that covers this workspace. null = uncovered (billing
+  // wall + ingestion rejected). onDelete: SetNull — deleting a Subscription
+  // never cascades to workspace data (docs/billing-invariants.md I-16).
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  // Denormalized entitlement cache — written ONLY by the webhook fan-out /
+  // attach / detach (single-writer invariant I-8). `planTier` supersedes the
+  // legacy `plan` enum for tiering (Decision D3); nullable during transition.
+  planTier String?
+
+  kpiType          KpiType          @default(revenue)
+  kpiEventName     String? // required when kpiType = goal, must match a TrackedEvent.eventName
+  kpiRevenueMetric KpiRevenueMetric @default(revenue) // when kpiType = revenue: plain revenue vs MRR
 
   blockedHostnames   String[] @default([])
   blockedIpAddresses String[] @default([])
@@ -131,6 +155,7 @@ model Workspace {
   alerts                 Alert[]
   customers              Customer[]
   payments               Payment[]
+  customerSubscriptions  CustomerSubscription[]
   trackedEvents          TrackedEvent[]
   notificationPreference NotificationPreference?
   socialIntegrations     SocialIntegration[]
@@ -147,6 +172,86 @@ model Workspace {
   @@index([dodoCustomerId])
   @@index([subscriptionStatus])
   @@index([plan])
+  @@index([subscriptionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Convrs's own subscription billing (Dodo). NOT the customer-revenue models
+// (Payment / CustomerSubscription in payment.prisma) — see root CLAUDE.md
+// "two unrelated payment concerns". Design: docs/billing-architecture-final.md
+// + docs/billing-invariants.md.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id String @id @default(cuid())
+
+  // The buyer. A user has N Standard subs + at most 1 non-terminal Growth sub
+  // (I-12; the partial unique index is added with enforcement in a later deploy).
+  ownerUserId String
+  owner       User   @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  // Dodo linkage. dodoSubscriptionId is null only while a cardless trial has
+  // not yet converted (I-10). dodoCustomerId mirrors User.dodoCustomerId.
+  dodoSubscriptionId String? @unique
+  dodoCustomerId     String?
+  dodoProductId      String?
+
+  // Plan snapshot — SOURCE OF TRUTH, fanned out onto Workspace.
+  planFamily      PricingFamily
+  planTier        String // "t10k".."t10m_plus" (keyed to pricing.tsx)
+  tierEvents      Int
+  billingInterval BillingInterval?
+  currency        String           @default("USD")
+
+  status SubscriptionStatus @default(inactive)
+
+  // Coverage. maxWorkspaces: 1 (standard) | 30 (growth), snapshotted (D11).
+  // workspaceCount == count(Workspace where subscriptionId = id) (I-5).
+  maxWorkspaces  Int
+  workspaceCount Int @default(0)
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  trialEndsAt        DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  paymentFailedAt    DateTime?
+  lastUsageResetAt   DateTime? // usage-reset cron anchor (D8)
+
+  // { effectiveAt, targetFamily, targetTier, targetInterval, keepWorkspaceId?, consolidateStandardSubIds? }
+  pendingPlanChange Json?
+
+  // Webhook sync guards / one-shot side-effect flags.
+  lastEventAt        DateTime?
+  lastWebhookId      String?
+  welcomeEmailSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspaces Workspace[]
+
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  // Partial unique index "one_active_growth_per_user" (planFamily='growth' AND
+  // status NOT IN ('canceled','expired')) enforces invariant I-12. It cannot be
+  // expressed in the Prisma DSL — see migration 20260908000000.
+}
+
+// Idempotency + audit for inbound Dodo webhooks (docs/billing-invariants.md §10).
+model DodoWebhookEvent {
+  webhookId          String    @id // the "webhook-id" header
+  eventType          String
+  dodoSubscriptionId String?
+  status             String    @default("processing") // processing | done | failed
+  attempts           Int       @default(0)
+  error              String?
+  receivedAt         DateTime  @default(now())
+  processedAt        DateTime?
+
+  @@index([dodoSubscriptionId])
+  @@index([status])
+  @@index([receivedAt])
 }
 
 model WorkspaceInvite {

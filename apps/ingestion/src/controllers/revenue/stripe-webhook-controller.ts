@@ -2,7 +2,34 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import { prisma } from "@repo/db";
 import { decrypt } from "@repo/analytics";
+import type { SubscriptionInterval } from "@repo/analytics";
 import { handlePaymentEvent } from "../shared/handle-payment.js";
+import { handleSubscriptionEvent } from "../shared/handle-subscription.js";
+
+type SubStatus = "active" | "trialing" | "past_due" | "paused" | "canceled";
+
+function mapStripeStatus(status: string, deleted: boolean): SubStatus {
+  if (deleted) return "canceled";
+  switch (status) {
+    case "active":
+      return "active";
+    case "trialing":
+      return "trialing";
+    case "past_due":
+    case "unpaid":
+      return "past_due";
+    case "paused":
+      return "paused";
+    // incomplete / incomplete_expired / canceled — not contributing to MRR
+    default:
+      return "canceled";
+  }
+}
+
+function normalizeInterval(interval: string | undefined): SubscriptionInterval {
+  if (interval === "day" || interval === "week" || interval === "year") return interval;
+  return "month";
+}
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
   const workspaceId = Array.isArray(req.params.workspaceId) ? req.params.workspaceId[0] : req.params.workspaceId;
@@ -41,6 +68,52 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
         customerEmail: session.customer_details?.email ?? null,
         visitorId: session.metadata?.convrs_visitor_id ?? null,
         sessionId: session.metadata?.convrs_session_id ?? null,
+        isRecurring: session.mode === "subscription",
+      });
+    } else if (
+      event.type === "customer.subscription.created" ||
+      event.type === "customer.subscription.updated" ||
+      event.type === "customer.subscription.deleted"
+    ) {
+      const sub = event.data.object as Stripe.Subscription;
+      const deleted = event.type === "customer.subscription.deleted";
+      const item = sub.items?.data?.[0];
+      const price = item?.price;
+
+      const amount = (sub.items?.data ?? []).reduce(
+        (sum, it) => sum + (it.price?.unit_amount ?? 0) * (it.quantity ?? 1),
+        0
+      );
+      const toDate = (secs: number | null | undefined) =>
+        secs ? new Date(secs * 1000) : null;
+
+      await handleSubscriptionEvent({
+        workspaceId,
+        provider: "stripe",
+        event: deleted
+          ? "canceled"
+          : event.type === "customer.subscription.created"
+            ? "created"
+            : "updated",
+        externalId: sub.id,
+        externalCustomerId:
+          typeof sub.customer === "string" ? sub.customer : (sub.customer?.id ?? null),
+        status: mapStripeStatus(sub.status, deleted),
+        amount,
+        currency: price?.currency ?? sub.currency ?? "usd",
+        interval: normalizeInterval(price?.recurring?.interval),
+        intervalCount: price?.recurring?.interval_count ?? 1,
+        plan: price?.nickname ?? price?.id ?? null,
+        startedAt: toDate(sub.start_date) ?? toDate((sub as any).created),
+        canceledAt: toDate(sub.canceled_at),
+        currentPeriodStart: toDate(
+          (item as any)?.current_period_start ?? (sub as any).current_period_start
+        ),
+        currentPeriodEnd: toDate(
+          (item as any)?.current_period_end ?? (sub as any).current_period_end
+        ),
+        visitorId: sub.metadata?.convrs_visitor_id ?? null,
+        sessionId: sub.metadata?.convrs_session_id ?? null,
       });
     } else {
       console.log("Unhandled event:", event.type);

@@ -2,12 +2,14 @@
 
 import useWorkspace from "@/lib/swr/use-workspace";
 import { getFreeTrialInfo } from "@/lib/api/workspaces/check-free-trial-days-left";
+import { BILLING_V2 } from "@/lib/billing/flags";
 import Link from "next/link";
 
 export function FreeTrialBanner() {
-  const { subscriptionStatus, freeTrialEndDate, slug } = useWorkspace();
+  const { subscriptionStatus, freeTrialEndDate, slug, subscription } = useWorkspace();
 
   const trial = getFreeTrialInfo(freeTrialEndDate ?? new Date());
+  const isGrowthTrial = BILLING_V2 && subscription?.planFamily === "growth";
 
   const banner = (message: React.ReactNode) => (
     <div className="fixed left-0 top-0 z-40 w-full border-b border-border-subtle   bg-bg-card">
@@ -24,7 +26,7 @@ export function FreeTrialBanner() {
       <>
         Your subscription is inactive.{" "}
         <Link
-          href={`/${slug}/settings/billing`}
+          href={`/${slug}/billing`}
           className="font-semibold underline"
         >
           Upgrade
@@ -38,7 +40,7 @@ export function FreeTrialBanner() {
       <>
         Your free trial has ended.{" "}
         <Link
-          href={`/${slug}/settings/billing`}
+          href={`/${slug}/billing`}
           className="font-semibold underline"
         >
           Upgrade
@@ -48,19 +50,20 @@ export function FreeTrialBanner() {
   }
 
   if (subscriptionStatus === "trialing") {
-    let message = `${trial.daysLeft} days left in your free trial.`;
+    const suffix = isGrowthTrial ? " (covers all your sites)" : "";
+    let message = `${trial.daysLeft} days left in your free trial${suffix}.`;
 
     if (trial.daysLeft === 1) {
-      message = "Your free trial ends tomorrow.";
+      message = `Your free trial ends tomorrow${suffix}.`;
     } else if (trial.daysLeft <= 3) {
-      message = `Only ${trial.daysLeft} days left in your free trial.`;
+      message = `Only ${trial.daysLeft} days left in your free trial${suffix}.`;
     }
 
     return banner(
       <>
         {message}{" "}
         <Link
-          href={`/${slug}/settings/billing`}
+          href={`/${slug}/billing`}
           className="font-semibold underline"
         >
           Upgrade

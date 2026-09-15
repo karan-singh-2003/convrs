@@ -44,7 +44,8 @@ export function AnalyticsTabs({
   country = "US",
   currency,
   kpiType,
-  kpiLabel
+  kpiLabel,
+  kpiRevenueMetric,
 }: {
   showConversions?: boolean;
   totalEvents?: { [key in AnalyticsResponseOptions]: number };
@@ -61,7 +62,19 @@ export function AnalyticsTabs({
   currency?: string;
   kpiType?: "revenue" | "goal";   // ← was "funnel" | "composite", make optional
   kpiLabel?: string;
+  kpiRevenueMetric?: "revenue" | "mrr";
 }) {
+  const revenueTabLabel =
+    kpiType === "goal"
+      ? (kpiLabel ?? "Goal")
+      : kpiRevenueMetric === "mrr"
+        ? "MRR"
+        : "Revenue";
+  // Revenue/visitor only makes sense when the workspace KPI is actual
+  // revenue — for a goal-based KPI there's no revenue to divide by, so skip
+  // the tab entirely rather than showing a meaningless "—".
+  const showRevenuePerVisitor = kpiType === "revenue";
+
   const tabs = useMemo(
     () =>
       [
@@ -73,7 +86,7 @@ export function AnalyticsTabs({
         },
         {
           id: "revenue",
-          label: kpiType === "goal" ? (kpiLabel ?? "Goal") : "Revenue",
+          label: revenueTabLabel,
           colorClassName: "text-green-500/50",
           conversions: true,
         },
@@ -95,28 +108,36 @@ export function AnalyticsTabs({
           colorClassName: "text-green-500/50",
           conversions: false,
         },
-        {
-          id: "revenue_per_visitor",
-          label: "Revenue/visitor",
-          colorClassName: "text-teal-500/50",
-          conversions: true,
-        },
+        ...(showRevenuePerVisitor
+          ? [
+              {
+                id: "revenue_per_visitor",
+                label: "Revenue/visitor",
+                colorClassName: "text-teal-500/50",
+                conversions: true,
+              },
+            ]
+          : []),
         {
           id: "live_visitors",
           label: "Online Now",
           colorClassName: "text-blue-500/50",
           conversions: false,
         },
-
       ] as Tab[],
-    [showConversions]
+    [showConversions, revenueTabLabel, showRevenuePerVisitor]
   );
   const kpiConfigured = hasRevenueProvider || (kpiType === "goal" && !!kpiLabel);
 
   return (
     <div className="w-full overflow-x-hidden">
       <NumberFlowGroup>
-        <div className="grid w-full grid-cols-3 gap-0 md:grid-cols-3 xl:grid-cols-7">
+        <div
+          className={cn(
+            "grid w-full grid-cols-3 gap-0 md:grid-cols-3",
+            tabs.length === 7 ? "xl:grid-cols-7" : "xl:grid-cols-6"
+          )}
+        >
           {tabs.map(({ id, label, colorClassName }, idx) => {
             const isLiveVisitorsTab = id === "live_visitors";
             const isRevenueTab = id === "revenue" || id === "revenue_per_visitor";
@@ -205,21 +226,20 @@ export function AnalyticsTabs({
                     )}
                   </div>
 
-                  {/* <div className="min-h-5">
+                  <div className="min-h-5">
                     {(() => {
                       const change = percentageChanges?.[id];
-                      const hasChange =
-                        change !== undefined && change !== null;
+                      if (change === undefined || change === null) return null;
+
                       const hasDataForChange = isLiveVisitorsTab
                         ? liveVisitorsCount !== undefined
                         : totalEvents?.[id] !== undefined;
+                      if (!hasDataForChange) return null;
 
-                      // Don't show change indicator for revenue if no provider connected
-                      const shouldShowChange = hasChange &&
-                        hasDataForChange &&
-                        !(isRevenueTab && !hasRevenueProvider);   // ← add this guard
-
-                      if (!shouldShowChange) return null;
+                      // Don't show a change indicator for revenue-family tabs
+                      // when no KPI is configured (same gate as the value
+                      // itself — see `isRevenueTab && !kpiConfigured` above).
+                      if (isRevenueTab && !kpiConfigured) return null;
 
                       const direction = getChangeDirection(change);
 
@@ -240,7 +260,7 @@ export function AnalyticsTabs({
                       return (
                         <div
                           className={cn(
-                            "inline-flex items-center gap-1 rounded-full text-[13.5px] font-poppins",
+                            "inline-flex items-center mt-2 gap-1 rounded-full text-[13.5px] font-alexandria",
                             textColor
                           )}
                         >
@@ -249,7 +269,7 @@ export function AnalyticsTabs({
                         </div>
                       );
                     })()}
-                  </div> */}
+                  </div>
                 </div>
               </>
             );

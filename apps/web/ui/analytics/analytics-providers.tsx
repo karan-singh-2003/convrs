@@ -87,6 +87,7 @@ export const AnalyticsContext = createContext<{
   currency?: string;
   kpiType?: "revenue" | "goal";   // ← add
   kpiLabel?: string;
+  kpiRevenueMetric?: "revenue" | "mrr";
 }>({
   basePath: "",
   baseApiPath: "",
@@ -108,6 +109,7 @@ export const AnalyticsContext = createContext<{
   currency: "USD",
   kpiType: "revenue",   // ← add default
   kpiLabel: undefined,  // ← add default
+  kpiRevenueMetric: "revenue",
 });
 
 export default function AnalyticsProvider({
@@ -121,7 +123,7 @@ export default function AnalyticsProvider({
   workspaceId?: string;
 }>) {
   const searchParams = useSearchParams();
-  const { slug: workspaceSlug, plan: workspacePlan, currency, kpiEventName, kpiType } = useWorkspace();
+  const { slug: workspaceSlug, plan: workspacePlan, currency, kpiEventName, kpiType, kpiRevenueMetric } = useWorkspace();
 
   const [requiresUpgrade, setRequiresUpgrade] = useState(false);
 
@@ -405,6 +407,7 @@ export default function AnalyticsProvider({
         currency,
         kpiType,
         kpiLabel: kpiEventName ?? undefined,   // ← fix null → undefined
+        kpiRevenueMetric: (kpiRevenueMetric as "revenue" | "mrr") ?? "revenue",
       }}
     >
       {children}

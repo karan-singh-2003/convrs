@@ -441,7 +441,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
   } = useContext(AnalyticsContext);
   const { integrations, loading, error } = useIntegrations(workspaceId);
 
-  const { plan, projectToken, id, currency, kpiEventName, kpiType } = useWorkspace();
+  const { plan, projectToken, id, currency, kpiEventName, kpiType, kpiRevenueMetric } = useWorkspace();
   const hasRevenueProvider = kpiType === "revenue" && integrations.length > 0;
   const { queryParams } = useRouterStuff();
   const { funnels, loading: funnelsLoading } = useFunnels({
@@ -546,6 +546,9 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
                   currency={currency}
                   kpiType={kpiType ?? undefined}
                   kpiLabel={kpiEventName ?? undefined}
+                  kpiRevenueMetric={
+                    (kpiRevenueMetric as "revenue" | "mrr") ?? "revenue"
+                  }
                 />
               ) : (
                 <div className="md:min-h-[134px] min-h-[240px] bg-orange-50" />

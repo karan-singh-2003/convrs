@@ -93,24 +93,18 @@ export const withWorkspace = (
           headers: { "Content-Type": "application/json" },
         });
       }
-      //  workspace exits but trail expired
-      if (
-        workspace &&
-        workspace.subscriptionStatus === "trialing" &&
-        workspace.freeTrialEndDate &&
-        workspace.freeTrialEndDate <= new Date()
-      ) {
-        await prisma.workspace.update({
-          where: {
-            id: workspace.id,
-          },
-          data: {
-            subscriptionStatus: "inactive",
-          },
-        });
-
-        workspace.subscriptionStatus = "inactive";
-      }
+      // Deploy 5: the per-request trial-expiry flip is removed. It only ever
+      // wrote `Workspace.subscriptionStatus` for the ONE workspace on the
+      // current request, never the owning `Subscription` (and never fanned
+      // out to sibling workspaces on a Growth trial) — a genuine
+      // Subscription<->Workspace drift source, plus a write on every
+      // authenticated API call. It's also unnecessary: `isEntitled` /
+      // `isWorkspaceEntitled` (@repo/analytics) already deny access for a
+      // "trialing" workspace once `freeTrialEndDate` is in the past,
+      // regardless of the cached status string. The cached label itself is
+      // corrected — atomically, for every sibling workspace — by the hourly
+      // reconciliation cron (`reconcileBilling`'s lapsed-cardless-trial pass)
+      // or the next webhook, not by this per-request side effect.
 
       // workspace exits but user is not a member
       if (workspace.users.length === 0) {

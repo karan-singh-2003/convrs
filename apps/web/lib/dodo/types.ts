@@ -1,18 +1,32 @@
 /**
- * lib/dodo/webhook-types.ts
+ * lib/dodo/types.ts
  *
- * TypeScript types for every Dodo Payments webhook payload your app handles.
- * Sourced directly from the Dodo docs:
- * https://docs.dodopayments.com/developer-resources/webhooks/intents/subscription
- * https://docs.dodopayments.com/developer-resources/webhooks/intents/payment
- *
- * The top-level envelope is the same for every event.
- * `data` is discriminated by `type`.
+ * Types for the Dodo Payments webhook payloads and checkout metadata that
+ * Convrs's own subscription billing uses. Shapes follow the `dodopayments`
+ * SDK's `Subscription` / webhook-event types and
+ * https://docs.dodopayments.com/developer-resources/webhooks
  */
 
-import { SubscriptionStatus } from "@prisma/client";
+// ─── Dodo subscription status (NOT our Prisma SubscriptionStatus enum) ────────
+export type DodoSubscriptionStatus =
+  | "pending"
+  | "active"
+  | "on_hold"
+  | "paused"
+  | "cancelled"
+  | "failed"
+  | "expired";
 
-// ─── Shared sub-types ─────────────────────────────────────────────────────────
+// ─── Checkout metadata we set, then read back on the webhook ──────────────────
+export interface DodoCheckoutMetadata {
+  /** our internal Subscription.id, created before the checkout session */
+  internalSubscriptionId?: string;
+  ownerUserId?: string;
+  /** workspace to attach on activation ("" when none) */
+  targetWorkspaceId?: string;
+  intent?: "standard" | "growth";
+  [key: string]: string | undefined;
+}
 
 export interface DodoCustomer {
   customer_id: string;
@@ -20,91 +34,77 @@ export interface DodoCustomer {
   name: string;
 }
 
-export interface DodoBillingAddress {
-  country: string;
-  city?: string | null;
-  state?: string | null;
-  street?: string | null;
-  zipcode?: string | null;
-}
-
-// ─── Subscription payload ─────────────────────────────────────────────────────
-// Shape from: /developer-resources/webhooks/intents/subscription
-
+// ─── Subscription payload (webhook `data` for subscription.* events) ──────────
 export interface DodoSubscriptionPayload {
-  type: string;
-  payload_type: "Subscription";
   subscription_id: string;
   customer: DodoCustomer;
   product_id: string;
-  status: SubscriptionStatus
-  /** ISO-8601 — end of the current billing period (replaces Stripe's current_period_end) */
+  status: DodoSubscriptionStatus;
+
+  /** ISO-8601 — end of the current billing period */
   next_billing_date: string;
-  created_at: string;
+  /** ISO-8601 — start of the current billing period */
+  previous_billing_date?: string | null;
+  created_at?: string;
 
-  /** "monthly" | "annual" */
-  payment_frequency_interval: "Day" | "Week" | "Month" | "Year";
-  payment_frequency_count: number;
+  payment_frequency_interval?: "Day" | "Week" | "Month" | "Year";
+  payment_frequency_count?: number;
+  subscription_period_interval?: "Day" | "Week" | "Month" | "Year";
+  subscription_period_count?: number;
 
-  /** "monthly" | "annual" — same field, more semantic alias used in our code */
-  billing_interval?: "month" | "year";
-
-  /** true  → scheduled for cancellation at next billing date */
+  /** true → scheduled for cancellation at next billing date */
   cancel_at_next_billing_date: boolean;
+  cancelled_at?: string | null;
 
   currency: string;
-  metadata: Record<string, string>;
+  recurring_pre_tax_amount?: number;
+  trial_period_days?: number;
+
+  /** present when a plan change is scheduled but not yet effective */
+  scheduled_change?: {
+    id: string;
+    effective_at: string;
+    product_id: string;
+    quantity: number;
+  } | null;
+
+  metadata: DodoCheckoutMetadata;
 }
 
-// ─── Payment payload ──────────────────────────────────────────────────────────
-
-export interface DodoPaymentPayload {
-  payload_type: "Payment";
-  payment_id: string;
-  subscription_id?: string | null;
-  customer: DodoCustomer;
-  status: "succeeded" | "failed" | "processing" | "cancelled";
-  amount: number;          // in smallest currency unit (cents)
-  currency: string;
-  metadata: Record<string, string>;
-  created_at: string;
-}
-
-// ─── Webhook envelope ─────────────────────────────────────────────────────────
-
-export type DodoEventType =
-  // Subscription
+// ─── Webhook envelope ────────────────────────────────────────────────────────
+export type DodoSubscriptionEventType =
   | "subscription.active"
   | "subscription.updated"
-  | "subscription.on_hold"
   | "subscription.renewed"
   | "subscription.plan_changed"
+  | "subscription.on_hold"
   | "subscription.cancelled"
-  | "subscription.failed"
   | "subscription.expired"
-  // Payment
-  | "payment.succeeded"
-  | "payment.failed"
-  | "payment.processing"
-  | "payment.cancelled";
+  | "subscription.failed";
 
-export interface DodoWebhookEvent {
+export interface DodoWebhookEnvelope {
   business_id: string;
-  type: DodoEventType;
-  timestamp: string;          // ISO-8601
-  data: DodoSubscriptionPayload | DodoPaymentPayload;
+  type: string;
+  timestamp: string; // ISO-8601
+  data: DodoSubscriptionPayload | Record<string, unknown>;
 }
-
-// ─── Typed narrowing helpers ──────────────────────────────────────────────────
 
 export function isSubscriptionEvent(
-  event: DodoWebhookEvent
-): event is DodoWebhookEvent & { data: DodoSubscriptionPayload } {
-  return (event.data as DodoSubscriptionPayload).payload_type === "Subscription";
+  event: DodoWebhookEnvelope,
+): event is DodoWebhookEnvelope & { type: DodoSubscriptionEventType; data: DodoSubscriptionPayload } {
+  return typeof event.type === "string" && event.type.startsWith("subscription.");
 }
 
-export function isPaymentEvent(
-  event: DodoWebhookEvent
-): event is DodoWebhookEvent & { data: DodoPaymentPayload } {
-  return (event.data as DodoPaymentPayload).payload_type === "Payment";
+/** Structure stored in Subscription.pendingPlanChange (Json). */
+export interface PendingPlanChange {
+  kind: "tier_down" | "downgrade_to_standard" | "consolidate";
+  effectiveAt: string; // ISO-8601
+  targetFamily: "standard" | "growth";
+  targetTier: string;
+  targetInterval: "monthly" | "yearly";
+  keepWorkspaceId?: string;
+  /** internal Subscription ids to absorb + cancel (consolidate) */
+  consolidateStandardSubIds?: string[];
+  /** workspace ids to re-point onto the growth sub (consolidate) */
+  moveWorkspaceIds?: string[];
 }

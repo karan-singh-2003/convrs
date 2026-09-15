@@ -283,6 +283,7 @@ import { formatUTCDateTimeClickhouse } from "./utils/format-utc-date-time-clickh
 import { getStartEndDates } from "./utils/get-start-and-end-dates";
 import { convertCurrency } from "../currency/convert";
 import { prisma } from "@repo/db"
+import { getMrrTimeseries, getMrrSnapshot } from "./get-mrr-timeseries";
 // Bot filtering removed — it now lives entirely behind
 // /api/analytics/bot-filtering + lib/analytics/get-bot-analytics.ts
 
@@ -303,10 +304,49 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     currency,
     kpiType,
     kpiEventName,
+    revenueMetric,
   } = params;
 
   const usingCustomKpi = kpiType === "goal" && !!kpiEventName;
   const kpiGoalName = usingCustomKpi ? kpiEventName : undefined;
+
+  // ── MRR: Monthly Recurring Revenue. Computed from CustomerSubscription in
+  // Postgres (an append-only event log can't answer "which subscriptions were
+  // active on day X"). Only the revenue series and the revenue headline are
+  // swapped for MRR — every other breakdown falls through to plain revenue.
+  const usingMrr =
+    revenueMetric === "mrr" && kpiType !== "goal" && !!workspaceId;
+
+  // The revenue timeseries becomes the MRR-over-time curve.
+  if (usingMrr && groupBy === "timeseries" && event === "revenue") {
+    return getMrrTimeseries(params);
+  }
+
+  // For the count/composite rollup, run the normal query and then overwrite the
+  // `revenue` field with the current MRR snapshot (already in workspace
+  // currency) so the "MRR" headline tile is correct without disturbing the
+  // clicks/conversion/etc. tiles that share the same row.
+  const applyMrrSnapshot = async <T extends Record<string, any>>(
+    rows: T[]
+  ): Promise<T[]> => {
+    if (!usingMrr || groupBy !== "count") return rows;
+    const { endDate } = getStartEndDates({
+      interval,
+      start,
+      end,
+      dataAvailableFrom,
+      timezone,
+    });
+    const snapshot = await getMrrSnapshot(
+      workspaceId as string,
+      currency ?? "USD",
+      new Date(endDate.getTime())
+    );
+    if (rows.length === 0) {
+      return [{ revenue: snapshot } as unknown as T];
+    }
+    return rows.map((r, i) => (i === 0 ? { ...r, revenue: snapshot } : r));
+  };
 
   if (event === "funnel") {
     const funnelPipe = tb.buildPipe({
@@ -483,7 +523,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     if (groupBy === "referer_urls" && workspaceId) {
       return enrichRefererUrlsWithAttribution(results, workspaceId);
     }
-    return results;
+    return applyMrrSnapshot(results);
   }
 
   const converted = await Promise.all(
@@ -502,7 +542,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
     return enrichRefererUrlsWithAttribution(converted, workspaceId);
   }
 
-  return converted;
+  return applyMrrSnapshot(converted);
 };
 
 // ---------------------------------------------------------------------------

@@ -14,10 +14,14 @@ export async function handlePaymentEvent(params: {
   customerEmail?: string | null;
   visitorId?: string | null;
   sessionId?: string | null;
+  isRecurring?: boolean;
+  billingInterval?: "day" | "week" | "month" | "year" | null;
+  plan?: string | null;
 }) {
   const {
     workspaceId, provider, externalSessionId, externalEventId,
     externalPaymentId, amount, currency, customerEmail, visitorId, sessionId,
+    isRecurring, billingInterval, plan,
   } = params;
 
   if (!visitorId) {
@@ -54,5 +58,8 @@ export async function handlePaymentEvent(params: {
     customerEmail: customerEmail ?? undefined,
     visitorId: visitorId ?? undefined,
     sessionId: sessionId ?? undefined,
+    isRecurring: isRecurring ?? undefined,
+    billingInterval: billingInterval ?? undefined,
+    plan: plan ?? undefined,
   });
 }

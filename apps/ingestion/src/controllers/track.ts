@@ -6,6 +6,7 @@ import {
   sendAlertsForEvent,
   upsertCustomer,
   upsertAnonymousCustomer,
+  isWorkspaceEntitled,
 } from "@repo/analytics";
 import { prisma } from "@repo/db";
 import email from "@repo/email";
@@ -122,6 +123,8 @@ export async function trackClickController(req: Request, res: Response) {
         blockedPages: true,
         blockedCountries: true,
         subscriptionStatus: true,
+        freeTrialEndDate: true,
+        paymentFailedAt: true,
         usage: true,
         usageLimit: true,
         allowedHostnames: true,
@@ -143,7 +146,10 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    if (workspace.subscriptionStatus === "inactive") {
+    // D6: same entitlement policy as the dashboard (apps/web/lib/billing/entitlement.ts)
+    // — active/canceling always pass, trialing while unexpired, past_due for a
+    // 7-day grace from paymentFailedAt, everything else (inactive/canceled/expired) blocked.
+    if (!isWorkspaceEntitled(workspace)) {
       return res.status(403).json({
         success: false,
         error: "Subscription inactive",
@@ -374,9 +380,30 @@ export async function trackClickController(req: Request, res: Response) {
     });
 
     if (recordedEvent) {
-      const updatedWorkspace = await prisma.workspace.update({
-        where: { id: workspace.id },
+      // Atomic guarded increment — NOT a plain `update`. The early usageLimit
+      // check above (line ~215) is only a cheap fast-path reject; two concurrent
+      // requests can both pass it before either increments, over-running the
+      // limit. Gating the increment itself on `usage < usageLimit` in the same
+      // UPDATE makes the DB row lock do the serialization, so usage can never
+      // exceed usageLimit by more than the last request that raced past it.
+      const guard = await prisma.workspace.updateMany({
+        where: {
+          id: workspace.id,
+          ...(usageLimit > 0 ? { usage: { lt: usageLimit } } : {}),
+        },
         data: { usage: { increment: 1 } },
+      });
+
+      if (guard.count === 0 && usageLimit > 0) {
+        return res.status(403).json({
+          success: false,
+          error: "Usage limit exceeded",
+          code: "exceeded_limit",
+        });
+      }
+
+      const updatedWorkspace = await prisma.workspace.findUniqueOrThrow({
+        where: { id: workspace.id },
         select: { usage: true, usageLimit: true, slug: true },
       });
 
@@ -598,7 +625,7 @@ async function maybeSendUsageLimitWarning({
   const recipientEmail = owner?.user?.email ?? null;
   if (!recipientEmail) return;
 
-  const upgradeUrl = `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN || "convrs.dev"}/${workspaceSlug}/settings/billing`;
+  const upgradeUrl = `https://app.${process.env.NEXT_PUBLIC_APP_DOMAIN || "convrs.dev"}/${workspaceSlug}/billing`;
   const ownerName = owner?.user?.name ?? null;
 
   await email.sendEmail({

@@ -3,7 +3,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@repo/db";
 import { Button } from "@repo/ui";
-import RealtimeDashboard from "@/app/app.convrs.dev/(dashboard)/[slug]/(premium)/realtime/page";
+import RealtimeDashboard from "@/app/app.convrs.dev/(dashboard)/[slug]/realtime/page";
 
 interface PageProps {
   params: Promise<{

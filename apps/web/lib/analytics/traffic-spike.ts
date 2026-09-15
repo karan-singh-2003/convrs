@@ -1,8 +1,8 @@
 import { getAnalytics } from "./get-analytics";
 import { subDays, getHours, getDay } from "date-fns";
 
-const MIN_ABSOLUTE_CLICKS = 20; // floor — ignore spikes below this regardless of ratio
-const Z_SCORE_THRESHOLD = 3; // how many stddevs above baseline counts as a spike
+export const DEFAULT_SPIKE_THRESHOLD = 100; // default — workspaces can override via NotificationPreference.trafficSpikeThreshold
+export const SPIKE_COOLDOWN_HOURS = 6;
 const BASELINE_DAYS = 14;
 
 interface TimeseriesPoint {
@@ -19,7 +19,8 @@ export interface SpikeResult {
 }
 
 export async function detectTrafficSpike(
-  workspaceId: string
+  workspaceId: string,
+  threshold: number = DEFAULT_SPIKE_THRESHOLD
 ): Promise<SpikeResult> {
   const now = new Date();
   const start = subDays(now, BASELINE_DAYS);
@@ -58,9 +59,13 @@ export async function detectTrafficSpike(
     const stddev = Math.sqrt(
       recentClicks.reduce((sum, v) => sum + (v - mean) ** 2, 0) / recentClicks.length
     );
-    const zScore = stddev > 0 ? (current.clicks - mean) / stddev : 0;
+    const zScore =
+      stddev > 0 ? (current.clicks - mean) / stddev : current.clicks > mean ? Infinity : 0;
     return {
-      isSpike: zScore >= Z_SCORE_THRESHOLD && current.clicks >= MIN_ABSOLUTE_CLICKS,
+      // The configured threshold is the explicit, user-facing trigger — it
+      // alone decides isSpike. zScore/baseline are informational only (shown
+      // in the notification email as "typical hour" context), never gating.
+      isSpike: current.clicks > threshold,
       currentClicks: current.clicks,
       baselineMean: mean,
       baselineStddev: stddev,
@@ -72,13 +77,44 @@ export async function detectTrafficSpike(
   const stddev = Math.sqrt(
     sameSlot.reduce((sum, v) => sum + (v - mean) ** 2, 0) / sameSlot.length
   );
-  const zScore = stddev > 0 ? (current.clicks - mean) / stddev : current.clicks > 0 ? Infinity : 0;
+  const zScore =
+    stddev > 0 ? (current.clicks - mean) / stddev : current.clicks > mean ? Infinity : 0;
 
   return {
-    isSpike: zScore >= Z_SCORE_THRESHOLD && current.clicks >= MIN_ABSOLUTE_CLICKS,
+    isSpike: current.clicks > threshold,
     currentClicks: current.clicks,
     baselineMean: mean,
     baselineStddev: stddev,
     zScore,
   };
+}
+
+export type SpikeGateResult =
+  | { allowed: true }
+  | { allowed: false; reason: "disabled" | "cooldown" };
+
+/**
+ * Pure gating logic for the toggle + cooldown checks, run BEFORE
+ * detectTrafficSpike (so a disabled/cooling-down workspace never pays for
+ * the analytics query). Kept separate from the route handler (side
+ * effects/QStash) so this is unit-testable without a live DB or a signed
+ * QStash request.
+ */
+export function isSpikeNotificationAllowed(
+  preference: { trafficSpikes: boolean; lastSpikeSentAt: Date | null } | null | undefined,
+  { cooldownHours = SPIKE_COOLDOWN_HOURS, now = new Date() }: { cooldownHours?: number; now?: Date } = {}
+): SpikeGateResult {
+  if (!preference?.trafficSpikes) {
+    return { allowed: false, reason: "disabled" };
+  }
+
+  if (preference.lastSpikeSentAt) {
+    const hoursSinceLastAlert =
+      (now.getTime() - preference.lastSpikeSentAt.getTime()) / (1000 * 60 * 60);
+    if (hoursSinceLastAlert < cooldownHours) {
+      return { allowed: false, reason: "cooldown" };
+    }
+  }
+
+  return { allowed: true };
 }
