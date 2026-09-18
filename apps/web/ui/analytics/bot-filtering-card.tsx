@@ -272,14 +272,14 @@ export default function BotFilteringCard() {
   const hasData = providers.length > 0;
 
   return (
-    <div className="bg-bg-card border border-border-subtle rounded-2xl h-[450px] flex flex-col">
-      <div className="flex border-b border-border-subtle">
+    <div className="bg-bg-card border border-border-subtle rounded-2xl h-auto sm:h-[450px] flex flex-col">
+      <div className="flex  border-b border-border-subtle">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             aria-selected={activeTab === tab}
-            className={`px-6 py-3 font-display text-[15px] font-medium transition-colors ${activeTab === tab
+            className={`shrink-0 whitespace-nowrap px-4 py-2.5 sm:px-6 font-display text-[15px] font-medium transition-colors ${activeTab === tab
                 ? "text-content-default border-b-2 border-content-default -mb-px"
                 : "text-content-subtle hover:text-content-default"
               }`}
@@ -289,12 +289,12 @@ export default function BotFilteringCard() {
         ))}
       </div>
 
-      <div className="flex flex-1 min-h-0">
-        <div className="w-2/3 h-full p-4 overflow-hidden">
+      <div className="flex flex-col sm:flex-row flex-1 min-h-0">
+        <div className="w-full sm:w-2/3 h-[260px] sm:h-full p-4 overflow-hidden">
           <BotFilteringAreaChart category={category} />
         </div>
 
-        <div className="w-1/3 h-full border-l border-border-subtle p-2 overflow-y-auto">
+        <div className="w-full sm:w-1/3 max-h-[220px] sm:max-h-none sm:h-full border-t sm:border-t-0 sm:border-l border-border-subtle p-2 overflow-y-auto">
           {isLoading && !response ? (
             <div className="flex h-full items-center justify-center">
               <span className="text-xs text-content-subtle font-alexandria">Loading…</span>

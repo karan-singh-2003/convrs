@@ -24,11 +24,15 @@ function AppToaster() {
  * Per-section theming wrapper.
  *
  * Each top-level route group renders its own `ThemeShell` instead of relying on
- * a single global provider. Sections that pass `forcedTheme` (auth, invites) are
+ * a single global provider — the root `app/layout.tsx` deliberately mounts none,
+ * because next-themes turns a nested `ThemeProvider` into a no-op and a root
+ * provider would silently swallow every `forcedTheme` below it.
+ *
+ * Sections that pass `forcedTheme` (auth, onboarding, invites) are
  * pinned to that theme for the DOM only — next-themes never writes to
  * localStorage while a theme is forced, so the user's saved light/dark
  * preference is left untouched and is restored automatically when they land back
- * on a themable section (dashboard, shared, onboarding).
+ * on a themable section (dashboard, shared, docs).
  *
  * Nesting a second `ThemeProvider` is a documented no-op in next-themes, so it's
  * safe for deeper layouts to remain unaware of this.

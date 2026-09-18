@@ -30,6 +30,30 @@ export const customerActivityPipe = tb.buildPipe({
   }),
 });
 
+/**
+ * Activity for a raw visitor_id, bypassing the Customer lookup — the thin
+ * wrapper getCustomerActivity() below delegates to this. Anonymous
+ * customers already store visitor_id as their externalId (see
+ * upsertAnonymousCustomer in @repo/analytics), so this is also what makes
+ * getCustomerActivity work for never-converted visitors, not just
+ * identified ones.
+ */
+export async function getVisitorActivity({
+  workspaceId,
+  visitorId,
+}: {
+  workspaceId: string;
+  visitorId: string;
+}) {
+  const response = await customerActivityPipe({
+    workspaceId,
+    visitorId,
+    limit: 100,
+  });
+
+  return groupByDate(response.data);
+}
+
 export async function getCustomerActivity({
   workspaceId,
   customerId,
@@ -51,15 +75,8 @@ export async function getCustomerActivity({
     return [];
   }
 
-  // 2. fetch from tinybird
-  const response = await customerActivityPipe({
-    workspaceId,
-    visitorId: customer.externalId,
-    limit: 100,
-  });
-
-  // 3. group data
-  return groupByDate(response.data);
+  // 2 & 3. fetch from tinybird + group by date
+  return getVisitorActivity({ workspaceId, visitorId: customer.externalId });
 }
 
 type TinybirdEvent = {

@@ -29,7 +29,6 @@ export const ONBOARDING_STEPS = [
   "script",
   "completed",
   "invite ",
-  "billing",
   "source",
   "members",
 ] as const;

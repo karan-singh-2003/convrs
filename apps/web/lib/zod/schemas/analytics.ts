@@ -310,6 +310,39 @@ export const analyticsQuerySchema = z.object({
       "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
       "Examples: `https://example.com`, `https://example.com,https://other.com`, `-https://spam.com`."
     ),
+  hostname: z
+    .string()
+    .optional()
+    .transform(parseFilterValue)
+    .describe(
+      "The hostname to filter analytics for. " +
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`). " +
+      "Examples: `example.com`, `example.com,blog.example.com`, `-staging.example.com`."
+    ),
+  page: z
+    .string()
+    .optional()
+    .transform(parseFilterValue)
+    .describe(
+      "The full page URL to filter analytics for. " +
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
+    ),
+  entrypage: z
+    .string()
+    .optional()
+    .transform(parseFilterValue)
+    .describe(
+      "The entry page URL (first page of the session) to filter analytics for. " +
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
+    ),
+  exitlink: z
+    .string()
+    .optional()
+    .transform(parseFilterValue)
+    .describe(
+      "The exit link URL (last page/link of the session) to filter analytics for. " +
+      "Supports advanced filtering: single value, multiple values (comma-separated), or exclusion (prefix with `-`)."
+    ),
   utm_source: z
     .string()
     .optional()

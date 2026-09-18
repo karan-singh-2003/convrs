@@ -99,10 +99,10 @@ export default function TokensPage() {
             <span className="text-sm font-display text-neutral-600">
               {lastUsed
                 ? formatDate(lastUsed, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
                 : "Never"}
             </span>
           );
@@ -170,20 +170,34 @@ export default function TokensPage() {
       <AddEditTokenModal />
       <TokenCreatedModal />
       <AnimatedSizeContainer height>
-        <SettingsChildrenLayout
-          title="API Tokens"
-          description="Manage API tokens for programmatic access to your workspace."
-          actions={
+
+        <div className="px-1 flex items-center justify-between gap-4">
+          <div className="flex flex-col">
+            <h1 className="font-display text-[16px] font-medium text-content-default">
+              API Tokens
+            </h1>
+            <p className="font-display text-[14.5px] font-medium text-content-subtle ">
+              Manage API tokens for programmatic access to your workspace.
+            </p>
+          </div>
+
+          {/* Actions (Buttons) */}
+          <div className="flex items-center gap-2">
             <Button
               text="Add Token"
-              className="text-black/60  bg-[#f3f4f6] h-fit font-display rounded-full text-[12.5px] py-1"
-              onClick={() => setShowAddEditTokenModal(true)}
-            />
-          }
-          className="px-3 lg:px-8"
-        >
-          <Table table={table} {...tableProps} />
-        </SettingsChildrenLayout>
+              className="h-fit w-fit rounded-full border-border-subtle bg-bg-subtle px-3 py-1 text-[12.5px] font-display text-content-default transition-colors hover:bg-bg-emphasis"
+              onClick={() => {
+                setShowAddEditTokenModal(true);
+              }}
+            ></Button>
+          </div>
+        </div>
+
+        <div className="bg-bg-card rounded-2xl border-none my-4">
+          {/* Table */}
+          <Table table={table} {...tableProps} className="bg-bg-card" />
+        </div>
+
       </AnimatedSizeContainer>
     </PageWidthWrapper>
   );

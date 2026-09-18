@@ -52,7 +52,10 @@ const NAV_AREAS = {
       },
       {
         heading: "Developer",
-        items: [{ title: "Script", href: `/${slug}/settings/script` }],
+        items: [
+          { title: "Script", href: `/${slug}/settings/script` },
+          { title: "API Tokens", href: `/${slug}/settings/tokens` },
+        ],
       },
     ],
   }),

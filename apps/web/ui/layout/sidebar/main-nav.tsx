@@ -8,6 +8,7 @@ import { UserDropdown } from "./user-dropdown";
 import Link from "next/link";
 import { NavButton } from "../page-content/nav-button";
 import { FreeTrialBanner } from "./free-trial-banner";
+import { SetupProgress } from "./setup-progress";
 import useWorkspace from "@/lib/swr/use-workspace";
 type SideNavContext = {
   isOpen: boolean;
@@ -112,7 +113,10 @@ export function MainNav({
                   </div>
                 </div>
               </div>
-              <UserDropdown />
+              <div className="flex items-center gap-2">
+                <SetupProgress />
+                <UserDropdown />
+              </div>
             </div>
           </div>
         ) : (

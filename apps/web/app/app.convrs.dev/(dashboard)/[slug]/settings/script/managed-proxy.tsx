@@ -409,15 +409,17 @@ export default function ManagedProxyCard() {
             </p>
             <details className="text-[12.5px]  font-display text-content-subtle">
               <summary className="cursor-pointer  select-none">View DNS record</summary>
-              <table className="w-full mt-2">
-                <tbody>
-                  <CopyableRow
-                    type="CNAME"
-                    name={domain.subdomain.split(".")[0]}
-                    value={domain.cnameTarget}
-                  />
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full mt-2">
+                  <tbody>
+                    <CopyableRow
+                      type="CNAME"
+                      name={domain.subdomain.split(".")[0]}
+                      value={domain.cnameTarget}
+                    />
+                  </tbody>
+                </table>
+              </div>
             </details>
           </div>
         ) : (
@@ -434,30 +436,7 @@ export default function ManagedProxyCard() {
               <p className="text-[13px] font-display text-content-subtle mb-2">
                 Add this DNS record to your domain registrar:
               </p>
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="text-left text-[12px] text-content-subtle font-normal pb-1">Type</th>
-                    <th className="text-left text-[12px] text-content-subtle font-normal pb-1">Name</th>
-                    <th className="text-left text-[12px] text-content-subtle font-normal pb-1">Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <CopyableRow
-                    type="CNAME"
-                    name={domain.subdomain.split(".")[0]}
-                    value={domain.cnameTarget}
-                  />
-                </tbody>
-              </table>
-            </div>
-
-            {domain.verification && domain.verification.length > 0 && (
-              <div className="mt-6">
-                <p className="text-[13px] font-display text-content-subtle mb-2">
-                  This domain was used on another Vercel account. Add this TXT record to verify
-                  ownership (you can remove it after verification):
-                </p>
+              <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr>
@@ -467,11 +446,38 @@ export default function ManagedProxyCard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {domain.verification.map((v) => (
-                      <CopyableRow key={v.domain} type={v.type} name={v.domain} value={v.value} />
-                    ))}
+                    <CopyableRow
+                      type="CNAME"
+                      name={domain.subdomain.split(".")[0]}
+                      value={domain.cnameTarget}
+                    />
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            {domain.verification && domain.verification.length > 0 && (
+              <div className="mt-6">
+                <p className="text-[13px] font-display text-content-subtle mb-2">
+                  This domain was used on another Vercel account. Add this TXT record to verify
+                  ownership (you can remove it after verification):
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr>
+                        <th className="text-left text-[12px] text-content-subtle font-normal pb-1">Type</th>
+                        <th className="text-left text-[12px] text-content-subtle font-normal pb-1">Name</th>
+                        <th className="text-left text-[12px] text-content-subtle font-normal pb-1">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {domain.verification.map((v) => (
+                        <CopyableRow key={v.domain} type={v.type} name={v.domain} value={v.value} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

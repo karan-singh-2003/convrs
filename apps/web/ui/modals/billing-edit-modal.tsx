@@ -98,7 +98,7 @@ function EditBillingModal({
     <Modal
       showModal={showEditBillingModal}
       setShowModal={setShowEditBillingModal}
-      className="w-[800px] h-fit"
+      className="w-full max-w-[800px] h-fit max-h-[90vh] overflow-y-auto"
     >
       <div className="flex flex-col">
         {/* Header */}

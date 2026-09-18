@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { detectBrowserTimezone, getTimezoneOptions } from "@/lib/timezone";
-import { BILLING_V2 } from "@/lib/billing/flags";
 
 type FormData = z.infer<typeof createWorkspaceSchema>;
 
@@ -76,6 +75,8 @@ export function CreateWorkspaceForm({
     slug: string;
     domain: string | null;
     projectToken: string | null;
+    subscriptionStatus?: string | null;
+    freeTrialEndDate?: string | null;
   }> {
     const res = await fetch("/api/workspaces", {
       method: "POST",
@@ -93,32 +94,8 @@ export function CreateWorkspaceForm({
     return res.json();
   }
 
-  async function startFreeTrial(
-    workspaceIdOrSlug: string
-  ): Promise<{ trialEndsAt?: string }> {
-    const res = await fetch(
-      `/api/workspaces/${workspaceIdOrSlug}/billing/start-free-trial`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
-    if (!res.ok) {
-      const { error } = await res.json();
-      throw new Error(error || "Failed to start free trial");
-    }
-
-    return res.json();
-  }
-
   async function onSubmit(data: FormData) {
-    let workspace: {
-      id: string;
-      slug: string;
-      domain: string | null;
-      projectToken: string | null;
-    } | null = null;
+    let workspace: Awaited<ReturnType<typeof createWorkspace>> | null = null;
 
     try {
       const createWorkspacePromise = createWorkspace(data);
@@ -137,36 +114,20 @@ export function CreateWorkspaceForm({
 
     if (!workspace) return;
 
-    // Deploy 3b: under NEXT_PUBLIC_BILLING_V2 the new workspace is left
-    // uncovered — the caller routes to the billing choice step where the user
-    // explicitly picks Standard / Growth / a trial. Flag off keeps the old
-    // "auto-start a 14-day trial on create" behaviour.
-    if (!BILLING_V2) {
-      try {
-        const startFreeTrialPromise = startFreeTrial(workspace.id);
-
-        toast.promise(startFreeTrialPromise, {
-          loading: "Starting your free trial...",
-          success: (result) => {
-            if (!result?.trialEndsAt) {
-              return "Free trial started successfully!";
-            }
-
-            return `Your 14-day free trial has started! Enjoy full access until ${new Date(
-              result.trialEndsAt
-            ).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-            })}.`;
-          },
-          error: (err: Error) => err.message,
-        });
-        await startFreeTrialPromise;
-      } catch {
-        toast.warning(
-          "Workspace created, but trial setup failed. Visit billing to activate."
-        );
-      }
+    // Trial activation is fully server-side now (POST /api/workspaces —
+    // lib/billing/auto-trial.ts): an eligible user's first owned workspace
+    // is auto-covered by the 14-day cardless trial as part of that same
+    // request. This is just a courtesy toast reflecting what already
+    // happened — there is no separate client-initiated trial call anymore.
+    if (workspace.subscriptionStatus === "trialing" && workspace.freeTrialEndDate) {
+      toast.success(
+        `Your 14-day free trial has started! Enjoy full access until ${new Date(
+          workspace.freeTrialEndDate
+        ).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+        })}.`
+      );
     }
 
     onSuccess?.({
@@ -230,7 +191,7 @@ export function CreateWorkspaceForm({
         <Label className="font-display text-neutral-600">Domain</Label>
 
         <div className="mt-2 flex min-w-0">
-          <span className="inline-flex shrink-0 items-center rounded-l-sm border border-r-0 border-neutral-300 bg-neutral-50 px-2 sm:px-3 font-medium font-display text-neutral-500 text-[13px] sm:text-sm">
+          <span className="inline-flex shrink-0 items-center rounded-l-lg border border-r-0 border-neutral-300 bg-neutral-50 px-2 sm:px-3 font-medium font-display text-neutral-500 text-[13px] sm:text-[14.5px]">
             https://
           </span>
 

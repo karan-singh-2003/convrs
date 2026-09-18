@@ -1,8 +1,8 @@
 # Convrs Billing — Implementation Plan
 
-**Date:** 2026-09-07 (last substantive update: 2026-09-14 — Deploy 5 + final production-readiness pass, see below)
+**Date:** 2026-09-07 (last substantive update: 2026-09-16 — Deploy 8, see below)
 **Basis:** `docs/billing-architecture-final.md` (approved model). Read that first — this doc does not re-derive the architecture.
-**Status:** Deploys 0–5 done. Deploys 6–7 (legacy-column observation window + drop) outstanding — see Deploy status below and "Final production-readiness pass" immediately after it.
+**Status:** Deploys 0–5 and 8 done. Deploys 6–7 (legacy-column observation window + drop) outstanding — see Deploy status below, "Final production-readiness pass", and "Deploy 8" immediately after it.
 
 ---
 
@@ -18,6 +18,7 @@
 | **3b** | ✅ done (2026-09-08) | UI cutover behind `NEXT_PUBLIC_BILLING_V2` (`apps/web/lib/billing/flags.ts`, default OFF at the time — flipped to default ON in Deploy 5). New: `lib/swr/use-billing-context.ts`, `lib/swr/use-subscriptions.ts`, `lib/billing/plan-compare.ts` (+ test), rebuilt `[slug]/billing` (`billing-v2.tsx` — uncovered decision tree / covered current-plan panel), onboarding `billing` step (`page.tsx` + `form.tsx`), account-level `account/subscriptions` page. Changed (all flag-gated, legacy path byte-identical when off): `use-workspace` exposes the `subscription` object; `create-workspace-form` skips the auto-trial; `create-workspace-modal` + onboarding `workspace/form` route to the billing choice; `upgrade-plan.tsx` hits `/api/subscriptions*`; `free-trial-banner` Growth copy; `workspace-dropdown` coverage badges; `app-sidebar` Subscriptions nav link. No DB / Dodo / schema changes. Verify: `tsc` clean, `vitest` 66 pass, `next build` green with flag OFF **and** ON, `turbo check-types` 5/5. e2e + manual end-to-end were pending the DB reset + a live Dodo test webhook at the time — the final production-readiness pass (below) ran real e2e against a live disposable database and the live Dodo Test Mode API, though not a full hosted-checkout-to-webhook browser flow (see §16). |
 | **3a** | ✅ done (2026-09-08) | Pricing catalog + resolver rewiring only (no UI/SWR/DB/migrations/ingestion/crons/Dodo mutations). `packages/utils/.../pricing.tsx` rewritten as the single source of truth: `TierKey` derived from `TIER_KEYS` tuple, `FAMILY_LIMITS`/`TIER_EVENTS`/`TIER_LABEL`/`PRICES` (verbatim from invariants §1) consts, 36 Dodo product IDs inlined, `PlanDetails.tier` machine-identity field added, `getPlanByTier`/`getProductIdByTier` helpers, `isDowngradePlan` price-then-tier-rank tie-break, `formatEventLimit` uncapped→"10M+", `getPlanFromPriceId` deleted. `lib/billing/plan-resolver.ts` repointed from `scripts/dodo/*` → `@repo/utils` (public API unchanged). `billing/upgrade` shim `PLAN_TO_KEY` widened to a superset (raw keys + event labels + legacy marketing names). `dodo-product-audit.ts` gains `--catalog` (offline 3-way cross-check, also gates `--verify`). Verification: `@repo/utils` rebuilt (tsup), `apps/web` `tsc --noEmit` clean, `turbo run check-types` 5/5, `vitest run` 62 pass, `--catalog` PASS, `--verify` 36/36 against live Test-Mode Dodo. |
 | **5** | ✅ done (2026-09-14) | Enforcement flip. `lib/billing/flags.ts`: `NEXT_PUBLIC_BILLING_V2` now defaults **ON** (`!== "false"` instead of `=== "true"`) — the new architecture is live by default; the old UI + auto-trial-on-create are reachable only by explicitly setting the flag `false`. `lib/auth/workspace.ts`: removed the per-request trial-expiry flip (§8.9) — it only ever updated the one requesting `Workspace` row, never the owning `Subscription` or sibling workspaces on a Growth trial (a real drift source), and was redundant with the entitlement check below anyway. Seat/workspace-cap enforcement (D11/I-2) was already correctly implemented (Deploy 2's `attachWorkspace` guarded raw SQL) — audited every `Workspace.subscriptionId` write site in Deploy 5 and confirmed none can exceed `maxWorkspaces`; no code change needed there. **D6 implemented and tested**: `isWorkspaceEntitled` (new, `packages/analytics/src/billing-access.ts` — shared so apps/web and apps/ingestion can't drift apart) grants access for `active`, `canceling` (fixes a bug: cancellation-at-period-end was wrongly cutting off access immediately), `trialing` while unexpired, and `past_due` for exactly 7 days from `paymentFailedAt`; wired into `apps/web/lib/billing/entitlement.ts` (delegates), `apps/ingestion/src/controllers/track.ts`, and `track-ai-bot.ts` (the latter two previously only checked `=== "inactive"`, i.e. no grace cap at all — also fixed). Verify: `vitest` 106 pass, `tsc` clean, `next build` green, `turbo check-types` 5/5, plus a new e2e suite (`apps/e2e/tests/billing-enforcement.spec.ts`, 17/17 passing against a live disposable Test-Mode DB) covering the full D6 status matrix and the usage-limit race fix below. |
+| **8** | ✅ done (2026-09-16) | **Product decision reversal — see "Deploy 8" below for full detail.** Onboarding billing step removed entirely (`onboarding/(steps)/billing/{page,form,page-deleted}.tsx` deleted; `"billing"` removed from `ONBOARDING_STEPS`); onboarding is now unconditionally `workspace → script → finish`. Automatic 14-day cardless trial **restored** at workspace-creation time — this intentionally reverses the "`POST /api/workspaces` auto-trial removal" half of Deploy 5 — but implemented server-side, transactionally, and idempotently via new `lib/billing/auto-trial.ts`, reusing the same `Serializable`-tx / `User.freeTrialUsedAt` pattern as `start-free-trial/route.ts` (I-14). Eligibility is stricter than the old pre-Deploy-5 behaviour: first **owned** workspace only (`WorkspaceUsers.role = "owner"`; being a member/invitee elsewhere does not count) AND no existing `Subscription` row at all for that user AND `freeTrialUsedAt == null`. `lib/middlewarre/app.ts` now coerces any stale cached `"workspace"` or `"billing"` onboarding-step value to `"script"`, so no code path can ever redirect to `/onboarding/billing`. The real `[slug]/billing` page, `account/subscriptions`, and all other `NEXT_PUBLIC_BILLING_V2`-gated dashboard billing UI are unchanged. Verify: `tsc` clean, `vitest` 553 pass (46 files, +`lib/billing/auto-trial.test.ts`), `next build` green with `/onboarding/billing` absent from the emitted route table. |
 
 ### Final production-readiness pass (2026-09-14)
 
@@ -36,6 +37,39 @@ A full audit of the **actual repository** (not just this document) against the f
 **D10 correction:** an earlier pass of this document said Growth-yearly `t200k` was $590 and marked D10 "confirmed" on that basis — **that was wrong**. The actual shipped product, `pricing.tsx`, `products-spec.ts`, and `docs/billing-invariants.md` §1 all agree: Growth-yearly `t100k` and `t200k` are **both $390, intentionally equal** (the tier-index tie-break in `isDowngradePlan`/`isDowngradeTransition` exists specifically to handle this). Fixed throughout this document (§3.2, §15) and in the one test comment that had inherited the same error.
 
 **Real test coverage added:** `apps/e2e/tests/billing-enforcement.spec.ts` (new) — 17 tests, run against a live disposable Test-Mode database via the existing Playwright e2e harness (not merely planned): the full D6 entitlement matrix (active/canceling/trialing valid+expired/past_due at 0d, 6d, 8d, and no-date/inactive) and the usage-limit race fix (10 concurrent requests against 1 remaining slot → exactly 1 succeeds). Plus `apps/e2e/fixtures/seed.ts`'s new `createBillingTestWorkspace` helper. See §9.5 and §16.
+
+### Deploy 8 — onboarding billing step removed; automatic first-workspace trial restored (2026-09-16)
+
+**This is a deliberate product-decision reversal, not a bug fix.** Deploy 5 (above) explicitly removed the create-time auto-trial so users would pick a plan via a new onboarding billing step ("this is what actually stops create-workspace-form's auto-trial call"; §8.6 used to say "remove nothing here — the auto-trial is in the *form*, not this route"). Deploy 8 reverses that specific decision: there is no onboarding billing step anymore, and an eligible user's first **owned** workspace auto-starts the trial again — but implemented far more strictly than the pre-Deploy-5 version ever was, and entirely server-side.
+
+**Onboarding flow, before → after:**
+```
+Before: workspace → billing (choose plan / start trial / skip) → script → finish
+After:  workspace → script → finish                                                  (unconditional, no flag)
+```
+
+**Removed:**
+- `app/app.convrs.dev/(onboarding)/onboarding/(steps)/billing/page.tsx`, `form.tsx`, `page-deleted.tsx` — deleted outright, not kept as a compatibility redirect. Confirmed absent from the production route table (`next build` no longer emits `/onboarding/billing`).
+- `"billing"` removed from `ONBOARDING_STEPS` (`lib/types.ts`).
+- The `NEXT_PUBLIC_BILLING_V2` branch in `workspace/form.tsx` (`continueTo("billing")` vs `continueTo("script")`) — onboarding no longer varies by this flag at all.
+- The client-side `startFreeTrial()` fetch + `BILLING_V2` branch in `ui/workspaces/create-workspace-form.tsx` — trial activation is no longer client-initiated in any code path.
+
+**`lib/middlewarre/app.ts`:** the existing "user already has a workspace but the cached onboarding step is stale" redirect used to map `step === "workspace"` → `"billing"`. It now maps both `"workspace"` **and** any leftover cached `"billing"` value (`onboarding-step-cache.ts` has a 24h TTL, so a value written just before this shipped could still be read for up to a day) to `"script"`. There is no remaining code path — fresh or stale-cache — that can produce a redirect to `/onboarding/billing`.
+
+**New: `lib/billing/auto-trial.ts`** — called from `POST /api/workspaces` (§8.6) immediately after the workspace row is created:
+- `isAutoTrialEligible()` — pure predicate, unit-tested (`auto-trial.test.ts`): eligible only when **all** of the following hold —
+  1. `User.freeTrialUsedAt == null` — the same lifetime flag I-14 already uses; a trial is granted **once per user, ever**, regardless of how many workspaces they later create.
+  2. `priorOwnedWorkspaceCount === 0` — counts only `WorkspaceUsers` rows with `role: "owner"` for that user, excluding the workspace just created. Being a **member or invitee** of someone else's workspace (`role: "member" | "viewer" | "billing"`) does **not** count and does **not** disqualify the user's own first creation.
+  3. No `Subscription` row at all yet for that user (`ownerUserId` count `=== 0`) — catches a user who already holds a subscription acquired some other way, even one where `freeTrialUsedAt` was somehow never set.
+- `grantAutoTrialForNewWorkspace()` — the orchestration, run in its own `Serializable` transaction (mirrors `start-free-trial/route.ts` exactly): re-reads all three eligibility conditions **inside** the transaction (not just trusting a pre-check), creates a `trialing` `Subscription` (`standard`/`t10k`/monthly, cardless — `dodoSubscriptionId: null`, `trialEndsAt = now + 14d`), sets `freeTrialUsedAt = now` in the same tx, attaches `workspace.subscriptionId`, and calls the existing `fanOutSubscription` (§6.4) to populate the denormalized `Workspace` billing fields.
+- **Transactional / idempotent / race-safe:** the `Serializable` isolation plus the `freeTrialUsedAt` re-check inside the tx means two concurrent requests for the same user can grant at most one trial — the loser either observes `freeTrialUsedAt` already set or the transaction throws a serialization conflict, which the caller treats as "no trial" and swallows, never retries.
+- **Best-effort / never blocks creation:** `POST /api/workspaces` (§8.6) only calls this *after* `prisma.workspace.create` has already succeeded, wrapped in a `try/catch` that logs and swallows any failure. A failed or ineligible grant can never fail the workspace-creation request, and a failed workspace creation can never reach the grant step at all — there is no path to a duplicate or orphaned trial.
+
+**`/[slug]/billing` unaffected:** the real dashboard billing page, `account/subscriptions`, `start-free-trial/route.ts` (still the manual single-workspace path, unchanged), and every other `NEXT_PUBLIC_BILLING_V2`-gated dashboard billing surface continue to work exactly as before — a workspace that didn't qualify for the automatic grant (not the user's first owned workspace, trial already used, or an existing subscription) still reaches `/[slug]/billing` to pick a plan or manage payment normally.
+
+**Not violated:** I-14 ("exactly one free trial per user, lifetime") still holds — Deploy 8 changes *when* and *how automatically* that one trial is offered, never how many a user can get.
+
+Verify: `tsc --noEmit` clean (apps/web + `turbo run check-types` 5/5), `vitest` 553 pass across 46 files (`lib/billing/auto-trial.test.ts` is new), `next build` green with `/onboarding/billing` confirmed absent from the emitted route table.
 
 ### Clean-database reset — the new baseline
 
@@ -178,6 +212,22 @@ Deploy 5  Enforcement flip  (§8, D6)  ── ✅ done (see status table)
 Deploy 6  Observation window before dropping legacy (already-unwritten) columns — not yet started
                     │
 Deploy 7  Drop legacy columns + delete dead code  (§2.4, §14)  ── not yet started
+
+Deploy 8  Onboarding billing step removed; automatic first-workspace trial
+          restored  (§8.6, §11)  ── ✅ done (2026-09-16) — independent of 6/7,
+          REVERSES part of Deploy 5's decision (see "Deploy 8" narrative above)
+          ├── Deleted onboarding/(steps)/billing/{page,form,page-deleted}.tsx —
+          │     onboarding is now workspace → script → finish, unconditionally,
+          │     not gated by NEXT_PUBLIC_BILLING_V2
+          ├── Removed the BILLING_V2 branch from workspace/form.tsx and the
+          │     client-side startFreeTrial() call from create-workspace-form.tsx
+          ├── lib/middlewarre/app.ts: stale cached "workspace"/"billing" onboarding
+          │     steps now coerce to "script" — no path can redirect to
+          │     /onboarding/billing, fresh or from a pre-Deploy-8 cache entry
+          └── New lib/billing/auto-trial.ts: POST /api/workspaces auto-grants the
+                14-day cardless trial to an eligible user's first OWNED workspace
+                (member/invitee elsewhere doesn't count), server-side, inside a
+                Serializable transaction, idempotent — reuses the I-14 pattern
 ```
 
 **Note:** the original plan's "hard rule" that Deploy 2's webhook must dual-write into the legacy `Workspace.dodo*`/`plan`/`planFamily` columns to keep Deploy 2–5 revertible **does not apply**. On a clean reset there is no legacy data to protect (see "Deploy 2 — revised for clean slate" above): the legacy columns are simply never written from Deploy 2 onward. Deploy 6's role is now just a confidence/observation window before Deploy 7 drops those already-dormant columns, not a "stop dual-writing" step.
@@ -759,7 +809,9 @@ Authz: every handler loads the `Subscription` and checks `ownerUserId === sessio
 
 ### 8.6 Changed — `app/api/workspaces/route.ts`
 
-`POST`: **remove nothing here** (the auto-trial is in the *form*, not this route). Ensure the created workspace has `subscriptionId: null`, `subscriptionStatus: "inactive"`, `planTier: null`. Return the workspace; the client drives the billing step next.
+`POST`: creates the workspace exactly as before (`subscriptionId: null`, `subscriptionStatus: "inactive"`, `planTier: null`), then — **Deploy 8** — calls `grantAutoTrialForNewWorkspace()` (`lib/billing/auto-trial.ts`) in a `try/catch` that only logs on failure. If the grant succeeds, the workspace row is re-fetched so the JSON response already reflects the fanned-out trial fields (`subscriptionStatus: "trialing"`, `freeTrialEndDate`, etc.) without a second client round-trip. A failed or ineligible grant never fails the request — the workspace is still created and returned uncovered, same as today, for the caller to cover later via `/[slug]/billing`.
+
+(Historical note: an earlier revision of this plan said "remove nothing here — the auto-trial is in the *form*, not this route" and had the client drive an onboarding billing-choice step next. Deploy 8 reverses that — see "Deploy 8" narrative above.)
 
 ### 8.7 Changed — `app/api/workspaces/[idOrSlug]/route.ts`
 
@@ -878,9 +930,12 @@ Emit a metric/log line per run: `{ scanned, drifted, repaired, unrepairable }`. 
 
 Per D7: **one 14-day cardless trial per User, lifetime, first subscription only.**
 
+**Deploy 8:** there is no onboarding billing step anymore. The first row below is now split in two — an *automatic* grant on workspace creation (the common case) and the pre-existing *manual* grant (for a workspace that didn't qualify automatically, e.g. not the user's first owned workspace).
+
 | Path | Behaviour |
 |---|---|
-| First workspace, user picks "Start trial" (onboarding billing step or `start-free-trial`) | Create `Subscription` `status: "trialing"`, `dodoSubscriptionId: null`, `trialEndsAt = now+14d`, `user.freeTrialUsedAt = now` (same tx, `Serializable`). Attach workspace, fan out. |
+| **(Deploy 8, automatic)** User's first **owned** workspace, and they're eligible | `POST /api/workspaces` → `grantAutoTrialForNewWorkspace()` (`lib/billing/auto-trial.ts`) runs immediately after workspace creation, no user action, no billing-page visit. Eligible only if `freeTrialUsedAt == null` **and** zero prior `WorkspaceUsers` rows with `role: "owner"` for that user (member/invitee elsewhere doesn't count) **and** zero existing `Subscription` rows for that user. Same create-`Subscription`-status-`"trialing"` / set-`freeTrialUsedAt`-in-the-same-tx shape as below, `Serializable`. |
+| Manual grant on an already-created, uncovered workspace | `POST /api/workspaces/[idOrSlug]/billing/start-free-trial` (visited from `/[slug]/billing` — e.g. a second/later workspace, or the automatic grant didn't apply) — unchanged by Deploy 8. Create `Subscription` `status: "trialing"`, `dodoSubscriptionId: null`, `trialEndsAt = now+14d`, `user.freeTrialUsedAt = now` (same tx, `Serializable`). Attach workspace, fan out. |
 | Trial → paid conversion | `POST /api/subscriptions` with the existing `internalSubscriptionId` of the trial sub in `metadata`; `subscription_data.trial_period_days = getRemainingTrialDays(trialEndsAt)` (keep `lib/billing/trial-utils.ts::getRemainingTrialDays`). Webhook `subscription.active` back-fills `dodoSubscriptionId`, status stays access-granting for both `"active"` and `"trialing"`. |
 | Add website while on a Growth trial | `attach` → workspace inherits `trialEndsAt` via fan-out. No new trial, no charge. |
 | Add website #2 while on a **Standard** trial | Standard trial covers 1 site. UI offers: (a) new Standard sub for site 2 (paid checkout, no trial — `freeTrialUsedAt` set), or (b) `changePlan` the trial sub Standard→Growth (stays trialing, `maxWorkspaces → 30`), then `attach` site 2. |
@@ -900,9 +955,12 @@ Per D7: **one 14-day cardless trial per User, lifetime, first subscription only.
 | 2 (new write path) | no legacy dual-write (clean reset, no data to protect); old billing UI still calls old `upgrade` route (kept as shim); `entitlement`/`social-eligibility` read the denormalized `Workspace` fields that the new webhook populates | redeploy Deploy-1 build; new endpoints 404 harmlessly (no UI calls them yet) |
 | 3 (frontend) | flag `NEXT_PUBLIC_BILLING_V2`; off → old UI | flip flag off |
 | 4 (crons) | additive; crons are idempotent repairs | remove cron entries from `vercel.json` |
-| 5 (enforcement) | `POST /api/workspaces` behaviour change + past_due grace + seat caps | redeploy Deploy-4 build; caps stop enforcing; trial auto-start returns |
+| 5 (enforcement) | `POST /api/workspaces` behaviour change + past_due grace + seat caps | redeploy Deploy-4 build; caps stop enforcing; trial auto-start returns¹ |
 | 6 (observation window) | legacy columns already unwritten since Deploy 2; this is a confidence window before Deploy 7 drops them, not a dual-write cutover | no code change to revert — just don't proceed to Deploy 7 |
 | 7 (drop columns) | every reader migrated to `planTier` / `workspace.subscription` | **irreversible without a restore** — see §13 |
+| 8 (onboarding billing step removed; auto-trial restored) | independent of the schema/enforcement deploys above — touches only onboarding routing + `POST /api/workspaces` + new `lib/billing/auto-trial.ts`; no DB/Dodo/schema change | redeploy the pre-Deploy-8 build; onboarding billing step and its `BILLING_V2` branching return, and the automatic first-workspace grant is removed again (the manual `start-free-trial` route is untouched either way) |
+
+¹ Historical: this described reverting Deploy 5 back to Deploy 4, whose `create-workspace-form.tsx` had its own client-side auto-trial call. Deploy 8 (row above) separately restored an automatic grant going forward regardless of Deploy 5/6/7's state, so as of Deploy 8 this note is superseded — see the "Deploy 8" narrative above for the current mechanism.
 
 **Flags:**
 - `NEXT_PUBLIC_BILLING_V2` — UI cutover (Deploy 3).
@@ -964,6 +1022,7 @@ There is no backfill step to roll back. Deploy 1.5 was abandoned in favor of a c
 | `plan-resolver.ts` | **new** — `resolvePlan(productId)` wrapper + old-product-id fallback table |
 | `dodo-checkout.ts` | **new** — checkout session builder (attach-existing-customer, metadata, trial injection) |
 | `billing-identity.ts` | **new** (final production-readiness pass) — `requireBillingOwnerDodoCustomerId` / `decideBillingIdentity`: resolves which Dodo customer `invoices`/`payment-methods`/`manage` may read, enforcing D9 (subscription owner only) |
+| `auto-trial.ts` | **new (Deploy 8)** — `isAutoTrialEligible()` + `grantAutoTrialForNewWorkspace()`, called from `POST /api/workspaces` (§8.6); reuses `plan-resolver.ts` + `fan-out.ts`, same `Serializable`-tx shape as `start-free-trial/route.ts` |
 
 ### Dodo — `apps/web/lib/dodo/`
 | File | Why |
@@ -994,13 +1053,14 @@ There is no backfill step to roll back. Deploy 1.5 was abandoned in favor of a c
 ### Workspace routes / helpers — `apps/web/`
 | File | Why |
 |---|---|
-| `app/api/workspaces/route.ts` | ensure created workspace is `inactive`/`subscriptionId:null`/`planTier:null` |
+| `app/api/workspaces/route.ts` | ensure created workspace is `inactive`/`subscriptionId:null`/`planTier:null`; **(Deploy 8)** then best-effort call `grantAutoTrialForNewWorkspace()`, re-fetching the workspace only if granted |
 | `app/api/workspaces/[idOrSlug]/route.ts` | GET returns nested `subscription`; DELETE frees seat |
 | `lib/api/workspaces/delete-workspace.ts` | replace `cancelSubscription(workspace.dodoCustomerId)` (which wrongly calls **Stripe**) with `subscriptionService.detachWorkspace` + (Standard, now-empty) Dodo cancel; drop the `Pick<..., "dodoCustomerId">` signature → take `subscriptionId` |
 | `lib/api/workspaces/check-subscription-status.ts` | past_due grace (D6) |
 | `lib/api/workspaces/check-free-trial-days-left.ts` | unchanged (reads `freeTrialEndDate`) |
 | `lib/auth/workspace.ts` | remove per-request trial flip |
-| `lib/types.ts` | `WorkspaceProps`: add `subscription`, `subscriptionId`, `planTier` |
+| `lib/types.ts` | `WorkspaceProps`: add `subscription`, `subscriptionId`, `planTier`; **(Deploy 8)** `ONBOARDING_STEPS` drops `"billing"` |
+| `lib/middlewarre/app.ts` | **(Deploy 8)** stale cached `"workspace"`/`"billing"` onboarding step now coerces to `"script"`, never `"billing"` |
 
 ### Zod — `apps/web/lib/zod/schemas/`
 | File | Why |
@@ -1012,7 +1072,7 @@ There is no backfill step to roll back. Deploy 1.5 was abandoned in favor of a c
 `use-workspace.ts` (expose `subscription`), **new** `use-billing-context.ts`, **new** `use-subscriptions.ts`, `use-workspaces.ts` (optional coverage flag).
 
 ### UI — `apps/web/`
-`ui/workspaces/create-workspace-form.tsx` (drop auto-trial), `ui/modals/create-workspace-modal.tsx` (route to billing step), `app/app.convrs.dev/(dashboard)/[slug]/billing/page.tsx` (rebuild), `ui/upgrade-plan.tsx`, `ui/upgrade-plan-pricing-card.tsx`, `app/app.convrs.dev/(onboarding)/onboarding/(steps)/billing/form.tsx` (build), `ui/layout/sidebar/free-trial-banner.tsx` (copy), `app/app.convrs.dev/(dashboard)/[slug]/settings/integrations/page.tsx` (upsell copy), **new** `app/app.convrs.dev/(dashboard)/account/subscriptions/page.tsx`, `ui/layout/sidebar/*` (coverage badges).
+`ui/workspaces/create-workspace-form.tsx` (Deploy 3b: drop auto-trial → **Deploy 8: client-side trial call removed entirely**, now just a courtesy toast reflecting the server-side grant already reflected in the create response), `ui/modals/create-workspace-modal.tsx` (routes to the real `/[slug]/billing?new=1` page for a workspace created from inside the dashboard — unrelated to the onboarding billing step and unchanged by Deploy 8), `app/app.convrs.dev/(dashboard)/[slug]/billing/page.tsx` (rebuild), `ui/upgrade-plan.tsx`, `ui/upgrade-plan-pricing-card.tsx`, ~~`app/app.convrs.dev/(onboarding)/onboarding/(steps)/billing/form.tsx` (build)~~ — **Deploy 8: this file, its `page.tsx`, and `page-deleted.tsx` are deleted; the onboarding billing step no longer exists**, `ui/layout/sidebar/free-trial-banner.tsx` (copy), `app/app.convrs.dev/(dashboard)/[slug]/settings/integrations/page.tsx` (upsell copy), **new** `app/app.convrs.dev/(dashboard)/account/subscriptions/page.tsx`, `ui/layout/sidebar/*` (coverage badges).
 
 ### Ingestion — `apps/ingestion/src/controllers/`
 | File | Why |
@@ -1027,7 +1087,7 @@ There is no backfill step to roll back. Deploy 1.5 was abandoned in favor of a c
 `vercel.json` — add `billing/reconcile` + `billing/usage-reset` crons; fix `social/attribution-reconciliation` path mismatch (pre-existing).
 
 ### Tests — `apps/web` (vitest) + `apps/e2e` (Playwright)
-`apps/e2e/fixtures/seed.ts` + `seed-data.ts` (subscription helpers), plus all the new spec files in §13-tests below.
+`apps/e2e/fixtures/seed.ts` + `seed-data.ts` (subscription helpers), plus all the new spec files in §13-tests below. **(Deploy 8, new)** `lib/billing/auto-trial.test.ts` — unit tests for `isAutoTrialEligible()` covering every edge case in §11 (new user + first/second owned workspace, trial-already-used, existing subscription, member/invitee-doesn't-count).
 
 ### Scripts — `scripts/` (new dir or existing)
 `dodo-product-audit.ts`. (`backfill-subscriptions.ts`, `backfill-verify.ts`, and `rollback-subscriptions.ts` were part of the abandoned Deploy 1.5 backfill — §4 — and are not built.)

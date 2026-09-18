@@ -65,8 +65,17 @@ export async function AppMiddleware(req: NextRequest) {
       const defaultWorkspace = await getDefaultWorkspace(user);
 
       if (defaultWorkspace) {
-        // Skip workspace step if user already has a workspace
-        step = step === "workspace" ? "billing" : step;
+        // Skip the workspace step if the user already has a workspace. The
+        // onboarding billing step no longer exists (trial activation now
+        // happens automatically, server-side, on workspace creation), so the
+        // next step is always Script. `(step as string) === "billing"` guards
+        // against a stale cached value written before this change shipped
+        // (onboarding-step-cache.ts TTL is 24h) — that route no longer exists
+        // and must never be redirected to.
+        step =
+          step === "workspace" || (step as string) === "billing"
+            ? "script"
+            : step;
         return NextResponse.redirect(
           new URL(`/onboarding/${step}?workspace=${defaultWorkspace}`, req.url)
         );

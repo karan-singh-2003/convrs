@@ -74,8 +74,10 @@ export const POST = withWorkspace(
     //   throw new Error("Invalid scopes for the user's role");
     // }
 
-    // create the token
-    const token = `bc_${nanoid(24)}`;
+    // create the token — cvrs_ is the current prefix for all newly minted
+    // tokens; verification (lib/auth/api-token.ts) still accepts the legacy
+    // bc_ prefix so tokens minted before this change keep working.
+    const token = `cvrs_${nanoid(24)}`;
     const hashedKey = await hashToken(token);
     const partialKey = `${token.slice(0, 10)}...${token.slice(-4)}`;
 

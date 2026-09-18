@@ -1,38 +1,22 @@
 // apps/web/app/api/integrations/route.ts
 // GET /api/integrations?workspaceId=... — list every connected revenue provider
-import { normalizeWorkspaceId } from "@/lib/api/workspaces/workspace-id";
 import { prisma } from "@repo/db";
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeWorkspaceForIntegrations } from "@/lib/api/integrations/authorize-workspace";
 
 export async function GET(req: NextRequest) {
-  const workspaceIdentifier = req.nextUrl.searchParams
-    .get("workspaceId")
-    ?.trim();
+  const workspaceIdentifier = req.nextUrl.searchParams.get("workspaceId") ?? undefined;
 
-  if (!workspaceIdentifier) {
-    return NextResponse.json(
-      { error: "Missing workspace id" },
-      { status: 400 }
-    );
-  }
-
-  const normalizedWorkspaceIdentifier = normalizeWorkspaceId(workspaceIdentifier);
-  const workspace = await prisma.workspace.findFirst({
-    where: {
-      OR: [
-        { id: normalizedWorkspaceIdentifier },
-        { slug: normalizedWorkspaceIdentifier },
-      ],
-    },
-    select: { id: true },
-  });
-
-  if (!workspace) {
-    return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+  const auth = await authorizeWorkspaceForIntegrations(
+    workspaceIdentifier,
+    "workspace:read"
+  );
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   const integrations = await prisma.integration.findMany({
-    where: { workspaceId: workspace.id },
+    where: { workspaceId: auth.workspaceId },
     select: {
       id: true,
       workspaceId: true,

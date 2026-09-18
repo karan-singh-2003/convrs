@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { prefixWorkspaceId } from "@/lib/api/workspaces/workspace-id";
 import { Prisma } from "@repo/db/client";
 import { z } from "zod";
+import { grantAutoTrialForNewWorkspace } from "@/lib/billing/auto-trial";
 
 // GET /api/workspaces - get all workspaces for the authenticated user
 export const GET = withSession(async ({ session }) => {
@@ -90,7 +91,7 @@ export const POST = withSession(async ({ req, session }) => {
     const detectedTimezone =
       timezone || Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "Asia/Kolkata"
 
-    const workspace = await prisma.workspace.create({
+    let workspace = await prisma.workspace.create({
       data: {
         name,
         slug,
@@ -130,6 +131,36 @@ export const POST = withSession(async ({ req, session }) => {
         },
       },
     });
+
+    // Automatic 14-day cardless trial (lib/billing/auto-trial.ts): runs only
+    // after the workspace row above already exists, so a failure here can
+    // never prevent workspace creation. Best-effort — eligibility failures
+    // and race losers (Serializable conflicts) are expected outcomes, not
+    // errors, and are swallowed; only re-fetch the workspace when a trial
+    // was actually granted, so the response reflects the fanned-out billing
+    // fields (subscriptionStatus/freeTrialEndDate/etc.) without the caller
+    // having to make a second request.
+    try {
+      const trialResult = await grantAutoTrialForNewWorkspace({
+        userId: session.user.id,
+        workspaceId: workspace.id,
+      });
+
+      if (trialResult.granted) {
+        const refreshed = await prisma.workspace.findUnique({
+          where: { id: workspace.id },
+          include: {
+            users: {
+              where: { userId: session.user.id },
+              select: { role: true },
+            },
+          },
+        });
+        if (refreshed) workspace = refreshed;
+      }
+    } catch (trialError) {
+      console.error("[workspace/create] auto-trial grant failed", trialError);
+    }
 
     return NextResponse.json(
       WorkspaceSchema.parse({

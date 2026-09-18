@@ -1,33 +1,15 @@
 // apps/web/app/api/integrations/[provider]/route.ts
 // GET /api/integrations/:provider?workspaceId=... — single integration
 // DELETE /api/integrations/:provider — disconnect
-import { normalizeWorkspaceId } from "@/lib/api/workspaces/workspace-id";
 import { prisma } from "@repo/db";
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeWorkspaceForIntegrations } from "@/lib/api/integrations/authorize-workspace";
 
 const VALID_PROVIDERS = ["stripe", "dodo", "polar", "lemonsqueezy", "paddle"] as const;
 type ValidProvider = (typeof VALID_PROVIDERS)[number];
 
 function isValidProvider(value: string): value is ValidProvider {
   return (VALID_PROVIDERS as readonly string[]).includes(value);
-}
-
-async function resolveWorkspaceId(workspaceIdentifier: string) {
-  const normalizedWorkspaceIdentifier = normalizeWorkspaceId(
-    workspaceIdentifier.trim()
-  );
-
-  const workspace = await prisma.workspace.findFirst({
-    where: {
-      OR: [
-        { id: normalizedWorkspaceIdentifier },
-        { slug: normalizedWorkspaceIdentifier },
-      ],
-    },
-    select: { id: true },
-  });
-
-  return workspace?.id;
 }
 
 export async function GET(
@@ -40,25 +22,18 @@ export async function GET(
     return NextResponse.json({ error: "Unknown provider" }, { status: 400 });
   }
 
-  const workspaceIdentifier = req.nextUrl.searchParams
-    .get("workspaceId")
-    ?.trim();
+  const workspaceIdentifier = req.nextUrl.searchParams.get("workspaceId") ?? undefined;
 
-  if (!workspaceIdentifier) {
-    return NextResponse.json(
-      { error: "Missing workspace id" },
-      { status: 400 }
-    );
-  }
-
-  const workspaceId = await resolveWorkspaceId(workspaceIdentifier);
-
-  if (!workspaceId) {
-    return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+  const auth = await authorizeWorkspaceForIntegrations(
+    workspaceIdentifier,
+    "workspace:read"
+  );
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   const integration = await prisma.integration.findUnique({
-    where: { workspaceId_provider: { workspaceId, provider: provider } },
+    where: { workspaceId_provider: { workspaceId: auth.workspaceId, provider } },
     select: {
       id: true,
       workspaceId: true,
@@ -83,19 +58,17 @@ export async function DELETE(
   }
 
   const body = (await req.json().catch(() => ({}))) as { workspaceId?: string };
-  const workspaceIdentifier = body.workspaceId?.trim();
 
-  if (!workspaceIdentifier) {
-    return NextResponse.json(
-      { error: "Missing workspace id" },
-      { status: 400 }
-    );
-  }
-
-  const workspaceId = await resolveWorkspaceId(workspaceIdentifier);
-
-  if (!workspaceId) {
-    return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+  // Unchanged request shape (workspaceId in the JSON body) — the existing
+  // disconnect UI (ui/revenue/*) already sends it this way; authorizing here
+  // rather than switching to withWorkspace() (which only reads params/query)
+  // avoids having to touch those call sites.
+  const auth = await authorizeWorkspaceForIntegrations(
+    body.workspaceId,
+    "workspace:write"
+  );
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   // TODO: for stripe/polar/dodo, fetch the integration first and call the
@@ -103,7 +76,7 @@ export async function DELETE(
   // (using the stored webhookId) before deleting the row — otherwise Stripe
   // keeps sending events to a dead endpoint.
   const deleted = await prisma.integration.deleteMany({
-    where: { workspaceId, provider: provider },
+    where: { workspaceId: auth.workspaceId, provider },
   });
 
   if (deleted.count === 0) {

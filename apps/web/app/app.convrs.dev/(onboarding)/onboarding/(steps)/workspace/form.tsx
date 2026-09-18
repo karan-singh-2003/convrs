@@ -2,7 +2,6 @@
 
 import { CreateWorkspaceForm } from "@/ui/workspaces/create-workspace-form";
 import { useOnboardingProgress } from "../../use-onboarding-progress";
-import { BILLING_V2 } from "@/lib/billing/flags";
 
 export function Form() {
   const { continueTo } = useOnboardingProgress();
@@ -14,14 +13,11 @@ export function Form() {
           ...(domain ? { domain } : {}),
           ...(projectToken ? { projectToken } : {}),
         };
-        // Deploy 3b: under BILLING_V2 the workspace is created uncovered, so the
-        // onboarding flow stops at the billing step to pick a plan / trial.
-        // Flag off keeps the old flow (auto-trial on create → straight to Script).
-        if (BILLING_V2) {
-          continueTo("billing", { slug, params });
-        } else {
-          continueTo("script", { slug, params });
-        }
+        // The billing step no longer exists in onboarding — trial activation
+        // now happens automatically, server-side, on workspace creation
+        // (see POST /api/workspaces + lib/billing/auto-trial.ts). Always
+        // continue straight to Script.
+        continueTo("script", { slug, params });
       }}
     />
   );

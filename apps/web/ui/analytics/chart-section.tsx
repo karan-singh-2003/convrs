@@ -556,7 +556,19 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
             </div>
 
 
-            <div className="absolute right-3 top-2 z-20 flex items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md">
+            {/*
+              Below `sm` (640px) this control drops into normal flow — right
+              aligned, below the KPI tabs — instead of absolutely overlaying
+              them. Verified (browser measurements + screenshots at
+              320/375/390/430/768px, plus 320–540px sweep): the absolute
+              overlay genuinely hides whichever KPI tab lands in the
+              top-right grid cell whenever that cell is narrower than ~540px
+              (real label/value text sits under the pill, not just empty
+              padding). From `sm:` up the pill is pixel-identical to before
+              (`absolute right-3 top-2`) — verified safe there already, so
+              tablet/desktop is unchanged.
+            */}
+            <div className="static ml-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md sm:absolute sm:right-3 sm:top-2 sm:mt-0 sm:ml-0 z-20">
               {safeView === "funnel" && hasFunnels && (
                 <button
                   className="bg-bg-emphasis text-content-default text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"

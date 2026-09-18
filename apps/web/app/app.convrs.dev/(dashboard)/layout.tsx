@@ -9,6 +9,7 @@ import { AppSidebar } from "@/ui/layout/sidebar/app-sidebar";
 import { useLiveVisitors } from "@/lib/analytics/use-live-visitors";
 import useWorkspace from "@/lib/swr/use-workspace";
 import { ThemeScope } from "@/styles/theme-scope";
+import { ThemeShell } from "../theme-shell";
 import { Suspense } from "react";
 
 function AnalyticsIcon({ className }: { className?: string }) {
@@ -150,8 +151,10 @@ function DashboardLayoutContent({
 
 export default function DashboardLayout({ children }) {
   return (
-    <Suspense fallback={null}>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </Suspense>
+    <ThemeShell>
+      <Suspense fallback={null}>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </Suspense>
+    </ThemeShell>
   );
 }

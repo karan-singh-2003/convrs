@@ -4,6 +4,50 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /*
+   * Radix primitives (Select, Dialog, etc.) lock scroll via
+   * react-remove-scroll whenever they open, which sets
+   * `body[data-scroll-locked] { overflow: hidden !important }`. <html> is
+   * left at its default `overflow: visible`, and per the CSS spec a body
+   * with a non-visible overflow PROPAGATES that overflow to the viewport in
+   * that case — so body's hidden overflow is what actually makes the page's
+   * real scrollbar disappear while the trigger is open, then reappear (with
+   * a reflow) once it closes. Giving <html> its own permanent, non-visible
+   * overflow breaks that propagation, so toggling body's overflow can no
+   * longer add/remove the page's scrollbar, and scrollbar-gutter keeps the
+   * reserved width constant either way.
+   */
+  html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+}
+
+/*
+ * react-remove-scroll-bar (used internally by every Radix overlay that locks
+ * scroll — Select, Dialog, DropdownMenu, etc.) also injects its OWN un-layered
+ * <style> tag at runtime: `body[data-scroll-locked] { margin-right: <gap>px
+ * !important }`. That margin exists to compensate for a scrollbar it expects
+ * to disappear while locked — but since <html> above now permanently reserves
+ * the scrollbar's width, the scrollbar never actually disappears, so that
+ * compensating margin is pure unwanted extra space. It doesn't move anything
+ * `fixed` (those aren't affected by body's margin), but it does shift any
+ * horizontally-centered content inside body — like this page's `mx-auto`
+ * containers — a few pixels left while the overlay is open.
+ *
+ * This override must stay OUTSIDE any @layer block: per the CSS cascade,
+ * un-layered rules always win over layered rules regardless of specificity,
+ * and react-remove-scroll-bar's injected rule is itself un-layered, so
+ * putting this inside `@layer base` could never beat it. The extra `html`
+ * ancestor gives this selector higher specificity than theirs, so it wins
+ * no matter which <style> tag ends up later in <head> (verified: this holds
+ * whether our tag or theirs is inserted into the DOM first).
+ */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+}
+
 @layer components {
   .scrollbar {
     overflow-y: auto;

@@ -13,7 +13,7 @@ function UpgradePlanModal({
     <Modal
       showModal={showUpgradePlanModal}
       setShowModal={setShowUpgradePlanModal}
-      className="w-full max-w-[780px] rounded-none p-0 sm:rounded-[0px]"
+      className="w-full max-w-[780px] max-h-[90vh] overflow-y-auto rounded-none p-0 sm:rounded-[0px]"
       desktopOnly={true}
     >
       <UpgradePlanPricingCard />

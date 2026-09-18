@@ -151,6 +151,13 @@ const SUPPORTED_FIELDS = [
   "utm_campaign",
   "utm_term",
   "utm_content",
+  // Wired for the public API's hostname/page filters — the pipes' `filters`
+  // JSON handling already supports these fields (v1_count/v1_timeseries/
+  // v1_group_by), this was just never added to the TS-side allowlist.
+  "hostname",
+  "page",
+  "entrypage",
+  "exitlink",
 ] as const;
 
 type SupportedField = (typeof SUPPORTED_FIELDS)[number];

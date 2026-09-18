@@ -151,8 +151,8 @@ function AddEditTokenModal({
         className="px-4 md:px-0 py-3 md:py-1.5 max-h-[90vh] md:max-h-[95dvh] md:overflow-y-auto"
       >
         {/* Header */}
-        <div className="space-y-1 md:py-1 py-2 md:border-b border-[#F0F0F0]">
-          <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-black/65">
+        <div className="space-y-1 md:py-1 py-2 md:border-b border-border-subtle">
+          <h3 className="text-[16px] md:text-[17.5px] md:px-5 font-display font-medium text-content-default">
             {token ? "Edit" : "Create New"} API Key
           </h3>
         </div>
@@ -163,7 +163,7 @@ function AddEditTokenModal({
         >
           {/* Name */}
           <div className="flex flex-col gap-1.5">
-            <Label className="text-sm font-medium font-display text-neutral-600">
+            <Label className="text-sm font-medium font-display text-content-default">
               Name
             </Label>
 
@@ -179,7 +179,7 @@ function AddEditTokenModal({
 
           {/* Permissions */}
           <div className="flex flex-col gap-2">
-            <Label className="text-sm font-medium font-display text-neutral-600">
+            <Label className="text-sm font-medium font-display text-content-default">
               Permissions
             </Label>
 
@@ -203,7 +203,7 @@ function AddEditTokenModal({
           </div>
 
           {/* Permission Description */}
-          <p className="text-[13px] md:text-[14.5px] font-display text-neutral-500 leading-relaxed">
+          <p className="text-[13px] md:text-[14.5px] font-display text-content-subtle leading-relaxed">
             {preset === "all_access" &&
               "This API key will have full access to all API features."}
 
@@ -216,13 +216,13 @@ function AddEditTokenModal({
 
           {/* Restricted Permissions */}
           {preset === "restricted" && (
-            <div className="flex flex-col divide-y  rounded-sm max-h-[40vh] overflow-y-auto">
+            <div className="flex flex-col divide-y divide-border-subtle rounded-sm max-h-[40vh] overflow-y-auto">
               {scopeByResources.map((resource) => (
                 <div
                   key={resource.key}
                   className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-3 py-4"
                 >
-                  <span className="text-sm font-medium font-display text-neutral-600">
+                  <span className="text-sm font-medium font-display text-content-default">
                     {resource.name}
                   </span>
 
@@ -243,7 +243,7 @@ function AddEditTokenModal({
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="" />
-                      <span className="text-sm font-display text-neutral-700">
+                      <span className="text-sm font-display text-content-default">
                         None
                       </span>
                     </div>
@@ -251,7 +251,7 @@ function AddEditTokenModal({
                     {resource.scopes.map((scope) => (
                       <div key={scope} className="flex items-center space-x-2">
                         <RadioGroupItem value={scope} />
-                        <span className="text-sm font-display text-neutral-700 capitalize">
+                        <span className="text-sm font-display text-content-default capitalize">
                           {scope.split(".").pop()}
                         </span>
                       </div>
@@ -264,7 +264,7 @@ function AddEditTokenModal({
 
           {/* Button */}
           <Button
-            className="w-full font-display text-white h-9 md:h-10"
+            className="w-full font-display h-9 md:h-10"
             text={token ? "Save Changes" : "Create API Key"}
             loading={saving}
           />
