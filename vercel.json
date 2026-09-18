@@ -13,10 +13,7 @@
       "path": "/api/cron/traffic-spike",
       "schedule": "0 12 * * *"
     },
-    {
-      "path": "/api/cron/billing/reconcile",
-      "schedule": "0 * * * *"
-    },
+  
     {
       "path": "/api/cron/billing/usage-reset",
       "schedule": "15 2 * * *"
