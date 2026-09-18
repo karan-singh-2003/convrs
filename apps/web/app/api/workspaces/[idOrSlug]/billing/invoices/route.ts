@@ -52,5 +52,5 @@ export const GET = withWorkspace(
       return NextResponse.json({ error: "Failed to fetch invoices" }, { status: 500 });
     }
   },
-  { requiredPermission: "billing:read" },
+  { requiredPermission: "billing:read", skipEntitlementCheck: true },
 );

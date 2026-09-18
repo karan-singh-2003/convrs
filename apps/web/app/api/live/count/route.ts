@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@repo/db";
 import { getLiveStats } from "@/lib/analytics/live-visitors";
+import { isEntitled } from "@/lib/billing/entitlement";
 
 // GET /api/live/count?projectToken=... — live visitor count/pages/geo for a
 // workspace's tracking snippet ID.
@@ -30,13 +31,30 @@ export async function GET(req: NextRequest) {
   try {
     const workspace = await prisma.workspace.findUnique({
       where: { projectToken },
-      select: { id: true, isPublic: true },
+      select: {
+        id: true,
+        isPublic: true,
+        subscriptionStatus: true,
+        freeTrialEndDate: true,
+        paymentFailedAt: true,
+      },
     });
 
     if (!workspace) {
       return NextResponse.json(
         { ok: false, error: "Not found" },
         { status: 404 }
+      );
+    }
+
+    // Live visitor data is a paid analytics feature like any other — a
+    // workspace with no active subscription/trial entitlement shouldn't be
+    // able to serve it, whether the caller is a member or hitting a public
+    // share link.
+    if (!isEntitled(workspace)) {
+      return NextResponse.json(
+        { ok: false, error: "Subscription inactive" },
+        { status: 402 }
       );
     }
 

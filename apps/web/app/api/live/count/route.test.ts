@@ -45,7 +45,9 @@ describe("GET /api/live/count", () => {
   });
 
   it("allows anonymous reads for a public workspace", async () => {
-    (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws_1", isPublic: true });
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws_1", isPublic: true, subscriptionStatus: "active", freeTrialEndDate: null, paymentFailedAt: null,
+    });
     (getServerSession as any).mockResolvedValue(null);
     const res = await GET(req("pt_public"));
     expect(res.status).toBe(200);
@@ -53,7 +55,9 @@ describe("GET /api/live/count", () => {
   });
 
   it("blocks anonymous reads for a private workspace (the bug this fixes)", async () => {
-    (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws_1", isPublic: false });
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws_1", isPublic: false, subscriptionStatus: "active", freeTrialEndDate: null, paymentFailedAt: null,
+    });
     (getServerSession as any).mockResolvedValue(null);
     const res = await GET(req("pt_private"));
     expect(res.status).toBe(401);
@@ -61,7 +65,9 @@ describe("GET /api/live/count", () => {
   });
 
   it("blocks a logged-in user who isn't a member of the private workspace", async () => {
-    (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws_1", isPublic: false });
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws_1", isPublic: false, subscriptionStatus: "active", freeTrialEndDate: null, paymentFailedAt: null,
+    });
     (getServerSession as any).mockResolvedValue({ user: { id: "user_outsider" } });
     (prisma.workspaceUsers.findFirst as any).mockResolvedValue(null);
     const res = await GET(req("pt_private"));
@@ -70,11 +76,34 @@ describe("GET /api/live/count", () => {
   });
 
   it("allows a member of the private workspace", async () => {
-    (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws_1", isPublic: false });
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws_1", isPublic: false, subscriptionStatus: "active", freeTrialEndDate: null, paymentFailedAt: null,
+    });
     (getServerSession as any).mockResolvedValue({ user: { id: "user_member" } });
     (prisma.workspaceUsers.findFirst as any).mockResolvedValue({ id: "wu_1" });
     const res = await GET(req("pt_private"));
     expect(res.status).toBe(200);
     expect(getLiveStats).toHaveBeenCalledWith("pt_private");
+  });
+
+  it("blocks a member of a private workspace whose subscription is inactive (billing-wall API bypass)", async () => {
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws_1", isPublic: false, subscriptionStatus: "inactive", freeTrialEndDate: null, paymentFailedAt: null,
+    });
+    (getServerSession as any).mockResolvedValue({ user: { id: "user_member" } });
+    (prisma.workspaceUsers.findFirst as any).mockResolvedValue({ id: "wu_1" });
+    const res = await GET(req("pt_private"));
+    expect(res.status).toBe(402);
+    expect(getLiveStats).not.toHaveBeenCalled();
+  });
+
+  it("blocks anonymous reads of a public workspace whose subscription is canceled", async () => {
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      id: "ws_1", isPublic: true, subscriptionStatus: "canceled", freeTrialEndDate: null, paymentFailedAt: null,
+    });
+    (getServerSession as any).mockResolvedValue(null);
+    const res = await GET(req("pt_public"));
+    expect(res.status).toBe(402);
+    expect(getLiveStats).not.toHaveBeenCalled();
   });
 });

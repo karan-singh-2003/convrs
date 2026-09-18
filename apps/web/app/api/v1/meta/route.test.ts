@@ -24,7 +24,7 @@ async function call(scopes = "analytics.read") {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({
     id: "tok_1", name: "t", scopes, expires: null, workspaceId: "ws_1",
   });
-  (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws_1", timezone: "UTC", currency: "USD" });
+  (prisma.workspace.findUnique as any).mockResolvedValue({ id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" });
   (prisma.trackedEvent.findMany as any).mockResolvedValue([
     { eventName: "signup", eventType: "goals", trigger: "goal", firstSeenAt: new Date(), lastSeenAt: new Date() },
   ]);

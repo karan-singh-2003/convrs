@@ -12,6 +12,9 @@ export const ErrorCodes = {
   unprocessable_entity: 422,
   rate_limit_exceeded: 429,
   internal_server_error: 500,
+  // Matches lib/billing/entitlement.ts's upgradeRequiredResponse (session-based
+  // routes) — same code/status, public-API vocabulary.
+  upgrade_required: 402,
 } as const;
 
 export const ErrorCode = z.enum(

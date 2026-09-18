@@ -6,6 +6,7 @@ import { Scope, tokenHasScope } from "../api/tokens/scopes";
 import { apiError } from "../api/v1/response";
 import { checkApiRateLimit } from "../api/v1/rate-limit";
 import { WorkspaceProps } from "../types";
+import { isEntitled } from "../billing/entitlement";
 
 // Tokens minted from now on use cvrs_; bc_ is the legacy prefix from before
 // the public API existed and is still accepted so existing tokens keep
@@ -127,6 +128,20 @@ export function withApiToken(
     // as unusable rather than leaking that distinction.
     if (!workspace) {
       return apiError("unauthorized", "Invalid API token.");
+    }
+
+    // Billing audit fix: this token-authenticated public API had no
+    // entitlement check at all — a token minted while the workspace was
+    // covered kept working forever, completely bypassing the dashboard's
+    // billing wall (hasWorkspaceAccess / withWorkspace's own gate). Same
+    // policy as everywhere else (@repo/analytics's isWorkspaceEntitled via
+    // lib/billing/entitlement.ts): active/canceling/valid-trialing/past_due
+    // within its 7-day grace pass, everything else is blocked.
+    if (!isEntitled(workspace)) {
+      return apiError(
+        "upgrade_required",
+        "This workspace does not have an active subscription or trial."
+      );
     }
 
     // Best-effort, non-blocking — a failed lastUsed write must never fail

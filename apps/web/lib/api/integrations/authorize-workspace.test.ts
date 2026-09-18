@@ -53,6 +53,7 @@ describe("authorizeWorkspaceForIntegrations", () => {
     (prisma.workspace.findFirst as any).mockResolvedValue({
       id: "ws_1",
       users: [{ role: "owner" }],
+      subscriptionStatus: "active",
     });
     const result = await authorizeWorkspaceForIntegrations("ws_1", "workspace:write");
     expect(result).toEqual({ ok: true, workspaceId: "ws_1" });
@@ -63,6 +64,7 @@ describe("authorizeWorkspaceForIntegrations", () => {
     (prisma.workspace.findFirst as any).mockResolvedValue({
       id: "ws_1",
       users: [{ role: "owner" }],
+      subscriptionStatus: "active",
     });
     await authorizeWorkspaceForIntegrations("my-workspace-slug", "workspace:read");
     expect(prisma.workspace.findFirst).toHaveBeenCalledWith(
@@ -70,5 +72,20 @@ describe("authorizeWorkspaceForIntegrations", () => {
         where: { OR: [{ id: "my-workspace-slug" }, { slug: "my-workspace-slug" }] },
       })
     );
+  });
+
+  it("402s (billing-wall API bypass fix) when the workspace has no active subscription/trial, even for the owner", async () => {
+    (getSession as any).mockResolvedValue({ user: { id: "user_owner" } });
+    (prisma.workspace.findFirst as any).mockResolvedValue({
+      id: "ws_1",
+      users: [{ role: "owner" }],
+      subscriptionStatus: "canceled",
+    });
+    const result = await authorizeWorkspaceForIntegrations("ws_1", "workspace:write");
+    expect(result).toEqual({
+      ok: false,
+      status: 402,
+      error: "This workspace does not have an active subscription or trial.",
+    });
   });
 });

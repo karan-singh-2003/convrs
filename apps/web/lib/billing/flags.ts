@@ -22,4 +22,4 @@
  * It is a build-time `NEXT_PUBLIC_*` value, so it is safe to read at module
  * scope in both client and server components.
  */
-export const BILLING_V2 =  "false";
+export const BILLING_V2 = process.env.NEXT_PUBLIC_BILLING_V2 !== "false";

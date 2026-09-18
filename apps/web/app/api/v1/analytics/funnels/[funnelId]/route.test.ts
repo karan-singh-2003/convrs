@@ -22,7 +22,7 @@ import { prisma } from "@repo/db";
 import { getFunnelAnalytics } from "@/lib/analytics/get-funnel-analytics";
 import { GET } from "./route";
 
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 async function call(funnelId: string, scopes = "analytics.read") {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({

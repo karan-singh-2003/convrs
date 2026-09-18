@@ -46,6 +46,14 @@ export interface WorkspaceSubscriptionSummary {
   currentPeriodEnd: Date | string | null;
   trialEndsAt: Date | string | null;
   cancelAtPeriodEnd: boolean;
+  /**
+   * True once this subscription is bound to a real Dodo subscription
+   * (`Subscription.dodoSubscriptionId` set) — false for a cardless trial
+   * that hasn't converted (I-10). Deliberately not derived from `status`:
+   * a cardless trial's `status` is `"trialing"`, identical to a trial that
+   * *did* enter card details, so `status` alone can't tell them apart.
+   */
+  hasPaymentMethod: boolean;
 }
 
 export interface WorkspaceProps extends Workspace {

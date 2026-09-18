@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isDowngradeTransition, resolveKeepWorkspaceId } from "./subscription-service";
+import { isDowngradeTransition, resolveKeepWorkspaceId, canDetachWorkspace } from "./subscription-service";
 
 describe("isDowngradeTransition", () => {
   it("growth -> standard is always a downgrade", () => {
@@ -56,5 +56,29 @@ describe("resolveKeepWorkspaceId", () => {
 
   it("multiple workspaces -> passes the caller-validated choice through unchanged", () => {
     expect(resolveKeepWorkspaceId(["ws_1", "ws_2", "ws_3"], "ws_2")).toBe("ws_2");
+  });
+});
+
+describe("canDetachWorkspace", () => {
+  // Billing audit fix: a workspace's own `owner`-role member used to be able
+  // to detach it from someone ELSE's subscription (isWsOwner bypass) — that
+  // let an unrelated-to-billing member mutate the billing owner's seat
+  // count / trigger auto-cancel without consent. Only the subscription's
+  // actual owner (D9) may detach now.
+  it("the subscription owner can detach", () => {
+    expect(canDetachWorkspace({ subscriptionOwnerId: "user_owner", actorUserId: "user_owner" })).toBe(true);
+  });
+
+  it("an unrelated user cannot detach", () => {
+    expect(canDetachWorkspace({ subscriptionOwnerId: "user_owner", actorUserId: "user_stranger" })).toBe(false);
+  });
+
+  it("a workspace-owner-role member who is NOT the subscription's billing owner cannot detach (the fixed bug)", () => {
+    // Same shape as the real bug: the caller is `owner` on the WORKSPACE's
+    // WorkspaceUsers row, but a different person entirely owns the
+    // Subscription paying for it.
+    expect(
+      canDetachWorkspace({ subscriptionOwnerId: "user_billing_owner", actorUserId: "user_workspace_owner" }),
+    ).toBe(false);
   });
 });

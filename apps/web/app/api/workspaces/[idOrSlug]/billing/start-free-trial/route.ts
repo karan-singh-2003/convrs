@@ -108,5 +108,5 @@ export const POST = withWorkspace(
       return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
   },
-  { requiredPermission: "billing:write" },
+  { requiredPermission: "billing:write", skipEntitlementCheck: true },
 );

@@ -21,7 +21,7 @@ import { prisma } from "@repo/db";
 import { getGoalsTimeseries } from "@/lib/analytics/get-goal-timeseries";
 import { GET } from "./route";
 
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 async function call(qs = "", scopes = "goals.read") {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({

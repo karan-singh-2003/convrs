@@ -19,7 +19,7 @@ import { prisma } from "@repo/db";
 import { getAnalytics } from "@/lib/analytics/get-analytics";
 import { GET } from "./route";
 
-async function call(qs = "", workspace: any = { id: "ws_1", timezone: "UTC", currency: "USD" }) {
+async function call(qs = "", workspace: any = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" }) {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({
     id: "tok_1", name: "t", scopes: "analytics.read", expires: null, workspaceId: "ws_1",
   });
@@ -69,7 +69,7 @@ describe("GET /api/v1/analytics/revenue/timeseries", () => {
 
   it("preserves the workspace's own currency for a non-USD workspace", async () => {
     (getAnalytics as any).mockResolvedValue([]);
-    const res = await call("", { id: "ws_1", timezone: "UTC", currency: "INR" });
+    const res = await call("", { id: "ws_1", timezone: "UTC", currency: "INR", subscriptionStatus: "active" });
     const body = await res.json();
     expect(body.data.currency).toBe("INR");
   });

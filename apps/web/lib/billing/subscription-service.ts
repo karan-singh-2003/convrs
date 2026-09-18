@@ -484,6 +484,23 @@ export async function attachWorkspace(args: {
 // 5.5  detachWorkspace
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Only the SUBSCRIPTION owner (the billing payer, D9) may detach a website
+ * from it — being the *workspace's* own `owner`-role member is not enough. A
+ * workspace can be owned by someone other than the person paying for the
+ * Growth/Standard subscription it's attached to (e.g. an invited team member
+ * with `owner` role on that one workspace); letting them detach would let
+ * them unilaterally mutate someone else's subscription (seat count,
+ * auto-cancel-when-empty) without the billing owner's consent. Pure/exported
+ * so this authorization rule is unit-testable without mocking Prisma.
+ */
+export function canDetachWorkspace(args: {
+  subscriptionOwnerId: string;
+  actorUserId: string;
+}): boolean {
+  return args.subscriptionOwnerId === args.actorUserId;
+}
+
 export async function detachWorkspace(args: {
   actorUserId: string;
   workspaceId: string;
@@ -494,15 +511,12 @@ export async function detachWorkspace(args: {
       id: true,
       subscriptionId: true,
       subscription: { select: { id: true, ownerUserId: true, planFamily: true, dodoSubscriptionId: true } },
-      users: { where: { userId: args.actorUserId }, select: { role: true } },
     },
   });
   if (!ws || !ws.subscriptionId || !ws.subscription) {
     throw new BillingError("not_covered", "That website isn't covered by a subscription.", 409);
   }
-  const isSubOwner = ws.subscription.ownerUserId === args.actorUserId;
-  const isWsOwner = ws.users[0]?.role === "owner";
-  if (!isSubOwner && !isWsOwner) {
+  if (!canDetachWorkspace({ subscriptionOwnerId: ws.subscription.ownerUserId, actorUserId: args.actorUserId })) {
     throw new BillingError("forbidden", "You can't change this website's subscription.", 403);
   }
 

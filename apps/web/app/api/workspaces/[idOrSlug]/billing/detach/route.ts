@@ -21,5 +21,5 @@ export const POST = withWorkspace(
       return NextResponse.json({ error: "Failed to detach subscription" }, { status: 500 });
     }
   },
-  { requiredPermission: "billing:write" },
+  { requiredPermission: "billing:write", skipEntitlementCheck: true },
 );

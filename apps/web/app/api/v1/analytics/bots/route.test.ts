@@ -29,7 +29,7 @@ function req(qs = "") {
 }
 
 const token = { id: "tok_1", name: "t", scopes: "analytics.read", expires: null, workspaceId: "ws_1" };
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 describe("GET /api/v1/analytics/bots", () => {
   beforeEach(() => {

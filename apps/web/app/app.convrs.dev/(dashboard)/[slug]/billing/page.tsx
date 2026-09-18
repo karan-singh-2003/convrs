@@ -448,32 +448,34 @@ function CurrentPlanPanel({
           )}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
-          <button
-            onClick={manageBilling}
-            disabled={busy !== null}
-            className="font-poppins text-sm text-content-default underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {busy === "manage" ? "Opening…" : "Manage billing & invoices"}
-          </button>
-          {subscription.cancelAtPeriodEnd ? (
+        {subscription.hasPaymentMethod && (
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
             <button
-              onClick={() => cancelOrResume(true)}
+              onClick={manageBilling}
               disabled={busy !== null}
               className="font-poppins text-sm text-content-default underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {busy === "resume" ? "Resuming…" : "Resume subscription"}
+              {busy === "manage" ? "Opening…" : "Manage billing & invoices"}
             </button>
-          ) : (
-            <button
-              onClick={() => cancelOrResume(false)}
-              disabled={busy !== null}
-              className="font-poppins text-sm text-red-700 underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {busy === "cancel" ? "Cancelling…" : "Cancel subscription"}
-            </button>
-          )}
-        </div>
+            {subscription.cancelAtPeriodEnd ? (
+              <button
+                onClick={() => cancelOrResume(true)}
+                disabled={busy !== null}
+                className="font-poppins text-sm text-content-default underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busy === "resume" ? "Resuming…" : "Resume subscription"}
+              </button>
+            ) : (
+              <button
+                onClick={() => cancelOrResume(false)}
+                disabled={busy !== null}
+                className="font-poppins text-sm text-red-700 underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busy === "cancel" ? "Cancelling…" : "Cancel subscription"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <h3 className="font-poppins text-[12px] text-content-subtle uppercase mt-6">

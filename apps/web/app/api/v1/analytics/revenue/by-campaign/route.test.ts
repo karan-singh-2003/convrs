@@ -19,7 +19,7 @@ import { prisma } from "@repo/db";
 import { getAnalytics } from "@/lib/analytics/get-analytics";
 import { GET } from "./route";
 
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 async function call(qs = "", scopes = "analytics.read") {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({

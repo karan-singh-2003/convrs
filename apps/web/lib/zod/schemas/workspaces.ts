@@ -60,6 +60,11 @@ export const WorkspaceSchema = z
         currentPeriodEnd: z.union([z.date(), z.string()]).nullable(),
         trialEndsAt: z.union([z.date(), z.string()]).nullable(),
         cancelAtPeriodEnd: z.boolean(),
+        hasPaymentMethod: z
+          .boolean()
+          .describe(
+            "True once this subscription is bound to a real Dodo subscription (dodoSubscriptionId set) — false for a cardless trial that hasn't converted (I-10). Never inferred from `status` alone."
+          ),
       })
       .nullable()
       .optional()

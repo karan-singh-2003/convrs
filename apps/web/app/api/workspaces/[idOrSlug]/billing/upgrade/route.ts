@@ -93,5 +93,5 @@ export const POST = withWorkspace(
       return NextResponse.json({ error: mapped.message }, { status: mapped.status });
     }
   },
-  { requiredPermission: "billing:write" },
+  { requiredPermission: "billing:write", skipEntitlementCheck: true },
 );

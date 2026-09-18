@@ -31,5 +31,5 @@ export {parseRawConvrsExport} from "./raw-convrs-import"
 export type { RequestContext, UserAgentInfo, GeoInfo } from "./types";
 export { trackBotEvent } from "./track-bot-event";
 export type { BotTrafficEvent } from "./track-bot-event";
-export { isWorkspaceEntitled, PAST_DUE_GRACE_MS } from "./billing-access";
+export { isWorkspaceEntitled, PAST_DUE_GRACE_MS, claimWorkspaceUsage } from "./billing-access";
 export type { WorkspaceAccessState } from "./billing-access";

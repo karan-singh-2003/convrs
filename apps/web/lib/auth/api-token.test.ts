@@ -49,6 +49,9 @@ const baseWorkspace = {
   currency: "USD",
   plan: "free",
   planFamily: "standard",
+  subscriptionStatus: "active",
+  freeTrialEndDate: null,
+  paymentFailedAt: null,
 };
 
 const baseToken = {
@@ -200,6 +203,36 @@ describe("withApiToken", () => {
     expect(body.tokenId).toBe("tok_1");
     // never returns the raw token or its hash back to the caller
     expect(JSON.stringify(body)).not.toContain("hashed:");
+  });
+
+  it("rejects (402 upgrade_required) a valid token whose workspace has no active subscription/trial — billing-wall bypass fix", async () => {
+    (prisma.restrictedToken.findUnique as any).mockResolvedValue(baseToken);
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      ...baseWorkspace,
+      subscriptionStatus: "canceled",
+    });
+    const route = withApiToken(handler, { requiredScope: "analytics.read" });
+    const res = await route(makeRequest("cvrs_valid"), {
+      params: Promise.resolve({}),
+    });
+    expect(res.status).toBe(402);
+    const body = await res.json();
+    expect(body.error.code).toBe("upgrade_required");
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("allows a token whose workspace is on an unexpired trial", async () => {
+    (prisma.restrictedToken.findUnique as any).mockResolvedValue(baseToken);
+    (prisma.workspace.findUnique as any).mockResolvedValue({
+      ...baseWorkspace,
+      subscriptionStatus: "trialing",
+      freeTrialEndDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    });
+    const route = withApiToken(handler, { requiredScope: "analytics.read" });
+    const res = await route(makeRequest("cvrs_valid"), {
+      params: Promise.resolve({}),
+    });
+    expect(res.status).toBe(200);
   });
 
   it("allows any valid token through when no scope is required", async () => {

@@ -7,6 +7,7 @@ import {
   upsertCustomer,
   upsertAnonymousCustomer,
   isWorkspaceEntitled,
+  claimWorkspaceUsage,
 } from "@repo/analytics";
 import { prisma } from "@repo/db";
 import email from "@repo/email";
@@ -383,18 +384,12 @@ export async function trackClickController(req: Request, res: Response) {
       // Atomic guarded increment — NOT a plain `update`. The early usageLimit
       // check above (line ~215) is only a cheap fast-path reject; two concurrent
       // requests can both pass it before either increments, over-running the
-      // limit. Gating the increment itself on `usage < usageLimit` in the same
-      // UPDATE makes the DB row lock do the serialization, so usage can never
-      // exceed usageLimit by more than the last request that raced past it.
-      const guard = await prisma.workspace.updateMany({
-        where: {
-          id: workspace.id,
-          ...(usageLimit > 0 ? { usage: { lt: usageLimit } } : {}),
-        },
-        data: { usage: { increment: 1 } },
-      });
+      // limit. `claimWorkspaceUsage` (shared with track-ai-bot.ts) gates the
+      // increment itself on `usage < usageLimit` in the same UPDATE, so the DB
+      // row lock does the serialization instead.
+      const claimed = await claimWorkspaceUsage(workspace.id, usageLimit);
 
-      if (guard.count === 0 && usageLimit > 0) {
+      if (!claimed && usageLimit > 0) {
         return res.status(403).json({
           success: false,
           error: "Usage limit exceeded",

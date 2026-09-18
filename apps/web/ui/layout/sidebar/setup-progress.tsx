@@ -39,7 +39,7 @@ export function SetupProgress() {
       setOpenPopover={setOpenPopover}
       popoverContentClassName="w-[calc(100vw-2rem)] rounded-2xl max-w-[320px] sm:w-80 sm:max-w-none"
       content={
-        <div className="w-full px-5 pb-4 pt-2.5">
+        <div className="w-full px-3 pb-4 pt-2.5">
           <h2 className="text-[14px] font-medium text-content-default">
             Finish setting up Convrs
           </h2>

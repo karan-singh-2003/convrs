@@ -8,6 +8,7 @@ import { prisma } from "@repo/db";
 import { getSearchParams } from "@repo/utils";
 import { normalizeWorkspaceId } from "../api/workspaces/workspace-id";
 import { NextRequest } from "next/server";
+import { isEntitled, upgradeRequiredResponse } from "../billing/entitlement";
 
 interface withWorkspaceHandler {
   ({
@@ -32,7 +33,22 @@ export const withWorkspace = (
   {
     requiredPermission,
     skipPermissionChecks,
-  }: { requiredPermission: PermissionAction; skipPermissionChecks?: boolean }
+    skipEntitlementCheck,
+  }: {
+    requiredPermission: PermissionAction;
+    skipPermissionChecks?: boolean;
+    /**
+     * Set only on routes that MUST keep working when the workspace has no
+     * active subscription/trial entitlement — the billing-recovery surface
+     * itself (checkout/manage/invoices/payment-methods/attach/detach/
+     * start-free-trial/the deprecated upgrade shim) and read/delete of the
+     * bare workspace record (identity data the dashboard shell + billing
+     * page need to render at all, and "delete an unwanted workspace" which
+     * shouldn't require paying first). Every other workspace-scoped route
+     * requires entitlement by default — see lib/billing/entitlement.ts.
+     */
+    skipEntitlementCheck?: boolean;
+  }
 ) => {
   return async (
     req: NextRequest,
@@ -145,6 +161,22 @@ export const withWorkspace = (
           headers: { "Content-Type": "application/json" },
         });
       }
+
+      // Highest-priority fix from the billing audit: dashboard *pages* redirect
+      // an unentitled workspace to /{slug}/billing (hasWorkspaceAccess, in the
+      // [slug] layout), but that's a page-render-only gate — it never ran for
+      // a direct API call. Enforce the same policy here, at the one shared
+      // entry point nearly every workspace-scoped route goes through, so a
+      // session cookie + membership alone can no longer read/write paid data
+      // once the subscription is inactive/canceled/expired or past its trial
+      // or past_due-grace window. Routes that must stay reachable regardless
+      // (billing management, workspace identity) opt out explicitly.
+      if (!skipEntitlementCheck && !isEntitled(workspace)) {
+        return upgradeRequiredResponse(
+          "This workspace does not have an active subscription or trial.",
+        );
+      }
+
       return handler({
         req,
         params,

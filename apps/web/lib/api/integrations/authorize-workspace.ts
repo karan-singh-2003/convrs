@@ -2,6 +2,7 @@ import { prisma } from "@repo/db";
 import { getSession } from "@/lib/auth";
 import { getPermissionsForRole, PermissionAction } from "@/lib/api/rbac/permissions";
 import { normalizeWorkspaceId } from "@/lib/api/workspaces/workspace-id";
+import { isEntitled } from "@/lib/billing/entitlement";
 
 type Result =
   | { ok: true; workspaceId: string }
@@ -51,6 +52,18 @@ export async function authorizeWorkspaceForIntegrations(
   const permissions = getPermissionsForRole(workspace.users[0].role);
   if (!permissions.includes(requiredPermission)) {
     return { ok: false, status: 403, error: "Forbidden" };
+  }
+
+  // This mirrors withWorkspace()'s entitlement gate — revenue-integration
+  // connections are workspace data/feature access like any other, so they
+  // must not stay reachable by direct API call once the subscription is
+  // inactive/canceled/expired or past its trial or past_due-grace window.
+  if (!isEntitled(workspace)) {
+    return {
+      ok: false,
+      status: 402,
+      error: "This workspace does not have an active subscription or trial.",
+    };
   }
 
   return { ok: true, workspaceId: workspace.id };

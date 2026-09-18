@@ -148,6 +148,7 @@ function mockToken(scopes: string) {
     kpiType: "revenue",
     kpiEventName: null,
     projectToken: "pt_1",
+    subscriptionStatus: "active",
   });
 }
 

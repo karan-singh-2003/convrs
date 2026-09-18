@@ -48,7 +48,7 @@ export const GET = withWorkspace(
       return NextResponse.json({ error: "Failed to fetch payment methods" }, { status: 500 });
     }
   },
-  { requiredPermission: "billing:read" },
+  { requiredPermission: "billing:read", skipEntitlementCheck: true },
 );
 
 // POST — Dodo has no raw-card API (PCI); direct the user to the hosted portal.
@@ -74,7 +74,7 @@ export const POST = withWorkspace(
       return NextResponse.json({ error: "Failed to open the billing portal" }, { status: 500 });
     }
   },
-  { requiredPermission: "billing:write" },
+  { requiredPermission: "billing:write", skipEntitlementCheck: true },
 );
 
 // DELETE — same: payment-method removal happens in the hosted portal.
@@ -93,5 +93,5 @@ export const DELETE = withWorkspace(
     const { link } = await createCustomerPortalSession(cid, appUrl(`/${workspace.slug}/billing`));
     return NextResponse.json({ portalUrl: link, message: "Remove payment methods in the billing portal." });
   },
-  { requiredPermission: "billing:write" },
+  { requiredPermission: "billing:write", skipEntitlementCheck: true },
 );

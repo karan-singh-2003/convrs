@@ -24,7 +24,7 @@ function req(qs = "", scopes = "goals.read") {
   }), scopes };
 }
 
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 async function call(qs = "", scopes = "goals.read") {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({

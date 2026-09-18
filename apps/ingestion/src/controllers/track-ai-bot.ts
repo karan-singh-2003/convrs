@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { randomUUID, createHash } from "crypto";
 import * as z from "zod/v4";
 import { classifyBotUserAgent } from "@convrs/ai-bot-sdk";
-import { trackBotEvent, isWorkspaceEntitled } from "@repo/analytics";
+import { trackBotEvent, isWorkspaceEntitled, claimWorkspaceUsage } from "@repo/analytics";
 import { prisma } from "@repo/db";
 
 // ── Incoming payload from @convrs/ai-bot-sdk's sendBotEvent() ────────────────
@@ -55,6 +55,8 @@ export async function trackAICrawlerController(req: Request, res: Response) {
         subscriptionStatus: true,
         freeTrialEndDate: true,
         paymentFailedAt: true,
+        usage: true,
+        usageLimit: true,
       },
     });
 
@@ -65,6 +67,17 @@ export async function trackAICrawlerController(req: Request, res: Response) {
     // D6: same entitlement policy as apps/web's dashboard and track.ts.
     if (!isWorkspaceEntitled(workspace)) {
       return res.status(403).json({ success: false, error: "Subscription inactive" });
+    }
+
+    // AI-bot crawl events count against the same per-website `usageLimit` as
+    // click-tracking events (there is no separate bot-traffic allowance in
+    // the schema) — this used to be entitlement-gated only, so a workspace on
+    // any plan had unlimited bot-event volume. Same cheap fast-path reject +
+    // atomic guarded increment as track.ts, via the shared helper.
+    const usageLimit = workspace.usageLimit ?? 0;
+    const usage = workspace.usage ?? 0;
+    if (usageLimit > 0 && usage >= usageLimit) {
+      return res.status(403).json({ success: false, error: "Usage limit exceeded", code: "exceeded_limit" });
     }
 
     if (workspace.botTrafficRequireAuth) {
@@ -138,6 +151,11 @@ export async function trackAICrawlerController(req: Request, res: Response) {
     };
 
     await trackBotEvent({ event, logger: console as any });
+
+    const claimed = await claimWorkspaceUsage(workspace.id, usageLimit);
+    if (!claimed && usageLimit > 0) {
+      return res.status(403).json({ success: false, error: "Usage limit exceeded", code: "exceeded_limit" });
+    }
 
     return res.status(202).json({ success: true, tracked: true, category: classification.category });
   } catch (error) {

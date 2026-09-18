@@ -25,7 +25,7 @@ const updateWorkspaceSchema = createWorkspaceSchema
 // GET /api/workspaces/[idOrSlug] – get a specific workspace by id or slug
 export const GET = withWorkspace(
   async ({ workspace }) => {
-    const subscription = workspace.subscriptionId
+    const subscriptionRow = workspace.subscriptionId
       ? await prisma.subscription.findUnique({
           where: { id: workspace.subscriptionId },
           select: {
@@ -39,8 +39,20 @@ export const GET = withWorkspace(
             currentPeriodEnd: true,
             trialEndsAt: true,
             cancelAtPeriodEnd: true,
+            dodoSubscriptionId: true,
           },
         })
+      : null;
+
+    // Never leak the raw Dodo subscription id to the client — only whether
+    // one exists (i.e. whether this is a cardless trial or a real, billable
+    // subscription). See WorkspaceSubscriptionSummary.hasPaymentMethod.
+    const subscription = subscriptionRow
+      ? {
+          ...subscriptionRow,
+          dodoSubscriptionId: undefined,
+          hasPaymentMethod: subscriptionRow.dodoSubscriptionId != null,
+        }
       : null;
 
     return NextResponse.json({
@@ -53,6 +65,10 @@ export const GET = withWorkspace(
   },
   {
     requiredPermission: "workspace:read",
+    // Basic workspace identity (name/slug/plan fields) is needed to render
+    // the dashboard shell and the billing page itself for an unentitled
+    // workspace — it must stay readable regardless of entitlement.
+    skipEntitlementCheck: true,
   }
 );
 
@@ -118,5 +134,8 @@ export const DELETE = withWorkspace(
   },
   {
     requiredPermission: "workspace:write",
+    // Deleting an unwanted/unaffordable workspace must not require an
+    // active subscription first.
+    skipEntitlementCheck: true,
   }
 );

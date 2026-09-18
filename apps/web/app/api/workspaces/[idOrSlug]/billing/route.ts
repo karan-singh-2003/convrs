@@ -33,5 +33,5 @@ export const GET = withWorkspace(
       subscriptionStatus: sub?.status ?? null,
     });
   },
-  { requiredPermission: "billing:read" },
+  { requiredPermission: "billing:read", skipEntitlementCheck: true },
 );

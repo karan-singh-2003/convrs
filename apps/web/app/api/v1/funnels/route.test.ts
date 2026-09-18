@@ -18,7 +18,7 @@ vi.mock("@/lib/api/v1/rate-limit", () => ({
 import { prisma } from "@repo/db";
 import { GET } from "./route";
 
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 function tokenWith(scopes: string) {
   return { id: "tok_1", name: "t", scopes, expires: null, workspaceId: "ws_1" };

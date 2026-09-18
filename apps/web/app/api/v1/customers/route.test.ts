@@ -18,7 +18,7 @@ vi.mock("@/lib/api/v1/rate-limit", () => ({
 import { prisma } from "@repo/db";
 import { GET } from "./route";
 
-const workspace = { id: "ws_1", timezone: "UTC", currency: "USD" };
+const workspace = { id: "ws_1", timezone: "UTC", currency: "USD", subscriptionStatus: "active" };
 
 async function call(qs = "", scopes = "analytics.read") {
   (prisma.restrictedToken.findUnique as any).mockResolvedValue({

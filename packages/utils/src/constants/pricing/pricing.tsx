@@ -183,7 +183,7 @@ const CORE_FEATURES: PlanFeatures[] = [
   { id: "analytics", name: "Full analytics dashboard" },
   { id: "bot", name: "AI-crawler / bot traffic detection" },
   { id: "attribution", name: "Marketing / revenue attribution" },
-  { id: "api", name: "API, CLI & MCP access" },
+  { id: "api", name: "API access" },
   { id: "webhooks", name: "Webhook events" },
   { id: "export", name: "Data export" },
   { id: "retention", name: "5+ years of data retention" },
