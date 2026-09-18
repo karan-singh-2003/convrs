@@ -33,7 +33,7 @@ export function MainNav({
   const { isMobile } = useMediaQuery();
   const [isOpen, setIsOpen] = useState(false);
 
-  const { freeTrialEndDate ,subscriptionStatus} = useWorkspace();
+  const { freeTrialEndDate, subscriptionStatus } = useWorkspace();
 
   const hasBanner =
     subscriptionStatus === "trialing" ||
@@ -53,7 +53,7 @@ export function MainNav({
   const isSettings = pathname.includes("/settings");
   const isDashboard = pathname === "/" || pathname === "/dashboard";
   const isRealtime = pathname.includes("/realtime");
-
+  const isBillingPage = pathname.endsWith("/billing");
   return (
     <div
       className={cn(
@@ -105,9 +105,11 @@ export function MainNav({
             <div className=" flex h-12 w-full px-4 md:px-0 mx-auto  md:max-w-screen-lg items-center justify-between  ">
               <div className="flex items-center justify-center gap-4 min-w-0">
                 <div className="w-full  flex items-center gap-4">
-                  <div className="md:hidden">
-                    <NavButton />
-                  </div>
+                  {!isBillingPage && (
+                    <div className="md:hidden">
+                      <NavButton />
+                    </div>
+                  )}
                   <div className="hidden md:block">
                     <Sidebar forcedArea="default" />
                   </div>

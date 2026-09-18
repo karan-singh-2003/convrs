@@ -86,7 +86,7 @@ export function SidebarNav<T extends Record<any, any> & { slug?: string }>({
                               </div>
                             )}
                             {area !== "default" && backHref && (
-                              <Link href={`/${slug}`} className="px-3 py-1 text-[13.5px] flex items-center gap-x-2 md:hidden  mb-3 text-neutral-600 font-default font-medium">
+                              <Link href={`/${slug}`} className="px-3 py-1 text-[13.5px] flex items-center gap-x-2 md:hidden  mb-3 text-content-subtle font-default font-medium">
                                 <ArrowLeft size={14} />
 
                                 {title === "Settings"

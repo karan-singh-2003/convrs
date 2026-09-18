@@ -121,7 +121,7 @@
               >
                 <Button
                   type="button"
-                  className="my-2 h-6 text-neutral-700 text-sm md:h-8 w-fit whitespace-nowrap px-2"
+                  className="my-2 h-6 text-content-subtle text-sm md:h-8 w-fit whitespace-nowrap px-2"
                   variant="outline"
                   icon={SelectedTabIcon && <SelectedTabIcon className="size-4" />}
                   text={selectedTab.label}
