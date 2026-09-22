@@ -26,7 +26,7 @@ export function ProviderSelector({
         align="center"
         popoverContentClassName="rounded-xl"
         content={
-          <div className="w-[var(--radix-popover-trigger-width)] p-1">
+          <div className="w-[var(--radix-popover-trigger-width)] p-0.5 pb-1.5">
             {PROVIDERS.map((p) => (
               <button
                 key={p.value}
@@ -34,10 +34,10 @@ export function ProviderSelector({
                   setProvider(p.value);
                   setOpenPopover(false);
                 }}
-                className="flex w-full items-center justify-between rounded-none px-2.5 py-2 text-left text-sm hover:bg-bg-emphasis"
+                className="flex w-full items-center justify-between rounded-none px-2.5 py-1.5 text-left text-sm hover:bg-bg-emphasis"
               >
-                <span className="flex font-display text-content-default items-center gap-2">
-                  <div className="flex items-center justify-center">{p.img}</div>
+                <span className="flex font-poppins text-content-default items-center gap-2">
+                  {/* <div className="flex items-center justify-center">{p.img}</div> */}
                   {p.label}
                 </span>
                 {provider === p.value && <Check className="h-4 w-4" />}

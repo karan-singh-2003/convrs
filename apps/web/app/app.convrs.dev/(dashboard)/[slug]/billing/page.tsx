@@ -68,10 +68,22 @@ function LegacyBillingPage() {
     subscriptionStatus,
     growthFreeSeat,
     trialAvailable,
+    pendingTrialDays,
     onChanged,
   } = useBillingState();
 
   const uncovered = useUncoveredBilling({ slug, workspaceId, onChanged });
+
+  // Even when uncovered (no Dodo subscription yet — a cardless trial), the
+  // workspace still has a real "current plan" from the auto-granted trial
+  // (lib/billing/auto-trial.ts) or a manual start-free-trial call — it's
+  // just not Dodo-backed. That card must read as "you're already here," not
+  // as another upgrade option, and must never behave like a checkout CTA.
+  const isCurrentPlanCard = (cardFamily: PricingFamily) =>
+    !!subscription &&
+    subscription.planFamily === cardFamily &&
+    subscription.planTier === uncovered.tier &&
+    (subscription.billingInterval === "year" ? "yearly" : "monthly") === uncovered.interval;
 
   return (
     <div className="px-2 max-w-3xl mx-auto">
@@ -134,26 +146,48 @@ function LegacyBillingPage() {
                   family="standard"
                   tier={uncovered.tier}
                   interval={uncovered.interval}
-                  trialAvailable={trialAvailable}
-                  cta={{
-                    label: "Pick Standard Plan",
-                    onClick: () => uncovered.checkout("standard"),
-                    busy: uncovered.busy === "checkout-standard",
-                    disabled: uncovered.busy !== null,
-                  }}
+                  trialAvailable={trialAvailable || pendingTrialDays != null}
+                  trialDays={pendingTrialDays ?? TRIAL_DAYS}
+                  highlighted={isCurrentPlanCard("standard")}
+                  cta={
+                    isCurrentPlanCard("standard")
+                      ? {
+                          label: "Current plan",
+                          onClick: () => {},
+                          busy: false,
+                          disabled: true,
+                        }
+                      : {
+                          label: "Pick Standard Plan",
+                          onClick: () => uncovered.checkout("standard"),
+                          busy: uncovered.busy === "checkout-standard",
+                          disabled: uncovered.busy !== null,
+                        }
+                  }
                 />
                 <PlanCard
                   title="Growth"
                   family="growth"
                   tier={uncovered.tier}
                   interval={uncovered.interval}
-                  trialAvailable={trialAvailable}
-                  cta={{
-                    label: "Pick Growth Plan",
-                    onClick: () => uncovered.checkout("growth"),
-                    busy: uncovered.busy === "checkout-growth",
-                    disabled: uncovered.busy !== null,
-                  }}
+                  trialAvailable={trialAvailable || pendingTrialDays != null}
+                  trialDays={pendingTrialDays ?? TRIAL_DAYS}
+                  highlighted={isCurrentPlanCard("growth")}
+                  cta={
+                    isCurrentPlanCard("growth")
+                      ? {
+                          label: "Current plan",
+                          onClick: () => {},
+                          busy: false,
+                          disabled: true,
+                        }
+                      : {
+                          label: "Pick Growth Plan",
+                          onClick: () => uncovered.checkout("growth"),
+                          busy: uncovered.busy === "checkout-growth",
+                          disabled: uncovered.busy !== null,
+                        }
+                  }
                 />
               </div>
             </div>
@@ -237,6 +271,7 @@ function PlanCard({
   tier,
   interval,
   trialAvailable,
+  trialDays = TRIAL_DAYS,
   cta,
   highlighted,
 }: {
@@ -245,6 +280,10 @@ function PlanCard({
   tier: TierKey;
   interval: BillingInterval;
   trialAvailable: boolean;
+  /** Days until the first real charge — defaults to a fresh TRIAL_DAYS, but
+   * pass the actual remaining days when converting an in-progress cardless
+   * trial so the copy matches what Dodo Checkout will actually charge on. */
+  trialDays?: number;
   cta: { label: string; onClick: () => void; busy: boolean; disabled: boolean };
   highlighted?: boolean;
 }) {
@@ -267,7 +306,7 @@ function PlanCard({
           <>
             $0{" "}
             <span className="text-[12px] text-content-subtle">
-              then ${amount}/{unit} in {TRIAL_DAYS} days
+              then ${amount}/{unit} in {trialDays} days
             </span>
           </>
         ) : (
@@ -311,7 +350,7 @@ function PlanCard({
 
       {trialAvailable && (
         <p className="text-[11px] mt-1 text-center font-display text-content-subtle">
-          No charge until free trial ends in {TRIAL_DAYS} days
+          No charge until free trial ends in {trialDays} days
         </p>
       )}
     </div>
@@ -384,6 +423,22 @@ function CurrentPlanPanel({
     cancelOrResume,
   } = useCoveredBilling({ slug, subscription, onChanged });
 
+  // Dodo reports a converted (card-on-file) subscription as "active" the
+  // moment checkout completes, even while its first real charge is still
+  // N days out (Dodo has no distinct "trialing" status at all — confirmed
+  // against their docs). So "are we still in the deferred-billing window"
+  // has to come from trialEndsAt actually being in the future, not from
+  // subscriptionStatus === "trialing" (which only ever matches the cardless
+  // pre-conversion state, or, briefly, a lag before the webhook lands).
+  const trialEndsAtMs = subscription.trialEndsAt
+    ? new Date(subscription.trialEndsAt).getTime()
+    : null;
+  const isInDeferredTrial = trialEndsAtMs != null && trialEndsAtMs > Date.now();
+  const daysUntilCharge = isInDeferredTrial
+    ? Math.max(1, Math.ceil((trialEndsAtMs! - Date.now()) / 86_400_000))
+    : null;
+  const upcomingChargeAmount = planPrice(family, currentTier, currentInterval);
+
   // Each card's own CTA carries out the change — there is no separate
   // "Apply" button. A card that isn't targeted yet just selects itself
   // (setTargetFamily); once it's the target, its own button becomes the one
@@ -422,7 +477,7 @@ function CurrentPlanPanel({
         </p>
 
         <p className="font-poppins text-sm text-content-subtle">
-          {subscriptionStatus === "trialing"
+          {isInDeferredTrial
             ? "Free trial"
             : subscriptionStatus === "canceling"
               ? "Ends at period close"
@@ -443,8 +498,12 @@ function CurrentPlanPanel({
               {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
             </p>
           )}
-          {subscription.trialEndsAt && subscriptionStatus === "trialing" && (
-            <p>Trial ends {new Date(subscription.trialEndsAt).toLocaleDateString()}</p>
+          {isInDeferredTrial && daysUntilCharge != null && (
+            <p>
+              {upcomingChargeAmount != null
+                ? `$${upcomingChargeAmount} due in ${daysUntilCharge} day${daysUntilCharge === 1 ? "" : "s"}`
+                : `Trial ends ${new Date(subscription.trialEndsAt!).toLocaleDateString()}`}
+            </p>
           )}
         </div>
 

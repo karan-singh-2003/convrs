@@ -83,6 +83,7 @@ function DashboardLayoutContent({
   const { projectToken } = useWorkspace();
   const { slug } = useParams<{ slug: string }>();
   const { count } = useLiveVisitors(projectToken || "")
+  const isDashboardPage = pathname === `/dashboard`
 
   const items = [
     {
@@ -112,7 +113,7 @@ function DashboardLayoutContent({
   return (
     <ThemeScope>
 
-      <div className="hidden md:block fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
+      {!isDashboardPage && (<div className="hidden md:block fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
         <div className="flex items-center gap-1 border border-border-subtle rounded-2xl bg-bg-card p-1 py-1.5">
           {items.map(({ href, icon: Icon, exact, label }) => {
             const active = exact
@@ -142,7 +143,7 @@ function DashboardLayoutContent({
             );
           })}
         </div>
-      </div>
+      </div>)}
 
       <MainNav sidebar={AppSidebar}>{children}</MainNav>
     </ThemeScope>

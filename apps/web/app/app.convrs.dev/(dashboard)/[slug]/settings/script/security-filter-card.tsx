@@ -78,14 +78,14 @@ export function SecurityFilterCard({
               disabled={loading || saving}
               className="h-10 w-full rounded-lg border border-border-subtle bg-transparent pl-3 pr-24 text-[14px] font-display text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-300 focus:outline-none"
             />
-
+            {/* 
             <Button
               text={actionLabel}
               variant="primary"
               type="submit"
               disabled={!canSubmit}
               className="absolute right-1 top-1/2 h-8 w-fit border-0 -translate-y-1/2 rounded-md bg-transparent px-3 text-[13px] font-display text-content-subtle"
-            />
+            /> */}
           </div>
         </form>
 
@@ -123,11 +123,22 @@ export function SecurityFilterCard({
         )}
       </div>
 
-      {/* <div className="border-t border-neutral-200 bg-neutral-50 px-4 py-3">
-        <p className="text-[13px] font-display text-neutral-500">
-          {helperText}
-        </p>
-      </div> */}
+      <div className="border-t border-border-subtle  px-4 py-3">
+        <div className="text-[13px] flex justify-between items-end font-display text-neutral-500">
+
+          {/* {helperText} */}
+          <p></p>
+
+          <Button
+            text={actionLabel}
+            variant="primary"
+            type="submit"
+            disabled={!canSubmit}
+            className="h-9 w-fit bg-bg-emphasis text-content-inverse border-none rounded-full text-sm font-display"
+          // className="absolute  h-8 w-fit border-0 -translate-y-1/2 rounded-md bg-transparent px-3 text-[13px] font-display text-content-subtle"
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -1417,6 +1417,15 @@ export default function RevenueSettingsPage() {
                   connecting={connecting}
                   isValid={isFormValid(provider, form)}
                 />
+              ) : provider === "dodo" ? (
+                <DodoConnectForm
+                  form={form}
+                  setForm={setForm}
+                  onConnect={handleConnect}
+                  connecting={connecting}
+                  isValid={isFormValid(provider, form)}
+                  workspaceId={workspaceId}
+                />
               ) : null}
             </div>
           </div>

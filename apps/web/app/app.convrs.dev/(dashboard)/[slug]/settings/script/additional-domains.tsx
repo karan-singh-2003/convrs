@@ -12,13 +12,13 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export function AdditionalDomains() {
   const { id: workspaceId } = useWorkspace();
   const { data, mutate } = useSWR<{ allowedHostnames: string[]; allowAllDomains: boolean }>(
-    workspaceId ? `/api/workspace/${workspaceId}/allowed-domains` : null,
+    workspaceId ? `/api/workspaces/${workspaceId}/allowed-domains` : null,
     fetcher,
   );
   const [toggling, setToggling] = useState(false);
 
   const addDomain = async (domain: string): Promise<void> => {
-    const res = await fetch(`/api/workspace/${workspaceId}/allowed-domains`, {
+    const res = await fetch(`/api/workspaces/${workspaceId}/allowed-domains`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ domain }),
@@ -32,7 +32,7 @@ export function AdditionalDomains() {
   };
 
   const removeDomain = async (domain: string): Promise<void> => {
-    const res = await fetch(`/api/workspace/${workspaceId}/allowed-domains`, {
+    const res = await fetch(`/api/workspaces/${workspaceId}/allowed-domains`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ domain }),
@@ -43,7 +43,7 @@ export function AdditionalDomains() {
 
   const toggleAllowAll = async (checked: boolean): Promise<void> => {
     setToggling(true);
-    const res = await fetch(`/api/workspace/${workspaceId}/allowed-domains`, {
+    const res = await fetch(`/api/workspaces/${workspaceId}/allowed-domains`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ allowAllDomains: checked }),
@@ -88,8 +88,8 @@ export function AdditionalDomains() {
               checked={data?.allowAllDomains ?? false}
               disabled={toggling}
               fn={toggleAllowAll}
-              trackDimensions="h-4 w-7 radix-state-checked:bg-bg-inverted focus-visible:ring-border-default"
-              thumbDimensions="size-3.5"
+              trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
+              // thumbDimensions="size-4"
               thumbTranslate="translate-x-3"
             />
           </div>

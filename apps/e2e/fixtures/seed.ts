@@ -255,4 +255,19 @@ export async function createLemonSqueezyIntegration(
   });
 }
 
+/**
+ * Dodo Payments verification uses the Standard Webhooks spec (webhook-id /
+ * webhook-signature / webhook-timestamp headers, HMAC-SHA256 over
+ * `${id}.${timestamp}.${payload}`) via the `standardwebhooks` library — no
+ * apiKeyEncrypted involved, matching the LemonSqueezy pattern above.
+ */
+export async function createDodoIntegration(
+  workspaceId: string,
+  webhookSecret: string
+) {
+  return prisma.integration.create({
+    data: { workspaceId, provider: "dodo", webhookSecret },
+  });
+}
+
 export { randomToken };

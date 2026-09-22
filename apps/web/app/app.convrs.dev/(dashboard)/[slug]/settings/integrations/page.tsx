@@ -351,7 +351,7 @@ export default function SocialIntegrationSettingsCard() {
           <div className="p-8">
             <div className="mx-auto max-w-lg text-center">
               <button
-                className="mt-0 inline-flex h-10 items-center justify-center rounded-lg bg-bg-inverted px-5 text-[14px] font-display font-medium text-content-inverted transition hover:opacity-90"
+                className="mt-0 inline-flex h-10 items-center justify-center rounded-lg bg-bg-inverted px-5 text-[14px] font-poppins font-medium text-content-inverted transition hover:opacity-90"
                 onClick={() => {
                   router.push(`/${slug}/billing`);
                 }}

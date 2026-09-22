@@ -10,7 +10,7 @@ export default function Logo() {
   return (
     <Section className="mb-6">
       <Row>
-        <Column style={{ width: 32 }}>
+        {/* <Column style={{ width: 32 }}>
           <table
             role="presentation"
             cellPadding={0}
@@ -30,8 +30,8 @@ export default function Logo() {
                   }}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="46"
+                    height="42"
                     viewBox="0 0 102 100"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -45,7 +45,7 @@ export default function Logo() {
               </tr>
             </tbody>
           </table>
-        </Column>
+        </Column> */}
         <Column style={{ paddingLeft: 8, verticalAlign: "middle" }}>
           <Text
             className="m-0 text-[14px] font-semibold text-black"

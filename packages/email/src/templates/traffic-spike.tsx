@@ -50,7 +50,7 @@ export default function TrafficSpikeEmail({
         className="text-xl font-semibold text-black"
         style={{ fontFamily: POPPINS_FONT_FAMILY }}
       >
-        🚀 Traffic spike detected
+         Traffic spike detected
       </Heading>
 
       <Text

@@ -24,6 +24,7 @@ import {
 import useWorkspace from "@/lib/swr/use-workspace";
 import useBillingContext from "@/lib/swr/use-billing-context";
 import { isDowngradeSelection } from "@/lib/billing/plan-compare";
+import { getRemainingTrialDays } from "@/lib/billing/trial-utils";
 import type { WorkspaceSubscriptionSummary } from "@/lib/types";
 
 export type BillingInterval = "monthly" | "yearly";
@@ -81,9 +82,32 @@ export function useBillingState() {
   const { billingContext, loading: ctxLoading, mutate: mutateCtx } = useBillingContext();
 
   const loading = wsLoading || ctxLoading;
+
+  // A "trialing" subscription with no Dodo subscription yet (I-10, a cardless
+  // trial that's never touched Dodo — see WorkspaceSubscriptionSummary.
+  // hasPaymentMethod) isn't "covered" in the sense that matters here: it
+  // can't go through change-plan (which requires a real dodoSubscriptionId),
+  // it needs the checkout/conversion flow instead. A trialing subscription
+  // that DOES have hasPaymentMethod (already converted, still inside Dodo's
+  // deferred-billing window — Dodo reports it as "active", but ours can
+  // still legitimately read "trialing" here right after the webhook, or for
+  // the rarer card-optional-at-$0-price case) stays covered as before.
   const covered =
     !!subscription &&
-    ["active", "trialing", "past_due", "canceling"].includes(subscription.status);
+    ["active", "trialing", "past_due", "canceling"].includes(subscription.status) &&
+    (subscription.status !== "trialing" || subscription.hasPaymentMethod);
+
+  // Remaining days on an unconverted cardless trial — used by the (now
+  // reachable) uncovered plan-picker to show "$0 today, then $X in N days"
+  // with the visitor's ACTUAL remaining days rather than always assuming a
+  // fresh 14, and passed to Dodo Checkout as trial_period_days by
+  // createSubscriptionCheckout's existing trial-reuse logic (unchanged).
+  const pendingTrialDays =
+    subscription && subscription.status === "trialing" && !subscription.hasPaymentMethod
+      ? getRemainingTrialDays(
+          subscription.trialEndsAt ? new Date(subscription.trialEndsAt) : null,
+        )
+      : null;
 
   return {
     slug: (slug as string | null) ?? null,
@@ -96,6 +120,7 @@ export function useBillingState() {
     subscriptionStatus: subscriptionStatus ?? subscription?.status ?? null,
     growthFreeSeat: billingContext?.growthSubWithFreeSeat ?? null,
     trialAvailable: billingContext?.trialAvailable ?? false,
+    pendingTrialDays,
     onChanged: () => mutateCtx(),
   };
 }

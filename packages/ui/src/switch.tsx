@@ -10,7 +10,7 @@ export function Switch({
   id,
   trackDimensions,
   thumbDimensions,
-  thumbTranslate,
+  thumbTranslate = "translate-x-4",
   thumbIcon,
   checked = true,
   loading = false,
@@ -40,9 +40,13 @@ export function Switch({
       {...(fn && { onCheckedChange: fn })}
       disabled={switchDisabled}
      className={cn(
-  "relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out",
+  "relative inline-flex h-4 w-8 items-center flex-shrink-0 cursor-pointer rounded-full border border-border-default transition-colors duration-200 ease-in-out",
 
-  // Theme-aware colors
+  // Theme-aware colors. The track always carries a visible border-default
+  // edge (not border-transparent) so the unchecked pill reads as a distinct
+  // shape instead of blending into a bg-bg-card surface it's almost always
+  // placed on — border-default on bg-card is the same pairing select.tsx
+  // already uses for the same reason.
   "data-[state=checked]:bg-bg-inverted",
   "data-[state=unchecked]:bg-bg-emphasis",
 
@@ -57,9 +61,17 @@ export function Switch({
     >
       <SwitchPrimitive.Thumb
        className={cn(
-  "pointer-events-none h-3 w-3 translate-x-4 rounded-full bg-bg-card shadow-sm transition-transform duration-200 ease-in-out",
+  // bg-content-default (not bg-bg-card, which is the same value as the
+  // card surface the Switch usually sits on and made the thumb disappear)
+  // — this is the same token this design system already uses elsewhere as
+  // a solid toggle-indicator fill (see billing/page.tsx's
+  // TOGGLE_INDICATOR_CLASS). Checked state swaps to content-inverted, the
+  // token already paired with bg-inverted everywhere else (button.tsx's
+  // primary variant), for maximum contrast against the checked track.
+  "pointer-events-none h-4 w-4 items-center translate-x-4 rounded-full bg-content-default shadow-sm transition-transform duration-200 ease-in-out",
 
-  "data-[state=unchecked]:translate-x-0",
+  "data-[state=unchecked]:translate-x-0.5",
+  "data-[state=checked]:bg-content-inverted",
   `data-[state=checked]:${thumbTranslate}`,
 
   thumbDimensions,

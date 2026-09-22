@@ -5,6 +5,7 @@ import {
   createTrackingWorkspace,
   createStripeIntegration,
   createLemonSqueezyIntegration,
+  createDodoIntegration,
   randomToken,
 } from "../fixtures/seed";
 import {
@@ -182,6 +183,148 @@ test.describe("revenue webhook verification", () => {
         },
       });
       expect(payment).toBeNull();
+    });
+  });
+
+  test.describe("Dodo Payments (Standard Webhooks signature verification)", () => {
+    // Mirrors the `standardwebhooks` library's own sign()/verify() (see
+    // node_modules/standardwebhooks — HMAC-SHA256 over `${id}.${ts}.${body}`,
+    // base64, keyed by the secret with any "whsec_" prefix stripped and
+    // base64-decoded), so we don't need the library itself as an e2e dep.
+    function signDodoPayload(
+      rawBody: string,
+      secret: string,
+      msgId: string,
+      timestampSeconds: number
+    ): string {
+      const key = Buffer.from(secret.replace(/^whsec_/, ""), "base64");
+      const toSign = `${msgId}.${timestampSeconds}.${rawBody}`;
+      const signature = crypto
+        .createHmac("sha256", key)
+        .update(toSign)
+        .digest("base64");
+      return `v1,${signature}`;
+    }
+
+    function buildPaymentSucceededPayload(opts: {
+      paymentId: string;
+      totalAmount: number;
+    }) {
+      return JSON.stringify({
+        type: "payment.succeeded",
+        data: {
+          payment_id: opts.paymentId,
+          total_amount: opts.totalAmount,
+          currency: "usd",
+          customer: { email: "e2e-payer@example.com" },
+          metadata: {},
+        },
+      });
+    }
+
+    test("valid signature is accepted and the payment is recorded", async ({
+      request,
+    }) => {
+      const ws = await createTrackingWorkspace("dodo-valid");
+      const secret =
+        "whsec_" + Buffer.from("e2e_dodo_test_secret_bytes").toString("base64");
+      await createDodoIntegration(ws.id, secret);
+
+      const msgId = randomToken("msg");
+      const timestampSeconds = Math.floor(Date.now() / 1000);
+      const body = buildPaymentSucceededPayload({
+        paymentId: randomToken("pay"),
+        totalAmount: 3400,
+      });
+      const signature = signDodoPayload(body, secret, msgId, timestampSeconds);
+
+      const response = await request.post(
+        `${INGEST_BASE_URL}/api/dodo/webhook/${ws.id}`,
+        {
+          headers: {
+            "content-type": "application/json",
+            "webhook-id": msgId,
+            "webhook-signature": signature,
+            "webhook-timestamp": String(timestampSeconds),
+          },
+          data: body,
+        }
+      );
+
+      expect(response.ok()).toBe(true);
+
+      const payment = await prisma.payment.findUnique({
+        where: {
+          provider_externalEventId: { provider: "dodo", externalEventId: msgId },
+        },
+      });
+      expect(payment).not.toBeNull();
+      expect(payment?.amount).toBe(3400);
+    });
+
+    test("tampered payload after signing is rejected, and nothing is recorded", async ({
+      request,
+    }) => {
+      const ws = await createTrackingWorkspace("dodo-tampered");
+      const secret =
+        "whsec_" +
+        Buffer.from("e2e_dodo_test_secret_bytes_2").toString("base64");
+      await createDodoIntegration(ws.id, secret);
+
+      const msgId = randomToken("msg");
+      const timestampSeconds = Math.floor(Date.now() / 1000);
+      const paymentId = randomToken("pay");
+      const body = buildPaymentSucceededPayload({ paymentId, totalAmount: 3400 });
+      const signature = signDodoPayload(body, secret, msgId, timestampSeconds);
+
+      // Sign the real payload, then send a different body — the signature no
+      // longer matches what's being verified.
+      const tamperedBody = buildPaymentSucceededPayload({
+        paymentId,
+        totalAmount: 999999,
+      });
+
+      const response = await request.post(
+        `${INGEST_BASE_URL}/api/dodo/webhook/${ws.id}`,
+        {
+          headers: {
+            "content-type": "application/json",
+            "webhook-id": msgId,
+            "webhook-signature": signature,
+            "webhook-timestamp": String(timestampSeconds),
+          },
+          data: tamperedBody,
+        }
+      );
+
+      expect(response.status()).toBe(400);
+
+      const payment = await prisma.payment.findUnique({
+        where: {
+          provider_externalEventId: { provider: "dodo", externalEventId: msgId },
+        },
+      });
+      expect(payment).toBeNull();
+    });
+
+    test("missing signature headers are rejected", async ({ request }) => {
+      const ws = await createTrackingWorkspace("dodo-missing-sig");
+      const secret =
+        "whsec_" +
+        Buffer.from("e2e_dodo_test_secret_bytes_3").toString("base64");
+      await createDodoIntegration(ws.id, secret);
+
+      const body = buildPaymentSucceededPayload({
+        paymentId: randomToken("pay"),
+        totalAmount: 1000,
+      });
+
+      const response = await request.post(
+        `${INGEST_BASE_URL}/api/dodo/webhook/${ws.id}`,
+        { headers: { "content-type": "application/json" }, data: body }
+      );
+
+      expect(response.status()).toBe(400);
     });
   });
 });

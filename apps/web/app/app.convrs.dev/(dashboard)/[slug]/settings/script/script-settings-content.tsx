@@ -72,8 +72,11 @@ export default function ScriptSettingsContent() {
             <Switch
               disabled={cookielessToggling}
               checked={scriptConfig.cookielessMode}
-              trackDimensions=" w-7 h-4"
-              thumbDimensions="size-3.5"
+              // trackDimensions=" w-7 h-4"
+              // thumbDimensions="size-3.5"
+              // thumbTranslate="translate-x-3"
+              trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
+              // thumbDimensions="size-4"
               thumbTranslate="translate-x-3"
               fn={toggleCookieless}
             />
@@ -91,8 +94,8 @@ export default function ScriptSettingsContent() {
             <Switch
               disabled={loading}
               checked={enabled || false}
-              trackDimensions=" w-7 h-4"
-              thumbDimensions="size-3.5"
+              trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
+              // thumbDimensions="size-4"
               thumbTranslate="translate-x-3"
               fn={setEnabled}
             />

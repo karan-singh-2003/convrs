@@ -31,6 +31,7 @@ import {
   INACTIVE_BASELINE,
 } from "@/lib/billing/fan-out";
 import type { PendingPlanChange } from "@/lib/dodo/types";
+import { normalizeWorkspaceId } from "@/lib/api/workspaces/workspace-id";
 
 const TRIAL_DAYS = 14;
 const NON_TERMINAL = ["inactive", "trialing", "active", "past_due", "canceling"] as const;
@@ -47,6 +48,28 @@ export class BillingError extends Error {
   }
 }
 
+/**
+ * What createSubscriptionCheckout() is allowed to write to a REUSED
+ * cardless-trial Subscription row before Dodo Checkout has even opened, let
+ * alone been completed. Never the target plan's identity (planFamily,
+ * planTier, tierEvents, billingInterval, dodoProductId, maxWorkspaces) —
+ * only a pending-consolidation marker, if this checkout intends to merge
+ * other Standard subscriptions into this one once it activates.
+ *
+ * This is what makes an abandoned/closed checkout a no-op: the workspace's
+ * real entitlement is never touched here, so with no patch to apply there's
+ * nothing to undo. The plan itself is committed later, only by
+ * webhook-processor.ts's existing `subscription.active`/`updated`/
+ * `plan_changed` handling, which resolves the plan from the webhook
+ * payload's own (Dodo-confirmed) `product_id` — never from what this
+ * function returns. Pure — unit-tested.
+ */
+export function reuseTrialPreCheckoutPatch(
+  pendingPlanChange: PendingPlanChange | undefined,
+): { pendingPlanChange: PendingPlanChange } | null {
+  return pendingPlanChange ? { pendingPlanChange } : null;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 5.1  createSubscriptionCheckout
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,6 +84,17 @@ export async function createSubscriptionCheckout(args: {
   onboarding?: boolean;
 }): Promise<{ checkoutUrl: string; internalSubscriptionId: string }> {
   const { actorUserId, intent, tier, interval } = args;
+
+  // Callers (the billing UI's checkout(), the deprecated /billing/upgrade
+  // shim) may pass either the raw Workspace.id or its display-prefixed
+  // "ws_..." form (useWorkspace()'s `id` is always prefixed — see
+  // lib/api/workspaces/workspace-id.ts). Normalize once, up front, so the
+  // lookup below and the metadata embedded in the Dodo checkout session
+  // (read back by the webhook processor's own findUnique) agree on the same
+  // unprefixed id every caller's DB row actually uses.
+  const targetWorkspaceId = args.targetWorkspaceId
+    ? normalizeWorkspaceId(args.targetWorkspaceId)
+    : undefined;
 
   const plan = resolvePlanBySpec({ family: intent, tier, interval });
   if (!plan) throw new BillingError("invalid_plan", "That plan is not available.", 400);
@@ -91,9 +125,9 @@ export async function createSubscriptionCheckout(args: {
 
   // If converting an existing cardless trial, reuse its row.
   let reuseTrialSub: { id: string; trialEndsAt: Date | null } | null = null;
-  if (args.targetWorkspaceId) {
+  if (targetWorkspaceId) {
     const ws = await prisma.workspace.findUnique({
-      where: { id: args.targetWorkspaceId },
+      where: { id: targetWorkspaceId },
       select: { id: true, subscriptionId: true, subscription: { select: { id: true, status: true, ownerUserId: true, trialEndsAt: true, dodoSubscriptionId: true } } },
     });
     if (!ws) throw new BillingError("workspace_not_found", "Workspace not found.", 404);
@@ -128,36 +162,55 @@ export async function createSubscriptionCheckout(args: {
       }
     : undefined;
 
-  const sub =
-    reuseTrialSub != null
+  // CRITICAL: when reusing an existing cardless trial, do NOT write the
+  // target plan's identity (planFamily/planTier/tierEvents/billingInterval/
+  // maxWorkspaces/dodoProductId) onto the row here. This row is the
+  // workspace's real, already-attached entitlement — writing the target plan
+  // now would silently commit it (e.g. Standard -> Growth) before the user
+  // has done anything more than click a button, so an abandoned/closed Dodo
+  // Checkout would leave the workspace looking like a real Growth customer
+  // with no Dodo subscription behind it.
+  //
+  // The actual Dodo Checkout Session is still created below with the
+  // correct target `plan.productId` (Dodo shows/charges the right plan
+  // regardless of what our own row says), and `internalSubscriptionId` in
+  // its metadata still points at this same row. The commit itself is left
+  // to the existing, already-authoritative webhook-processor.ts: on
+  // `subscription.active` (fired only once Dodo actually creates a real
+  // subscription — i.e. checkout was completed, not merely opened) it
+  // resolves the plan from the webhook payload's own `product_id` and
+  // patches planFamily/planTier/tierEvents/billingInterval/dodoProductId/
+  // maxWorkspaces from that authoritative source. An abandoned checkout
+  // never fires that webhook, so the row simply stays untouched.
+  const preCheckoutPatch = reuseTrialPreCheckoutPatch(pendingPlanChange);
+  let sub: { id: string };
+  if (reuseTrialSub != null) {
+    sub = preCheckoutPatch
       ? await prisma.subscription.update({
           where: { id: reuseTrialSub.id },
-          data: {
-            planFamily: intent,
-            planTier: tier,
-            tierEvents: plan.tierEvents,
-            billingInterval: plan.billingInterval,
-            maxWorkspaces: FAMILY_MAX_WORKSPACES[intent],
-            dodoProductId: plan.productId,
-            ...(pendingPlanChange ? { pendingPlanChange: pendingPlanChange as unknown as Prisma.InputJsonValue } : {}),
-          },
+          data: { pendingPlanChange: preCheckoutPatch.pendingPlanChange as unknown as Prisma.InputJsonValue },
+          select: { id: true },
         })
-      : await prisma.subscription.create({
-          data: {
-            ownerUserId: actorUserId,
-            planFamily: intent,
-            planTier: tier,
-            tierEvents: plan.tierEvents,
-            billingInterval: plan.billingInterval,
-            currency: "USD",
-            status: "inactive",
-            maxWorkspaces: FAMILY_MAX_WORKSPACES[intent],
-            workspaceCount: 0,
-            dodoProductId: plan.productId,
-            ...(trialPeriodDays ? { trialEndsAt: new Date(Date.now() + trialPeriodDays * 86_400_000) } : {}),
-            ...(pendingPlanChange ? { pendingPlanChange: pendingPlanChange as unknown as Prisma.InputJsonValue } : {}),
-          },
-        });
+      : { id: reuseTrialSub.id };
+  } else {
+    sub = await prisma.subscription.create({
+      data: {
+        ownerUserId: actorUserId,
+        planFamily: intent,
+        planTier: tier,
+        tierEvents: plan.tierEvents,
+        billingInterval: plan.billingInterval,
+        currency: "USD",
+        status: "inactive",
+        maxWorkspaces: FAMILY_MAX_WORKSPACES[intent],
+        workspaceCount: 0,
+        dodoProductId: plan.productId,
+        ...(trialPeriodDays ? { trialEndsAt: new Date(Date.now() + trialPeriodDays * 86_400_000) } : {}),
+        ...(pendingPlanChange ? { pendingPlanChange: pendingPlanChange as unknown as Prisma.InputJsonValue } : {}),
+      },
+      select: { id: true },
+    });
+  }
 
   // Reserve the lifetime trial now (prevents a double-trial race).
   if (trialPeriodDays && !user.freeTrialUsedAt) {
@@ -166,7 +219,7 @@ export async function createSubscriptionCheckout(args: {
 
   const returnUrl = args.onboarding
     ? appUrl(`/onboarding/success?subscription=${sub.id}`)
-    : appUrl(args.targetWorkspaceId ? `/?upgraded=true` : `/account/subscriptions?upgraded=true`);
+    : appUrl(targetWorkspaceId ? `/?upgraded=true` : `/account/subscriptions?upgraded=true`);
 
   const { url } = await createCheckoutSession({
     productId: plan.productId,
@@ -176,7 +229,7 @@ export async function createSubscriptionCheckout(args: {
     metadata: {
       internalSubscriptionId: sub.id,
       ownerUserId: actorUserId,
-      targetWorkspaceId: args.targetWorkspaceId ?? "",
+      targetWorkspaceId: targetWorkspaceId ?? "",
       intent,
     },
     trialPeriodDays,

@@ -97,7 +97,7 @@ export default function ReportsSettingsPage() {
                   disabled={!data || pendingKey === "weeklySummary"}
                   checked={data?.weeklySummary ?? false}
                   trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
-                  thumbDimensions="size-4"
+             
                   thumbTranslate="translate-x-3"
                   fn={(checked: boolean) =>
                     savePreference({ weeklySummary: checked }, "weeklySummary")
@@ -135,7 +135,7 @@ export default function ReportsSettingsPage() {
                   disabled={!data || pendingKey === "trafficSpikes"}
                   checked={data?.trafficSpikes ?? false}
                   trackDimensions="radix-state-checked:bg-neutral-900 dark:radix-state-checked:bg-neutral-100 focus-visible:ring-neutral-900/20 dark:focus-visible:ring-neutral-100/20 w-8 h-5"
-                  thumbDimensions="size-4"
+                  // thumbDimensions="size-4"
                   thumbTranslate="translate-x-3"
                   fn={(checked: boolean) =>
                     savePreference({ trafficSpikes: checked }, "trafficSpikes")

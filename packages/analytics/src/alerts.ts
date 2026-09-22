@@ -64,7 +64,7 @@ export async function sendAlertsForEvent({
         return email.sendEmail({
           to: recipientEmail,
           subject,
-          react: React.createElement(AlertEmailTemplate, { content }),
+          react: React.createElement(AlertEmailTemplate, { content, recipientEmail }),
         });
       })
     );
