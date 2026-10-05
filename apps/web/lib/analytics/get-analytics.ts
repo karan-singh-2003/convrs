@@ -456,6 +456,9 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       bounce_rate: z.number().nullable().default(0),
       avg_session_duration: z.number().nullable().default(0),
       revenue: z.number().nullable().default(0),
+      // v1_group_by's revenue breakdown (group_by_sales) names its sum
+      // `total_revenue`; every other node calls it `revenue`.
+      total_revenue: z.number().nullable().optional(),
       conversion_rate: z.number().nullable().default(0),
       events: z.number().nullable().default(0),
       saleAmount: z.number().nullable().default(0),
@@ -504,7 +507,7 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       conversions: item?.conversions ?? 0,
       revenue: usingCustomKpi && selectedPipe === "v1_group_by"
         ? (item?.clicks ?? 0)
-        : (item?.revenue ?? 0),
+        : (item?.total_revenue ?? item?.revenue ?? 0),
       conversion_rate: item?.conversion_rate ?? 0,
       bounce_rate: item?.bounce_rate ?? 0,
       avg_session_duration: item?.avg_session_duration ?? 0,
@@ -532,6 +535,8 @@ export const getAnalytics = async (params: AnalyticsFilters) => {
       revenue: await convertCurrency(item.revenue, "USD", currency),
       new_revenue: await convertCurrency(item.new_revenue, "USD", currency),
       refund_amount: await convertCurrency(item.refund_amount, "USD", currency),
+      // A USD ratio (revenue / visitors) — needs the same conversion as revenue.
+      revenue_per_visitor: await convertCurrency(item.revenue_per_visitor, "USD", currency),
       ...("saleAmount" in item
         ? { saleAmount: await convertCurrency(item.saleAmount, "USD", currency) }
         : {}),

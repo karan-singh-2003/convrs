@@ -23,8 +23,11 @@ export const PATCH = withWorkspace(
       await req.json()
     );
 
-    // Optional but worth it: make sure the goal they're pinning actually exists
-    // (or let it through if you want to support "goal that will fire soon")
+    // The goal must be one of this workspace's tracked goals. A goal that has
+    // never fired is still valid — "Add Goal" registers it as a TrackedEvent
+    // up front — so this only rejects names the workspace doesn't know. It
+    // must be an error status: this used to answer 200 without saving, and
+    // the settings page reported that as a successful save.
     if (kpiType === "goal") {
       const exists = await prisma.trackedEvent.findFirst({
         where: {
@@ -38,10 +41,9 @@ export const PATCH = withWorkspace(
       if (!exists) {
         return NextResponse.json(
           {
-            error:
-              "This goal hasn't been tracked yet. It'll still be set, but no data will show until it starts firing.",
+            error: `"${kpiEventName}" isn't a tracked goal in this workspace. Add it as a goal first.`,
           },
-          { status: 200 } // warn, don't block — matches your "goal not tracked yet" use case
+          { status: 422 }
         );
       }
     }

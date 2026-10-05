@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Tooltip, useMediaQuery } from "@repo/ui";
-import { cn, getPrettyUrl } from "@repo/utils";
+import { cn, formatCurrency, getPrettyUrl } from "@repo/utils";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import { Maximize2, Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -320,28 +320,6 @@ if (limit) {
   }
 }
 
-const CURRENCY_LOCALES: Record<string, string> = {
-  USD: "en-US",
-  INR: "en-IN",
-  EUR: "de-DE",
-  GBP: "en-GB",
-  AED: "en-AE",
-  AUD: "en-AU",
-  CAD: "en-CA",
-  SGD: "en-SG",
-  JPY: "ja-JP",
-  CHF: "de-CH",
-  CNY: "zh-CN",
-  KRW: "ko-KR",
-  HKD: "zh-HK",
-  NZD: "en-NZ",
-  NOK: "nb-NO",
-  PLN: "pl-PL",
-  CZK: "cs-CZ",
-  BRL: "pt-BR",
-  IDR: "id-ID",
-};
-
 // What to call the "count" metric in the tooltip, based on the section's data unit
 const COUNT_LABELS: Record<string, string> = {
   leads: "Leads",
@@ -463,16 +441,13 @@ export function LineItem({
 
   const isModalView = !limit;
 
-  const locale = CURRENCY_LOCALES[currency ?? "USD"] ?? "en-US";
+  // Same convention as the KPI tabs and the area chart: en-US formatting with
+  // the workspace currency's symbol (EUR → "€89.10", not "89,10 €").
+  const locale = "en-US";
 
-  const formatCurrency = useCallback(
-    (v: number) =>
-      new Intl.NumberFormat(locale, {
-        style: "currency",
-        currency: currency ?? "USD",
-        currencyDisplay: "symbol",
-      }).format(v || 0),
-    [locale, currency]
+  const formatMoney = useCallback(
+    (v: number) => formatCurrency(v || 0, currency ?? "USD"),
+    [currency]
   );
 
   const formatNumber = useCallback(
@@ -480,9 +455,9 @@ export function LineItem({
       new Intl.NumberFormat(locale, {
         notation: (v || 0) > 999999 ? "compact" : "standard",
       }).format(v || 0),
-    [locale]
+    []
   );
-  const formatKpiValue = isGoalKpi ? formatNumber : formatCurrency;
+  const formatKpiValue = isGoalKpi ? formatNumber : formatMoney;
 
   const revenuePerVisitor = safeCount > 0 ? safeRevenue / safeCount : 0;
   const countLabel = COUNT_LABELS[unit] ?? "Visitors";

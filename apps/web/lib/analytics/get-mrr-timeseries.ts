@@ -68,14 +68,18 @@ async function loadSubscriptions(
   const eligible = subs.filter((s) => statusCountsTowardMrr(s.status as any));
 
   // Convert each subscription's monthly-normalized price into the workspace
-  // currency once, up front.
+  // currency once, up front. `amount` is stored in the smallest currency unit
+  // (cents); the revenue series it's charted beside is in major units (see
+  // processPayment's `amount / 100` before Tinybird), so normalize here —
+  // the only place MRR amounts leave minor units.
   return Promise.all(
     eligible.map(async (s) => {
-      const monthly = monthlyAmount({
-        amount: s.amount,
-        interval: s.interval as SubscriptionInterval,
-        intervalCount: s.intervalCount,
-      });
+      const monthly =
+        monthlyAmount({
+          amount: s.amount,
+          interval: s.interval as SubscriptionInterval,
+          intervalCount: s.intervalCount,
+        }) / 100;
       const monthlyInTarget =
         s.currency.toUpperCase() === targetCurrency.toUpperCase()
           ? monthly
@@ -93,7 +97,7 @@ async function loadSubscriptions(
   );
 }
 
-/** Sum of monthly-normalized recurring revenue active at instant `at`, in cents. */
+/** Sum of monthly-normalized recurring revenue active at instant `at`, in major units. */
 function mrrAt(
   subs: Array<MrrSubscription & { monthlyInTarget: number }>,
   at: Date
@@ -111,7 +115,7 @@ function mrrAt(
  * Monthly Recurring Revenue over time, one point per chart bucket. MRR at a
  * bucket = the sum over all subscriptions active at the *end* of that bucket of
  * their per-period price normalized to a month, converted to the workspace's
- * display currency. Values are in cents to match the revenue series.
+ * display currency. Values are in major units, matching the revenue series.
  */
 export const getMrrTimeseries = async (params: AnalyticsFilters) => {
   const {
@@ -160,7 +164,7 @@ export const getMrrTimeseries = async (params: AnalyticsFilters) => {
   });
 };
 
-/** Current MRR (as of `asOf`, default now) in the workspace's display currency, cents. */
+/** Current MRR (as of `asOf`, default now) in the workspace's display currency, major units. */
 export const getMrrSnapshot = async (
   workspaceId: string,
   currency = "USD",

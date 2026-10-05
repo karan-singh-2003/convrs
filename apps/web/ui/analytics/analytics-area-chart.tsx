@@ -1140,6 +1140,15 @@ export function AnalyticsAreaChart({
         ? "MRR"
         : "Revenue";
 
+  // The `revenue` / `revenue_per_visitor` fields carry whatever backs the KPI:
+  // for a goal KPI the timeseries pipe fills them with goal completions and
+  // completions per visitor — counts, not money. Label and format them from
+  // the KPI type, the same way the bar list does ("{goal}/visitor").
+  const isGoalKpi = kpiType === "goal";
+  const perVisitorLabel = isGoalKpi ? `${kpiLabel ?? "Goal"}/visitor` : "Revenue/visitor";
+  const formatKpiValue = (val: number) =>
+    isGoalKpi ? nFormatter(val) : formatCurrency(val, currency);
+
   const { data: response, isLoading } = useSWR<{
     data: Array<{
       start: string;
@@ -1300,12 +1309,12 @@ export function AnalyticsAreaChart({
       : resource === "revenue" ? revenueLabel
         : resource === "conversion_rate" ? "Conversion"
           : resource === "bounce_rate" ? "Bounce Rate"
-            : resource === "revenue_per_visitor" ? "Revenue/visitor"
+            : resource === "revenue_per_visitor" ? perVisitorLabel
               : "Avg. Session";
 
   const formatValue = (val: number) => {
     if (resource === "revenue" || resource === "revenue_per_visitor") {
-      return resource === "revenue" && kpiType === "goal" ? nFormatter(val) : formatCurrency(val, currency);
+      return formatKpiValue(val);
     }
     if (RATE_METRICS.has(resource)) return `${nFormatter(val)}%`;
     if (DURATION_METRICS.has(resource)) return formatDuration(val);
@@ -1401,11 +1410,11 @@ export function AnalyticsAreaChart({
 
                   <div className="flex items-center justify-between text-sm pb-2 border-b border-border-subtle">
                     <span className="font-medium text-content-subtle">
-                      Revenue/visitor
+                      {perVisitorLabel}
                     </span>
 
                     <span className="font-medium text-content-default">
-                      {formatCurrency(d.values.revenue_per_visitor ?? 0, currency)}
+                      {formatKpiValue(d.values.revenue_per_visitor ?? 0)}
                     </span>
                   </div>
 

@@ -75,10 +75,27 @@ export default function KPI() {
 
     const [kpi, setKpi] = useState<"Revenue" | "Goal">("Revenue");
     const [revenueMetric, setRevenueMetric] = useState<"revenue" | "mrr">("revenue");
-    const [selectedEvent, setSelectedEvent] = useState<EventOption | null>(null);
+    const [selectedEventName, setSelectedEventName] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
+    // Display option for the selected goal — derived from the loaded goal list
+    // so its label is always current, without that list being a second source
+    // of truth for *which* goal is selected.
+    const selectedEvent = useMemo<EventOption | null>(
+        () =>
+            selectedEventName
+                ? (eventOptions.find((o) => o.value === selectedEventName) ?? {
+                    value: selectedEventName,
+                    label: humanizeEventName(selectedEventName),
+                })
+                : null,
+        [selectedEventName, eventOptions]
+    );
+
     // ── Sync local state once the workspace's saved KPI loads ────────────────
+    // Keyed on the saved KPI only: re-running this when the goal list finishes
+    // loading would discard a choice the user already made (e.g. clicking
+    // "Goal" before the goals arrived snapped back to the saved "Revenue").
     useEffect(() => {
         if (!kpiRes?.data) return;
 
@@ -86,28 +103,21 @@ export default function KPI() {
         setRevenueMetric(kpiRes.data.kpiRevenueMetric === "mrr" ? "mrr" : "revenue");
 
         if (kpiRes.data.kpiType === "goal" && kpiRes.data.kpiEventName) {
-            const savedName = kpiRes.data.kpiEventName;
-            const matched = eventOptions.find((o) => o.value === savedName);
-            setSelectedEvent(
-                matched ?? {
-                    value: savedName,
-                    label: humanizeEventName(savedName),
-                }
-            );
+            setSelectedEventName(kpiRes.data.kpiEventName);
         }
-    }, [kpiRes, eventOptions]);
+    }, [kpiRes]);
 
     // Default the dropdown to the first real event once options load,
     // if nothing is selected yet (e.g. workspace has no KPI set at all)
     useEffect(() => {
-        if (!selectedEvent && eventOptions.length > 0 && kpi === "Goal") {
-            setSelectedEvent(eventOptions[0]);
+        if (!selectedEventName && eventOptions.length > 0 && kpi === "Goal") {
+            setSelectedEventName(eventOptions[0].value);
         }
-    }, [eventOptions, kpi, selectedEvent]);
+    }, [eventOptions, kpi, selectedEventName]);
 
     const onChange = (option: (typeof eventOptions)[number] | null) => {
         if (!option) return;
-        setSelectedEvent(option);
+        setSelectedEventName(option.value);
     };
 
     const hasUnsavedChange =
