@@ -6,6 +6,10 @@ import { hasPendingInvites } from "./utils/has-pending-invites";
 import { parse } from "./utils/parse";
 import { ONBOARDING_WINDOW_SECONDS } from "../api/workspaces/onboarding-step-cache";
 import { WorkspacesMiddleware } from "./workspace";
+import {
+  getGatedWorkspaceSlug,
+  isWorkspaceAccessBlocked,
+} from "./utils/workspace-access";
 
 export async function AppMiddleware(req: NextRequest) {
   const { path, fullPath, searchParamsString } = parse(req);
@@ -105,6 +109,26 @@ export async function AppMiddleware(req: NextRequest) {
       path.startsWith("/settings/")
     ) {
       return WorkspacesMiddleware(req, user);
+    }
+  }
+
+  // Workspace routes need an unexpired trial or a paid subscription; anything
+  // else goes to that workspace's billing page. Enforced here rather than only
+  // in the [slug] layout because a layout shared with /billing isn't
+  // re-rendered on client-side navigation, so the layout alone let the
+  // dashboard nav reach private pages after the trial ended. Fails open on a
+  // lookup error — the [slug] layout and withWorkspace's API checks still
+  // apply.
+  if (user) {
+    const gatedSlug = getGatedWorkspaceSlug(path);
+    if (gatedSlug) {
+      try {
+        if (await isWorkspaceAccessBlocked(gatedSlug)) {
+          return NextResponse.redirect(new URL(`/${gatedSlug}/billing`, req.url));
+        }
+      } catch (error) {
+        console.error("[AppMiddleware] workspace access check failed", error);
+      }
     }
   }
 

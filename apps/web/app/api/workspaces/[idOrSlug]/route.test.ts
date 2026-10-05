@@ -105,6 +105,51 @@ describe("GET /api/workspaces/[idOrSlug] — hasPaymentMethod + entitlement bypa
     expect(body.subscription.dodoSubscriptionId).toBeUndefined();
   });
 
+  // `isEntitled` drives the dashboard nav: it must match the server gate
+  // (lib/middlewarre/app.ts) for every trial/subscription state.
+  it.each([
+    ["an unexpired trial", { subscriptionStatus: "trialing", freeTrialEndDate: new Date(Date.now() + 86_400_000) }, true],
+    ["a trial past its end date", { subscriptionStatus: "trialing", freeTrialEndDate: new Date(Date.now() - 86_400_000) }, false],
+    ["a paid subscription", { subscriptionStatus: "active" }, true],
+    ["an expired subscription", { subscriptionStatus: "expired" }, false],
+  ])("isEntitled reflects %s", async (_label, fields, expected) => {
+    (prisma.workspace.findUnique as any).mockResolvedValue(
+      workspaceRow({ subscriptionId: null, ...fields }),
+    );
+
+    const res = await GET(req(), { params: Promise.resolve({ idOrSlug: "ws_1" }) });
+    expect(res.status).toBe(200);
+    expect((await res.json()).isEntitled).toBe(expected);
+  });
+
+  it.each([
+    ["an expired cardless trial", new Date(Date.now() - 86_400_000), { isTrialExpired: true, currentPlan: null }],
+    ["an active cardless trial", new Date(Date.now() + 86_400_000), { isTrialExpired: false, currentPlan: { family: "standard", tier: "t10k", billingInterval: "month" } }],
+  ])("billingState for %s derives the current plan from entitlement, not the stored row", async (_label, trialEnd, expected) => {
+    (prisma.workspace.findUnique as any).mockResolvedValue(
+      workspaceRow({ subscriptionStatus: "trialing", freeTrialEndDate: trialEnd }),
+    );
+    // The stored row keeps the Standard trial plan either way.
+    (prisma.subscription.findUnique as any).mockResolvedValue({
+      id: "sub_1",
+      planFamily: "standard",
+      planTier: "t10k",
+      billingInterval: "month",
+      status: "trialing",
+      workspaceCount: 1,
+      maxWorkspaces: 1,
+      currentPeriodEnd: null,
+      trialEndsAt: trialEnd,
+      cancelAtPeriodEnd: false,
+      dodoSubscriptionId: null,
+    });
+
+    const body = await (await GET(req(), { params: Promise.resolve({ idOrSlug: "ws_1" }) })).json();
+    expect(body.billingState).toMatchObject({ hasActivePaidSubscription: false, ...expected });
+    expect(body.subscription.planFamily).toBe("standard");
+    expect(JSON.stringify(body)).not.toContain("sub_dodo");
+  });
+
   it("stays reachable for a workspace with an inactive/no subscription (skipEntitlementCheck)", async () => {
     (prisma.workspace.findUnique as any).mockResolvedValue(
       workspaceRow({ subscriptionId: null, subscriptionStatus: "inactive" }),

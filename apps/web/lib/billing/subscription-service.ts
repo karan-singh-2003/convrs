@@ -131,10 +131,17 @@ export async function createSubscriptionCheckout(args: {
       select: { id: true, subscriptionId: true, subscription: { select: { id: true, status: true, ownerUserId: true, trialEndsAt: true, dodoSubscriptionId: true } } },
     });
     if (!ws) throw new BillingError("workspace_not_found", "Workspace not found.", 404);
+    // A cardless trial that already lapsed — flipped to `inactive` by the
+    // reconcile cron, but still attached to the workspace — is reused the
+    // same way; otherwise its attachment would trip "already covered" below
+    // and the expired workspace could never subscribe. Its trial has ended,
+    // so getRemainingTrialDays() yields null: a normal paid checkout.
+    const isLapsedCardlessTrial =
+      ws.subscription?.status === "inactive" && ws.subscription.trialEndsAt != null;
     if (
       ws.subscription &&
       ws.subscription.ownerUserId === actorUserId &&
-      ws.subscription.status === "trialing" &&
+      (ws.subscription.status === "trialing" || isLapsedCardlessTrial) &&
       !ws.subscription.dodoSubscriptionId
     ) {
       reuseTrialSub = { id: ws.subscription.id, trialEndsAt: ws.subscription.trialEndsAt };

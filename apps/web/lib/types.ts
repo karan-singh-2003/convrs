@@ -10,6 +10,7 @@ import {
   webhookEventSchemaTB,
 } from "./zod/schemas/webhook";
 import { WEBHOOK_TRIGGERS } from "./webhook/constant";
+import type { BillingState } from "./billing/entitlement";
 import { InvoiceSchema } from "./zod/schemas/invoices";
 
 export interface UserProps {
@@ -60,6 +61,10 @@ export interface WorkspaceProps extends Workspace {
   plan: WorkspacePlan;
   /** the Subscription covering this workspace (null = uncovered) */
   subscription?: WorkspaceSubscriptionSummary | null;
+  /** server-computed `isEntitled()`: unexpired trial or paid subscription */
+  isEntitled?: boolean;
+  /** server-computed `getBillingState()` — see lib/billing/entitlement.ts */
+  billingState?: BillingState;
 
   users: {
     role: WorkspaceRole;

@@ -6,7 +6,7 @@ import { BILLING_V2 } from "@/lib/billing/flags";
 import Link from "next/link";
 
 export function FreeTrialBanner() {
-  const { subscriptionStatus, freeTrialEndDate, slug, subscription } = useWorkspace();
+  const { subscriptionStatus, freeTrialEndDate, slug, subscription, billingState } = useWorkspace();
 
   const trial = getFreeTrialInfo(freeTrialEndDate ?? new Date());
   const isGrowthTrial = BILLING_V2 && subscription?.planFamily === "growth";
@@ -21,10 +21,12 @@ export function FreeTrialBanner() {
     </div>
   );
 
-  if (subscriptionStatus === "inactive") {
+  // A lapsed cardless trial can still read `trialing` (until the reconcile
+  // cron runs) or `inactive` (after) — either way it's an ended trial.
+  if (subscriptionStatus === "expired" || billingState?.isTrialExpired) {
     return banner(
       <>
-        Your subscription is inactive.{" "}
+        Your free trial has ended.{" "}
         <Link
           href={`/${slug}/billing`}
           className="font-semibold underline"
@@ -35,10 +37,10 @@ export function FreeTrialBanner() {
     );
   }
 
-  if (subscriptionStatus === "expired") {
+  if (subscriptionStatus === "inactive") {
     return banner(
       <>
-        Your free trial has ended.{" "}
+        Your subscription is inactive.{" "}
         <Link
           href={`/${slug}/billing`}
           className="font-semibold underline"

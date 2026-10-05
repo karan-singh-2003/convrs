@@ -69,6 +69,8 @@ function LegacyBillingPage() {
     growthFreeSeat,
     trialAvailable,
     pendingTrialDays,
+    currentPlan,
+    isTrialExpired,
     onChanged,
   } = useBillingState();
 
@@ -79,11 +81,14 @@ function LegacyBillingPage() {
   // (lib/billing/auto-trial.ts) or a manual start-free-trial call — it's
   // just not Dodo-backed. That card must read as "you're already here," not
   // as another upgrade option, and must never behave like a checkout CTA.
+  // `currentPlan` is null once the trial lapses (or a paid plan ends), even
+  // though the Subscription row still stores that plan — then every card is
+  // a normal, selectable upgrade.
   const isCurrentPlanCard = (cardFamily: PricingFamily) =>
-    !!subscription &&
-    subscription.planFamily === cardFamily &&
-    subscription.planTier === uncovered.tier &&
-    (subscription.billingInterval === "year" ? "yearly" : "monthly") === uncovered.interval;
+    !!currentPlan &&
+    currentPlan.family === cardFamily &&
+    currentPlan.tier === uncovered.tier &&
+    (currentPlan.billingInterval === "year" ? "yearly" : "monthly") === uncovered.interval;
 
   return (
     <div className="px-2 max-w-3xl mx-auto">
@@ -130,6 +135,15 @@ function LegacyBillingPage() {
               <p className="mt-4 max-w-2xl mx-auto text-center font-poppins text-sm text-content-subtle sm:text-left">
                 Your new website needs a subscription to start tracking.
               </p>
+            )}
+
+            {isTrialExpired && (
+              <div className="mt-4 max-w-2xl mx-auto text-center font-poppins sm:text-left">
+                <p className="text-sm text-content-default">Trial expired</p>
+                <p className="text-sm text-content-subtle">
+                  No active plan. Choose a plan to keep using Convrs.
+                </p>
+              </div>
             )}
 
             <div className="max-w-2xl mx-auto mt-4">

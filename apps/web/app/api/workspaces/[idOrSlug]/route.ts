@@ -14,6 +14,7 @@ import { waitUntil } from "@vercel/functions";
 import * as z from "zod/v4";
 import { jackson } from "@/lib/jackson";
 import { deleteWorkspace } from "@/lib/api/workspaces/delete-workspace";
+import { getBillingState } from "@/lib/billing/entitlement";
 
 const updateWorkspaceSchema = createWorkspaceSchema
   .extend({
@@ -55,12 +56,18 @@ export const GET = withWorkspace(
         }
       : null;
 
+    // Same policy the proxy/[slug] layout gate on, so the client (nav, billing
+    // page) never re-derives trial/subscription rules from stored plan fields.
+    const billingState = getBillingState(workspace, subscriptionRow);
+
     return NextResponse.json({
       ...WorkspaceSchema.parse({
         ...workspace,
         id: prefixWorkspaceId(workspace.id),
         subscription,
       }),
+      isEntitled: billingState.isEntitled,
+      billingState,
     });
   },
   {

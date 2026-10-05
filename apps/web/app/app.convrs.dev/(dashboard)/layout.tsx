@@ -80,10 +80,13 @@ function DashboardLayoutContent({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { projectToken } = useWorkspace();
+  const { projectToken, isEntitled } = useWorkspace();
   const { slug } = useParams<{ slug: string }>();
   const { count } = useLiveVisitors(projectToken || "")
   const isDashboardPage = pathname === `/dashboard`
+  // Every item here is a private route; without trial/paid access they all
+  // redirect to billing (lib/middlewarre/app.ts), so don't offer them.
+  const showNav = !isDashboardPage && isEntitled !== false
 
   const items = [
     {
@@ -113,7 +116,7 @@ function DashboardLayoutContent({
   return (
     <ThemeScope>
 
-      {!isDashboardPage && (<div className="hidden md:block fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
+      {showNav && (<div className="hidden md:block fixed bottom-5 left-1/2 z-50 -translate-x-1/2">
         <div className="flex items-center gap-1 border border-border-subtle rounded-2xl bg-bg-card p-1 py-1.5">
           {items.map(({ href, icon: Icon, exact, label }) => {
             const active = exact

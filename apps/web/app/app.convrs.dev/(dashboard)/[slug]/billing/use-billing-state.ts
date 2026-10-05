@@ -76,6 +76,7 @@ export function useBillingState() {
     id: workspaceId,
     subscription,
     subscriptionStatus,
+    billingState,
     loading: wsLoading,
     error: wsError,
   } = useWorkspace();
@@ -121,6 +122,11 @@ export function useBillingState() {
     growthFreeSeat: billingContext?.growthSubWithFreeSeat ?? null,
     trialAvailable: billingContext?.trialAvailable ?? false,
     pendingTrialDays,
+    // Server-derived (lib/billing/entitlement.ts getBillingState): what the
+    // workspace is actually entitled to right now — not the plan fields
+    // stored on the Subscription row, which outlive a lapsed trial.
+    currentPlan: billingState?.currentPlan ?? null,
+    isTrialExpired: billingState?.isTrialExpired ?? false,
     onChanged: () => mutateCtx(),
   };
 }
