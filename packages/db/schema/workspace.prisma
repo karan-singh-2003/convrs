@@ -134,7 +134,15 @@ model Workspace {
   allowAllDomains    Boolean  @default(false)
   cookielessMode     Boolean  @default(false) // NEW
 
-  botTrafficRequireAuth Boolean @default(false)
+  // Default flipped true -> new workspaces require an authenticated
+  // /api/ai-crawls caller from day one (see apps/ingestion/src/controllers/
+  // track-ai-bot.ts's isValidBotToken, now fixed to accept the real cvrs_/bc_
+  // API token prefixes instead of the never-minted cvbot_ one). A Prisma
+  // column default only applies at INSERT time for rows that omit the field
+  // — existing workspaces keep whatever value is already stored (false, for
+  // all of them, since nothing could satisfy the old broken check anyway),
+  // so this does not change behavior for any already-configured integration.
+  botTrafficRequireAuth Boolean @default(true)
 
   plan     WorkspacePlan @default(free)
   timezone String        @default("UTC")

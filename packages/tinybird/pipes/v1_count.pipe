@@ -191,6 +191,7 @@ FROM dub_click_events AS r
 WHERE
     r.event_type = 'revenue'
     AND coalesce(r.revenue, 0) > 0
+    AND r.bot = 0
     {% if defined(workspaceId) %} AND r.workspace_id = {{ workspaceId }} {% end %}
     {% if defined(start) %} AND r.timestamp >= {{ DateTime64(start) }} {% end %}
     {% if defined(end) %} AND r.timestamp <= {{ DateTime64(end) }} {% end %}

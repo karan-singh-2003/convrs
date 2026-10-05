@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@repo/db": "workspace:*",
-    "@repo/analytics": "workspace:*"
+    "@repo/analytics": "workspace:*",
+    "@convrs/ai-bot-sdk": "^1.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

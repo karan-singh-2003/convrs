@@ -45,13 +45,33 @@ export const UA_BOTS = [
   "HostTracker",
   "Expanse", // Expanse (Palo Alto Networks)
 
-  // AI bots
+  // AI bots — reconciled against @convrs/ai-bot-sdk's KNOWN_VENDORS registry
+  // (the source of truth for the separate AI-crawler-reporting feature; see
+  // apps/ingestion/src/controllers/track-ai-bot.ts). This list intentionally
+  // stays a flat substring list, not the SDK's vendor x category taxonomy —
+  // the two systems solve different problems (this one excludes traffic
+  // from regular analytics; the SDK's reports on it) and packages/analytics
+  // does not depend on @convrs/ai-bot-sdk. Most of the SDK's tokens already
+  // matched here via the generic "bot"/"crawler"/"spider"/vendor-name
+  // entries above; the ones below are the real gap this closes — "answer
+  // agent" AI UAs (e.g. ChatGPT/Claude/Copilot fetching a page a user shared
+  // in a live chat) that don't happen to contain "bot" and were previously
+  // slipping through as ordinary human traffic.
   "anthropic-ai", // Anthropic AI
-  "Claude-Web", // Claude AI
-  "Applebot-Extended", // Applebot Extended
-  "perplexity", // Perplexity AI
-  "Omigili", // Omigili
+  "claude-web", // Claude AI (legacy UA token, kept for older crawls)
+  "claude-user", // Anthropic — answer_agent (claude-searchbot/claudebot already match "bot")
+  "applebot-extended", // Apple — training_crawler
+  "perplexity", // Perplexity AI (perplexitybot/perplexity-user both match this)
+  "omigili", // Omigili
   "timpi", // Timpi.io
+  "mistralai-user", // Mistral — answer_agent
+  "mistralai-index", // Mistral — index_crawler
+  "copilot", // Microsoft Copilot — answer_agent
+  "amzn-user", // Amazon — answer_agent
+  "grok", // xAI — covers grok, grok-deepsearch, xai-grok (xai-searchbot/xai-bot/xai-web-crawler already match "bot"/"crawler")
+  "kimi-user", // Moonshot AI — answer_agent
+  "qwen-user", // Alibaba — answer_agent
+  "cohere-ai", // Cohere — training_crawler
 
   // bots detected by Vercel
   "ShortLinkTranslate",

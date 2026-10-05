@@ -83,7 +83,7 @@ export async function trackAICrawlerController(req: Request, res: Response) {
     if (workspace.botTrafficRequireAuth) {
       const authHeader = req.headers.authorization ?? "";
       const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-      if (!token.startsWith("cvbot_") || !(await isValidBotToken(token, workspace.id))) {
+      if (!token || !(await isValidBotToken(token, workspace.id))) {
         return res.status(401).json({ success: false, error: "Invalid or missing bot tracking token" });
       }
     }
@@ -172,11 +172,29 @@ async function resolveCountryForIp(ip: string | null): Promise<string | null> {
   return null;
 }
 
+// Same prefixes apps/web/lib/auth/api-token.ts accepts for the public v1
+// API — cvrs_ is what's minted today (Settings -> API tokens, POST
+// /api/tokens), bc_ is the legacy prefix kept for tokens minted before it.
+// There is no separate bot-traffic-specific token type or minting UI: this
+// reuses the real, existing, already-secure RestrictedToken mechanism
+// (hashed with the exact same SHA-256-over-the-raw-token scheme as
+// hashToken() in apps/web — verified byte-for-byte identical) rather than
+// requiring a "cvbot_" token that nothing in the system has ever minted,
+// which is what silently made botTrafficRequireAuth unusable before this
+// fix — any workspace that turned it on would have locked itself out
+// entirely, since no token could ever satisfy the old check.
+const VALID_BOT_TOKEN_PREFIXES = ["cvrs_", "bc_"];
+
 async function isValidBotToken(token: string, workspaceId: string): Promise<boolean> {
+  if (!VALID_BOT_TOKEN_PREFIXES.some((prefix) => token.startsWith(prefix))) {
+    return false;
+  }
   const hashedKey = createHash("sha256").update(token).digest("hex");
   const restrictedToken = await prisma.restrictedToken.findFirst({
     where: { hashedKey, workspaceId },
-    select: { id: true },
+    select: { id: true, expires: true },
   });
-  return Boolean(restrictedToken);
+  if (!restrictedToken) return false;
+  if (restrictedToken.expires && restrictedToken.expires < new Date()) return false;
+  return true;
 }

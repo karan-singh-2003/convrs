@@ -432,9 +432,18 @@ export async function trackClickController(req: Request, res: Response) {
 
     // CHANGED — return the server-computed visitorId so cookieless clients
     // (both the vanilla script and the SDK's onEventSendSuccess) can cache it
+    //
+    // `recorded` reflects whether recordEvent() actually stored the event —
+    // it returns null (and this stays false) for a detected bot, same as it
+    // already did for a deliberately-dropped duplicate above. This used to
+    // be hardcoded `true` unconditionally, which meant a bot-dropped event
+    // got exactly the same success response as a real one, with nothing in
+    // the API contract to tell them apart. No caller in this codebase
+    // (tracker, @convrs/sdk, or otherwise) reads this field today, so
+    // fixing its accuracy has no behavioral impact on existing clients.
     return res.json({
       success: true,
-      recorded: true,
+      recorded: !!recordedEvent,
       ...(isCookielessPayload && { visitorId: effectiveVisitorId }),
     });
   } catch (error) {

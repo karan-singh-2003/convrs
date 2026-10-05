@@ -247,7 +247,7 @@ const TAB_TO_CATEGORY: Record<Tab, string> = {
 };
 
 export default function BotFilteringCard() {
-  const [activeTab, setActiveTab] = useState<Tab>("Training");
+  const [activeTab, setActiveTab] = useState<Tab>("AI Answers");
   const { baseApiPath, queryString, interval, start, end } = useContext(AnalyticsContext);
 
   const category = TAB_TO_CATEGORY[activeTab];
