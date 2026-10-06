@@ -28,6 +28,13 @@ const nextConfig = {
         destination: "https://cdn.convrs.dev/script.js",
       },
       {
+        // Cookieless build. Served first-party like /script.js so its default
+        // collector (/api/track) and heartbeat (/api/live/heartbeat) resolve
+        // against this origin.
+        source: "/cookieless-script.js",
+        destination: "https://cdn.convrs.dev/cookieless-script.js",
+      },
+      {
         source: "/api/track",
         destination: "https://ingest.convrs.dev/api/track",
       },

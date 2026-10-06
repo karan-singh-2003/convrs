@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import { trackClickController } from "./controllers/track.js";
 import { stripeWebhookController } from "./controllers/revenue/stripe-webhook-controller.js";
@@ -8,8 +8,20 @@ import { dodoWebhookController } from "./controllers/revenue/dodo-webhook-contro
 import { lemonsqueezyWebhookController } from "./controllers/revenue/lemonsqueezy-webhook-controller.js";
 import { paddleWebhookController } from "./controllers/revenue/paddle-webhook-contoller.js";
 import { trackAICrawlerController } from "./controllers/track-ai-bot.js";
+import { missingForwardSecretError, resolveTrustProxySetting } from "./lib/client-context.js";
+
+// Logged, not fatal: refusing to start would also take down /api/ai-crawls
+// and the revenue webhooks, which don't depend on this secret.
+const forwardSecretError = missingForwardSecretError();
+if (forwardSecretError) console.error(forwardSecretError);
 
 const app = express();
+
+// req.ip is only used as the last-resort client IP (see lib/client-context.ts
+// for the full header policy). Off by default so a client-supplied
+// X-Forwarded-For can never become the visitor IP; set TRUST_PROXY to the
+// hop count / subnets of proxies you actually run behind.
+app.set("trust proxy", resolveTrustProxySetting());
 
 // 1. FIRST — handle preflight manually
 //
@@ -55,10 +67,10 @@ app.post("/api/paddle/webhook/:workspaceId", express.raw({ type: "*/*" }), paddl
 // ai-crawls needs a parsed JSON body (like /api/track), so give it its own
 // express.json() middleware instead of relying on the global one below —
 // this way it doesn't depend on being declared after the global mount.
-app.post("/api/ai-crawls", express.json(), trackAICrawlerController);
+app.post("/api/ai-crawls", express.json({ limit: "16kb" }), trackAICrawlerController);
 
 // 4. body parser for remaining non-raw-body routes
-app.use(express.json());
+app.use(express.json({ limit: "64kb" }));
 
 // 5. routes
 app.get("/health", (req: Request, res: Response) => {
@@ -66,6 +78,17 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 app.post("/api/track", trackClickController);
+
+// Body-parser and any other uncaught errors: a short JSON reply, never the
+// default handler's HTML / stack trace.
+app.use((err: { status?: number; statusCode?: number; type?: string }, _req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) return next(err);
+  const status = err?.status ?? err?.statusCode ?? 500;
+  const error =
+    status === 413 ? "Payload too large" : status === 400 ? "Invalid request body" : status < 500 ? "Bad request" : "Internal error";
+  if (status >= 500) console.error("[ingestion] Unhandled error", err);
+  res.status(status >= 400 && status < 600 ? status : 500).json({ success: false, error });
+});
 
 // 6. start server
 const PORT = process.env.PORT || 3000;

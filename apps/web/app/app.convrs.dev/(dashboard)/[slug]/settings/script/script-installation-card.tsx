@@ -23,7 +23,7 @@ const buildScriptSnippet = ({
     : domain || "yourdomain.com";
 
   const scriptSrc = cookielessMode
-    ? "https://convrs.dev/script.cookieless.js"
+    ? "https://convrs.dev/cookieless-script.js"
     : "https://convrs.dev/script.js";
 
   const lines = [

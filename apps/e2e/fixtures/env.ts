@@ -21,6 +21,18 @@ function parseEnvFile(filePath: string): Record<string, string> {
 const overrides = parseEnvFile(path.join(E2E_DIR, ".env.e2e"));
 
 /**
+ * E2E_DISABLE_TINYBIRD_WRITES=1 blanks the Tinybird credentials the ingest
+ * server (the only writer) would otherwise inherit from its real .env, so a run of the
+ * non-Tinybird projects never writes events into a real Tinybird workspace
+ * (recordEvent/trackBotEvent log and skip when credentials are missing).
+ * Not for the @tinybird specs, which need real ingestion.
+ */
+const tinybirdWriteOverrides: Record<string, string> =
+  process.env.E2E_DISABLE_TINYBIRD_WRITES === "1"
+    ? { TINYBIRDS_API_URL: "", TINYBIRDS_API_KEY: "" }
+    : {};
+
+/**
  * Full env for the apps/web dev server under test: the app's real .env
  * (every OAuth/storage/email/etc var it normally has) with DATABASE_URL,
  * NEXTAUTH_URL, INGEST_API_URL and the port swapped for the disposable
@@ -44,6 +56,7 @@ export function ingestServerEnv(): Record<string, string> {
   return {
     ...real,
     ...overrides,
+    ...tinybirdWriteOverrides,
     PORT: overrides.E2E_INGEST_PORT,
   };
 }
@@ -76,6 +89,7 @@ export const INGEST_PORT = Number(overrides.E2E_INGEST_PORT);
 export const WEB_BASE_URL = `http://localhost:${WEB_PORT}`;
 export const INGEST_BASE_URL = `http://localhost:${INGEST_PORT}`;
 export const STRIPE_WEBHOOK_SECRET = overrides.E2E_STRIPE_WEBHOOK_SECRET;
+export const INGEST_FORWARD_SECRET = overrides.INGEST_FORWARD_SECRET;
 export const DATABASE_URL = overrides.DATABASE_URL;
 export const ALLOWED_DB_HOSTS = overrides.E2E_ALLOWED_DB_HOSTS;
 

@@ -3,6 +3,7 @@ import { withApiToken } from "@/lib/auth";
 import {
   getBotFilteringAnalytics,
   BOT_CATEGORIES,
+  BOT_VERIFICATION_STATES,
 } from "@/lib/analytics/get-bot-analytics";
 import { apiSuccess, apiPaginated } from "@/lib/api/v1/response";
 import { toV1ErrorResponse } from "@/lib/api/v1/errors";
@@ -20,6 +21,8 @@ export const BOT_BREAKDOWNS = [
   "providers",
   "top_pages",
   "categories",
+  "crawlers",
+  "requests",
 ] as const;
 
 export const querySchema = v1DateRangeFields.extend(v1PaginationFields.shape).extend({
@@ -32,6 +35,17 @@ export const querySchema = v1DateRangeFields.extend(v1PaginationFields.shape).ex
     .enum(BOT_CATEGORIES)
     .optional()
     .describe(`Filter to one bot category: ${BOT_CATEGORIES.join(", ")}.`),
+  verification: z
+    .enum(BOT_VERIFICATION_STATES)
+    .optional()
+    .describe("Filter by server-side crawler IP verification: verified, spoofed, unverifiable, unknown."),
+  authenticated: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional()
+    .describe(
+      "true: only events sent with the website's bot token; false: only events sent with just the public project ID."
+    ),
   granularity: z
     .enum(["hour", "day", "week"])
     .optional()
@@ -45,6 +59,9 @@ const EMPTY_OVERVIEW = {
   training: 0,
   other: 0,
   unique_providers: 0,
+  verified: 0,
+  spoofed: 0,
+  authenticated: 0,
 };
 
 // GET /api/v1/analytics/bots — Convrs's AI-crawler traffic detector, exposed
@@ -64,6 +81,8 @@ export const GET = withApiToken(
         workspaceId: workspace.id,
         domain: query.domain,
         category: query.category,
+        verification: query.verification,
+        authenticated: query.authenticated,
         groupBy: query.breakdown,
         interval,
         start: start?.toISOString(),
@@ -83,7 +102,7 @@ export const GET = withApiToken(
       // providers / top_pages / categories — small-cardinality lists, but
       // paginate for a consistent contract with the other breakdown endpoints.
       const { rows, pagination } = paginate(
-        Array.isArray(result) ? result : [],
+        (Array.isArray(result) ? result : []) as Record<string, string | number>[],
         query
       );
       return apiPaginated(rows, pagination);

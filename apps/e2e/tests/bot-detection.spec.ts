@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { prisma } from "../fixtures/db";
-import { createTrackingWorkspace } from "../fixtures/seed";
+import { createTrackingWorkspace, randomToken } from "../fixtures/seed";
 import { buildPageviewPayload, REAL_CHROME_UA } from "../fixtures/track";
-import { INGEST_BASE_URL } from "../fixtures/env";
+import { INGEST_BASE_URL, INGEST_FORWARD_SECRET } from "../fixtures/env";
 
 // Regression suite for the detect-bot.ts fix: pre-fix, `if (ua) return
 // ua.isBot || UA_BOTS.some(...)` always short-circuited (parseUserAgent()
@@ -39,19 +39,38 @@ test.describe("bot detection (exercised through POST /api/track)", () => {
     expect(await usageFor(ws.id)).toBe(0);
   });
 
-  test("IP-based bot signal is caught", async ({ request }) => {
+  test("IP-based bot signal is caught (trusted client IP from the signed web proxy hop)", async ({ request }) => {
     const ws = await createTrackingWorkspace("bot-ip");
 
     const response = await request.post(`${INGEST_BASE_URL}/api/track`, {
       headers: {
         "user-agent": REAL_CHROME_UA,
-        "x-forwarded-for": "127.0.0.1",
+        "x-convrs-forward-secret": INGEST_FORWARD_SECRET,
+        "x-convrs-client-ip": "52.112.74.60", // in IP_BOTS
       },
       data: buildPageviewPayload({ websiteId: ws.projectToken! }),
     });
 
     expect(response.ok()).toBe(true);
     expect(await usageFor(ws.id)).toBe(0);
+  });
+
+  test("a client-forged X-Forwarded-For / x-debug-ip cannot inject an IP", async ({ request }) => {
+    const ws = await createTrackingWorkspace("bot-ip-forged");
+
+    const response = await request.post(`${INGEST_BASE_URL}/api/track`, {
+      headers: {
+        "user-agent": REAL_CHROME_UA,
+        "x-forwarded-for": "52.112.74.60",
+        "x-debug-ip": "52.112.74.60",
+        "x-convrs-client-ip": "52.112.74.60", // no forward secret -> ignored
+      },
+      data: buildPageviewPayload({ websiteId: ws.projectToken! }),
+    });
+
+    expect(response.ok()).toBe(true);
+    expect((await response.json()).recorded).toBe(true);
+    expect(await usageFor(ws.id)).toBe(1);
   });
 
   test("a clean request is recorded normally (negative control)", async ({ request }) => {
@@ -178,7 +197,34 @@ test.describe("POST /api/track response accuracy: `recorded` reflects what actua
     expect(response.ok()).toBe(true);
     const body = await response.json();
     expect(body.recorded).toBe(false);
+    expect(body.bot).toBe(true);
     expect(await usageFor(ws.id)).toBe(0);
+  });
+
+  // Ordering fix: bot detection used to run inside recordEvent(), AFTER the
+  // anonymous Customer upsert and the idempotency claim — so every crawler
+  // pageview created a Customer row and burned its event_id.
+  test("a bot pageview creates no Customer row and claims no idempotency key", async ({ request }) => {
+    const ws = await createTrackingWorkspace("bot-no-customer");
+    const eventId = randomToken("evt");
+    const payload = buildPageviewPayload({ websiteId: ws.projectToken!, eventId });
+
+    const botResponse = await request.post(`${INGEST_BASE_URL}/api/track`, {
+      headers: { "user-agent": "Mozilla/5.0 (compatible; ClaudeBot/1.0; +claudebot@anthropic.com)" },
+      data: payload,
+    });
+    expect(botResponse.ok()).toBe(true);
+    expect(await prisma.customer.count({ where: { workspaceId: ws.id } })).toBe(0);
+    expect(await usageFor(ws.id)).toBe(0);
+
+    // Same event_id from a real browser is still accepted — the bot never claimed it.
+    const humanResponse = await request.post(`${INGEST_BASE_URL}/api/track`, {
+      headers: { "user-agent": REAL_CHROME_UA },
+      data: payload,
+    });
+    expect((await humanResponse.json()).recorded).toBe(true);
+    expect(await prisma.customer.count({ where: { workspaceId: ws.id } })).toBe(1);
+    expect(await usageFor(ws.id)).toBe(1);
   });
 
   test("a genuinely stored event reports recorded: true", async ({ request }) => {

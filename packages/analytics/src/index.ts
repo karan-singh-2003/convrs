@@ -14,7 +14,8 @@ export type {
     CustomerSubscriptionStatus,
 } from "./mrr";
 export { AnalyticsEventSchema } from "./schemas/event.schema";
-export { detectBot } from "./utils/detect-bot";
+export { detectBot, detectBotSignals } from "./utils/detect-bot";
+export type { BotDetection, BotReason, BotSignals } from "./utils/detect-bot";
 export { getIdentityHash } from "./utils/get-identity-hash";
 export { encrypt, decrypt } from "./utils/encryption";
 export { upsertCustomer, upsertAnonymousCustomer } from "./customer";
@@ -31,5 +32,18 @@ export {parseRawConvrsExport} from "./raw-convrs-import"
 export type { RequestContext, UserAgentInfo, GeoInfo } from "./types";
 export { trackBotEvent } from "./track-bot-event";
 export type { BotTrafficEvent } from "./track-bot-event";
-export { isWorkspaceEntitled, PAST_DUE_GRACE_MS, claimWorkspaceUsage } from "./billing-access";
+export {
+    isWorkspaceEntitled,
+    PAST_DUE_GRACE_MS,
+    claimWorkspaceUsage,
+    releaseWorkspaceUsage,
+} from "./billing-access";
 export type { WorkspaceAccessState } from "./billing-access";
+export {
+    normalizeHostname,
+    isLocalHostname,
+    localhostTrackingAllowed,
+    isHostnameAuthorized,
+    resolveEventHostname,
+} from "./hostname-auth";
+export type { HostnamePolicy, EventHostResult } from "./hostname-auth";

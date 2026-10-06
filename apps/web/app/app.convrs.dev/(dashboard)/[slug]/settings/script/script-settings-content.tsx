@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Switch } from "@repo/ui";
+import { BotTraffic } from "./bot-traffic";
 import ScriptInstallationCard, {
   ScriptConfig,
 } from "./script-installation-card";
@@ -102,6 +103,7 @@ export default function ScriptSettingsContent() {
           </div>
         </div>
       </div>
+      <BotTraffic projectToken={scriptConfig.projectToken} />
     </div>
   );
 }

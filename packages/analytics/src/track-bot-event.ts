@@ -26,6 +26,13 @@ export interface BotTrafficEvent {
   status_code: number | null;
   referrer: string | null;
   source: string;
+  /** verified | spoofed | unverifiable | unknown — see apps/ingestion crawler-verification.ts */
+  verification?: string;
+  /** exact | fallback | generic — how the classifier matched the User-Agent */
+  match_type?: string;
+  classifier_version?: string;
+  /** 1 when the request carried a valid bot-traffic/API token, 0 when only the public project token. */
+  authenticated?: 0 | 1;
 }
 
 export async function trackBotEvent({

@@ -1,5 +1,9 @@
 import * as z from "zod/v4";
-import { BOT_CATEGORIES } from "@/lib/analytics/get-bot-analytics";
+import {
+  BOT_CATEGORIES,
+  BOT_GROUP_BYS,
+  BOT_VERIFICATION_STATES,
+} from "@/lib/analytics/get-bot-analytics";
 import { DATE_RANGE_INTERVAL_PRESETS } from "@/lib/analytics/constants";
 
 export const botFilteringQuerySchema = z.object({
@@ -7,9 +11,15 @@ export const botFilteringQuerySchema = z.object({
   workspaceSlug: z.string().optional(),
   domain: z.string().optional(),
   category: z.enum(BOT_CATEGORIES).optional(),
-  groupBy: z
-    .enum(["timeseries", "providers", "top_pages", "categories", "count"])
-    .default("count"),
+  verification: z.enum(BOT_VERIFICATION_STATES).optional(),
+  // "true" = events sent with a valid bot token only, "false" = public-token events only.
+  authenticated: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
+  vendor: z.string().max(100).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+  groupBy: z.enum(BOT_GROUP_BYS).default("count"),
   interval: z.enum(DATE_RANGE_INTERVAL_PRESETS).optional(),
   start: z.string().optional(),
   end: z.string().optional(),

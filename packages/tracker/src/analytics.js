@@ -870,6 +870,7 @@
 
   var _src = (_script && _script.src) || "";
 
+
   function normalizeApiEndpoint(value) {
     if (value == null) return null;
     var v = String(value).trim();
@@ -893,9 +894,20 @@
     }
   }
 
-  var _defaultEndpoint = _src
-    ? new URL("/api/track", _src).href
-    : "http://localhost:3000/api/track";
+  // Default collector/heartbeat base is the script's own origin (first-party
+  // https://convrs.dev/script.js). The raw CDN host serves static files
+  // only, so a script loaded straight from it reports to convrs.dev.
+  function collectorBase() {
+    if (!_src) return "http://localhost:3000";
+    try {
+      var origin = new URL(_src).origin;
+      return /^https:\/\/cdn\.convrs\.dev$/i.test(origin) ? "https://convrs.dev" : origin;
+    } catch (_) {
+      return "http://localhost:3000";
+    }
+  }
+
+  var _defaultEndpoint = collectorBase() + "/api/track";
   var _rawApi = attr("data-api");
   var _sanitizedApi = normalizeApiEndpoint(_rawApi);
   var _invalidApiValue = _rawApi && !_sanitizedApi ? _rawApi : null;
@@ -1595,9 +1607,7 @@
 
   // ─── LIVE HEARTBEAT ────────────────────────────────────────────────────────
   var _heartbeatInterval = null;
-  var _liveEndpoint = _src
-    ? new URL("/api/live/heartbeat", _src).href
-    : "http://localhost:3000/api/live/heartbeat";
+  var _liveEndpoint = collectorBase() + "/api/live/heartbeat";
 
   function sendHeartbeat() {
     if (!_enabled || isOptedOut()) return;

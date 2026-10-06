@@ -26,6 +26,8 @@ export const GET = withWorkspace(
       where: {
         workspaceId: workspace.id,
         ...(userId ? { userId } : {}),
+        // Bot-traffic tokens (cvbot_) are managed under Settings → Script.
+        NOT: { partialKey: { startsWith: "cvbot_" } },
       },
       select: {
         id: true,

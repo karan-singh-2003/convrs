@@ -375,7 +375,14 @@
     [vendorKey: string]: string | number;
   };
 
-  export function BotFilteringAreaChart({ category }: { category?: string }) {
+  export function BotFilteringAreaChart({
+    category,
+    filters,
+  }: {
+    category?: string;
+    /** Extra query filters, e.g. { verification: "verified", authenticated: "true" }. */
+    filters?: Record<string, string>;
+  }) {
     const { baseApiPath, queryString, start, end, interval } = useContext(AnalyticsContext);
 
     const botApiPath = useMemo(() => toBotFilteringApiPath(baseApiPath), [baseApiPath]);
@@ -385,11 +392,10 @@
       `${botApiPath}?${editQueryString(queryString, {
         groupBy: "timeseries",
         ...(category && { category }),
+        ...filters,
       })}`,
       fetcher
     );
-
-    console.log("response fo category",category,response)
 
     const chartData = useMemo(() => {
       if (!response?.data) return [];
@@ -402,7 +408,7 @@
         })
         .filter((row): row is { date: Date; values: Record<string, number> } => row !== null);
     }, [response]);
-  console.log("char data ",chartData)
+
     const vendorKeys = useMemo(() => {
       const keys = new Set<string>();
       for (const row of chartData) {
@@ -422,7 +428,7 @@
       // colorClassName: VENDOR_COLORS[index % VENDOR_COLORS.length],
       colorClassName: getVendorColor(key),
     }));
-  console.log("series",series)
+
     // Loading skeleton: show whenever we don't yet have series to render,
     // regardless of whether SWR's isLoading flag has flipped false yet.
     if (series.length === 0) {

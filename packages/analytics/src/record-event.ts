@@ -16,10 +16,17 @@ export async function recordEvent({
   req,
   payload,
   logger,
+  clientIp,
 }: {
   req: Request;
   payload: AnalyticsEvent;
   logger: FastifyBaseLogger;
+  /**
+   * Client IP resolved by the caller from a trusted source. When provided
+   * (null = unknown) it replaces the header-derived IP everywhere, since
+   * forwarding headers on `req` can be forged by the client.
+   */
+  clientIp?: string | null;
 }) {
   const {
     website_id,
@@ -45,7 +52,7 @@ export async function recordEvent({
 
   // ── Bot detection ─────────────────────────────────────────────────────────
   const uaString = req.headers.get("user-agent") || "";
-  const isBot = detectBot(req);
+  const isBot = detectBot(req, clientIp !== undefined ? { ip: clientIp } : {});
 
   if (isBot) {
     logger.info("[recordEvent] Bot detected — skipping");
@@ -85,10 +92,9 @@ export async function recordEvent({
     url: req.url,
     method: req.method,
     ip:
-      req.headers.get("x-debug-ip") ||
-      forwardedIp ||
-      req.headers.get("x-real-ip") ||
-      "unknown",
+      clientIp !== undefined
+        ? clientIp || "unknown"
+        : forwardedIp || req.headers.get("x-real-ip") || "unknown",
     userAgent: ua,
     geo: {
       country: country ?? geoFromReq.country ?? "Unknown",

@@ -33,16 +33,32 @@ export async function upsertAnonymousCustomer({
     return existing; // already seen this visitor, no-op
   }
 
-  return prisma.customer.create({
-    data: {
-      workspaceId,
-      externalId: visitorId, // visitor_id is the stable anonymous key
-      name: generateAnonymousName(visitorId),
-      country: country || null,
-      device: device || null,
-      browser: browser || null,
-    },
-  });
+  try {
+    return await prisma.customer.create({
+      data: {
+        workspaceId,
+        externalId: visitorId, // visitor_id is the stable anonymous key
+        name: generateAnonymousName(visitorId),
+        country: country || null,
+        device: device || null,
+        browser: browser || null,
+      },
+    });
+  } catch (error) {
+    // Two concurrent first pageviews for the same visitor both miss the
+    // findFirst above; the loser hits @@unique([workspaceId, externalId]).
+    // Converge on the row the winner created instead of failing the event.
+    if (!isUniqueViolation(error)) throw error;
+    const winner = await prisma.customer.findFirst({
+      where: { workspaceId, externalId: visitorId },
+    });
+    if (!winner) throw error;
+    return winner;
+  }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (error as { code?: unknown } | null)?.code === "P2002";
 }
 
 export async function upsertCustomer({
@@ -78,23 +94,37 @@ export async function upsertCustomer({
       where: { workspaceId, externalId: visitorId },
     });
     if (anon) {
-      return prisma.customer.update({
-        where: { id: anon.id },
-        data: {
-          ...data,
-          externalId: externalId ?? visitorId, // promote to real ID if available
-        },
-      });
+      try {
+        return await prisma.customer.update({
+          where: { id: anon.id },
+          data: {
+            ...data,
+            externalId: externalId ?? visitorId, // promote to real ID if available
+          },
+        });
+      } catch (error) {
+        // The real ID already belongs to another Customer (same user seen
+        // on another device/browser): update that one instead of failing.
+        if (!isUniqueViolation(error) || !externalId) throw error;
+      }
     }
   }
 
-  // Standard upsert by real externalId
+  // Standard upsert by real externalId. Concurrent upserts for a new ID can
+  // both attempt the insert; the loser retries once and takes the update path.
   if (externalId) {
-    return prisma.customer.upsert({
-      where: { workspaceId_externalId: { workspaceId, externalId } },
-      create: { workspaceId, externalId, ...data },
-      update: data,
-    });
+    const upsert = () =>
+      prisma.customer.upsert({
+        where: { workspaceId_externalId: { workspaceId, externalId } },
+        create: { workspaceId, externalId, ...data },
+        update: data,
+      });
+    try {
+      return await upsert();
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+      return upsert();
+    }
   }
 
   return prisma.customer.create({

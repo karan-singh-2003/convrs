@@ -16,7 +16,11 @@ SCHEMA >
     `country` LowCardinality(String) `json:$.country`,
     `status_code` Nullable(UInt16) `json:$.status_code`,
     `referrer` Nullable(String) `json:$.referrer`,
-    `source` LowCardinality(String) `json:$.source`
+    `source` LowCardinality(String) `json:$.source`,
+    `verification` LowCardinality(String) `json:$.verification` DEFAULT 'unknown',
+    `match_type` LowCardinality(String) `json:$.match_type` DEFAULT 'exact',
+    `classifier_version` LowCardinality(String) `json:$.classifier_version` DEFAULT '',
+    `authenticated` UInt8 `json:$.authenticated` DEFAULT 0
 
 ENGINE "MergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"

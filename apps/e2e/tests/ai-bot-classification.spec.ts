@@ -44,28 +44,32 @@ test.describe("classifyBotUserAgent()", () => {
     expect(result).toEqual({ vendor: "OpenAI", agentName: "gptbot", category: "training_crawler" });
   });
 
-  test("fallback-hint match: a UA that mentions a vendor by name but doesn't match any exact token", () => {
-    // "anthropic" isn't itself a registered token (only "claude-user",
-    // "claude-searchbot", "claudebot" are) — this must fall through to
-    // FALLBACK_VENDOR_HINTS rather than returning null.
-    const result = classifyBotUserAgent("SomeInternalTool/1.0 (built by anthropic research)");
+  test("fallback-hint match: an unregistered agent that names a vendor AND self-identifies as automated", () => {
+    // "anthropic" isn't itself a registered token — with crawler wording /
+    // a +https contact URL it falls through to FALLBACK_VENDOR_HINTS.
+    const result = classifyBotUserAgent("Anthropic-Research-Crawler/1.0 (+https://anthropic.com)");
     expect(result).toEqual({ vendor: "Anthropic", agentName: "Anthropic", category: "other" });
   });
 
-  test("fallback-hint match: xAI/Grok family", () => {
-    const result = classifyBotUserAgent("MyGrokPoweredApp/2.0");
-    expect(result?.vendor).toBe("xAI");
+  test("a vendor name alone is not enough (desktop apps / extensions mention vendors)", () => {
+    // SDK 1.1: vendor hints only apply with automation context, so a person's
+    // app or browser that mentions a vendor is never labelled a crawler.
+    expect(classifyBotUserAgent("SomeInternalTool/1.0 (built by anthropic research)")).toBeNull();
+    expect(classifyBotUserAgent("MyGrokPoweredApp/2.0")).toBeNull();
   });
 
   test("unknown UA returns null, not a guessed classification", () => {
     expect(classifyBotUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36")).toBeNull();
   });
 
-  test("a non-AI generic bot UA (not in the AI registry) also returns null", () => {
-    // This SDK's registry is AI-vendor-specific — a generic scraper/monitor
-    // UA is correctly NOT classified as an AI bot by this function (it's the
-    // separate, general bots-list.ts that would catch it in /api/track).
-    expect(classifyBotUserAgent("Pingdom.com_bot_version_1.4")).toBeNull();
+  test("a generic automated client outside the registry is reported as Other / unknown_bot", () => {
+    // SDK 1.1: generic automation is no longer dropped — it lands in the
+    // dashboard's "Other" bucket instead of disappearing.
+    expect(classifyBotUserAgent("Pingdom.com_bot_version_1.4")).toEqual({
+      vendor: "Unknown",
+      agentName: "unknown_bot",
+      category: "other",
+    });
   });
 
   test("empty/missing UA returns null rather than throwing", () => {

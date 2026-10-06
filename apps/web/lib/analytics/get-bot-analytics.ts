@@ -11,12 +11,31 @@ export const BOT_CATEGORIES = [
 ] as const;
 export type BotCategory = (typeof BOT_CATEGORIES)[number];
 
-type BotGroupBy = "timeseries" | "providers" | "top_pages" | "categories" | "count";
+/** Server-side crawler identity check, see apps/ingestion crawler-verification.ts. */
+export const BOT_VERIFICATION_STATES = ["verified", "spoofed", "unverifiable", "unknown"] as const;
+export type BotVerificationState = (typeof BOT_VERIFICATION_STATES)[number];
+
+export const BOT_GROUP_BYS = [
+  "timeseries",
+  "providers",
+  "top_pages",
+  "categories",
+  "count",
+  "crawlers",
+  "requests",
+] as const;
+type BotGroupBy = (typeof BOT_GROUP_BYS)[number];
 
 export interface BotFilteringParams {
   workspaceId: string;
   domain?: string;
   category?: BotCategory;
+  verification?: BotVerificationState;
+  /** true = only events sent with a valid bot token; false = only public-token events. */
+  authenticated?: boolean;
+  /** groupBy "requests" only: filter to one provider and cap the rows. */
+  vendor?: string;
+  limit?: number;
   groupBy?: BotGroupBy;
   interval?: string;
   start?: string | undefined;
@@ -31,6 +50,8 @@ const overviewPipe = tb.buildPipe({
   parameters: z.object({
     workspaceId: z.string(),
     domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
     start: z.string().optional(),
     end: z.string().optional(),
   }),
@@ -41,6 +62,10 @@ const overviewPipe = tb.buildPipe({
     training: z.number(),
     other: z.number(),
     unique_providers: z.number(),
+    // Present once the Tinybird deployment with verification columns is live.
+    verified: z.number().optional(),
+    spoofed: z.number().optional(),
+    authenticated: z.number().optional(),
   }),
 });
 
@@ -49,6 +74,8 @@ const timeseriesPipe = tb.buildPipe({
   parameters: z.object({
     workspaceId: z.string(),
     domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
     category: z.string().optional(),
     start: z.string(),
     end: z.string(),
@@ -67,6 +94,8 @@ const providersPipe = tb.buildPipe({
   parameters: z.object({
     workspaceId: z.string(),
     domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
     category: z.string().optional(),
     start: z.string(),
     end: z.string(),
@@ -83,6 +112,8 @@ const topPagesPipe = tb.buildPipe({
   parameters: z.object({
     workspaceId: z.string(),
     domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
     category: z.string().optional(),
     start: z.string(),
     end: z.string(),
@@ -100,12 +131,66 @@ const categoriesPipe = tb.buildPipe({
   parameters: z.object({
     workspaceId: z.string(),
     domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
     start: z.string(),
     end: z.string(),
   }),
   data: z.object({
     category: z.string(),
     requests: z.number(),
+  }),
+});
+
+const crawlersPipe = tb.buildPipe({
+  pipe: "bot_crawlers_pipe",
+  parameters: z.object({
+    workspaceId: z.string(),
+    domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
+    category: z.string().optional(),
+    start: z.string(),
+    end: z.string(),
+  }),
+  data: z.object({
+    vendor: z.string(),
+    agent_name: z.string(),
+    category: z.string(),
+    requests: z.number(),
+    verified_requests: z.number(),
+    spoofed_requests: z.number(),
+    authenticated_requests: z.number(),
+    last_seen: z.string(),
+  }),
+});
+
+const requestsPipe = tb.buildPipe({
+  pipe: "bot_requests_pipe",
+  parameters: z.object({
+    workspaceId: z.string(),
+    domain: z.string().optional(),
+    verification: z.string().optional(),
+    authenticated: z.number().optional(),
+    category: z.string().optional(),
+    vendor: z.string().optional(),
+    limit: z.number().optional(),
+    start: z.string(),
+    end: z.string(),
+  }),
+  data: z.object({
+    timestamp: z.string(),
+    vendor: z.string(),
+    agent_name: z.string(),
+    category: z.string(),
+    hostname: z.string(),
+    page: z.string(),
+    status_code: z.number().nullable(),
+    verification: z.string(),
+    match_type: z.string(),
+    classifier_version: z.string(),
+    country: z.string(),
+    authenticated: z.number(),
   }),
 });
 
@@ -123,6 +208,10 @@ export async function getBotFilteringAnalytics(params: BotFilteringParams) {
     workspaceId,
     domain,
     category,
+    verification,
+    authenticated,
+    vendor,
+    limit,
     groupBy = "count",
     interval,
     start,
@@ -143,6 +232,8 @@ export async function getBotFilteringAnalytics(params: BotFilteringParams) {
   const commonParams = {
     workspaceId,
     ...(domain && { domain }),
+    ...(verification && { verification }),
+    ...(authenticated !== undefined && { authenticated: authenticated ? 1 : 0 }),
     start: formatUTCDateTimeClickhouse(startDate),
     end: formatUTCDateTimeClickhouse(endDate),
   };
@@ -186,6 +277,22 @@ export async function getBotFilteringAnalytics(params: BotFilteringParams) {
       const response = await topPagesPipe({
         ...commonParams,
         ...(category && { category }),
+      });
+      return response.data;
+    }
+    case "crawlers": {
+      const response = await crawlersPipe({
+        ...commonParams,
+        ...(category && { category }),
+      });
+      return response.data;
+    }
+    case "requests": {
+      const response = await requestsPipe({
+        ...commonParams,
+        ...(category && { category }),
+        ...(vendor && { vendor }),
+        limit: Math.min(Math.max(limit ?? 50, 1), 500),
       });
       return response.data;
     }

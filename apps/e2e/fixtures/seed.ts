@@ -47,6 +47,9 @@ async function createWorkspace(profile: {
       slug: profile.slug,
       subscriptionStatus: "active",
       projectToken: randomToken("proj"),
+      // Every tracking fixture reports pages on example.com; ingestion only
+      // accepts events for the workspace's own domain (hostname enforcement).
+      domain: "example.com",
       ssoEmailDomain: profile.ssoEmailDomain,
       ...(profile.ssoEmailDomain && { ssoEnforcedAt: new Date() }),
     },

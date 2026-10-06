@@ -57,7 +57,29 @@ describe("GET /api/v1/analytics/bots", () => {
     const body = await res.json();
     expect(body.data).toEqual({
       total_requests: 0, ai_answers: 0, indexing: 0, training: 0, other: 0, unique_providers: 0,
+      verified: 0, spoofed: 0, authenticated: 0,
     });
+  });
+
+  it("forwards the authenticated filter as a boolean and rejects other values", async () => {
+    (getBotFilteringAnalytics as any).mockResolvedValue({ total_requests: 1, authenticated: 1 });
+    expect((await GET(req("?authenticated=true"), { params: Promise.resolve({}) })).status).toBe(200);
+    expect(getBotFilteringAnalytics).toHaveBeenLastCalledWith(expect.objectContaining({ authenticated: true }));
+    expect((await GET(req("?authenticated=false"), { params: Promise.resolve({}) })).status).toBe(200);
+    expect(getBotFilteringAnalytics).toHaveBeenLastCalledWith(expect.objectContaining({ authenticated: false }));
+    expect((await GET(req("?authenticated=yes"), { params: Promise.resolve({}) })).status).toBe(400);
+  });
+
+  it("forwards the verification filter and rejects unknown states", async () => {
+    (getBotFilteringAnalytics as any).mockResolvedValue({ total_requests: 3, verified: 3 });
+    const ok = await GET(req("?verification=verified"), { params: Promise.resolve({}) });
+    expect(ok.status).toBe(200);
+    expect(getBotFilteringAnalytics).toHaveBeenCalledWith(
+      expect.objectContaining({ verification: "verified" })
+    );
+
+    const bad = await GET(req("?verification=trusted"), { params: Promise.resolve({}) });
+    expect(bad.status).toBe(400);
   });
 
   it("paginates breakdown=providers", async () => {

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import crypto from "crypto"; // NEW
+import crypto from "crypto";
 import {
   AnalyticsEventSchema,
   recordEvent,
@@ -8,23 +8,23 @@ import {
   upsertAnonymousCustomer,
   isWorkspaceEntitled,
   claimWorkspaceUsage,
+  releaseWorkspaceUsage,
+  detectBotSignals,
+  isHostnameAuthorized,
+  localhostTrackingAllowed,
+  resolveEventHostname,
 } from "@repo/analytics";
 import { prisma } from "@repo/db";
 import email from "@repo/email";
 import UsageLimitWarningEmailModule from "@repo/email/templates/usage-limit-warning";
 import * as UAParserLib from "ua-parser-js";
 import React from "react";
-import {
-  getGeoData,
-  getGeoRegion,
-  getVercelRegion,
-  getContinent,
-} from "./get-geo-data.js";
 import { COUNTRIES, COUNTRY_NAMES_TO_CODES } from "@repo/utils";
 import { registerTrackedEvent } from "./register-tracked-event.js";
-import { redisWithTimeout } from "../lib/redis.js";
+import { getClientContext } from "../lib/client-context.js";
+import { claimIdempotencyKey, releaseIdempotencyKey } from "../lib/idempotency.js";
 
-// NEW — cookieless pseudonymous visitor ID
+// Cookieless pseudonymous visitor ID
 function getDailySalt(): string {
   const utcDate = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
   const secret = process.env.COOKIELESS_SALT_SECRET;
@@ -45,41 +45,21 @@ function computeCookielessVisitorId(ip: string, userAgent: string, hostname: str
   return crypto.createHash("sha256").update(raw).digest("hex");
 }
 
-// NEW — idempotency check for client-generated event IDs
-const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24; // 24h — matches register-tracked-event.ts's cache window
-
-async function isDuplicateTrackEvent(
-  workspaceId: string,
-  eventId: string
-): Promise<boolean> {
-  const key = `idem:track:${workspaceId}:${eventId}`;
-  try {
-    // NX + EX is atomic: only the first caller to see this key gets "OK" back.
-    const result = await redisWithTimeout.set(key, "1", {
-      nx: true,
-      ex: IDEMPOTENCY_TTL_SECONDS,
-    });
-    return result === null; // null = key already existed = duplicate
-  } catch (error) {
-    // Fail open — same posture as the revocation check in
-    // apps/web/lib/auth/options.ts and the cache in register-tracked-event.ts:
-    // a Redis blip should never block tracking.
-    console.error("[Track POST] Idempotency check failed, proceeding", {
-      key,
-      error,
-    });
-    return false;
-  }
-}
-
+/**
+ * POST /api/track. Order matters — each step only runs once the previous
+ * ones passed, so rejected and bot traffic never creates Customer rows,
+ * idempotency keys, or consumes the workspace's event quota:
+ *
+ *   validate → workspace → entitlement → hostname → block rules → bot gate
+ *   → (human only) idempotency → usage → Customer → event → goals/alerts
+ */
 export async function trackClickController(req: Request, res: Response) {
+  let usageClaimedFor: string | null = null;
+  let idempotencyKey: string | null = null;
+
   try {
-    const rawBody = req.body ?? {};
- 
-
-    const normalized = normalizeTrackPayload(rawBody);
-    
-
+    // ── 1. Validate ──────────────────────────────────────────────────────────
+    const normalized = normalizeTrackPayload(req.body ?? {});
     const parsed = AnalyticsEventSchema.safeParse(normalized);
     if (!parsed.success) {
       console.warn("[Track POST] Invalid payload:", parsed.error.flatten());
@@ -90,28 +70,25 @@ export async function trackClickController(req: Request, res: Response) {
       });
     }
 
-    // ── IP EXTRACTION (GEO handled in recordEvent) ──────────────────────────────
-    const ip =
-      ((req.headers["x-forwarded-for"] as string | undefined)
-        ?.split(",")[0]
-        ?.trim() ??
-        "") ||
-      req.socket?.remoteAddress ||
-      req.ip ||
-      "";
-
-    // CHANGED — pulled UA header up here, reused below instead of reading twice
-    const uaHeader = (req.headers["user-agent"] as string) || "";
-
-    // ── ENFORCE TRACKING FILTERS ─────────────────────────────────────────────
     const websiteId = parsed.data.website_id;
     if (!websiteId) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing website ID in payload",
-      });
+      return res.status(400).json({ success: false, error: "Missing website ID in payload" });
     }
 
+    // The event hostname is the page URL's host. The tracker's data-domain
+    // hint is a cookie-scope setting and must never decide which site an
+    // event belongs to.
+    const host = resolveEventHostname(parsed.data.url, headerValue(req, "origin"));
+    if (!host.ok) {
+      return res.status(host.reason === "invalid_url" ? 400 : 403).json({
+        success: false,
+        error: host.reason === "invalid_url" ? "Invalid page URL" : "Origin does not match page URL",
+        code: host.reason,
+      });
+    }
+    const eventHostname = host.hostname;
+
+    // ── 2. Resolve workspace ─────────────────────────────────────────────────
     const workspace = await prisma.workspace.findUnique({
       where: { projectToken: websiteId },
       select: {
@@ -133,155 +110,106 @@ export async function trackClickController(req: Request, res: Response) {
       },
     });
 
-    const workspaceOwner = await prisma.workspaceUsers.findFirst({
-      where: { workspaceId: workspace?.id, role: "owner" },
-      select: { user: { select: { id: true } } },
-    });
-
-    const userId = workspaceOwner?.user?.id ?? null;
-
     if (!workspace) {
-      return res.status(404).json({
-        success: false,
-        error: "Workspace not found",
-      });
+      return res.status(404).json({ success: false, error: "Workspace not found" });
     }
 
+    // ── 3. Entitlement ───────────────────────────────────────────────────────
     // D6: same entitlement policy as the dashboard (apps/web/lib/billing/entitlement.ts)
     // — active/canceling always pass, trialing while unexpired, past_due for a
     // 7-day grace from paymentFailedAt, everything else (inactive/canceled/expired) blocked.
     if (!isWorkspaceEntitled(workspace)) {
+      return res.status(403).json({ success: false, error: "Subscription inactive" });
+    }
+
+    // ── 4. Hostname authorization ────────────────────────────────────────────
+    if (!isHostnameAuthorized(eventHostname, workspace, { allowLocalhost: localhostTrackingAllowed() })) {
+      console.warn("[Track] Rejected event from unauthorized hostname", {
+        workspaceId: workspace.id,
+        hostname: eventHostname,
+      });
       return res.status(403).json({
         success: false,
-        error: "Subscription inactive",
+        error: "Hostname not allowed for this website",
+        code: "hostname_not_allowed",
       });
     }
 
+    // ── 5. Block rules (trusted IP + geo only) ───────────────────────────────
+    const client = getClientContext(req);
+    const ip = client.ip;
     const eventPage = (safePath(parsed.data.url) || "").toLowerCase();
-    const eventHostname = (parsed.data.hostname || "").toLowerCase();
 
-    const isKnownHost =
-      workspace.allowAllDomains ||
-      workspace.allowedHostnames.some((h) => h.toLowerCase() === eventHostname) ||
-      (!!workspace.domain &&
-        (eventHostname === workspace.domain || eventHostname.endsWith(`.${workspace.domain}`)));
-
-    if (!isKnownHost) {
-      console.warn("[Track] Event from unrecognized hostname", eventHostname);
+    if (workspace.blockedHostnames?.some((h: string) => h && eventHostname === h.toLowerCase())) {
+      return res.status(403).json({ success: false, error: "Blocked by hostname filter" });
     }
 
-    // Hostname filter
-    if (
-      workspace.blockedHostnames &&
-      workspace.blockedHostnames.length > 0 &&
-      workspace.blockedHostnames.some(
-        (h: string) => h && eventHostname === h.toLowerCase()
-      )
-    ) {
-      return res.status(403).json({
-        success: false,
-        error: "Blocked by hostname filter",
-      });
-    }
-
-    // IP filter (now supports CIDR via ip-range-check)
-    if (
-      workspace.blockedIpAddresses &&
-      workspace.blockedIpAddresses.length > 0
-    ) {
+    if (ip && workspace.blockedIpAddresses?.length) {
       const ipRangeCheck = (await import("ip-range-check")).default;
-      if (
-        workspace.blockedIpAddresses.some((blocked: string) =>
-          ipRangeCheck(ip, blocked)
-        )
-      ) {
-        return res.status(403).json({
-          success: false,
-          error: "Blocked by IP filter",
-        });
+      if (workspace.blockedIpAddresses.some((blocked: string) => ipRangeCheck(ip, blocked))) {
+        return res.status(403).json({ success: false, error: "Blocked by IP filter" });
       }
     }
 
-    // Page filter — blocks pages starting with the blocked path
-    if (
-      workspace.blockedPages &&
-      workspace.blockedPages.length > 0 &&
-      workspace.blockedPages.some(
-        (p: string) => p && eventPage.startsWith(p.toLowerCase())
-      )
-    ) {
-      return res.status(403).json({
-        success: false,
-        error: "Blocked by page filter",
-      });
+    if (workspace.blockedPages?.some((p: string) => p && eventPage.startsWith(p.toLowerCase()))) {
+      return res.status(403).json({ success: false, error: "Blocked by page filter" });
     }
 
+    const visitorCountry = client.geo.country ?? "";
+    const isCountryBlocked =
+      !!visitorCountry &&
+      (workspace.blockedCountries?.some((country) => {
+        const value = country.trim();
+        if (COUNTRIES[value.toUpperCase()]) return value.toUpperCase() === visitorCountry;
+        return COUNTRY_NAMES_TO_CODES[value.toLowerCase()] === visitorCountry;
+      }) ??
+        false);
+
+    if (isCountryBlocked) {
+      return res.status(403).json({ success: false, error: "Blocked by country filter" });
+    }
+
+    // ── 6. Bot gate — before any Customer / idempotency / quota state ────────
+    const uaHeader = headerValue(req, "user-agent") ?? "";
+    const bot = detectBotSignals({
+      userAgent: uaHeader,
+      referer: parsed.data.referrer ?? headerValue(req, "referer"),
+      ip,
+      method: req.method,
+      url: `http://ingest.local${req.originalUrl}`,
+    });
+
+    if (bot.isBot) {
+      return res.json({ success: true, recorded: false, bot: true });
+    }
+
+    // ── 7. Usage fast-path reject (keeps over-limit traffic from burning
+    //       idempotency keys; the atomic claim below is authoritative) ───────
     const usageLimit = workspace.usageLimit ?? 0;
     const usage = workspace.usage ?? 0;
-
     if (usageLimit > 0 && usage >= usageLimit) {
-      return res.status(403).json({
-        success: false,
-        error: "Usage limit exceeded",
-        code: "exceeded_limit",
-      });
+      return res.status(403).json({ success: false, error: "Usage limit exceeded", code: "exceeded_limit" });
     }
 
-    const nativeReq = toNativeRequest(req);
-    const geo = getGeoData(nativeReq);
-    const region = getGeoRegion(nativeReq);
-    const vercelRegion = getVercelRegion();
-    const continent = getContinent(nativeReq);
-
-    // Country filter
-    const visitorCountry = (geo.country ?? "").toUpperCase();
-
-    const isBlocked =
-      workspace.blockedCountries?.some((country) => {
-        const value = country.trim();
-        if (COUNTRIES[value.toUpperCase()]) {
-          return value.toUpperCase() === visitorCountry;
-        }
-        const code = COUNTRY_NAMES_TO_CODES[value.toLowerCase()];
-        return code === visitorCountry;
-      }) ?? false;
-
-    if (isBlocked) {
-      return res.status(403).json({
-        success: false,
-        error: "Blocked by country filter",
-      });
-    }
-
-
-
-    // ── UA PARSING ───────────────────────────────────────────────────────────
-    // CHANGED — reuse uaHeader instead of re-reading req.headers["user-agent"]
-    const ua = uaHeader;
-    const parsedUA = new UAParserLib.UAParser(ua).getResult();
-
-    const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
-
-    const deviceName = safe(parsedUA.device.type || "desktop");
-    const browserName = safe(parsedUA.browser.name);
-
-    // NEW — resolve the effective visitor ID before anything downstream uses it
     const isCookielessPayload = parsed.data.cookieless === true;
+    if (isCookielessPayload && !ip) {
+      console.warn("[Track POST] Cookieless event without a trusted client IP — visitors will collapse", {
+        workspaceId: workspace.id,
+        source: client.source,
+      });
+    }
     const effectiveVisitorId: string | null | undefined = isCookielessPayload
-      ? computeCookielessVisitorId(ip, uaHeader, eventHostname || workspace.domain || "")
+      ? computeCookielessVisitorId(ip ?? "", uaHeader, eventHostname)
       : parsed.data.visitor_id;
 
-    // ── IDEMPOTENCY ──────────────────────────────────────────────────────────
+    // ── 8. Idempotency ───────────────────────────────────────────────────────
     // Dedupe a replayed/duplicated delivery of the same client-generated
-    // event (e.g. a captured request resent to inflate usage or pollute
-    // analytics). Older cached tracker builds don't send event_id — skip the
-    // check for them rather than reject, so they keep working unchanged.
+    // event. Older cached tracker builds don't send event_id — skip the check
+    // for them rather than reject, so they keep working unchanged.
     if (parsed.data.event_id) {
-      const isDuplicate = await isDuplicateTrackEvent(
-        workspace.id,
-        parsed.data.event_id
-      );
-      if (isDuplicate) {
+      idempotencyKey = `idem:track:${workspace.id}:${parsed.data.event_id}`;
+      if ((await claimIdempotencyKey(idempotencyKey)) === "duplicate") {
+        idempotencyKey = null;
         return res.json({
           success: true,
           recorded: false,
@@ -291,178 +219,175 @@ export async function trackClickController(req: Request, res: Response) {
       }
     }
 
-    // ── IDENTIFY ─────────────────────────────────────────────────────────────
+    // ── 9. Usage — atomic guarded increment, claimed before anything is stored
+    if (!(await claimWorkspaceUsage(workspace.id, usageLimit)) && usageLimit > 0) {
+      await rollback();
+      return res.status(403).json({ success: false, error: "Usage limit exceeded", code: "exceeded_limit" });
+    }
+    usageClaimedFor = workspace.id;
+
+    // ── 10. Customer ─────────────────────────────────────────────────────────
+    const parsedUA = new UAParserLib.UAParser(uaHeader).getResult();
+    const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
+    const deviceName = safe(parsedUA.device.type || "desktop");
+    const browserName = safe(parsedUA.browser.name);
+    const geoCountry = client.geo.country ?? "Unknown";
+
     let customer = null;
-
-
-    // CHANGED — identify is not meaningful in cookieless mode (no persistent
-    // visitor to attach traits to), so it's skipped entirely rather than
-    // upserting a customer keyed to a same-day-only pseudonymous hash.
+    // identify is not meaningful in cookieless mode (no persistent visitor to
+    // attach traits to), so it's skipped rather than upserting a customer
+    // keyed to a same-day-only pseudonymous hash.
     if (parsed.data.type === "identify" && !isCookielessPayload) {
-
       customer = await upsertCustomer({
         workspaceId: workspace.id,
         traits: (parsed.data.traits ?? {}) as Record<string, any>,
         visitorId: effectiveVisitorId ?? undefined,
-        geo: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
+        geo: COUNTRIES[geoCountry] ?? geoCountry,
         device: deviceName,
         browser: browserName,
       });
-    }
-
-    // ── PAGEVIEW → create/find anonymous customer ─────────────────────────────
-    // CHANGED — uses effectiveVisitorId instead of parsed.data.visitor_id
-    else if (parsed.data.type === "pageview" && effectiveVisitorId) {
-
+    } else if (parsed.data.type === "pageview" && effectiveVisitorId) {
       customer = await upsertAnonymousCustomer({
         workspaceId: workspace.id,
         visitorId: effectiveVisitorId,
-        country: COUNTRIES[geo.country] ?? geo.country ?? "Unknown",
+        country: COUNTRIES[geoCountry] ?? geoCountry,
         device: deviceName,
         browser: browserName,
       });
     }
 
-    // ── ENRICH PAYLOAD ───────────────────────────────────────────────────────
+    // ── 11. Event ────────────────────────────────────────────────────────────
+    const workspaceOwner = await prisma.workspaceUsers.findFirst({
+      where: { workspaceId: workspace.id, role: "owner" },
+      select: { user: { select: { id: true } } },
+    });
+
     const enrichedPayload = {
       ...parsed.data,
-      visitor_id: effectiveVisitorId, // NEW — overwrite client-sent placeholder with server-computed hash when cookieless
-
+      hostname: eventHostname,
+      visitor_id: effectiveVisitorId, // server-computed hash replaces the client placeholder when cookieless
       workspace_id: workspace.id,
-      user_id: userId || "",
-      customer_id: customer?.id ?? null,
-
+      user_id: workspaceOwner?.user?.id ?? "",
+      customer_id: customer?.id ?? "",
       timestamp: parsed.data.timestamp
         ? parsed.data.timestamp.replace("T", " ").replace("Z", "")
         : new Date().toISOString().replace("T", " ").replace("Z", ""),
-
-      ua,
-
+      ua: uaHeader,
       device: deviceName,
       device_model: safe(parsedUA.device.model),
       device_vendor: safe(parsedUA.device.vendor),
-
       browser: browserName,
       browser_version: safe(parsedUA.browser.version),
-
       os: safe(parsedUA.os.name),
       os_version: safe(parsedUA.os.version),
-
       engine: safe(parsedUA.engine.name),
       engine_version: safe(parsedUA.engine.version),
-
       cpu_architecture: safe(parsedUA.cpu.architecture),
-
       ip: ip ?? null,
-
       event_properties: JSON.stringify(parsed.data.props ?? {}),
-
       bot: 0,
-
-      country: geo.country ?? "Unknown",
-      city: geo.city ?? "Unknown",
-      latitude: geo.latitude ?? "Unknown",
-      longitude: geo.longitude ?? "Unknown",
-      region: region ?? "Unknown",
-      continent: continent ?? "Unknown",
-      vercelRegion: vercelRegion ?? "Unknown",
+      country: geoCountry,
+      city: client.geo.city ?? "Unknown",
+      latitude: client.geo.latitude ?? "Unknown",
+      longitude: client.geo.longitude ?? "Unknown",
+      region: client.geo.region ?? "Unknown",
+      continent: client.geo.continent ?? "Unknown",
+      vercelRegion: "Unknown",
     };
 
-
-
     const recordedEvent = await recordEvent({
-      req: nativeReq,
-      payload: {
-        ...enrichedPayload,
-        customer_id: customer?.id ?? "",
-        workspace_id: workspace.id,
-      },
+      req: toNativeRequest(req),
+      payload: enrichedPayload as any,
       logger: console as any,
+      clientIp: ip,
     });
 
-    if (recordedEvent) {
-      // Atomic guarded increment — NOT a plain `update`. The early usageLimit
-      // check above (line ~215) is only a cheap fast-path reject; two concurrent
-      // requests can both pass it before either increments, over-running the
-      // limit. `claimWorkspaceUsage` (shared with track-ai-bot.ts) gates the
-      // increment itself on `usage < usageLimit` in the same UPDATE, so the DB
-      // row lock does the serialization instead.
-      const claimed = await claimWorkspaceUsage(workspace.id, usageLimit);
+    if (!recordedEvent) {
+      await rollback();
+      return res.json({
+        success: true,
+        recorded: false,
+        ...(isCookielessPayload && { visitorId: effectiveVisitorId }),
+      });
+    }
+    usageClaimedFor = null;
+    idempotencyKey = null;
 
-      if (!claimed && usageLimit > 0) {
-        return res.status(403).json({
-          success: false,
-          error: "Usage limit exceeded",
-          code: "exceeded_limit",
-        });
-      }
+    // ── 12. Goals / tracked-event registry / alerts (fire-and-forget) ────────
+    void registerTrackedEvent({
+      workspaceId: workspace.id,
+      eventName: parsed.data.event_name ?? parsed.data.type ?? "unknown",
+      eventType: recordedEvent.event_type,
+      trigger: recordedEvent.trigger,
+    });
 
-      const updatedWorkspace = await prisma.workspace.findUniqueOrThrow({
+    void prisma.workspace
+      .findUniqueOrThrow({
         where: { id: workspace.id },
         select: { usage: true, usageLimit: true, slug: true },
-      });
-
-      void registerTrackedEvent({
-        workspaceId: workspace.id,
-        eventName: parsed.data.event_name ?? parsed.data.type ?? "unknown",
-        eventType: recordedEvent.event_type,
-        trigger: recordedEvent.trigger,
-      });
-
-      void maybeSendUsageLimitWarning({
-        workspaceId: workspace.id,
-        workspaceName: workspace.name,
-        workspaceSlug: updatedWorkspace.slug ?? workspace.slug,
-        usageBefore: usage,
-        usageAfter: updatedWorkspace.usage,
-        usageLimit: updatedWorkspace.usageLimit,
-      }).catch((error) => {
+      })
+      .then((updated) =>
+        maybeSendUsageLimitWarning({
+          workspaceId: workspace.id,
+          workspaceName: workspace.name,
+          workspaceSlug: updated.slug ?? workspace.slug,
+          usageBefore: usage,
+          usageAfter: updated.usage,
+          usageLimit: updated.usageLimit,
+        })
+      )
+      .catch((error) => {
         console.error("[Track POST] Failed to send usage warning", error);
       });
 
-      void sendAlertsForEvent({
-        workspaceId: workspace.id,
-        eventName: parsed.data.event_name ?? parsed.data.type ?? "event",
-        event: {
-          ...recordedEvent,
-          workspaceName: workspace.name,
-        },
-      });
-    }
+    void sendAlertsForEvent({
+      workspaceId: workspace.id,
+      eventName: parsed.data.event_name ?? parsed.data.type ?? "event",
+      event: {
+        ...recordedEvent,
+        workspaceName: workspace.name,
+      },
+    });
 
-    // CHANGED — return the server-computed visitorId so cookieless clients
-    // (both the vanilla script and the SDK's onEventSendSuccess) can cache it
-    //
-    // `recorded` reflects whether recordEvent() actually stored the event —
-    // it returns null (and this stays false) for a detected bot, same as it
-    // already did for a deliberately-dropped duplicate above. This used to
-    // be hardcoded `true` unconditionally, which meant a bot-dropped event
-    // got exactly the same success response as a real one, with nothing in
-    // the API contract to tell them apart. No caller in this codebase
-    // (tracker, @convrs/sdk, or otherwise) reads this field today, so
-    // fixing its accuracy has no behavioral impact on existing clients.
+    // The server-computed visitorId is returned so cookieless clients can cache it.
     return res.json({
       success: true,
-      recorded: !!recordedEvent,
+      recorded: true,
       ...(isCookielessPayload && { visitorId: effectiveVisitorId }),
     });
   } catch (error) {
     console.error("[Track POST] Error:", error);
+    await rollback().catch(() => undefined);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
+
+  async function rollback() {
+    if (usageClaimedFor) await releaseWorkspaceUsage(usageClaimedFor);
+    if (idempotencyKey) await releaseIdempotencyKey(idempotencyKey);
+    usageClaimedFor = null;
+    idempotencyKey = null;
+  }
 }
 
-function normalizeTrackPayload(raw: Record<string, any>) {
+function headerValue(req: Request, name: string): string | null {
+  const value = req.headers[name];
+  const first = Array.isArray(value) ? value[0] : value;
+  return first ? first : null;
+}
+
+export function normalizeTrackPayload(raw: Record<string, any>) {
   const websiteId = raw.website_id || raw.websiteId;
   const visitorId = raw.visitor_id || raw.visitorId;
   const sessionId = raw.session_id || raw.sessionId;
   const href = raw.url || raw.href;
-  const hostname = raw.hostname || raw.domain || safeHostname(href);
-  const cookieless = raw.cookieless === true; // NEW
-  const eventId = raw.event_id || raw.eventId; // NEW — idempotency key, absent on older cached tracker builds
+  // Always the page URL's host — never the client-supplied `domain` /
+  // `hostname` fields, which come from the tracker's data-domain attribute.
+  const hostname = safeHostname(href);
+  const cookieless = raw.cookieless === true;
+  const eventId = raw.event_id || raw.eventId; // idempotency key, absent on older cached tracker builds
 
   let utmParams: Record<string, string | null> = {
     utm_source: null,
@@ -498,8 +423,8 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     viewport_w: raw.viewport_w ?? raw.viewport?.width ?? 0,
     viewport_h: raw.viewport_h ?? raw.viewport?.height ?? 0,
     timestamp: raw.timestamp || new Date().toISOString(),
-    cookieless, // NEW — carried through AnalyticsEventSchema, read in the controller above
-    event_id: eventId, // NEW — carried through AnalyticsEventSchema, read in the controller below
+    cookieless,
+    event_id: eventId,
     ...utmParams,
   };
 
@@ -511,10 +436,7 @@ function normalizeTrackPayload(raw: Record<string, any>) {
     normalized.trigger = "page";
   } else if (raw.type === "custom") {
     const customEventName =
-      raw.event_name ??
-      raw.eventName ??
-      raw.extraData?.eventName ??
-      "unknown_event";
+      raw.event_name ?? raw.eventName ?? raw.extraData?.eventName ?? "unknown_event";
 
     const customProps: Record<string, any> = {};
     if (raw.extraData && typeof raw.extraData === "object") {

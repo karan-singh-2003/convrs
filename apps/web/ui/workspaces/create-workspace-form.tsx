@@ -149,7 +149,7 @@ export function CreateWorkspaceForm({
     >
       {/* Project Name */}
       <div className="flex flex-col gap-y-2.5">
-        <Label className="font-display text-neutral-600">Project Name</Label>
+        <Label className="font-display text-content-default">Project Name</Label>
         <Input
           {...register("name")}
           id="name"
@@ -188,10 +188,10 @@ export function CreateWorkspaceForm({
 
       {/* Domain */}
       <div>
-        <Label className="font-display text-neutral-600">Domain</Label>
+        <Label className="font-display text-content-default">Domain</Label>
 
         <div className="mt-2 flex min-w-0">
-          <span className="inline-flex shrink-0 items-center rounded-l-lg border border-r-0 border-neutral-300 bg-neutral-50 px-2 sm:px-3 font-medium font-display text-neutral-500 text-[13px] sm:text-[14.5px]">
+          <span className="inline-flex shrink-0 items-center rounded-l-lg border border-r-0 border-border-default bg-bg-muted px-2 sm:px-3 font-medium font-display text-content-subtle text-[13px] sm:text-[14.5px]">
             https://
           </span>
 
@@ -213,7 +213,7 @@ export function CreateWorkspaceForm({
       {/* Time zone */}
       {withTimezone && (
         <div>
-          <Label className="font-display text-neutral-600">Time zone</Label>
+          <Label className="font-display text-content-default">Time zone</Label>
 
           <div className="mt-2">
             <Combobox
@@ -227,13 +227,13 @@ export function CreateWorkspaceForm({
               trigger={
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between font-display rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2.5 text-[14.5px] text-neutral-500 transition hover:bg-neutral-200"
+                  className="flex w-full items-center justify-between font-display rounded-lg border border-border-default bg-bg-card px-4 py-2.5 text-[14.5px] text-content-subtle transition hover:bg-bg-emphasis"
                 >
                   <span className="truncate">
                     {selectedTimezone?.label ?? "Select timezone"}
                   </span>
 
-                  <ChevronDown className="h-4 w-4 shrink-0 text-neutral-500" />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-content-subtle" />
                 </button>
               }
             />
@@ -250,7 +250,7 @@ export function CreateWorkspaceForm({
         type="submit"
         loading={isSubmitting || isSubmitSuccessful}
         text="Create workspace"
-        className="text-white font-display"
+        className="font-display"
       />
     </form>
   );

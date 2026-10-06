@@ -41,9 +41,18 @@
     try { new URL(v, window.location.href); return v; } catch (_) { return null; }
   }
 
-  var _defaultEndpoint = _src
-    ? new URL("/api/track", _src).href
-    : "http://localhost:3000/api/track";
+  // Default collector/heartbeat base is the script's own origin (first-party
+  // https://convrs.dev/cookieless-script.js). The raw CDN host serves static
+  // files only, so a script loaded straight from it reports to convrs.dev.
+  function collectorBase() {
+    if (!_src) return "http://localhost:3000";
+    try {
+      var origin = new URL(_src).origin;
+      return /^https:\/\/cdn\.convrs\.dev$/i.test(origin) ? "https://convrs.dev" : origin;
+    } catch (_) { return "http://localhost:3000"; }
+  }
+
+  var _defaultEndpoint = collectorBase() + "/api/track";
   var _rawApi = attr("data-api");
   var _sanitizedApi = normalizeApiEndpoint(_rawApi);
   var _endpoint = _sanitizedApi || _defaultEndpoint;
@@ -154,6 +163,7 @@
 
   // Placeholder only — overwritten by the server-computed hash after the
   // first successful send. Never persisted beyond this tab session.
+  var _hasServerVisitorId = !!sessionGet(VISITOR_CACHE_KEY);
   var _cachedVisitorId = sessionGet(VISITOR_CACHE_KEY) || uuid();
 
   function getVisitorId() { return _cachedVisitorId; }
@@ -244,8 +254,11 @@
         .then(function (res) { return res.json().catch(function () { return null; }); })
         .then(function (json) {
           if (json && typeof json.visitorId === "string" && json.visitorId) {
+            var firstServerId = !_hasServerVisitorId;
             _cachedVisitorId = json.visitorId;
+            _hasServerVisitorId = true;
             sessionSet(VISITOR_CACHE_KEY, json.visitorId);
+            if (firstServerId) sendHeartbeat();
             window.analytics.visitorId = json.visitorId;
           }
           if (typeof callback === "function") callback({ status: 200 });
@@ -367,12 +380,13 @@
 
   // ─── LIVE HEARTBEAT ────────────────────────────────────────────────────────
   var _heartbeatInterval = null;
-  var _liveEndpoint = _src
-    ? new URL("/api/live/heartbeat", _src).href
-    : "http://localhost:3000/api/live/heartbeat";
+  var _liveEndpoint = collectorBase() + "/api/live/heartbeat";
 
   function sendHeartbeat() {
     if (!_enabled || isOptedOut() || document.hidden) return;
+    // Until the server has returned this visitor's hashed ID, getVisitorId()
+    // is a random placeholder — reporting it would show a phantom live visitor.
+    if (!_hasServerVisitorId) return;
     var body = JSON.stringify({
       workspaceId: _websiteId,
       visitorId: getVisitorId(),

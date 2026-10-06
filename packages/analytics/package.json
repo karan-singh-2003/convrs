@@ -21,6 +21,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@convrs/ai-bot-sdk": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/email": "workspace:*",
     "@repo/utils": "workspace:*",

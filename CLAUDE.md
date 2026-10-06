@@ -136,6 +136,8 @@ These are worth knowing about before you assume something is broken or duplicate
 
 **Vercel / domains API**: `VERCEL_PROJECT_ID`, `TEAM_ID_VERCEL`, `VERCEL_API_KEY`, `VERCEL`, `VERCEL_ENV`, `NEXT_PUBLIC_VERCEL_ENV`, `VERCEL_REGION`
 
+**Ingestion trust policy**: `INGEST_FORWARD_SECRET` (shared by apps/web `/api/track` proxy and apps/ingestion), `CLIENT_IP_HEADER`, `TRUST_PROXY`, `TRACKING_ALLOW_LOCALHOST` — see `apps/ingestion/CLAUDE.md`
+
 **App / misc**: `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_DOMAIN`, `NEXT_PUBLIC_NGROK_URL`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `CRON_SECRET`, `NODE_ENV`, `PORT`, `BASE_URL`, `INGEST_API_URL`, `COOKIELESS_SALT_SECRET`, `ENCRYPTION_KEY`
 
 This list was gathered by grepping `process.env.*` usage and is not guaranteed exhaustive.

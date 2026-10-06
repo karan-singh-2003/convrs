@@ -133,7 +133,8 @@ export const REFERRER_BOTS = [
 ];
 
 export const IP_BOTS = [
-  "127.0.0.1", // localhost
+  // Loopback is deliberately absent: with a trusted client IP it is only
+  // ever seen in local development, never from a real public visitor.
 
   // bot IPs from Tinybird dataset
   "52.112.74.60",

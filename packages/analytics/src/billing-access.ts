@@ -85,3 +85,14 @@ export async function claimWorkspaceUsage(
   });
   return guard.count > 0;
 }
+
+/**
+ * Give back one unit claimed by `claimWorkspaceUsage` when the event it was
+ * claimed for could not be stored. Never takes usage below zero.
+ */
+export async function releaseWorkspaceUsage(workspaceId: string): Promise<void> {
+  await prisma.workspace.updateMany({
+    where: { id: workspaceId, usage: { gt: 0 } },
+    data: { usage: { decrement: 1 } },
+  });
+}
