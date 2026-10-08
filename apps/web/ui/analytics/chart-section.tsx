@@ -527,6 +527,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
                   showConversions={showConversions}
                   totalEvents={totalEvents}
                   percentageChanges={percentageChanges}
+                  liveVisitorsCount={liveVisitorsCount}
                   tab={tab.id}
                   tabHref={(id) =>
                     queryParams({
