@@ -27,50 +27,7 @@ type PieChartProps<T extends PieSlice> = {
   /** Content rendered in the empty center of a donut (e.g. a total). Ignored for innerRadiusRatio = 0. */
   centerContent?: React.ReactNode;
   emptyState?: React.ReactNode;
-  /** Rounds slice corners (px). Default 0. */
-  cornerRadius?: number;
-  /** Render each slice's label outside the ring with a leader line. */
-  showLabels?: boolean;
-  /** Content (e.g. icons) drawn at each slice's center; skipped for slivers. */
-  renderSliceContent?: (slice: T) => React.ReactNode;
 };
-
-// Horizontal room reserved on each side for outside labels, and the leader
-// line geometry (radial segment, then a short horizontal run).
-const LABEL_SPACE_X = 124;
-const LABEL_SPACE_Y = 20;
-const LEADER_RADIAL = 14;
-const LEADER_HORIZONTAL = 14;
-const LABEL_MIN_GAP = 16;
-// Slices narrower than this (radians) don't get inside content.
-const MIN_CONTENT_ANGLE = 0.3;
-
-type PlacedLabel = {
-  id: string;
-  label: string;
-  side: 1 | -1;
-  start: [number, number];
-  elbow: [number, number];
-  y: number;
-};
-
-// Pushes labels on one side apart vertically so neighbours never overlap.
-function spreadLabels(labels: PlacedLabel[], maxY: number) {
-  const sorted = [...labels].sort((a, b) => a.y - b.y);
-  for (let i = 1; i < sorted.length; i++) {
-    sorted[i].y = Math.max(sorted[i].y, sorted[i - 1].y + LABEL_MIN_GAP);
-  }
-  // If the stack ran off the bottom, shift it back up as a block.
-  const overflow = (sorted.at(-1)?.y ?? 0) - maxY;
-  if (overflow > 0) {
-    for (let i = sorted.length - 1; i >= 0; i--) {
-      const next = sorted[i + 1];
-      sorted[i].y -= overflow;
-      if (next) sorted[i].y = Math.min(sorted[i].y, next.y - LABEL_MIN_GAP);
-    }
-  }
-  return sorted;
-}
 
 export function PieChart<T extends PieSlice>(props: PieChartProps<T>) {
   return (
@@ -96,18 +53,10 @@ function PieChartInner<T extends PieSlice>({
   renderTooltip,
   centerContent,
   emptyState,
-  cornerRadius = 0,
-  showLabels = false,
-  renderSliceContent,
 }: PieChartProps<T> & { width: number; height: number }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const radius = showLabels
-    ? Math.max(
-        Math.min(width / 2 - LABEL_SPACE_X, height / 2 - LABEL_SPACE_Y),
-        Math.min(width, height) / 4
-      )
-    : Math.min(width, height) / 2;
+  const radius = Math.min(width, height) / 2;
   const outerRadius = radius - 4;
   const innerRadius = outerRadius * innerRadiusRatio;
 
@@ -132,38 +81,8 @@ function PieChartInner<T extends PieSlice>({
             outerRadius={outerRadius}
             innerRadius={innerRadius}
             padAngle={padAngle}
-            cornerRadius={cornerRadius}
           >
-            {(pie) => {
-              // Geometry for outside labels and inside content, from each
-              // arc's mid-angle (visx: 0 = 12 o'clock, clockwise).
-              const point = (angle: number, r: number): [number, number] => [
-                Math.sin(angle) * r,
-                -Math.cos(angle) * r,
-              ];
-
-              const placed: PlacedLabel[] = showLabels
-                ? pie.arcs.map((arc) => {
-                    const mid = (arc.startAngle + arc.endAngle) / 2;
-                    const elbow = point(mid, outerRadius + LEADER_RADIAL);
-                    return {
-                      id: arc.data.id,
-                      label: arc.data.label,
-                      side: elbow[0] >= 0 ? 1 : -1,
-                      start: point(mid, outerRadius + 3),
-                      elbow,
-                      y: elbow[1],
-                    };
-                  })
-                : [];
-              const maxY = height / 2 - 8;
-              const labels = [
-                ...spreadLabels(placed.filter((l) => l.side === 1), maxY),
-                ...spreadLabels(placed.filter((l) => l.side === -1), maxY),
-              ];
-
-              return (
-              <>
+            {(pie) => (
               <AnimatePresence>
                 {pie.arcs.map((arc) => {
                   const slice = arc.data;
@@ -187,63 +106,7 @@ function PieChartInner<T extends PieSlice>({
                   );
                 })}
               </AnimatePresence>
-
-              {labels.map((l) => {
-                const isDimmed = hoveredId !== null && hoveredId !== l.id;
-                const endX = l.elbow[0] + LEADER_HORIZONTAL * l.side;
-                return (
-                  <g
-                    key={`label-${l.id}`}
-                    className="pointer-events-none transition-opacity duration-150"
-                    opacity={isDimmed ? 0.35 : 1}
-                  >
-                    <polyline
-                      points={`${l.start[0]},${l.start[1]} ${l.elbow[0]},${l.y} ${endX},${l.y}`}
-                      fill="none"
-                      className="text-border-emphasis"
-                      stroke="currentColor"
-                      strokeWidth={1}
-                    />
-                    <text
-                      x={endX + 6 * l.side}
-                      y={l.y}
-                      dominantBaseline="middle"
-                      textAnchor={l.side === 1 ? "start" : "end"}
-                      className="fill-content-default font-alexandria text-[12.5px]"
-                    >
-                      {l.label}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {renderSliceContent &&
-                pie.arcs.map((arc) => {
-                  if (arc.endAngle - arc.startAngle < MIN_CONTENT_ANGLE) return null;
-                  const content = renderSliceContent(arc.data);
-                  if (!content) return null;
-                  const [x, y] = point(
-                    (arc.startAngle + arc.endAngle) / 2,
-                    (innerRadius + outerRadius) / 2
-                  );
-                  return (
-                    <foreignObject
-                      key={`content-${arc.data.id}`}
-                      x={x - 40}
-                      y={y - 12}
-                      width={80}
-                      height={24}
-                      className="pointer-events-none overflow-visible"
-                    >
-                      <div className="flex size-full items-center justify-center">
-                        {content}
-                      </div>
-                    </foreignObject>
-                  );
-                })}
-              </>
-              );
-            }}
+            )}
           </Pie>
         </Group>
       </svg>

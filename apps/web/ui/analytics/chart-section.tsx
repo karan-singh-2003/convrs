@@ -518,10 +518,10 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
       <CreateFunnelEditorModal />
       <FunnelListModal />
       <div>
-        <div className="max-w-5xl mx-auto  ">
+        <div className="w-full border-y border-border-subtle bg-bg-card">
           <div className="w-full relative  py-2">
             {/* CENTER → Tabs */}
-            <div className="max-w-5xl  mx-auto flex justify-center ">
+            <div className="max-w-screen-lg mx-auto flex justify-center ">
               {safeView === "timeseries" ? (
                 <AnalyticsTabs
                   showConversions={showConversions}
@@ -569,7 +569,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
               (`absolute right-3 top-2`) — verified safe there already, so
               tablet/desktop is unchanged.
             */}
-            {/* <div className="static ml-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md sm:absolute sm:right-3 sm:top-2 sm:mt-0 sm:ml-0 z-20">
+            <div className="static ml-auto mt-3 flex w-fit items-center gap-2 rounded-full border border-border-subtle bg-bg-card px-2 py-1 shadow-sm backdrop-blur-md sm:absolute sm:right-3 sm:top-2 sm:mt-0 sm:ml-0 z-20">
               {safeView === "funnel" && hasFunnels && (
                 <button
                   className="bg-bg-emphasis text-content-default text-sm font-medium px-4 py-1.5 rounded-full hover:bg-neutral-200 transition"
@@ -582,11 +582,11 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
               {canShowFunnelView && (
                 <ChartViewSwitcher showFunnel={canShowFunnelView} />
               )}
-            </div> */}
+            </div>
           </div>
         </div>
 
-        {/* <div className="relative">
+        <div className="relative">
           <div className={cn("relative overflow-hidden sm:rounded-b-xl")}>
             {safeView === "timeseries" && (
               <div className="h-[444px] bg-bg-card w-full sm:h-[464px]">
@@ -623,7 +623,7 @@ export function ChartSection({ mode, workspaceId }: ChartSectionProps) {
               </div>
             )}
           </div>
-        </div> */}
+        </div>
       </div>
     </>
   );

@@ -997,7 +997,6 @@ import useSWR from "swr";
 import { useParams } from "next/navigation";
 import { AnalyticsContext } from "./analytics-providers";
 import { formatDuration } from "./analytics-tabs";
-import { ChartPlaceholder } from "./analytics-sparkline";
 import { useSocialActivityModal } from "../modals/use-social-activity-modal";
 
 const DEMO_DATA = [
@@ -1330,7 +1329,7 @@ export function AnalyticsAreaChart({
       {showInitialLoader ? (
         <div className="w-full h-[464px] bg-bg-card space-y-2" />
       ) : !hasChartData ? (
-        <ChartPlaceholder size="lg" />
+        <p className="text-sm font-default text-neutral-500">No analytics data yet.</p>
       ) : (
         <TimeSeriesChart
           key={queryString + resource}

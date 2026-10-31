@@ -15,9 +15,6 @@ const tabSelectButtonVariants = cva(
 
         accent:
           "text-content-subtle data-[selected=true]:font-medium data-[selected=true]:text-content-info data-[selected=false]:hover:text-content-default",
-
-        muted:
-          "text-content-subtle data-[selected=true]:font-medium data-[selected=true]:text-neutral-600 dark:data-[selected=true]:text-neutral-300 data-[selected=false]:hover:text-content-default",
       },
     },
     defaultVariants: {
@@ -33,7 +30,6 @@ const tabSelectIndicatorVariants = cva(
       variant: {
         default: "text-content-emphasis",
         accent: "text-content-info",
-        muted: "text-content-emphasis",
       },
     },
     defaultVariants: {

@@ -12,34 +12,7 @@ import {
   groupMembersByDisplayName,
   ReferrerRow,
 } from "@/lib/swr/use-channel-breakdown";
-import { ChannelId, getReferrerDisplayName } from "@/lib/analytics/channels";
-
-// Muted slate ramp, by rank (largest slice first) — light / dark.
-const SLICE_COLORS = [
-  "text-[#BFCBD9] dark:text-[#4A5263]",
-  "text-[#CBD5E1] dark:text-[#434A57]",
-  "text-[#D6DEE7] dark:text-[#3D434E]",
-  "text-[#DFE5EC] dark:text-[#383D46]",
-  "text-[#E6EAF0] dark:text-[#33373F]",
-];
-
-const MAX_SLICE_ICONS = 2;
-
-// Top referrer domains in a slice, one per display name ("t.co" and "x.com"
-// are both X) — Direct has no referrer, so no icons.
-function sliceIconDomains(members: ReferrerRow[]) {
-  const seen = new Set<string>();
-  const domains: string[] = [];
-  for (const m of members) {
-    if (!m.referer) continue;
-    const name = getReferrerDisplayName(m.referer);
-    if (seen.has(name)) continue;
-    seen.add(name);
-    domains.push(m.referer);
-    if (domains.length === MAX_SLICE_ICONS) break;
-  }
-  return domains;
-}
+import { ChannelId } from "@/lib/analytics/channels";
 
 export function ChannelBreakdown() {
   const { currency } = useContext(AnalyticsContext);
@@ -60,22 +33,7 @@ export function ChannelBreakdown() {
 
   const { channels, totalCount } = useChannelBreakdown(rows);
   const activeChannel = channels.find((c) => c.id === selectedChannel);
-  const pieData = useMemo(
-    () =>
-      (activeChannel ? groupMembersByDisplayName(activeChannel.members) : channels).map(
-        (slice, i) => ({ ...slice, colorClassName: SLICE_COLORS[i % SLICE_COLORS.length] })
-      ),
-    [activeChannel, channels]
-  );
-
-  // Members behind a slice: the channel's own when grouped by channel, or the
-  // matching display name's when drilled into one channel.
-  const sliceMembers = (slice: { id: string }) => {
-    if (!activeChannel) return channels.find((c) => c.id === slice.id)?.members ?? [];
-    return activeChannel.members.filter(
-      (m) => getReferrerDisplayName(m.referer) === slice.id
-    );
-  };
+  const pieData = activeChannel ? groupMembersByDisplayName(activeChannel.members) : channels;
   const formattedTotalCount = useMemo(
     () => new Intl.NumberFormat("en-US").format(totalCount),
     [totalCount]
@@ -106,27 +64,6 @@ export function ChannelBreakdown() {
         {hasData ? (
           <PieChart
             data={pieData}
-            innerRadiusRatio={0.55}
-            padAngle={0.03}
-            cornerRadius={6}
-            showLabels
-            renderSliceContent={(slice) => {
-              const domains = sliceIconDomains(sliceMembers(slice));
-              if (domains.length === 0) return null;
-              return (
-                <div className="flex items-center gap-1">
-                  {domains.map((domain) => (
-                    <img
-                      key={domain}
-                      src={`https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}`}
-                      alt=""
-                      className="size-4 rounded-[4px]"
-                      loading="lazy"
-                    />
-                  ))}
-                </div>
-              );
-            }}
             onSliceClick={(slice) => {
               if (!activeChannel) setSelectedChannel(slice.id as ChannelId);
             }}

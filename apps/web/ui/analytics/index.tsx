@@ -53,7 +53,7 @@ function AnalyticsContent({
 
         {selectedTab !== "revenue" && (
           <div className="max-w-screen-lg mx-auto">
-            <LowerGrid mode={mode} workspaceId={workspaceId} />
+            <LowerGrid />
           </div>
         )}
         {dashboardCardSettings.botFiltering && (
