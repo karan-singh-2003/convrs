@@ -351,7 +351,9 @@ SQL >
         {% end %} AS interval,
         sum(coalesce(se.revenue, 0)) as revenue,
         sumIf(se.revenue, se.revenue > 0) as new_revenue,
-        abs(sumIf(se.revenue, se.revenue < 0)) as refund_amount
+        abs(sumIf(se.revenue, se.revenue < 0)) as refund_amount,
+        -- Distinct visitors with a purchase in this bucket (NULL visitor_ids skipped)
+        uniqIf(se.visitor_id, se.revenue > 0) as converted_visitors
     FROM dub_sales_events_mv AS se
     WHERE
         true
@@ -496,7 +498,8 @@ SQL >
         formatDateTime(interval, '%FT%T.000%z') as groupByField,
         coalesce(revenue, 0) as revenue,
         coalesce(new_revenue, 0) as new_revenue,
-        coalesce(refund_amount, 0) as refund_amount
+        coalesce(refund_amount, 0) as refund_amount,
+        coalesce(converted_visitors, 0) as converted_visitors
     FROM
         {% if granularity == "minute" %} minute_intervals
         {% elif granularity == "hour" %} hour_intervals
@@ -523,7 +526,9 @@ SQL >
         {% else %}
             toDateTime64(toStartOfDay(dce.timestamp, {{ String(timezone, 'UTC') }}), 3)
         {% end %} AS interval,
-        count() as goal_count
+        count() as goal_count,
+        -- Distinct visitors who completed the goal in this bucket
+        uniq(dce.visitor_id) as goal_visitors
     FROM dub_click_events_mv AS dce
     WHERE
         dce.event_type = 'goals'
@@ -554,21 +559,24 @@ SQL >
         {% end %}
         {% if defined(kpiGoalName) %}
         if(c.clicks > 0, coalesce(g.goal_count, 0) / c.clicks, 0) AS revenue_per_visitor,
-        if(c.clicks > 0, (coalesce(g.goal_count, 0) > 0) * 100.0 / c.clicks, 0) AS conversion_rate,
+        -- conversions / visitors * 100. Capped at 100: a buyer can convert in a
+        -- bucket other than the one they were counted as a visitor in.
+        if(c.clicks > 0, least(coalesce(g.goal_visitors, 0) * 100.0 / c.clicks, 100), 0) AS conversion_rate,
         {% else %}
         if(c.clicks > 0, coalesce(r.revenue, 0) / c.clicks, 0) AS revenue_per_visitor,
-        if(c.clicks > 0, (coalesce(r.revenue, 0) > 0) * 100.0 / c.clicks, 0) AS conversion_rate,
+        if(c.clicks > 0, least(coalesce(r.converted_visitors, 0) * 100.0 / c.clicks, 100), 0) AS conversion_rate,
         {% end %}
         coalesce(s.avg_session_duration, 0) AS avg_session_duration,
         coalesce(s.bounce_rate, 0) AS bounce_rate
    FROM (SELECT groupByField, clicks, new_visitors, returning_visitors FROM timeseries_clicks) AS c
-    LEFT JOIN (SELECT groupByField, revenue, new_revenue, refund_amount FROM timeseries_revenue) AS r
+    LEFT JOIN (SELECT groupByField, revenue, new_revenue, refund_amount, converted_visitors FROM timeseries_revenue) AS r
         ON c.groupByField = r.groupByField
     {% if defined(kpiGoalName) %}
     LEFT JOIN (
         SELECT
             formatDateTime(interval, '%FT%T.000%z') AS groupByField,
-            goal_count
+            goal_count,
+            goal_visitors
         FROM timeseries_kpi_goal_data
     ) AS g
         ON c.groupByField = g.groupByField

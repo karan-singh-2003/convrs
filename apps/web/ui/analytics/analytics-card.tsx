@@ -135,6 +135,7 @@
               </Popover>
             ) : (
               <TabSelect
+                variant="muted"
                 options={tabs}
                 selected={selectedTabId}
                 onSelect={onSelectTab}

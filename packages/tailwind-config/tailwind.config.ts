@@ -228,6 +228,7 @@ const config: Config = {
 
         "bg-bar-primary": "rgb(var(--bg-bar-primary, 229 229 229) / <alpha-value>)",
         "bg-bar-secondary": "rgb(var(--bg-bar-secondary, 245 245 245) / <alpha-value>)",
+        "bg-bar-revenue": "rgb(var(--bg-bar-revenue, 209 225 243) / <alpha-value>)",
 
         "border-emphasis":
           "rgb(var(--border-emphasis, 163 163 163) / <alpha-value>)",

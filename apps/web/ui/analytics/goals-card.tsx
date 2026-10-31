@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { ArrowDownUp, ArrowLeft } from "lucide-react";
-import { Modal } from "@repo/ui";
+import { Modal, TabSelect } from "@repo/ui";
 import { cn } from "@repo/utils";
 import { BarList } from "./bar-list";
 import { GoalsAreaChart } from "./goals-area-chart";
@@ -32,7 +32,16 @@ type GoalsCardProps = {
   expandLimit?: number;
   barBackground: string;
   hoverBackground: string;
+  // Content of the "Funnel" tab; the tab is hidden when omitted
+  funnelView?: ReactNode;
 };
+
+const CARD_TABS = [
+  { id: "goals", label: "Goals" },
+  { id: "funnel", label: "Funnel" },
+] as const;
+
+type CardTab = (typeof CARD_TABS)[number]["id"];
 
 export function GoalsCard({
   chartData,
@@ -57,8 +66,11 @@ export function GoalsCard({
   barBackground = "bg-bg-bar-primary",
   hoverBackground = "hover:bg-bg-subtle",
   expandLimit = 6,
+  funnelView,
 }: GoalsCardProps) {
   const [showModal, setShowModal] = useState(false);
+  const [cardTab, setCardTab] = useState<CardTab>("goals");
+  const showFunnel = !!funnelView && cardTab === "funnel";
   const [metric, setMetric] = useState<"clicks" | "revenue">("clicks");
 
   const showViewAll = data.length > expandLimit;
@@ -106,12 +118,25 @@ export function GoalsCard({
 
       <div className="relative z-0 flex h-[400px] w-full flex-col overflow-hidden rounded-lg border border-border-subtle bg-bg-card sm:h-[450px] sm:rounded-xl">
         {/* Full-width header */}
-        <div className="flex items-center justify-between border-b border-border-subtle px-3 py-2.5 sm:px-4">
-          <span className="font-display text-sm font-medium text-content-default sm:text-[15px]">
-            Goals 
-          </span>
+        <div className="flex items-center justify-between border-b border-border-subtle px-3 sm:px-4">
+          {funnelView ? (
+            <TabSelect
+              variant="muted"
+              options={[...CARD_TABS]}
+              selected={cardTab}
+              onSelect={setCardTab}
+              className="-ml-4 font-display text-sm md:text-[15px]"
+            />
+          ) : (
+            <span className="py-2.5 font-display text-sm font-medium text-content-default sm:text-[15px]">
+              Goals
+            </span>
+          )}
         </div>
 
+        {showFunnel ? (
+          <div className="min-h-0 flex-1 p-0 sm:p-0">{funnelView}</div>
+        ) : (
         <div className="flex min-h-0 flex-1">
           {/* Left pane — chart */}
           <div className="min-h-0 min-w-0 flex-1 border-r border-border-subtle p-3 sm:p-4">
@@ -186,6 +211,7 @@ export function GoalsCard({
             </div>
           </div>
         </div>
+        )}
       </div>
     </>
   );

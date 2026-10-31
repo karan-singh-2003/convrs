@@ -9,8 +9,15 @@ import useWorkspace from "@/lib/swr/use-workspace";
 import useIntegrations from "@/lib/swr/use-integration";
 import { useGoalsTimeseries } from "@/lib/swr/use-goals-timeseries";
 import { GoalsCard } from "./goals-card";
+import { FunnelPanel } from "./funnel-panel";
 
-export function LowerGrid() {
+export function LowerGrid({
+  mode,
+  workspaceId,
+}: {
+  mode: "private" | "public";
+  workspaceId?: string;
+}) {
   const { queryParams, searchParams } = useRouterStuff();
   const { selectedTab, totalEvents } = useContext(AnalyticsContext);
   const { kpiEventName, kpiType } = useWorkspace();
@@ -94,6 +101,7 @@ export function LowerGrid() {
       kpiConfigured={kpiConfigured}
       barBackground="bg-bg-bar-primary"
       hoverBackground="hover:bg-bg-subtle"
+      funnelView={<FunnelPanel mode={mode} workspaceId={workspaceId} />}
     />
   );
 }

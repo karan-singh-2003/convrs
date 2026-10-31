@@ -1,8 +1,8 @@
 :root,
 .light {
   /* Background */
-  --bg-default: 255 255 255;
-  --bg-card: 245 245 245;
+  --bg-default: 251 251 251; /* #FBFBFB */
+  --bg-card: 255 255 255;
   --bg-muted: 250 250 250;
   --bg-subtle: 245 245 245;
   --bg-emphasis: 229 229 229;
@@ -36,6 +36,7 @@
   /* Charts */
   --bg-bar-primary: 229 229 229;   /* neutral-200 */
   --bg-bar-secondary: 245 245 245; /* neutral-100 */
+  --bg-bar-revenue: 209 225 243;   /* #D1E1F3 */
 }
 
 .dark {
@@ -76,4 +77,5 @@
   /* Charts */
   --bg-bar-primary: 82 82 82;
   --bg-bar-secondary: 64 64 64;
+  --bg-bar-revenue: 83 110 140;    /* #536E8C */
 }

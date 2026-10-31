@@ -336,9 +336,9 @@ const METRIC_COLORS = {
     swatch: "bg-bg-bar-primary",
   },
   revenue: {
-    active: "bg-bg-bar-primary",
-    inactive: "bg-bg-bar-secondary",
-    swatch: "bg-bg-bar-primary",
+    active: "bg-bg-bar-revenue",
+    inactive: "bg-bg-bar-revenue",
+    swatch: "bg-bg-bar-revenue",
   },
 } as const;
 
@@ -947,7 +947,7 @@ export function LineItem({
                 <div className="flex items-center font-alexandria justify-between text-[13.5px]">
                   <span className="flex items-center gap-1.5 text-content-subtle">
                     <span
-                      className={cn("size-3 shrink-0 rounded-full", clicksBar.colorClass)}
+                      className={cn("size-3 shrink-0 rounded-md", clicksBar.colorClass)}
                       aria-hidden="true"
                     />
                     {countLabel}
